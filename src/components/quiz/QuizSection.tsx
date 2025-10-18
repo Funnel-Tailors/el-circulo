@@ -4,7 +4,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/pages/Index";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -85,10 +84,14 @@ const steps = [
   {
     id: "q7",
     question: "¿Qué tan urgente es para ti?",
-    description: "1 = Curioso/a ... 5 = Necesito empezar ya",
-    type: "slider",
-    min: 1,
-    max: 5
+    type: "radio",
+    options: [
+      "1 - Solo estoy mirando",
+      "2 - Me interesa, sin prisa",
+      "3 - Quiero empezar pronto",
+      "4 - Es importante para mí",
+      "5 - Necesito empezar ya"
+    ]
   }
 ];
 
@@ -164,7 +167,16 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     else if (state.q6 === "Decido con otra persona") score += 1;
 
     // Q7 - Urgency
-    if (state.q7) score += state.q7;
+    const urgencyMap: { [key: string]: number } = {
+      "1 - Solo estoy mirando": 1,
+      "2 - Me interesa, sin prisa": 2,
+      "3 - Quiero empezar pronto": 3,
+      "4 - Es importante para mí": 4,
+      "5 - Necesito empezar ya": 5
+    };
+    if (state.q7 && typeof state.q7 === 'string') {
+      score += urgencyMap[state.q7] || 0;
+    }
 
     return score;
   };
@@ -218,27 +230,6 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                 </Label>
               </div>
             ))}
-          </div>
-        );
-
-      case "slider":
-        return (
-          <div className="space-y-6 py-4">
-            <Slider
-              min={currentQuestion.min}
-              max={currentQuestion.max}
-              step={1}
-              value={[answers.q7 as number || 3]}
-              onValueChange={([value]) => setAnswers({ ...answers, q7: value })}
-              className="w-full"
-            />
-            <div className="flex justify-between text-sm text-muted-foreground px-1">
-              <span>1 - Curioso/a</span>
-              <span className="text-foreground font-medium text-lg">
-                {answers.q7 || 3}
-              </span>
-              <span>5 - ¡Ahora!</span>
-            </div>
           </div>
         );
     }
