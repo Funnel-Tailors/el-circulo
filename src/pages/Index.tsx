@@ -2,7 +2,6 @@ import { useState } from "react";
 import HeroSection from "@/components/quiz/HeroSection";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
-import Starfield from "@/components/quiz/Starfield";
 
 export type QuizState = {
   q1?: string;
@@ -38,10 +37,8 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <Starfield />
-      
-      <div className="pb-12">
+    <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="dark-card p-6 md:p-8 rounded-2xl max-w-2xl w-full">
         {currentScreen === "hero" && <HeroSection onStart={startQuiz} />}
         {currentScreen === "quiz" && (
           <QuizSection 
@@ -57,21 +54,6 @@ const Index = () => {
           />
         )}
       </div>
-
-      <footer className="fixed bottom-0 left-0 right-0 py-2 text-center text-xs text-muted-foreground bg-background/80 border-t border-border">
-        <a 
-          href="#" 
-          className="hover:text-foreground transition-colors"
-          onClick={(e) => {
-            e.preventDefault();
-            window.open('#privacy', '_blank');
-          }}
-        >
-          Privacidad
-        </a>
-        <span className="mx-2">·</span>
-        <span>© 2025 El Círculo</span>
-      </footer>
     </div>
   );
 };

@@ -54,13 +54,12 @@ const steps = [
   },
   {
     id: "q4",
-    question: "Si el plan encaja, ¿puedes invertir alrededor de 2.000€ HOY para implementarlo?",
-    description: "Transparencia total: si el plan encaja, la implementación guiada cuesta aprox. 2.000€.",
+    question: "¿Puedes pagar 2.000€ hoy?",
+    description: "Sin rodeos: este es el coste de implementación.",
     type: "radio",
     options: [
-      "Sí, puedo invertir ~2.000€ hoy",
-      "Preferiría fraccionar el pago",
-      "Ahora mismo no puedo"
+      "Sí, puedo pagar 2.000€ hoy",
+      "No puedo"
     ]
   },
   {
@@ -150,8 +149,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     if (state.q1 && !state.q1.includes("Otro")) score += 2;
 
     // Q4 - Budget
-    if (state.q4 === "Sí, puedo invertir ~2.000€ hoy") score += 3;
-    else if (state.q4 === "Preferiría fraccionar el pago") score += 2;
+    if (state.q4 === "Sí, puedo pagar 2.000€ hoy") score += 3;
 
     // Q5 - Time
     if (state.q5 === "7-Day Sprint (1–2 h/día)" || state.q5 === "30-Day Plan (30–60 min/día)") score += 2;
@@ -168,7 +166,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
   const hasAutoDisqualify = (state: QuizState): boolean => {
     return (
-      state.q4 === "Ahora mismo no puedo" ||
+      state.q4 === "No puedo" ||
       state.q5 === "Ahora no puedo"
     );
   };
@@ -243,9 +241,8 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
   if (showContactForm) {
     return (
-      <section className="flex items-center justify-center px-4 py-8">
-        <div className="max-w-xl w-full space-y-4 animate-fade-in">
-          <div className="dark-card p-6 md:p-8 rounded-2xl space-y-4">
+      <div className="w-full space-y-4 animate-fade-in">
+        <div className="space-y-4">
             <div className="text-center space-y-2">
               <h2 className="text-2xl md:text-3xl font-display font-black">
                 ¡Casi listo! <span className="glow">Último paso</span>
@@ -298,19 +295,17 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                 Ver mi Agenda
               </Button>
             </form>
-          </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
     <>
-    <section className="flex items-center justify-center px-4 py-8">
-      <div className="max-w-2xl w-full space-y-4 animate-fade-in">
-        <ProgressBar current={currentStep + 1} total={steps.length} />
+    <div className="w-full space-y-4 animate-fade-in">
+      <ProgressBar current={currentStep + 1} total={steps.length} />
 
-        <div className="dark-card p-6 md:p-8 rounded-2xl space-y-4">
+      <div className="space-y-4">
           <div className="space-y-2">
             <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
               {currentQuestion.question}
@@ -340,22 +335,21 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
               className="dark-button flex-1"
             >
               {isLastStep ? "Finalizar" : "Siguiente"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="text-center">
-          <Button
-            onClick={() => setShowExitDialog(true)}
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground text-xs"
-          >
-            Salir
           </Button>
         </div>
       </div>
-    </section>
+
+      <div className="text-center pt-2">
+        <Button
+          onClick={() => setShowExitDialog(true)}
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground text-xs"
+        >
+          Salir
+        </Button>
+      </div>
+    </div>
 
     <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
       <AlertDialogContent className="dark-card border-border">

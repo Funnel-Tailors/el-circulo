@@ -59,7 +59,7 @@ All colors MUST be HSL.
 
   body {
     @apply text-foreground;
-    background: linear-gradient(180deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 2%) 100%);
+    background: transparent;
     font-family: "degular-text", system-ui, -apple-system, "Inter", Arial, sans-serif;
     font-weight: 400;
   }
@@ -69,6 +69,7 @@ All colors MUST be HSL.
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: -0.025em;
+    line-height: 1em;
   }
 }
 

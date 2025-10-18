@@ -6,8 +6,7 @@ interface HeroSectionProps {
 
 const HeroSection = ({ onStart }: HeroSectionProps) => {
   return (
-    <section className="flex items-center justify-center px-4 py-8">
-      <div className="max-w-2xl w-full text-center space-y-4 animate-fade-in">
+    <div className="w-full text-center space-y-3 animate-fade-in">
         {/* Runic divider */}
         <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
           <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
@@ -44,8 +43,7 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
           <div className="text-muted-foreground text-xs">✦</div>
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
         </div>
-      </div>
-    </section>
+    </div>
   );
 };
 

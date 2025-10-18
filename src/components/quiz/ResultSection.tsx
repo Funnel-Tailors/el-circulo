@@ -13,9 +13,8 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
   const BONUS_URL = "#bonos";
 
   return (
-    <section className="flex items-center justify-center px-4 py-8">
-      <div className="max-w-3xl w-full space-y-4 animate-fade-in">
-        <div className="dark-card p-6 md:p-8 rounded-2xl space-y-4">
+    <div className="w-full space-y-4 animate-fade-in">
+      <div className="space-y-4">
           {isQualified ? (
             <>
               <div className="text-center space-y-3">
@@ -91,9 +90,8 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
               </div>
             </>
           )}
-        </div>
       </div>
-    </section>
+    </div>
   );
 };
 
