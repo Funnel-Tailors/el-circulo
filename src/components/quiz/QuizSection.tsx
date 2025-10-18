@@ -29,14 +29,14 @@ const steps = [
   },
   {
     id: "q2",
-    question: "¿Qué te gustaría conseguir en los próximos 30 días?",
+    question: "¿Cuánto es lo máximo que has cobrado por un proyecto?",
     type: "radio",
     options: [
-      "Mi primer cliente",
-      "Mi próximo cliente (ya tengo flujo)",
-      "Llenar pipeline con citas de calidad",
-      "Mejorar mi oferta y cerrar mejor",
-      "Otra meta"
+      "Menos de 500€",
+      "500€ - 1.000€",
+      "1.000€ - 2.500€",
+      "2.500€ - 5.000€",
+      "Más de 5.000€"
     ]
   },
   {
@@ -147,6 +147,11 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
     // Q1 - ICP
     if (state.q1 && !state.q1.includes("Otro")) score += 2;
+
+    // Q2 - Revenue History (mejor predictor de capacidad de pago)
+    if (state.q2 === "Más de 5.000€") score += 3;
+    else if (state.q2 === "2.500€ - 5.000€") score += 2;
+    else if (state.q2 === "1.000€ - 2.500€") score += 1;
 
     // Q4 - Budget
     if (state.q4 === "Sí, puedo pagar 2.000€ hoy") score += 3;

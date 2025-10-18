@@ -25,7 +25,7 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                   ¡Listo! <span className="glow">Tu momento es ahora</span>
                 </h2>
                 <p className="text-base text-muted-foreground max-w-xl mx-auto">
-                  Tienes paso directo a agenda. Reserva tu hueco y diseñemos juntos tu Sprint para conseguir tu {quizState.q2?.includes("primer") ? "primer" : "próximo"} cliente.
+                  Tienes paso directo a agenda. Reserva tu hueco y diseñemos juntos tu Sprint de crecimiento.
                 </p>
               </div>
 
