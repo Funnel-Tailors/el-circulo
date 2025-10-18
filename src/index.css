@@ -8,9 +8,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Mystic dark theme - carbón to black gradient */
-    --background: 219 25% 5%;
-    --foreground: 210 20% 98%;
+    /* Pure carbon black theme - no blue tint */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 98%;
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -21,32 +21,27 @@ All colors MUST be HSL.
     --primary: 0 0% 100%;
     --primary-foreground: 219 25% 5%;
 
-    --secondary: 0 0% 100% / 0.1;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 100% / 0.06;
-    --muted-foreground: 210 15% 70%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 0 0% 100% / 0.12;
-    --accent-foreground: 210 20% 98%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 100% / 0.18;
-    --input: 0 0% 100% / 0.12;
+    --border: 0 0% 20%;
+    --input: 0 0% 12%;
     --ring: 0 0% 100%;
 
-    --radius: 1.25rem;
+    --radius: 1rem;
 
-    /* Gradient backgrounds */
-    --gradient-base: linear-gradient(180deg, hsl(219, 25%, 7%) 0%, hsl(220, 26%, 3%) 100%);
-    --gradient-overlay: radial-gradient(circle at 50% 0%, hsl(0, 0%, 100% / 0.12) 0%, transparent 50%);
-    
-    /* Glass effect */
-    --glass-bg: hsl(0 0% 100% / 0.08);
-    --glass-border: hsl(0 0% 100% / 0.18);
-    --glass-blur: 14px;
+    /* Gradient backgrounds - pure carbon black */
+    --gradient-base: linear-gradient(180deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 2%) 100%);
+    --gradient-overlay: radial-gradient(circle at 50% 0%, hsl(0, 0%, 15%) 0%, transparent 50%);
     
     /* Glow effects */
     --glow-primary: 0 0 12px hsl(0 0% 100% / 0.55), 0 0 24px hsl(0 0% 100% / 0.35);
@@ -64,7 +59,7 @@ All colors MUST be HSL.
 
   body {
     @apply text-foreground;
-    background: linear-gradient(180deg, hsl(219, 25%, 7%) 0%, hsl(220, 26%, 3%) 100%);
+    background: linear-gradient(180deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 2%) 100%);
     font-family: "degular-text", system-ui, -apple-system, "Inter", Arial, sans-serif;
     font-weight: 400;
   }
@@ -72,31 +67,31 @@ All colors MUST be HSL.
   h1, h2, h3 {
     font-family: "degular-display", system-ui, -apple-system, "Inter", Arial, sans-serif;
     font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
   }
 }
 
-/* Glass morphism utility */
+/* Solid dark cards - no glass */
 @layer utilities {
-  .glass-card {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(var(--glass-blur)) saturate(120%);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  .dark-card {
+    background: hsl(0, 0%, 10%);
+    border: 1px solid hsl(0, 0%, 20%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
   
-  .glass-button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(8px);
+  .dark-button {
+    background: hsl(0, 0%, 12%);
+    border: 1px solid hsl(0, 0%, 25%);
     transition: var(--transition-smooth);
   }
   
-  .glass-button:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.18);
+  .dark-button:hover:not(:disabled) {
+    background: hsl(0, 0%, 18%);
     box-shadow: var(--glow-hover);
   }
   
-  .glass-button:disabled {
+  .dark-button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }

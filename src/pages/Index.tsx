@@ -41,25 +41,27 @@ const Index = () => {
     <div className="min-h-screen relative overflow-hidden">
       <Starfield />
       
-      {currentScreen === "hero" && <HeroSection onStart={startQuiz} />}
-      {currentScreen === "quiz" && (
-        <QuizSection 
-          onComplete={completeQuiz}
-          onExit={resetQuiz}
-        />
-      )}
-      {currentScreen === "result" && (
-        <ResultSection 
-          isQualified={isQualified}
-          quizState={quizState}
-          onReset={resetQuiz}
-        />
-      )}
+      <div className="pb-12">
+        {currentScreen === "hero" && <HeroSection onStart={startQuiz} />}
+        {currentScreen === "quiz" && (
+          <QuizSection 
+            onComplete={completeQuiz}
+            onExit={resetQuiz}
+          />
+        )}
+        {currentScreen === "result" && (
+          <ResultSection 
+            isQualified={isQualified}
+            quizState={quizState}
+            onReset={resetQuiz}
+          />
+        )}
+      </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 py-3 text-center text-xs text-muted-foreground bg-background/20 backdrop-blur-sm border-t border-border">
+      <footer className="fixed bottom-0 left-0 right-0 py-2 text-center text-xs text-muted-foreground bg-background/80 border-t border-border">
         <a 
           href="#" 
-          className="hover:text-foreground transition-colors focus-glow"
+          className="hover:text-foreground transition-colors"
           onClick={(e) => {
             e.preventDefault();
             window.open('#privacy', '_blank');

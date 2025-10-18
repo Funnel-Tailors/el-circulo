@@ -183,7 +183,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
             className="space-y-3"
           >
             {currentQuestion.options?.map((option) => (
-              <div key={option} className="flex items-center space-x-3 glass-card p-4 rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
+              <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
                 <RadioGroupItem value={option} id={option} className="border-2" />
                 <Label htmlFor={option} className="flex-1 cursor-pointer text-base">
                   {option}
@@ -197,7 +197,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
         return (
           <div className="space-y-3">
             {currentQuestion.options?.map((option) => (
-              <div key={option} className="flex items-center space-x-3 glass-card p-4 rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
+              <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
                 <Checkbox
                   id={option}
                   checked={(answers.q3 as string[] || []).includes(option)}
@@ -243,56 +243,56 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
   if (showContactForm) {
     return (
-      <section className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="max-w-xl w-full space-y-6 animate-fade-in">
-          <div className="glass-card p-8 rounded-3xl space-y-6">
+      <section className="flex items-center justify-center px-4 py-8">
+        <div className="max-w-xl w-full space-y-4 animate-fade-in">
+          <div className="dark-card p-6 md:p-8 rounded-2xl space-y-4">
             <div className="text-center space-y-2">
               <h2 className="text-2xl md:text-3xl font-display font-black">
                 ¡Casi listo! <span className="glow">Último paso</span>
               </h2>
-              <p className="text-muted-foreground">
-                Déjanos tus datos para coordinar tu agenda
+              <p className="text-muted-foreground text-sm">
+                Déjanos tus datos para acceder a la agenda
               </p>
             </div>
 
             <form onSubmit={handleContactSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-base mb-2 block">Nombre *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm">Nombre</Label>
                 <Input
                   id="name"
                   name="name"
                   required
                   placeholder="Tu nombre"
-                  className="glass-button focus-glow text-base"
+                  className="dark-button text-base"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="email" className="text-base mb-2 block">Email *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   required
                   placeholder="tu@email.com"
-                  className="glass-button focus-glow text-base"
+                  className="dark-button text-base"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="whatsapp" className="text-base mb-2 block">WhatsApp (opcional)</Label>
+              <div className="space-y-2">
+                <Label htmlFor="whatsapp" className="text-sm">WhatsApp (opcional)</Label>
                 <Input
                   id="whatsapp"
                   name="whatsapp"
                   type="tel"
                   placeholder="+34 600 000 000"
-                  className="glass-button focus-glow text-base"
+                  className="dark-button text-base"
                 />
               </div>
 
               <Button
                 type="submit"
-                className="w-full glass-button focus-glow text-base py-6"
+                className="w-full dark-button text-base py-4"
                 size="lg"
               >
                 Ver mi Agenda
@@ -306,72 +306,73 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
   return (
     <>
-      <section className="min-h-screen flex items-center justify-center px-4 py-12">
-        <div className="max-w-2xl w-full space-y-6 animate-fade-in">
-          <ProgressBar current={currentStep + 1} total={steps.length} />
+    <section className="flex items-center justify-center px-4 py-8">
+      <div className="max-w-2xl w-full space-y-4 animate-fade-in">
+        <ProgressBar current={currentStep + 1} total={steps.length} />
 
-          <div className="glass-card p-6 md:p-8 rounded-3xl space-y-6">
-            <div className="space-y-2">
-              <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
-                {currentQuestion.question}
-              </h2>
-              {currentQuestion.description && (
-                <p className="text-sm text-muted-foreground">
-                  {currentQuestion.description}
-                </p>
-              )}
-            </div>
+        <div className="dark-card p-6 md:p-8 rounded-2xl space-y-4">
+          <div className="space-y-2">
+            <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
+              {currentQuestion.question}
+            </h2>
+            {currentQuestion.description && (
+              <p className="text-sm text-muted-foreground">{currentQuestion.description}</p>
+            )}
+          </div>
 
-            {renderInput()}
+          {renderInput()}
 
-            <div className="flex gap-3 pt-4">
-              <Button
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-                variant="outline"
-                className="glass-button focus-glow"
-              >
-                Anterior
-              </Button>
+          <div className="flex gap-3 pt-4">
+            <Button
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+              variant="outline"
+              className="dark-button"
+            >
+              Anterior
+            </Button>
 
-              <Button
-                onClick={handleNext}
-                disabled={!answers[currentQuestion.id as keyof QuizState] || 
-                  (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
-                   (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
-                className="glass-button focus-glow flex-1"
-              >
-                {isLastStep ? "Finalizar" : "Siguiente"}
-              </Button>
-
-              <Button
-                onClick={() => setShowExitDialog(true)}
-                variant="ghost"
-                className="focus-glow"
-              >
-                Salir
-              </Button>
-            </div>
+            <Button
+              onClick={handleNext}
+              disabled={!answers[currentQuestion.id as keyof QuizState] || 
+                (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
+                 (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
+              className="dark-button flex-1"
+            >
+              {isLastStep ? "Finalizar" : "Siguiente"}
+            </Button>
           </div>
         </div>
-      </section>
 
-      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-        <AlertDialogContent className="glass-card border-border">
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Salir del quiz?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Perderás todo tu progreso. ¿Estás seguro?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="glass-button">Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={onExit}
-              className="glass-button"
-            >
-              Sí, salir
-            </AlertDialogAction>
+        <div className="text-center">
+          <Button
+            onClick={() => setShowExitDialog(true)}
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground text-xs"
+          >
+            Salir
+          </Button>
+        </div>
+      </div>
+    </section>
+
+    <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+      <AlertDialogContent className="dark-card border-border">
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Salir del quiz?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Se perderán tus respuestas. ¿Estás seguro/a?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel className="dark-button">Cancelar</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onExit}
+            className="dark-button"
+          >
+            Sí, salir
+          </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
