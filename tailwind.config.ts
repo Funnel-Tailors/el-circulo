@@ -63,6 +63,10 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        'display': ['"degular-display"', 'system-ui', '-apple-system', '"Inter"', 'Arial', 'sans-serif'],
+        'text': ['"degular-text"', 'system-ui', '-apple-system', '"Inter"', 'Arial', 'sans-serif'],
+      },
       keyframes: {
         "accordion-down": {
           from: {
@@ -80,10 +84,30 @@ export default {
             height: "0",
           },
         },
+        "fade-in": {
+          from: {
+            opacity: "0",
+            transform: "translateY(10px)"
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)"
+          }
+        },
+        "pulse-glow": {
+          "0%, 100%": {
+            textShadow: "0 0 6px rgba(255, 255, 255, 0.35), 0 0 18px rgba(255, 255, 255, 0.2)"
+          },
+          "50%": {
+            textShadow: "0 0 14px rgba(255, 255, 255, 0.7), 0 0 36px rgba(255, 255, 255, 0.45)"
+          }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
+        "pulse-glow": "pulse-glow 2.4s ease-in-out infinite alternate",
       },
     },
   },
