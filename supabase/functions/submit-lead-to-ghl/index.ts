@@ -32,47 +32,50 @@ interface LeadSubmission {
 function generateTags(answers: QuizAnswers, score: number, qualified: boolean): string[] {
   const tags: string[] = [];
   
-  // Tag de origen
-  tags.push('SOURCE-Quiz2025');
+  // Tag de origen con prefijo CÍRCULO
+  tags.push('🎯 CÍRCULO-SOURCE-Quiz2025');
   
-  // Tags de cualificación (basados en score)
-  if (score >= 10) {
-    tags.push('HOT-LEAD');
-  } else if (score >= 7) {
-    tags.push('QUALIFIED');
+  // Tags de cualificación MAESTROS con prefijo CÍRCULO
+  if (qualified && score >= 10) {
+    tags.push('🔥 CÍRCULO-HOT');
+    tags.push('✅ CÍRCULO-CUALIFICADO');
+  } else if (qualified && score >= 7) {
+    tags.push('⭐ CÍRCULO-WARM');
+    tags.push('✅ CÍRCULO-CUALIFICADO');
   } else {
-    tags.push('COLD-LEAD');
+    tags.push('❄️ CÍRCULO-COLD');
+    tags.push('❌ CÍRCULO-NO-CUALIFICADO');
   }
   
-  // Tags de profesión (Q1)
+  // Tags de profesión con prefijo CÍRCULO
   const professionMap: Record<string, string> = {
-    'Diseñador/a': 'PRO-Designer',
-    'Diseñador web': 'PRO-WebDesigner',
-    'Filmmaker / Videógrafo/a': 'PRO-Filmmaker',
-    'Automatizador/a (No-Code / IA)': 'PRO-Automation',
-    'Fotógrafo/a': 'PRO-Photographer',
-    'Otro servicio creativo': 'PRO-Creative',
-    'Otro': 'PRO-Other'
+    'Diseñador/a': '🎨 CÍRCULO-PRO-Designer',
+    'Diseñador web': '💻 CÍRCULO-PRO-WebDesigner',
+    'Filmmaker / Videógrafo/a': '🎬 CÍRCULO-PRO-Filmmaker',
+    'Automatizador/a (No-Code / IA)': '🤖 CÍRCULO-PRO-Automation',
+    'Fotógrafo/a': '📸 CÍRCULO-PRO-Photographer',
+    'Otro servicio creativo': '✨ CÍRCULO-PRO-Creative',
+    'Otro': '🔹 CÍRCULO-PRO-Other'
   };
-  if (answers.q1) tags.push(professionMap[answers.q1] || 'PRO-Other');
+  if (answers.q1) tags.push(professionMap[answers.q1] || '🔹 CÍRCULO-PRO-Other');
   
-  // Tags de capacidad económica (Q2)
+  // Tags de capacidad económica con prefijo CÍRCULO
   const revenueMap: Record<string, string> = {
-    'Más de 5.000€': 'REV-5K+',
-    '2.500€ - 5.000€': 'REV-2.5K-5K',
-    '1.000€ - 2.500€': 'REV-1K-2.5K',
-    '500€ - 1.000€': 'REV-500-1K',
-    'Menos de 500€': 'REV-<500'
+    'Más de 5.000€': '💎 CÍRCULO-REV-5K+',
+    '2.500€ - 5.000€': '💰 CÍRCULO-REV-2.5K-5K',
+    '1.000€ - 2.500€': '💵 CÍRCULO-REV-1K-2.5K',
+    '500€ - 1.000€': '💸 CÍRCULO-REV-500-1K',
+    'Menos de 500€': '🪙 CÍRCULO-REV-<500'
   };
-  if (answers.q2) tags.push(revenueMap[answers.q2] || 'REV-Unknown');
+  if (answers.q2) tags.push(revenueMap[answers.q2] || '💰 CÍRCULO-REV-Unknown');
   
-  // Tags de adquisición (Q3 - pueden ser múltiples)
+  // Tags de adquisición con prefijo CÍRCULO
   const acquisitionMap: Record<string, string> = {
-    'Recomendaciones': 'ACQ-Referrals',
-    'Contenido orgánico': 'ACQ-Organic',
-    'Anuncios pagados': 'ACQ-Paid',
-    'Cold outreach': 'ACQ-Outreach',
-    'Aún no tengo un sistema': 'ACQ-NoSystem'
+    'Recomendaciones': '🤝 CÍRCULO-ACQ-Referrals',
+    'Contenido orgánico': '📱 CÍRCULO-ACQ-Organic',
+    'Anuncios pagados': '💳 CÍRCULO-ACQ-Paid',
+    'Cold outreach': '📧 CÍRCULO-ACQ-Outreach',
+    'Aún no tengo un sistema': '❓ CÍRCULO-ACQ-NoSystem'
   };
   if (Array.isArray(answers.q3)) {
     answers.q3.forEach(method => {
@@ -80,54 +83,55 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean): 
     });
   }
   
-  // Tags de presupuesto (Q4)
+  // Tags de presupuesto con prefijo CÍRCULO
   if (answers.q4 === 'Sí, puedo pagar 2.000€ hoy') {
-    tags.push('BUDGET-OK');
+    tags.push('✅ CÍRCULO-BUDGET-OK');
   } else {
-    tags.push('BUDGET-NO');
+    tags.push('⚠️ CÍRCULO-BUDGET-NO');
   }
   
-  // Tags de urgencia (Q5)
+  // Tags de urgencia con prefijo CÍRCULO
   const urgencyMap: Record<string, string> = {
-    'Ascensión Rápida (7 días, 1-2h/día)': 'FAST-7D',
-    'Ascensión Progresiva (30 días, 30-60 min/día)': 'PROG-30D',
-    'Ahora no puedo': 'NOT-NOW'
+    'Ascensión Rápida (7 días, 1-2h/día)': '🚀 CÍRCULO-FAST-7D',
+    'Ascensión Progresiva (30 días, 30-60 min/día)': '📈 CÍRCULO-PROG-30D',
+    'Ahora no puedo': '⏸️ CÍRCULO-NOT-NOW'
   };
-  if (answers.q5) tags.push(urgencyMap[answers.q5] || 'URGENCY-Unknown');
+  if (answers.q5) tags.push(urgencyMap[answers.q5] || '⏸️ CÍRCULO-URGENCY-Unknown');
   
-  // Tags de autoridad (Q6)
+  // Tags de autoridad con prefijo CÍRCULO
   const authorityMap: Record<string, string> = {
-    'Sí, decido yo': 'AUTH-SOLO',
-    'Decido con otra persona': 'AUTH-SHARED',
-    'No, no decido yo': 'AUTH-NO'
+    'Sí, decido yo': '👤 CÍRCULO-AUTH-SOLO',
+    'Decido con otra persona': '👥 CÍRCULO-AUTH-SHARED',
+    'No, no decido yo': '🚫 CÍRCULO-AUTH-NO'
   };
-  if (answers.q6) tags.push(authorityMap[answers.q6] || 'AUTH-Unknown');
+  if (answers.q6) tags.push(authorityMap[answers.q6] || '❓ CÍRCULO-AUTH-Unknown');
   
   return tags;
 }
 
 function formatTagsForNotification(tags: string[]): string {
-  // Agrupar tags por categoría
+  // Agrupar tags CÍRCULO por categoría
   const grouped = {
-    qualification: tags.filter(t => t.includes('LEAD') || t === 'QUALIFIED'),
-    profession: tags.filter(t => t.startsWith('PRO-')),
-    revenue: tags.filter(t => t.startsWith('REV-')),
-    budget: tags.filter(t => t.startsWith('BUDGET-')),
-    urgency: tags.filter(t => t.startsWith('FAST-') || t.startsWith('PROG-') || t === 'NOT-NOW'),
-    authority: tags.filter(t => t.startsWith('AUTH-')),
-    acquisition: tags.filter(t => t.startsWith('ACQ-'))
+    qualification: tags.filter(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD') || t.includes('CUALIFICADO')),
+    profession: tags.filter(t => t.includes('CÍRCULO-PRO-')),
+    revenue: tags.filter(t => t.includes('CÍRCULO-REV-')),
+    budget: tags.filter(t => t.includes('CÍRCULO-BUDGET-')),
+    urgency: tags.filter(t => t.includes('CÍRCULO-FAST-') || t.includes('CÍRCULO-PROG-') || t.includes('CÍRCULO-NOT-NOW')),
+    authority: tags.filter(t => t.includes('CÍRCULO-AUTH-')),
+    acquisition: tags.filter(t => t.includes('CÍRCULO-ACQ-'))
   };
   
   return `
-📊 PERFIL DEL LEAD:
-${grouped.qualification.map(t => `🔖 ${t}`).join(' ')}
+📊 TAGS DEL CÍRCULO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${grouped.qualification.join('\n')}
 
-👤 Profesión: ${grouped.profession.map(t => t.replace('PRO-', '')).join(', ')}
-💰 Revenue: ${grouped.revenue.map(t => t.replace('REV-', '')).join(', ')}
-💳 Budget: ${grouped.budget.map(t => t.replace('BUDGET-', '').replace('-OK', '✅').replace('-NO', '❌')).join(', ')}
-⚡ Urgencia: ${grouped.urgency.map(t => t.replace('FAST-', '🚀 ').replace('PROG-', '📈 ').replace('NOT-NOW', '⏸️')).join(', ')}
-🎯 Autoridad: ${grouped.authority.map(t => t.replace('AUTH-', '').replace('SOLO', '👤 Solo').replace('SHARED', '👥 Compartida').replace('NO', '🚫 No decide')).join(', ')}
-📱 Adquisición: ${grouped.acquisition.map(t => t.replace('ACQ-', '')).join(', ')}
+👤 ${grouped.profession.join(', ')}
+💰 ${grouped.revenue.join(', ')}
+💳 ${grouped.budget.join(', ')}
+⚡ ${grouped.urgency.join(', ')}
+🎯 ${grouped.authority.join(', ')}
+📱 ${grouped.acquisition.join(', ')}
   `.trim();
 }
 
@@ -156,214 +160,415 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
 }
 
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+  const firstName = contact.name.split(' ')[0];
+  const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
+  const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
+  const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
+  const fastTrack = tags.some(t => t.includes('FAST-7D'));
+  
+  // Determinar urgencia de contacto
+  let contactWindow = '⏰ CONTACTAR: En las próximas 48h';
+  if (isHot && budgetOK && fastTrack) {
+    contactWindow = '🚨 CONTACTAR URGENTE: En las próximas 2 horas';
+  } else if (isHot) {
+    contactWindow = '🔥 CONTACTAR HOY: Antes de las 20:00';
+  }
+  
+  // Score visual mejorado
+  const scoreBar = '█'.repeat(Math.floor(score / 13 * 10)) + '░'.repeat(10 - Math.floor(score / 13 * 10));
+  
   return `
-🎯 NUEVO LEAD CUALIFICADO
+🎯 NUEVO LEAD: ${firstName}
 
-${formatTagsForNotification(tags)}
+${contactWindow}
+
+📊 SCORE: ${score}/13 ${scoreBar}
+${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD'))}
+
+💼 PERFIL:
+• ${answers.q1}
+• Max. cobrado: ${answers.q2}
+• Budget 2K: ${budgetOK ? '✅ SÍ' : '❌ NO'}
+• Decide: ${answers.q6}
 
 📞 CONTACTO:
-• Nombre: ${contact.name}
-• Email: ${contact.email}
 • WhatsApp: ${contact.whatsapp || 'No proporcionado'}
-• Score: ${score}/13 ${score >= 10 ? '🔥' : score >= 7 ? '⭐' : ''}
+• Email: ${contact.email}
 
-🔥 INSIGHTS CLAVE:
-• Profesión: ${answers.q1}
-• Máx. cobrado: ${answers.q2}
-• Presupuesto: ${answers.q4}
-• Autoridad: ${answers.q6}
-• Urgencia: ${answers.q5}
+🎯 OBJETIVO LLAMADA:
+${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agendar segunda sesión si hay potencial'}
 
-✅ SIGUIENTE PASO: Agendar llamada estratégica
+🔗 ACCIÓN INMEDIATA:
+${budgetOK ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar para explorar situación'}
   `.trim();
 }
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+  // Predecir objeciones comunes
+  const potentialObjections: string[] = [];
+  
+  if (!tags.some(t => t.includes('BUDGET-OK'))) {
+    potentialObjections.push('⚠️ Puede objetar precio (no confirmó budget 2K)');
+  }
+  
+  if (tags.some(t => t.includes('AUTH-SHARED'))) {
+    potentialObjections.push('⚠️ Decisión compartida - preguntar quién más decide');
+  }
+  
+  if (tags.some(t => t.includes('NOT-NOW'))) {
+    potentialObjections.push('⚠️ Timing - puede no estar listo ahora');
+  }
+  
+  if (answers.q2 === 'Menos de 500€') {
+    potentialObjections.push('⚠️ Revenue bajo - validar capacidad de inversión');
+  }
+  
+  // Oportunidades de venta
+  const salesOpportunities: string[] = [];
+  
+  if (tags.some(t => t.includes('CÍRCULO-HOT'))) {
+    salesOpportunities.push('✅ Perfil premium - priorizar para cierre rápido');
+  }
+  
+  if (tags.some(t => t.includes('FAST-7D'))) {
+    salesOpportunities.push('✅ Alta urgencia - leverage para compromiso');
+  }
+  
+  if (tags.some(t => t.includes('AUTH-SOLO'))) {
+    salesOpportunities.push('✅ Decisor único - proceso simplificado');
+  }
+  
   return `
-📊 ANÁLISIS COMPLETO DEL LEAD
+═══════════════════════════════════════════
+📊 ANÁLISIS COMPLETO: ${contact.name}
+═══════════════════════════════════════════
 
-${formatTagsForNotification(tags)}
+🎯 CLASIFICACIÓN:
+${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD'))}
+Score: ${score}/13 | Estado: ${score >= 7 ? '✅ CUALIFICADO' : '❌ NO CUALIFICADO'}
 
-DATOS DE CONTACTO:
-• Nombre: ${contact.name}
-• Email: ${contact.email}
-• WhatsApp: ${contact.whatsapp || 'No proporcionado'}
+📞 CONTACTO:
+Nombre: ${contact.name}
+Email: ${contact.email}
+WhatsApp: ${contact.whatsapp || 'No proporcionado'}
+Fecha: ${new Date().toLocaleString('es-ES')}
 
-RESPUESTAS COMPLETAS:
-Q1 - Profesión: ${answers.q1}
-Q2 - Máximo cobrado: ${answers.q2}
-Q3 - Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
-Q4 - Presupuesto: ${answers.q4}
-Q5 - Tipo ascensión: ${answers.q5}
-Q6 - Autoridad: ${answers.q6}
+💼 RESPUESTAS QUIZ:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Q1 Profesión: ${answers.q1}
+Q2 Max cobrado: ${answers.q2}
+Q3 Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
+Q4 Presupuesto: ${answers.q4}
+Q5 Urgencia: ${answers.q5}
+Q6 Autoridad: ${answers.q6}
 
-SCORING:
-• Puntuación total: ${score}/13
-• Estado: ${score >= 7 ? 'CUALIFICADO ✅' : 'NO CUALIFICADO ❌'}
-• Fecha registro: ${new Date().toISOString()}
+🏷️ TAGS GENERADOS:
+${tags.join('\n')}
 
-OBSERVACIONES:
+${salesOpportunities.length > 0 ? `
+🎯 OPORTUNIDADES DE VENTA:
+${salesOpportunities.join('\n')}
+` : ''}
+
+${potentialObjections.length > 0 ? `
+⚠️ POSIBLES OBJECIONES:
+${potentialObjections.join('\n')}
+` : ''}
+
+📊 AUTO-ANÁLISIS:
 ${generateAutoAnalysis(answers, score)}
+
+═══════════════════════════════════════════
   `.trim();
 }
 
-function generateClientNotification(name: string, answers: QuizAnswers, tags: string[]): string {
+function generateClientNotification(name: string, answers: QuizAnswers, tags: string[], score: number): string {
   const firstName = name.split(' ')[0];
-  const hasFastTrack = tags.includes('FAST-7D');
-  const hasHighRevenue = tags.includes('REV-5K+') || tags.includes('REV-2.5K-5K');
+  const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
+  const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
   
-  let personalization = '';
-  if (hasFastTrack && hasHighRevenue) {
-    personalization = 'Tu perfil muestra alto potencial de crecimiento acelerado. Estamos emocionados de trabajar contigo.';
-  } else if (hasFastTrack) {
-    personalization = 'Tu compromiso con la ascensión rápida demuestra determinación. Vamos a aprovecharlo al máximo.';
+  // Personalización según score
+  let urgencyMessage = '';
+  let exclusivityBadge = '';
+  
+  if (isHot) {
+    urgencyMessage = 'Tu perfil ha sido marcado como PRIORITARIO. Solo aceptamos 3 sesiones estratégicas por semana y los huecos se llenan en 24-48h.';
+    exclusivityBadge = '🔥 PERFIL PRIORITARIO';
+  } else if (isWarm) {
+    urgencyMessage = 'Tu perfil muestra alto potencial. Reserva tu sesión antes de que se llenen los huecos disponibles.';
+    exclusivityBadge = '⭐ PERFIL CUALIFICADO';
   } else {
-    personalization = 'Tu enfoque progresivo es perfecto para construir bases sólidas. Iremos paso a paso.';
+    urgencyMessage = 'Aunque tu situación actual es desafiante, queremos conocerte. Agenda tu sesión para explorar si podemos ayudarte.';
+    exclusivityBadge = '📋 SESIÓN EXPLORATORIA';
   }
+  
+  // Personalización según profesión
+  const professionInsights: Record<string, string> = {
+    'Diseñador/a': 'La mayoría de diseñadores que trabajan con nosotros duplican sus tarifas en los primeros 30 días.',
+    'Diseñador web': 'Nuestros diseñadores web están cerrando proyectos de 5-10K consistentemente.',
+    'Filmmaker / Videógrafo/a': 'Los filmmakers del Círculo están cobrando entre 2-5K por proyecto comercial.',
+    'Automatizador/a (No-Code / IA)': 'Los automatizadores del Círculo están cerrando retainers de 3-7K/mes.',
+    'Fotógrafo/a': 'Los fotógrafos del Círculo han triplicado sus tarifas manteniendo su estilo.',
+  };
+  
+  const professionInsight = professionInsights[answers.q1 || ''] || 'Los creativos del Círculo están escalando sus negocios de forma consistente.';
   
   return `
 🎉 ¡Bienvenido/a al Círculo, ${firstName}!
 
-Gracias por completar el test de cualificación.
+${exclusivityBadge}
 
-✨ ${personalization}
+Acabas de completar el test de cualificación del Círculo.
 
-📅 TU SIGUIENTE PASO ES CRÍTICO:
-Agenda tu llamada estratégica AHORA mismo. Estos huecos se llenan rápido y queremos asegurarnos de que reserves tu plaza.
+✨ ${urgencyMessage}
 
-👉 RESERVA TU LLAMADA AQUÍ:
+💡 CONTEXTO RÁPIDO:
+${professionInsight}
+
+📅 TU SIGUIENTE PASO (CRÍTICO):
+
+👉 RESERVA TU SESIÓN ESTRATÉGICA:
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-💡 QUÉ VAMOS A HACER EN LA LLAMADA:
-1. Analizar tu situación actual en profundidad
-2. Identificar tus mayores oportunidades de crecimiento
-3. Diseñar tu Sprint de Ascensión personalizado
-4. Definir los próximos pasos concretos
+⚠️ IMPORTANTE - PLAZAS LIMITADAS:
+• Solo 3 sesiones disponibles por semana
+• Los huecos se llenan en 24-48h
+• ${isHot ? 'Como perfil prioritario, tienes acceso preferente por 48h' : 'Reserva ahora para asegurar tu plaza'}
 
-⏰ No lo dejes para después. Los mejores resultados vienen de quienes actúan rápido.
+📋 EN LA LLAMADA (45-60 min):
+✓ Análisis profundo de tu situación actual
+✓ Identificación de tus mayores palancas de crecimiento
+✓ Diseño de tu Sprint de Ascensión personalizado
+✓ Plan de acción concreto para los próximos 90 días
+
+${isHot ? `
+🔥 BONUS PRIORITARIO:
+Por tu perfil cualificado, recibirás un análisis preliminar antes de la llamada para maximizar el valor de nuestra sesión.
+` : ''}
+
+⏰ Reserva en los próximos minutos. Literalmente.
 
 Nos vemos dentro,
 El equipo del Círculo
+
+P.D. - Si tienes dudas sobre el proceso, responde a este email. Pero no esperes para reservar tu plaza.
   `.trim();
 }
 
-function generateClientPostBookingNotification(name: string, answers: QuizAnswers): string {
+function generateClientPostBookingNotification(name: string, answers: QuizAnswers, tags: string[]): string {
   const firstName = name.split(' ')[0];
+  const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   
-  // Personalizar según profesión
-  const goalMap: Record<string, string> = {
-    'Diseñador/a': 'convertirte en el diseñador/a de referencia de tu nicho',
-    'Diseñador web': 'escalar tu agencia web y cobrar proyectos premium',
-    'Filmmaker / Videógrafo/a': 'posicionarte como el filmmaker de alto valor',
-    'Automatizador/a (No-Code / IA)': 'convertirte en el experto en automatización que todos buscan',
-    'Fotógrafo/a': 'elevar tu fotografía y cobrar lo que realmente vales',
-    'Otro servicio creativo': 'consolidar tu posición en tu mercado',
-    'Otro': 'alcanzar tus objetivos profesionales'
+  // Objetivos específicos por profesión
+  const professionGoals: Record<string, { goal: string; prep: string[] }> = {
+    'Diseñador/a': {
+      goal: 'convertirte en el diseñador/a de referencia de tu nicho',
+      prep: [
+        'Tu portfolio actual (los 3-5 mejores proyectos)',
+        'Cuánto cobras actualmente por proyecto',
+        'Qué tipo de clientes quieres atraer'
+      ]
+    },
+    'Diseñador web': {
+      goal: 'escalar tu agencia web y cerrar proyectos de 5-10K+',
+      prep: [
+        'Tus últimos 3 proyectos web y lo que cobraste',
+        'Cuántos proyectos cierras al mes actualmente',
+        'Tu stack tecnológico actual'
+      ]
+    },
+    'Filmmaker / Videógrafo/a': {
+      goal: 'posicionarte como el filmmaker premium de tu mercado',
+      prep: [
+        'Tu reel o mejores 3 trabajos',
+        'Qué cobras por video actualmente',
+        'Tipo de producciones que quieres hacer'
+      ]
+    },
+    'Automatizador/a (No-Code / IA)': {
+      goal: 'convertirte en el experto en automatización que todos buscan',
+      prep: [
+        'Tus últimos 3 proyectos de automatización',
+        'Qué cobras actualmente',
+        'Herramientas que dominas (Make, Zapier, etc.)'
+      ]
+    },
+    'Fotógrafo/a': {
+      goal: 'elevar tu fotografía y cobrar lo que realmente vales',
+      prep: [
+        'Tu portfolio (mejores 10-15 fotos)',
+        'Qué cobras actualmente por sesión',
+        'Tipo de fotografía que quieres especializarte'
+      ]
+    }
   };
   
-  const goal = goalMap[answers.q1 || ''] || 'alcanzar tus objetivos';
+  const professionData = professionGoals[answers.q1 || ''] || {
+    goal: 'alcanzar tus objetivos profesionales',
+    prep: ['Tu situación actual', 'Tus objetivos principales', 'Tus mayores desafíos']
+  };
   
   return `
-🎯 ¡Tu llamada está reservada!
+🎯 ¡Sesión Confirmada! - Preparación para ${firstName}
 
 Hola ${firstName},
 
-Gracias por agendar tu sesión estratégica con nosotros.
+Tu sesión estratégica está reservada. Ahora toca prepararse para sacarle el máximo valor.
 
-📅 ANTES DE LA LLAMADA:
-• Ten a mano tu calendario y objetivos principales
-• Prepara 2-3 desafíos específicos que quieras resolver
-• Piensa en dónde quieres estar en 90 días
-• Asegúrate de estar en un lugar tranquilo sin interrupciones
+${isHot ? '🔥 Como perfil prioritario, recibirás un análisis preliminar 24h antes de la llamada.' : ''}
 
-💡 QUÉ ESPERAR:
-Durante los próximos 45-60 minutos vamos a:
-1. Analizar tu situación actual en detalle
-2. Identificar las oportunidades más grandes
-3. Diseñar tu Sprint de ascensión personalizado
-4. Definir los próximos pasos concretos
+📋 PREPARA ANTES DE LA LLAMADA:
 
-⚠️ IMPORTANTE:
-Esta no es una llamada de ventas. Es una sesión estratégica real donde saldrás con claridad absoluta sobre tu camino hacia ${goal}.
+1️⃣ INFORMACIÓN ESPECÍFICA (trae esto):
+${professionData.prep.map(item => `   • ${item}`).join('\n')}
 
-¿Alguna duda? Responde a este email.
+2️⃣ CONTEXTO GENERAL:
+   • Tu calendario para los próximos 90 días
+   • 2-3 desafíos específicos que quieres resolver
+   • Dónde quieres estar en 3 meses
+   • Qué te frena actualmente
 
-Nos vemos pronto,
+3️⃣ LOGÍSTICA:
+   • Lugar tranquilo sin interrupciones
+   • Cámara encendida (es más productivo)
+   • Libreta para tomar notas
+   • Agua o café (vamos 45-60 min)
+
+💡 QUÉ VA A PASAR:
+
+Esta no es una llamada de ventas genérica. Es una sesión estratégica real donde vamos a:
+
+✓ Analizar tu situación actual sin filtros
+✓ Identificar las 2-3 palancas más grandes de crecimiento
+✓ Diseñar tu Sprint de Ascensión personalizado (7 o 30 días)
+✓ Definir pasos concretos y accionables
+
+Tu objetivo: Salir con claridad absoluta sobre cómo ${professionData.goal}.
+
+⚠️ SI NO PUEDES ASISTIR:
+Avísanos con 24h de anticipación. Hay lista de espera y alguien más puede aprovechar tu hueco.
+
+🔗 ENLACE DE LA LLAMADA:
+Te llegará por email 1h antes de la sesión.
+
+¿Dudas? Responde a este email.
+
+Nos vemos en la llamada,
 El Círculo
+
+P.D. - Cuanto mejor preparado/a vengas, más valor sacarás de la sesión.
   `.trim();
 }
 
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
+  const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
+  const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
+  const fastTrack = tags.some(t => t.includes('FAST-7D'));
+  const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
   
-  // Generar ángulos de apertura según respuestas
+  // Score visual
+  const scoreEmoji = score >= 10 ? '🔥 HOT' : score >= 7 ? '⭐ WARM' : '❄️ COLD';
+  
+  // Ángulos de apertura personalizados
   const openingAngles: string[] = [];
   
-  if (answers.q2 && answers.q2 !== 'Menos de 500€') {
-    openingAngles.push(`• "Vi que ya has cobrado ${answers.q2}, eso es sólido. Hablemos de cómo escalar eso 2-3x"`);
+  if (answers.q2 && !answers.q2.includes('Menos de 500€')) {
+    openingAngles.push(`"Vi que ya cobras ${answers.q2}. Eso es sólido como base. ¿Cómo te sentirías duplicando eso en los próximos 90 días?"`);
   }
   
-  if (tags.includes('HOT-LEAD')) {
-    openingAngles.push(`• "Tu perfil muestra todas las señales de alguien listo para dar el salto grande"`);
+  if (fastTrack) {
+    openingAngles.push(`"El hecho de que busques ascensión rápida me dice que estás 100% ready para el salto. ¿Qué te frena ahora mismo?"`);
   }
   
   if (Array.isArray(answers.q3) && answers.q3.length > 0) {
-    const mainAcq = answers.q3[0];
-    openingAngles.push(`• "Mencionaste ${mainAcq} como tu método principal, eso es interesante porque..."`);
+    openingAngles.push(`"Veo que tu adquisición viene de ${answers.q3[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
   }
   
-  if (tags.includes('FAST-7D')) {
-    openingAngles.push(`• "El hecho de que estés buscando ascensión rápida me dice que estás 100% comprometido/a"`);
+  // Posibles objeciones
+  const potentialObjections: string[] = [];
+  
+  if (!budgetOK) {
+    potentialObjections.push('💰 PRECIO: "¿Hay opciones de pago?" → Explicar ROI y casos de éxito rápidos');
   }
   
-  // Formato de score visual
-  const scoreEmoji = score >= 10 ? '🔥' : score >= 7 ? '⭐' : '❄️';
+  if (!authSolo) {
+    potentialObjections.push('👥 DECISIÓN COMPARTIDA: "Necesito consultarlo" → Pedir incluir a esa persona en llamada');
+  }
   
-  // Budget status
-  const budgetStatus = tags.includes('BUDGET-OK') ? '✅ LISTO' : '❌ NO LISTO';
+  if (!fastTrack) {
+    potentialObjections.push('⏰ TIMING: "Ahora no puedo" → Explorar qué tendría que pasar para estar listo/a');
+  }
   
-  // Urgency
-  let urgencyIcon = '⏸️';
-  if (tags.includes('FAST-7D')) urgencyIcon = '🚀';
-  else if (tags.includes('PROG-30D')) urgencyIcon = '📈';
+  if (answers.q2 === 'Menos de 500€') {
+    potentialObjections.push('💸 INVERSIÓN: Puede dudar de capacidad → Enfocar en sistema de pago y resultados progresivos');
+  }
   
-  // Authority
-  let authorityIcon = '🚫';
-  if (tags.includes('AUTH-SOLO')) authorityIcon = '👤 Solo';
-  else if (tags.includes('AUTH-SHARED')) authorityIcon = '👥 Compartida';
-  else authorityIcon = '🚫 No decide';
-  
-  // Revenue tags
-  const revenueTags = tags.filter(t => t.startsWith('REV-')).map(t => t.replace('REV-', '')).join(', ');
+  // Estrategia de cierre
+  let closingStrategy = '';
+  if (isHot && budgetOK && fastTrack) {
+    closingStrategy = '🎯 ESTRATEGIA: CIERRE DIRECTO - Este lead está listo. Evalúa fit en primeros 15min y cierra si hay alineación total.';
+  } else if (score >= 7) {
+    closingStrategy = '🎯 ESTRATEGIA: CUALIFICACIÓN PROFUNDA - Explora situación, diseña Sprint personalizado, cierra si hay compromiso claro.';
+  } else {
+    closingStrategy = '🎯 ESTRATEGIA: EDUCACIÓN + NURTURING - Aporta valor, identifica gaps, agenda seguimiento si hay potencial a medio plazo.';
+  }
   
   return `
-📞 PREP RÁPIDO: Llamada con ${firstName}
+═══════════════════════════════════════════
+📞 PREP LLAMADA: ${firstName}
+═══════════════════════════════════════════
+
+⏰ LLAMADA EN: [VER CALENDARIO]
+⏱️ DURACIÓN: 45-60 min
 
 🎯 PERFIL RÁPIDO:
-• Profesión: ${answers.q1}
-• Score: ${score}/13 ${scoreEmoji}
-• Budget: ${budgetStatus}
-• Urgencia: ${urgencyIcon}
-• Autoridad: ${authorityIcon}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Clasificación: ${scoreEmoji} (${score}/13)
+Profesión: ${answers.q1}
+Budget 2K: ${budgetOK ? '✅ SÍ' : '❌ NO'}
+Urgencia: ${fastTrack ? '🚀 RÁPIDA (7D)' : answers.q5}
+Decide: ${authSolo ? '👤 SOLO' : answers.q6}
 
 💰 CONTEXTO ECONÓMICO:
-Máximo cobrado: ${answers.q2}
-Revenue Tags: ${revenueTags}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Max cobrado: ${answers.q2}
+Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
+
+📞 CONTACTO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nombre completo: ${contact.name}
+WhatsApp: ${contact.whatsapp || 'No proporcionado'}
+Email: ${contact.email}
 
 🎯 ÁNGULOS DE APERTURA:
-${openingAngles.join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
+
+⚠️ POSIBLES OBJECIONES + MANEJO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${potentialObjections.length > 0 ? potentialObjections.map((obj, i) => `${i + 1}. ${obj}`).join('\n') : 'Sin objeciones previstas - Lead limpio'}
+
+${closingStrategy}
 
 ✅ CHECKLIST PRE-LLAMADA:
-□ Revisar notificación interna completa
-□ Verificar si hay notas adicionales en GHL
-□ Tener calendario a mano para segunda sesión
-□ Confirmar que el lead está en el canal correcto
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+□ Leer notificación interna completa
+□ Revisar perfil en GHL (notas adicionales)
+□ Calendario listo para agendar follow-up
+□ Link de pago preparado (si aplica)
+□ Confirmar que el lead recibió el link de Zoom
 
-🎯 OBJETIVO:
-Evaluar fit real + diseñar Sprint personalizado + cerrar si hay alineación total
+🎯 OBJETIVOS LLAMADA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Evaluar fit real (primeros 15 min)
+2. Diseñar Sprint de Ascensión personalizado
+3. ${isHot ? 'Cerrar en llamada si hay alineación total' : 'Identificar next steps y timing de decisión'}
+4. Dejar puerta abierta para follow-up
 
----
-📋 Ver perfil completo en el custom field: notification_internal
+═══════════════════════════════════════════
+📋 Ver análisis completo: notification_internal
+═══════════════════════════════════════════
   `.trim();
 }
 
@@ -436,8 +641,8 @@ serve(async (req) => {
         { key: 'contact.quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
         { key: 'contact.notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
         { key: 'contact.notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
-        { key: 'contact.notification_client', field_value: generateClientNotification(name, answers, tags) },
-        { key: 'contact.notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers) },
+        { key: 'contact.notification_client', field_value: generateClientNotification(name, answers, tags, score) },
+        { key: 'contact.notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
         { key: 'contact.notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) }
       ]
     };
