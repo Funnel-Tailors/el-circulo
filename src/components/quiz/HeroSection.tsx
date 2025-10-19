@@ -13,7 +13,7 @@ const HeroSection = ({
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
         </div>
 
-        <h1 className="md:text-5xl font-display font-black leading-[1em] text-5xl">
+        <h1 className="md:text-5xl font-display font-black leading-[0.85em] text-5xl">
           Recorre la{" "}
           <span className="glow">Senda</span>
         </h1>
