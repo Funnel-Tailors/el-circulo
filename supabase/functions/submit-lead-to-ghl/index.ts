@@ -204,79 +204,58 @@ ${budgetOK ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar par
 }
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
-  // Predecir objeciones comunes
-  const potentialObjections: string[] = [];
+  const scoreBar = '█'.repeat(Math.floor(score / 13 * 10)) + '░'.repeat(10 - Math.floor(score / 13 * 10));
+  const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   
-  if (!tags.some(t => t.includes('BUDGET-OK'))) {
-    potentialObjections.push('⚠️ Puede objetar precio (no confirmó budget 2K)');
-  }
+  const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
+  const fastTrack = tags.some(t => t.includes('FAST-7D'));
+  const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
   
-  if (tags.some(t => t.includes('AUTH-SHARED'))) {
-    potentialObjections.push('⚠️ Decisión compartida - preguntar quién más decide');
-  }
+  // Solo objeciones REALES, no inventadas
+  const realObjections: string[] = [];
+  if (!budgetOK) realObjections.push('⚠️ Budget no confirmado');
+  if (!authSolo) realObjections.push('⚠️ Decisión compartida');
+  if (answers.q2 === 'Menos de 500€') realObjections.push('⚠️ Revenue bajo');
   
-  if (tags.some(t => t.includes('NOT-NOW'))) {
-    potentialObjections.push('⚠️ Timing - puede no estar listo ahora');
-  }
+  // Solo oportunidades CRÍTICAS
+  const criticalOpportunities: string[] = [];
+  if (score >= 10) criticalOpportunities.push('✅ Premium - Prioridad máxima');
+  if (fastTrack && budgetOK) criticalOpportunities.push('✅ Budget + Urgencia = Cierre rápido');
+  if (authSolo) criticalOpportunities.push('✅ Decisor único');
   
-  if (answers.q2 === 'Menos de 500€') {
-    potentialObjections.push('⚠️ Revenue bajo - validar capacidad de inversión');
-  }
-  
-  // Oportunidades de venta
-  const salesOpportunities: string[] = [];
-  
-  if (tags.some(t => t.includes('CÍRCULO-HOT'))) {
-    salesOpportunities.push('✅ Perfil premium - priorizar para cierre rápido');
-  }
-  
-  if (tags.some(t => t.includes('FAST-7D'))) {
-    salesOpportunities.push('✅ Alta urgencia - leverage para compromiso');
-  }
-  
-  if (tags.some(t => t.includes('AUTH-SOLO'))) {
-    salesOpportunities.push('✅ Decisor único - proceso simplificado');
+  // Estrategia en 1 línea
+  let strategy = '';
+  if (score >= 10 && budgetOK && fastTrack) {
+    strategy = '🎯 ADMISIÓN DIRECTA si fit en primeros 15min';
+  } else if (score >= 7) {
+    strategy = '🎯 EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
+  } else {
+    strategy = '🎯 EXPLORACIÓN → Aportar valor → Identificar potencial';
   }
   
   return `
 ═══════════════════════════════════════════
-📊 ANÁLISIS COMPLETO: ${contact.name}
+⚔️ PERFIL INICIÁTICO: ${contact.name.split(' ')[0]}
 ═══════════════════════════════════════════
 
-🎯 CLASIFICACIÓN:
-${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD'))}
-Score: ${score}/13 | Estado: ${score >= 7 ? '✅ CUALIFICADO' : '❌ NO CUALIFICADO'}
+🔮 VEREDICTO: ${classification} | ${score}/13 ${scoreBar}
 
-📞 CONTACTO:
-Nombre: ${contact.name}
-Email: ${contact.email}
-WhatsApp: ${contact.whatsapp || 'No proporcionado'}
-Fecha: ${new Date().toLocaleString('es-ES')}
+📞 ${contact.name} | ${contact.email}
+💬 ${contact.whatsapp || 'Sin WhatsApp'} | 🗓️ ${new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
 
-💼 RESPUESTAS QUIZ:
+⚡ RESUMEN INICIÁTICO:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Q1 Profesión: ${answers.q1}
-Q2 Max cobrado: ${answers.q2}
-Q3 Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
-Q4 Presupuesto: ${answers.q4}
-Q5 Urgencia: ${answers.q5}
-Q6 Autoridad: ${answers.q6}
+• ${answers.q1} | Max: ${answers.q2}
+• Budget 2K: ${budgetOK ? '✅' : '❌'} | Decide: ${authSolo ? '✅ Solo' : answers.q6}
+• Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(' • ') : answers.q3}
+• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q5}
 
-🏷️ TAGS GENERADOS:
-${tags.join('\n')}
+${criticalOpportunities.length > 0 ? `🎯 PALANCAS:\n${criticalOpportunities.join('\n')}` : ''}
 
-${salesOpportunities.length > 0 ? `
-🎯 OPORTUNIDADES DE VENTA:
-${salesOpportunities.join('\n')}
-` : ''}
+${realObjections.length > 0 ? `⚠️ FRICCIONES:\n${realObjections.join('\n')}` : ''}
 
-${potentialObjections.length > 0 ? `
-⚠️ POSIBLES OBJECIONES:
-${potentialObjections.join('\n')}
-` : ''}
-
-📊 AUTO-ANÁLISIS:
-${generateAutoAnalysis(answers, score)}
+🔥 ESTRATEGIA:
+${strategy}
 
 ═══════════════════════════════════════════
   `.trim();
@@ -287,35 +266,37 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
   
-  // Personalización según profesión
-  const professionInsights: Record<string, string> = {
-    'Diseñador/a': 'Los diseñadores que entran al Círculo duplican sus tarifas en 30 días. Hay un método.',
-    'Diseñador web': 'Nuestros diseñadores web cierran proyectos de 5-10K consistentemente. Es el estándar.',
-    'Filmmaker / Videógrafo/a': 'Los filmmakers del Círculo cobran entre 2-5K por proyecto comercial. Sin excepción.',
-    'Automatizador/a (No-Code / IA)': 'Los automatizadores del Círculo cierran retainers de 3-7K/mes. Todos.',
-    'Fotógrafo/a': 'Los fotógrafos del Círculo han triplicado sus tarifas manteniendo su estilo. Sin excepción.',
+  // Insights de IDENTIDAD (sin income claims) - Enfoque en transformación
+  const professionIdentity: Record<string, string> = {
+    'Diseñador/a': 'Los diseñadores del Círculo no cobran por horas. Cobran por transformación.',
+    'Diseñador web': 'Los diseñadores web del Círculo no son técnicos. Son arquitectos de experiencias digitales.',
+    'Filmmaker / Videógrafo/a': 'Los filmmakers del Círculo no graban videos. Crean activos visuales que venden por sí solos.',
+    'Automatizador/a (No-Code / IA)': 'Los automatizadores del Círculo no hacen Zapiers. Diseñan sistemas que escalan negocios.',
+    'Fotógrafo/a': 'Los fotógrafos del Círculo no toman fotos. Crean identidad visual de marca.',
   };
   
-  const professionInsight = professionInsights[answers.q1 || ''] || 'Los creativos del Círculo escalan de forma consistente. Sin trucos.';
+  const identity = professionIdentity[answers.q1 || ''] || 'Los miembros del Círculo no venden servicios. Venden resultados inevitables.';
   
   if (isHot) {
     return `
 ${firstName}.
 
-Has cruzado el umbral.
+Tu evaluación revela algo.
 
-⚔️ Tu evaluación ha sido marcada como prioritaria.
+⚔️ Tienes las marcas de alguien que está a punto de cruzar el umbral.
 
-📜 ${professionInsight}
+📜 ${identity}
 
-🔮 RESERVA TU RITUAL DE INICIACIÓN
+La pregunta no es si puedes. Es cuándo decides hacerlo.
+
+🔮 RESERVA TU RITUAL DE EVALUACIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-⏳ Solo 3 espacios por semana
-🎭 Un Miembro Honorario evaluará tu candidatura (45-60 min)
-🗝️ Acceso preferente por 48h antes de liberar tu plaza
+⏳ Solo 3 espacios semanales
+🎭 Un Miembro Honorario del Círculo evaluará tu candidatura (45-60 min)
+🗝️ Tienes 48h de acceso preferente antes de liberar tu plaza
 
-Como candidato prioritario, el Señor Supremo del Círculo se pondrá en contacto para confirmar tu ritual.
+Tras reservar, un Miembro Honorario contactará para preparar tu ritual.
 
 El portal cierra en 48h.
 
@@ -326,19 +307,21 @@ El Círculo
     return `
 ${firstName}.
 
-Has completado la evaluación.
+Tu perfil muestra potencial.
 
-⚔️ Tu perfil muestra potencial.
+⚔️ Pero potencial sin ejecución es solo teoría.
 
-📜 ${professionInsight}
+📜 ${identity}
+
+¿Estás listo/a para el salto o sigues en modo exploración?
 
 🔮 RESERVA TU SESIÓN DE EVALUACIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-⏳ Solo 3 espacios por semana
+⏳ Solo 3 espacios semanales
 🎭 Un Miembro Honorario evaluará si hay alineación (45-60 min)
 
-El Señor Supremo del Círculo confirmará tu candidatura tras reservar.
+Un Miembro Honorario confirmará tu candidatura tras reservar.
 
 —
 El Círculo
@@ -347,16 +330,16 @@ El Círculo
     return `
 ${firstName}.
 
-Has completado la evaluación.
+Tu evaluación revela fricciones.
 
-⚔️ Tu situación presenta desafíos.
+⚔️ No todos están listos para el Círculo. Y está bien.
 
 🔮 AGENDA TU SESIÓN EXPLORATORIA
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
 🎭 Un Miembro Honorario explorará opciones (45-60 min)
 
-Si hay alineación, se te contactará tras la sesión.
+Si hay alineación potencial, se te contactará con next steps.
 
 —
 El Círculo
@@ -502,117 +485,84 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
   
-  // Score visual
   const scoreEmoji = score >= 10 ? '🔥 HOT' : score >= 7 ? '⭐ WARM' : '❄️ COLD';
+  const scoreBar = '█'.repeat(Math.floor(score / 13 * 10)) + '░'.repeat(10 - Math.floor(score / 13 * 10));
   
-  // Header místico
-  const mysticHeader = `
-═══════════════════════════════════════════
-🎭 RITUAL DE INICIACIÓN: ${firstName}
-═══════════════════════════════════════════
-
-⚔️ RECORDATORIO: Eres un Miembro Honorario del Círculo.
-Tu rol es evaluar si este candidato debe ser admitido.
-
-Esta no es una llamada de ventas. Es una evaluación iniciática.
-`.trim();
-  
-  // Ángulos de apertura personalizados
+  // Ángulos de apertura
   const openingAngles: string[] = [];
-  
   if (answers.q2 && !answers.q2.includes('Menos de 500€')) {
     openingAngles.push(`"Vi que ya cobras ${answers.q2}. Eso es sólido como base. ¿Cómo te sentirías duplicando eso en los próximos 90 días?"`);
   }
-  
   if (fastTrack) {
     openingAngles.push(`"El hecho de que busques ascensión rápida me dice que estás 100% ready para el salto. ¿Qué te frena ahora mismo?"`);
   }
-  
   if (Array.isArray(answers.q3) && answers.q3.length > 0) {
     openingAngles.push(`"Veo que tu adquisición viene de ${answers.q3[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
   }
   
-  // Posibles objeciones
+  // Objeciones reales
   const potentialObjections: string[] = [];
+  if (!budgetOK) potentialObjections.push('💰 PRECIO: "¿Opciones de pago?" → ROI + casos rápidos');
+  if (!authSolo) potentialObjections.push('👥 DECISIÓN: "Debo consultarlo" → Incluir a esa persona');
+  if (!fastTrack) potentialObjections.push('⏰ TIMING: "Ahora no puedo" → ¿Qué debe pasar para estar listo/a?');
+  if (answers.q2 === 'Menos de 500€') potentialObjections.push('💸 INVERSIÓN: Puede dudar de capacidad → Enfocar en sistema de pago y resultados progresivos');
   
-  if (!budgetOK) {
-    potentialObjections.push('💰 PRECIO: "¿Hay opciones de pago?" → Explicar ROI y casos de éxito rápidos');
-  }
-  
-  if (!authSolo) {
-    potentialObjections.push('👥 DECISIÓN COMPARTIDA: "Necesito consultarlo" → Pedir incluir a esa persona en llamada');
-  }
-  
-  if (!fastTrack) {
-    potentialObjections.push('⏰ TIMING: "Ahora no puedo" → Explorar qué tendría que pasar para estar listo/a');
-  }
-  
-  if (answers.q2 === 'Menos de 500€') {
-    potentialObjections.push('💸 INVERSIÓN: Puede dudar de capacidad → Enfocar en sistema de pago y resultados progresivos');
-  }
-  
-  // Estrategia de cierre
+  // Estrategia
   let closingStrategy = '';
   if (isHot && budgetOK && fastTrack) {
-    closingStrategy = '🎯 ESTRATEGIA: ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
+    closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
   } else if (score >= 7) {
-    closingStrategy = '🎯 ESTRATEGIA: EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
+    closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
-    closingStrategy = '🎯 ESTRATEGIA: EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
+    closingStrategy = 'EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
   }
   
   return `
-${mysticHeader}
+═══════════════════════════════════════════
+🎭 RITUAL: ${firstName} | ${scoreEmoji}
+═══════════════════════════════════════════
 
-⏰ RITUAL EN: [VER CALENDARIO]
-⏱️ DURACIÓN: 45-60 min
+⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
+Evalúa si este candidato debe cruzar el umbral.
+Esto no es una venta. Es un ritual de evaluación.
 
-🎯 PERFIL RÁPIDO:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Clasificación: ${scoreEmoji} (${score}/13)
-Profesión: ${answers.q1}
-Budget 2K: ${budgetOK ? '✅ SÍ' : '❌ NO'}
-Urgencia: ${fastTrack ? '🚀 RÁPIDA (7D)' : answers.q5}
-Decide: ${authSolo ? '👤 SOLO' : answers.q6}
 
-💰 CONTEXTO ECONÓMICO:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Max cobrado: ${answers.q2}
-Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
+⏰ CUÁNDO: [VER CALENDARIO] | ⏱️ 45-60 min
 
-📞 CONTACTO:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Nombre completo: ${contact.name}
-WhatsApp: ${contact.whatsapp || 'No proporcionado'}
-Email: ${contact.email}
+🔮 PERFIL:
+• ${answers.q1} | ${score}/13 ${scoreBar}
+• Budget 2K: ${budgetOK ? '✅' : '❌'} | Urgencia: ${fastTrack ? '🚀 7D' : answers.q5 || 'N/A'}
+• Decide: ${authSolo ? '👤 SOLO' : '👥 COMPARTIDO'} | Max: ${answers.q2}
+• Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
 
-🎯 ÁNGULOS DE APERTURA:
+📞 ${contact.name}
+💬 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
 
-⚠️ POSIBLES OBJECIONES + MANEJO:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ FRICCIONES A ANTICIPAR:
 ${potentialObjections.length > 0 ? potentialObjections.map((obj, i) => `${i + 1}. ${obj}`).join('\n') : 'Sin objeciones previstas - Lead limpio'}
 
-${closingStrategy}
+🎯 ESTRATEGIA: ${closingStrategy}
 
-✅ CHECKLIST PRE-LLAMADA:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-□ Leer notificación interna completa
-□ Revisar perfil en GHL (notas adicionales)
-□ Calendario listo para agendar follow-up
-□ Link de pago preparado (si aplica)
-□ Confirmar que el lead recibió el link de Zoom
 
-🎯 OBJETIVOS DEL RITUAL:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. Evaluar fit real como Miembro Honorario (primeros 15 min)
+✅ PRE-RITUAL:
+□ Leer análisis completo (notification_internal)
+□ Calendario listo
+□ Link de pago preparado
+□ Confirmar que recibió link de Zoom
+
+🎭 OBJETIVOS:
+1. Evaluar fit (primeros 15 min)
 2. Diseñar Sprint de Ascensión si hay alineación
-3. ${isHot ? 'Decidir admisión al Círculo en este ritual' : 'Identificar next steps y decisión de admisión'}
-4. Mantener postura de evaluador, no vendedor
+3. ${isHot ? 'Decidir admisión en este ritual' : 'Identificar next steps'}
+4. Mantener postura de evaluador
 
-═══════════════════════════════════════════
-📋 Ver análisis completo: notification_internal
 ═══════════════════════════════════════════
   `.trim();
 }
