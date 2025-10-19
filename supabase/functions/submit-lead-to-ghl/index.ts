@@ -228,13 +228,142 @@ Gracias por completar el test de cualificación.
 
 ✨ ${personalization}
 
-📅 PRÓXIMOS PASOS:
-1. Agenda tu llamada estratégica usando el calendario
-2. Prepara tus objetivos principales
-3. Piensa en tus mayores desafíos actuales
+📅 TU SIGUIENTE PASO ES CRÍTICO:
+Agenda tu llamada estratégica AHORA mismo. Estos huecos se llenan rápido y queremos asegurarnos de que reserves tu plaza.
+
+👉 RESERVA TU LLAMADA AQUÍ:
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+💡 QUÉ VAMOS A HACER EN LA LLAMADA:
+1. Analizar tu situación actual en profundidad
+2. Identificar tus mayores oportunidades de crecimiento
+3. Diseñar tu Sprint de Ascensión personalizado
+4. Definir los próximos pasos concretos
+
+⏰ No lo dejes para después. Los mejores resultados vienen de quienes actúan rápido.
+
+Nos vemos dentro,
+El equipo del Círculo
+  `.trim();
+}
+
+function generateClientPostBookingNotification(name: string, answers: QuizAnswers): string {
+  const firstName = name.split(' ')[0];
+  
+  // Personalizar según profesión
+  const goalMap: Record<string, string> = {
+    'Diseñador/a': 'convertirte en el diseñador/a de referencia de tu nicho',
+    'Diseñador web': 'escalar tu agencia web y cobrar proyectos premium',
+    'Filmmaker / Videógrafo/a': 'posicionarte como el filmmaker de alto valor',
+    'Automatizador/a (No-Code / IA)': 'convertirte en el experto en automatización que todos buscan',
+    'Fotógrafo/a': 'elevar tu fotografía y cobrar lo que realmente vales',
+    'Otro servicio creativo': 'consolidar tu posición en tu mercado',
+    'Otro': 'alcanzar tus objetivos profesionales'
+  };
+  
+  const goal = goalMap[answers.q1 || ''] || 'alcanzar tus objetivos';
+  
+  return `
+🎯 ¡Tu llamada está reservada!
+
+Hola ${firstName},
+
+Gracias por agendar tu sesión estratégica con nosotros.
+
+📅 ANTES DE LA LLAMADA:
+• Ten a mano tu calendario y objetivos principales
+• Prepara 2-3 desafíos específicos que quieras resolver
+• Piensa en dónde quieres estar en 90 días
+• Asegúrate de estar en un lugar tranquilo sin interrupciones
+
+💡 QUÉ ESPERAR:
+Durante los próximos 45-60 minutos vamos a:
+1. Analizar tu situación actual en detalle
+2. Identificar las oportunidades más grandes
+3. Diseñar tu Sprint de ascensión personalizado
+4. Definir los próximos pasos concretos
+
+⚠️ IMPORTANTE:
+Esta no es una llamada de ventas. Es una sesión estratégica real donde saldrás con claridad absoluta sobre tu camino hacia ${goal}.
+
+¿Alguna duda? Responde a este email.
 
 Nos vemos pronto,
-El equipo del Círculo
+El Círculo
+  `.trim();
+}
+
+function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+  const firstName = contact.name.split(' ')[0];
+  
+  // Generar ángulos de apertura según respuestas
+  const openingAngles: string[] = [];
+  
+  if (answers.q2 && answers.q2 !== 'Menos de 500€') {
+    openingAngles.push(`• "Vi que ya has cobrado ${answers.q2}, eso es sólido. Hablemos de cómo escalar eso 2-3x"`);
+  }
+  
+  if (tags.includes('HOT-LEAD')) {
+    openingAngles.push(`• "Tu perfil muestra todas las señales de alguien listo para dar el salto grande"`);
+  }
+  
+  if (Array.isArray(answers.q3) && answers.q3.length > 0) {
+    const mainAcq = answers.q3[0];
+    openingAngles.push(`• "Mencionaste ${mainAcq} como tu método principal, eso es interesante porque..."`);
+  }
+  
+  if (tags.includes('FAST-7D')) {
+    openingAngles.push(`• "El hecho de que estés buscando ascensión rápida me dice que estás 100% comprometido/a"`);
+  }
+  
+  // Formato de score visual
+  const scoreEmoji = score >= 10 ? '🔥' : score >= 7 ? '⭐' : '❄️';
+  
+  // Budget status
+  const budgetStatus = tags.includes('BUDGET-OK') ? '✅ LISTO' : '❌ NO LISTO';
+  
+  // Urgency
+  let urgencyIcon = '⏸️';
+  if (tags.includes('FAST-7D')) urgencyIcon = '🚀';
+  else if (tags.includes('PROG-30D')) urgencyIcon = '📈';
+  
+  // Authority
+  let authorityIcon = '🚫';
+  if (tags.includes('AUTH-SOLO')) authorityIcon = '👤 Solo';
+  else if (tags.includes('AUTH-SHARED')) authorityIcon = '👥 Compartida';
+  else authorityIcon = '🚫 No decide';
+  
+  // Revenue tags
+  const revenueTags = tags.filter(t => t.startsWith('REV-')).map(t => t.replace('REV-', '')).join(', ');
+  
+  return `
+📞 PREP RÁPIDO: Llamada con ${firstName}
+
+🎯 PERFIL RÁPIDO:
+• Profesión: ${answers.q1}
+• Score: ${score}/13 ${scoreEmoji}
+• Budget: ${budgetStatus}
+• Urgencia: ${urgencyIcon}
+• Autoridad: ${authorityIcon}
+
+💰 CONTEXTO ECONÓMICO:
+Máximo cobrado: ${answers.q2}
+Revenue Tags: ${revenueTags}
+
+🎯 ÁNGULOS DE APERTURA:
+${openingAngles.join('\n')}
+
+✅ CHECKLIST PRE-LLAMADA:
+□ Revisar notificación interna completa
+□ Verificar si hay notas adicionales en GHL
+□ Tener calendario a mano para segunda sesión
+□ Confirmar que el lead está en el canal correcto
+
+🎯 OBJETIVO:
+Evaluar fit real + diseñar Sprint personalizado + cerrar si hay alineación total
+
+---
+📋 Ver perfil completo en el custom field: notification_internal
   `.trim();
 }
 
@@ -307,7 +436,9 @@ serve(async (req) => {
         { key: 'contact.quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
         { key: 'contact.notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
         { key: 'contact.notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
-        { key: 'contact.notification_client', field_value: generateClientNotification(name, answers, tags) }
+        { key: 'contact.notification_client', field_value: generateClientNotification(name, answers, tags) },
+        { key: 'contact.notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers) },
+        { key: 'contact.notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) }
       ]
     };
     
