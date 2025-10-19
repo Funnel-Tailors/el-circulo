@@ -676,21 +676,26 @@ serve(async (req) => {
       locationId: GHL_LOCATION_ID,
       tags: tags,
       customFields: [
-        { key: 'contact.quiz_profession', field_value: answers.q1 || '' },
-        { key: 'contact.quiz_max_project', field_value: answers.q2 || '' },
-        { key: 'contact.quiz_acquisition', field_value: Array.isArray(answers.q3) ? answers.q3.join(', ') : '' },
-        { key: 'contact.quiz_budget', field_value: answers.q4 || '' },
-        { key: 'contact.quiz_ascension', field_value: answers.q5 || '' },
-        { key: 'contact.quiz_authority', field_value: answers.q6 || '' },
-        { key: 'contact.quiz_score', field_value: score.toString() },
-        { key: 'contact.quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
-        { key: 'contact.notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
-        { key: 'contact.notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
-        { key: 'contact.notification_client', field_value: generateClientNotification(name, answers, tags, score) },
-        { key: 'contact.notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
-        { key: 'contact.notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) }
+        { key: 'quiz_profession', field_value: answers.q1 || '' },
+        { key: 'quiz_max_project', field_value: answers.q2 || '' },
+        { key: 'quiz_acquisition', field_value: Array.isArray(answers.q3) ? answers.q3.join(', ') : '' },
+        { key: 'quiz_budget', field_value: answers.q4 || '' },
+        { key: 'quiz_ascension', field_value: answers.q5 || '' },
+        { key: 'quiz_authority', field_value: answers.q6 || '' },
+        { key: 'quiz_score', field_value: score.toString() },
+        { key: 'quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
+        { key: 'notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
+        { key: 'notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
+        { key: 'notification_client', field_value: generateClientNotification(name, answers, tags, score) },
+        { key: 'notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
+        { key: 'notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) }
       ]
     };
+    
+    // Log payload before sending to GHL
+    console.log('=== PAYLOAD SENT TO GHL ===');
+    console.log(JSON.stringify(contactPayload, null, 2));
+    console.log('=== END PAYLOAD ===');
     
     // Create or update contact
     let ghlResponse;
@@ -716,7 +721,12 @@ serve(async (req) => {
     
     if (!ghlResponse.ok) {
       const errorText = await ghlResponse.text();
-      console.error('GHL API Error:', errorText);
+      console.error('=== GHL API ERROR ===');
+      console.error('Status:', ghlResponse.status);
+      console.error('Status Text:', ghlResponse.statusText);
+      console.error('Response:', errorText);
+      console.error('Payload sent:', JSON.stringify(contactPayload, null, 2));
+      console.error('=== END ERROR ===');
       throw new Error(`GHL API failed: ${ghlResponse.status} - ${errorText}`);
     }
     
