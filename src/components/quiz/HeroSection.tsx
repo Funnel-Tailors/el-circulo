@@ -27,7 +27,7 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
           <Button
             onClick={onStart}
             size="lg"
-            className="dark-button focus-glow text-base px-6 py-4 rounded-xl font-medium"
+            className="dark-button focus-glow text-base px-6 py-4 rounded-xl font-medium text-white"
           >
             Entrar al Camino
           </Button>
