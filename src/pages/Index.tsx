@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HeroSection from "@/components/quiz/HeroSection";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
@@ -20,6 +20,16 @@ const Index = () => {
   const [currentScreen, setCurrentScreen] = useState<"hero" | "quiz" | "result">("hero");
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
+
+  // Notificar al iframe padre cuando cambia la pantalla
+  useEffect(() => {
+    if (window.parentIFrame) {
+      // Esperar a que el DOM se actualice completamente
+      setTimeout(() => {
+        window.parentIFrame.size();
+      }, 100);
+    }
+  }, [currentScreen, isQualified]);
 
   const startQuiz = () => {
     setCurrentScreen("quiz");
