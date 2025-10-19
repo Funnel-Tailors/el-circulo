@@ -1,14 +1,19 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/pages/Index";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { contactFormSchema, type ContactFormData, COUNTRY_CODES } from "@/lib/validations/contact";
 
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
@@ -125,22 +130,23 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     }
   };
 
-  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleContactSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     
-    const formData = new FormData(e.currentTarget);
+    // Combinar countryCode + phone para el campo whatsapp
+    const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
+    
     const contactData = {
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      whatsapp: formData.get('whatsapp') as string
+      name: data.name,
+      email: data.email,
+      whatsapp: fullPhone
     };
     
     const score = calculateScore(answers);
     const qualified = score >= 7 && !hasAutoDisqualify(answers);
     
     try {
-      const { data, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
+      const { data: responseData, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
         body: {
           ...contactData,
           answers,
@@ -151,9 +157,9 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
       
       if (error) throw error;
       
-      console.log('Lead enviado a GHL:', data);
+      console.log('Lead enviado a GHL:', responseData);
       toast({
-        title: "¡Perfecto!",
+        title: "Perfecto",
         description: "Tus datos han sido guardados correctamente",
       });
       
@@ -255,51 +261,124 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   };
 
   if (showContactForm) {
+    const form = useForm<ContactFormData>({
+      resolver: zodResolver(contactFormSchema),
+      defaultValues: {
+        name: "",
+        email: "",
+        countryCode: "+34",
+        phone: "",
+      },
+    });
+
     return (
       <div className="w-full space-y-4 animate-fade-in">
         <div className="space-y-4">
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl md:text-3xl font-display font-black">
-                ¡Casi listo! <span className="glow">Último paso</span>
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                Déjanos tus datos para acceder a la agenda
-              </p>
-            </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl md:text-3xl font-display font-black">
+              Casi listo. <span className="glow">Último paso</span>
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Déjanos tus datos para acceder a la agenda
+            </p>
+          </div>
 
-            <form onSubmit={handleContactSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm">Nombre</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  required
-                  placeholder="Tu nombre"
-                  className="dark-button text-base"
-                />
-              </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleContactSubmit)} className="space-y-4">
+              {/* Campo Nombre Completo */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Juan Pérez"
+                        className="dark-button text-base"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="tu@email.com"
-                  className="dark-button text-base"
-                />
-              </div>
+              {/* Campo Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="tu@email.com"
+                        className="dark-button text-base"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              {/* Campo Teléfono con Selector de País */}
               <div className="space-y-2">
-                <Label htmlFor="whatsapp" className="text-sm">WhatsApp (opcional)</Label>
-                <Input
-                  id="whatsapp"
-                  name="whatsapp"
-                  type="tel"
-                  placeholder="+34 600 000 000"
-                  className="dark-button text-base"
-                />
+                <Label className="text-sm">WhatsApp</Label>
+                <div className="grid grid-cols-[140px_1fr] gap-2">
+                  {/* Selector de País */}
+                  <FormField
+                    control={form.control}
+                    name="countryCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="dark-button text-base">
+                              <SelectValue placeholder="País" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-popover max-h-[300px]">
+                            {COUNTRY_CODES.map((country) => (
+                              <SelectItem
+                                key={country.code}
+                                value={country.code}
+                                className="cursor-pointer"
+                              >
+                                {country.flag} {country.code}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Campo de Número */}
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="600 000 000"
+                            className="dark-button text-base"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <Button
@@ -311,6 +390,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                 {isSubmitting ? 'Enviando...' : 'Ver mi Agenda'}
               </Button>
             </form>
+          </Form>
         </div>
       </div>
     );
