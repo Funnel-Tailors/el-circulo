@@ -14,7 +14,7 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-display font-black leading-tight">
+        <h1 className="text-base md:text-5xl font-display font-black leading-tight">
           Recorre la{" "}
           <span className="glow">Senda</span>
         </h1>

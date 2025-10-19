@@ -78,7 +78,17 @@ All colors MUST be HSL.
   .dark-card {
     background: hsl(0, 0%, 10%);
     border: 1px solid hsl(0, 0%, 20%);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 40px hsl(0 0% 100% / 0.08);
+    animation: pulse-card-glow 3s ease-in-out infinite alternate;
+  }
+  
+  @keyframes pulse-card-glow {
+    from {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 30px hsl(0 0% 100% / 0.06);
+    }
+    to {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 50px hsl(0 0% 100% / 0.12);
+    }
   }
   
   .dark-button {
