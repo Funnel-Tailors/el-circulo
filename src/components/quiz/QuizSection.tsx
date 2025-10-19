@@ -20,9 +20,11 @@ const steps = [
     type: "radio",
     options: [
       "Diseñador/a",
+      "Diseñador web",
       "Filmmaker / Videógrafo/a",
       "Automatizador/a (No-Code / IA)",
       "Fotógrafo/a",
+      "Otro servicio creativo",
       "Otro"
     ]
   },
