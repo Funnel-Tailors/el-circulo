@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -98,15 +98,6 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Notificar al iframe padre cuando cambia el step o el formulario
-  useEffect(() => {
-    if (window.parentIFrame) {
-      setTimeout(() => {
-        window.parentIFrame.size();
-      }, 100);
-    }
-  }, [currentStep, showContactForm]);
 
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
