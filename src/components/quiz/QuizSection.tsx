@@ -280,7 +280,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
       <div className="space-y-4">
           <div className="space-y-2">
-            <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
+            <h2 className="text-2xl md:text-3xl font-display font-black">
               {currentQuestion.question}
             </h2>
             {currentQuestion.description && (
@@ -305,7 +305,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
               disabled={!answers[currentQuestion.id as keyof QuizState] || 
                 (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
                  (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
-              className="dark-button flex-1"
+              className="dark-button-primary flex-1"
             >
               {isLastStep ? "Finalizar" : "Siguiente"}
           </Button>

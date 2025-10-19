@@ -96,6 +96,34 @@ All colors MUST be HSL.
     opacity: 0.5;
     cursor: not-allowed;
   }
+  
+  .dark-button-primary {
+    background: hsl(0, 0%, 15%);
+    border: 1px solid hsl(0, 0%, 35%);
+    transition: var(--transition-smooth);
+    box-shadow: 0 0 16px hsl(0 0% 100% / 0.15);
+    animation: pulse-button-glow 2.5s ease-in-out infinite alternate;
+  }
+  
+  .dark-button-primary:hover:not(:disabled) {
+    background: hsl(0, 0%, 20%);
+    box-shadow: 0 0 24px hsl(0 0% 100% / 0.3);
+  }
+  
+  .dark-button-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    animation: none;
+  }
+  
+  @keyframes pulse-button-glow {
+    from {
+      box-shadow: 0 0 12px hsl(0 0% 100% / 0.12);
+    }
+    to {
+      box-shadow: 0 0 20px hsl(0 0% 100% / 0.22);
+    }
+  }
 }
 
 /* Glow animation */
