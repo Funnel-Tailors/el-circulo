@@ -99,6 +99,17 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initialize form at component level (hooks must be called unconditionally)
+  const form = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      countryCode: "+34",
+      phone: "",
+    },
+  });
+
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
 
@@ -261,16 +272,6 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   };
 
   if (showContactForm) {
-    const form = useForm<ContactFormData>({
-      resolver: zodResolver(contactFormSchema),
-      defaultValues: {
-        name: "",
-        email: "",
-        countryCode: "+34",
-        phone: "",
-      },
-    });
-
     return (
       <div className="w-full space-y-4 animate-fade-in">
         <div className="space-y-4">
