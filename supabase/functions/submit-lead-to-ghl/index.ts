@@ -287,72 +287,81 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
   
-  // Personalización según score
-  let urgencyMessage = '';
-  let exclusivityBadge = '';
-  
-  if (isHot) {
-    urgencyMessage = 'Tu perfil ha sido marcado como PRIORITARIO. Solo aceptamos 3 sesiones estratégicas por semana y los huecos se llenan en 24-48h.';
-    exclusivityBadge = '🔥 PERFIL PRIORITARIO';
-  } else if (isWarm) {
-    urgencyMessage = 'Tu perfil muestra alto potencial. Reserva tu sesión antes de que se llenen los huecos disponibles.';
-    exclusivityBadge = '⭐ PERFIL CUALIFICADO';
-  } else {
-    urgencyMessage = 'Aunque tu situación actual es desafiante, queremos conocerte. Agenda tu sesión para explorar si podemos ayudarte.';
-    exclusivityBadge = '📋 SESIÓN EXPLORATORIA';
-  }
-  
   // Personalización según profesión
   const professionInsights: Record<string, string> = {
-    'Diseñador/a': 'La mayoría de diseñadores que trabajan con nosotros duplican sus tarifas en los primeros 30 días.',
-    'Diseñador web': 'Nuestros diseñadores web están cerrando proyectos de 5-10K consistentemente.',
-    'Filmmaker / Videógrafo/a': 'Los filmmakers del Círculo están cobrando entre 2-5K por proyecto comercial.',
-    'Automatizador/a (No-Code / IA)': 'Los automatizadores del Círculo están cerrando retainers de 3-7K/mes.',
-    'Fotógrafo/a': 'Los fotógrafos del Círculo han triplicado sus tarifas manteniendo su estilo.',
+    'Diseñador/a': 'Los diseñadores que entran al Círculo duplican sus tarifas en 30 días. Hay un método.',
+    'Diseñador web': 'Nuestros diseñadores web cierran proyectos de 5-10K consistentemente. Es el estándar.',
+    'Filmmaker / Videógrafo/a': 'Los filmmakers del Círculo cobran entre 2-5K por proyecto comercial. Sin excepción.',
+    'Automatizador/a (No-Code / IA)': 'Los automatizadores del Círculo cierran retainers de 3-7K/mes. Todos.',
+    'Fotógrafo/a': 'Los fotógrafos del Círculo han triplicado sus tarifas manteniendo su estilo. Sin excepción.',
   };
   
-  const professionInsight = professionInsights[answers.q1 || ''] || 'Los creativos del Círculo están escalando sus negocios de forma consistente.';
+  const professionInsight = professionInsights[answers.q1 || ''] || 'Los creativos del Círculo escalan de forma consistente. Sin trucos.';
   
-  return `
-🎉 ¡Bienvenido/a al Círculo, ${firstName}!
+  if (isHot) {
+    return `
+${firstName}.
 
-${exclusivityBadge}
+Has cruzado el umbral.
 
-Acabas de completar el test de cualificación del Círculo.
+⚔️ Tu evaluación ha sido marcada como prioritaria.
 
-✨ ${urgencyMessage}
+📜 ${professionInsight}
 
-💡 CONTEXTO RÁPIDO:
-${professionInsight}
-
-📅 TU SIGUIENTE PASO (CRÍTICO):
-
-👉 RESERVA TU SESIÓN ESTRATÉGICA:
+🔮 RESERVA TU RITUAL DE INICIACIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-⚠️ IMPORTANTE - PLAZAS LIMITADAS:
-• Solo 3 sesiones disponibles por semana
-• Los huecos se llenan en 24-48h
-• ${isHot ? 'Como perfil prioritario, tienes acceso preferente por 48h' : 'Reserva ahora para asegurar tu plaza'}
+⏳ Solo 3 espacios por semana
+🎭 Un Miembro Honorario evaluará tu candidatura (45-60 min)
+🗝️ Acceso preferente por 48h antes de liberar tu plaza
 
-📋 EN LA LLAMADA (45-60 min):
-✓ Análisis profundo de tu situación actual
-✓ Identificación de tus mayores palancas de crecimiento
-✓ Diseño de tu Sprint de Ascensión personalizado
-✓ Plan de acción concreto para los próximos 90 días
+Como candidato prioritario, el Señor Supremo del Círculo se pondrá en contacto para confirmar tu ritual.
 
-${isHot ? `
-🔥 BONUS PRIORITARIO:
-Por tu perfil cualificado, recibirás un análisis preliminar antes de la llamada para maximizar el valor de nuestra sesión.
-` : ''}
+El portal cierra en 48h.
 
-⏰ Reserva en los próximos minutos. Literalmente.
+—
+El Círculo
+    `.trim();
+  } else if (isWarm) {
+    return `
+${firstName}.
 
-Nos vemos dentro,
-El equipo del Círculo
+Has completado la evaluación.
 
-P.D. - Si tienes dudas sobre el proceso, responde a este email. Pero no esperes para reservar tu plaza.
-  `.trim();
+⚔️ Tu perfil muestra potencial.
+
+📜 ${professionInsight}
+
+🔮 RESERVA TU SESIÓN DE EVALUACIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+⏳ Solo 3 espacios por semana
+🎭 Un Miembro Honorario evaluará si hay alineación (45-60 min)
+
+El Señor Supremo del Círculo confirmará tu candidatura tras reservar.
+
+—
+El Círculo
+    `.trim();
+  } else {
+    return `
+${firstName}.
+
+Has completado la evaluación.
+
+⚔️ Tu situación presenta desafíos.
+
+🔮 AGENDA TU SESIÓN EXPLORATORIA
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+🎭 Un Miembro Honorario explorará opciones (45-60 min)
+
+Si hay alineación, se te contactará tras la sesión.
+
+—
+El Círculo
+    `.trim();
+  }
 }
 
 function generateClientPostBookingNotification(name: string, answers: QuizAnswers, tags: string[]): string {
@@ -362,15 +371,15 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
   // Objetivos específicos por profesión
   const professionGoals: Record<string, { goal: string; prep: string[] }> = {
     'Diseñador/a': {
-      goal: 'convertirte en el diseñador/a de referencia de tu nicho',
+      goal: 'convertirte en el diseñador de referencia de tu nicho',
       prep: [
-        'Tu portfolio actual (los 3-5 mejores proyectos)',
+        'Tu portfolio actual (3-5 mejores proyectos)',
         'Cuánto cobras actualmente por proyecto',
         'Qué tipo de clientes quieres atraer'
       ]
     },
     'Diseñador web': {
-      goal: 'escalar tu agencia web y cerrar proyectos de 5-10K+',
+      goal: 'escalar tu agencia web y cerrar proyectos de 5-10K',
       prep: [
         'Tus últimos 3 proyectos web y lo que cobraste',
         'Cuántos proyectos cierras al mes actualmente',
@@ -398,7 +407,7 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
       prep: [
         'Tu portfolio (mejores 10-15 fotos)',
         'Qué cobras actualmente por sesión',
-        'Tipo de fotografía que quieres especializarte'
+        'Tipo de fotografía en la que quieres especializarte'
       ]
     }
   };
@@ -408,56 +417,82 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
     prep: ['Tu situación actual', 'Tus objetivos principales', 'Tus mayores desafíos']
   };
   
-  return `
-🎯 ¡Sesión Confirmada! - Preparación para ${firstName}
+  if (isHot) {
+    return `
+${firstName}.
 
-Hola ${firstName},
+Tu espacio está asegurado.
 
-Tu sesión estratégica está reservada. Ahora toca prepararse para sacarle el máximo valor.
+⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes del ritual.
 
-${isHot ? '🔥 Como perfil prioritario, recibirás un análisis preliminar 24h antes de la llamada.' : ''}
+📜 PREPARA ESTO:
 
-📋 PREPARA ANTES DE LA LLAMADA:
+Información específica:
+${professionData.prep.map(item => `• ${item}`).join('\n')}
 
-1️⃣ INFORMACIÓN ESPECÍFICA (trae esto):
-${professionData.prep.map(item => `   • ${item}`).join('\n')}
+Contexto general:
+• Tu calendario próximos 90 días
+• 2-3 desafíos que necesitas resolver
+• Dónde quieres estar en 3 meses
 
-2️⃣ CONTEXTO GENERAL:
-   • Tu calendario para los próximos 90 días
-   • 2-3 desafíos específicos que quieres resolver
-   • Dónde quieres estar en 3 meses
-   • Qué te frena actualmente
+🔮 Logística:
+• Lugar sin interrupciones
+• Cámara encendida
+• Libreta
+• Agua o café. 45-60 min
 
-3️⃣ LOGÍSTICA:
-   • Lugar tranquilo sin interrupciones
-   • Cámara encendida (es más productivo)
-   • Libreta para tomar notas
-   • Agua o café (vamos 45-60 min)
+🎭 QUÉ SUCEDERÁ:
 
-💡 QUÉ VA A PASAR:
+El Miembro Honorario evaluará tu candidatura. No es una llamada de ventas.
 
-Esta no es una llamada de ventas genérica. Es una sesión estratégica real donde vamos a:
+• Análisis sin filtros de tu situación
+• Identificación de las 2-3 palancas con mayor impacto
+• Diseño de tu Sprint de Ascensión (si hay alineación)
+• Decisión sobre tu entrada al Círculo
 
-✓ Analizar tu situación actual sin filtros
-✓ Identificar las 2-3 palancas más grandes de crecimiento
-✓ Diseñar tu Sprint de Ascensión personalizado (7 o 30 días)
-✓ Definir pasos concretos y accionables
+⏳ Si no puedes asistir, avisa con 24h. Hay lista de espera.
 
-Tu objetivo: Salir con claridad absoluta sobre cómo ${professionData.goal}.
+El enlace llegará 1h antes del ritual.
 
-⚠️ SI NO PUEDES ASISTIR:
-Avísanos con 24h de anticipación. Hay lista de espera y alguien más puede aprovechar tu hueco.
-
-🔗 ENLACE DE LA LLAMADA:
-Te llegará por email 1h antes de la sesión.
-
-¿Dudas? Responde a este email.
-
-Nos vemos en la llamada,
+—
 El Círculo
+    `.trim();
+  } else {
+    return `
+${firstName}.
 
-P.D. - Cuanto mejor preparado/a vengas, más valor sacarás de la sesión.
-  `.trim();
+Tu sesión está confirmada.
+
+📜 PREPARA ESTO:
+
+Información específica:
+${professionData.prep.map(item => `• ${item}`).join('\n')}
+
+Contexto general:
+• Tu calendario próximos 90 días
+• 2-3 desafíos principales
+• Dónde quieres estar en 3 meses
+
+🔮 Logística:
+• Lugar sin interrupciones
+• Cámara encendida
+• Libreta
+• 45-60 min
+
+🎭 QUÉ SUCEDERÁ:
+
+Un Miembro Honorario explorará si hay alineación con el Círculo.
+
+Cuanto mejor preparado vengas, más claridad obtendrás.
+
+⏳ Si no puedes asistir, avisa con 24h.
+
+El enlace llegará 1h antes.
+
+—
+El Círculo
+    `.trim();
+  }
 }
 
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
@@ -469,6 +504,18 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   
   // Score visual
   const scoreEmoji = score >= 10 ? '🔥 HOT' : score >= 7 ? '⭐ WARM' : '❄️ COLD';
+  
+  // Header místico
+  const mysticHeader = `
+═══════════════════════════════════════════
+🎭 RITUAL DE INICIACIÓN: ${firstName}
+═══════════════════════════════════════════
+
+⚔️ RECORDATORIO: Eres un Miembro Honorario del Círculo.
+Tu rol es evaluar si este candidato debe ser admitido.
+
+Esta no es una llamada de ventas. Es una evaluación iniciática.
+`.trim();
   
   // Ángulos de apertura personalizados
   const openingAngles: string[] = [];
@@ -507,19 +554,17 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   // Estrategia de cierre
   let closingStrategy = '';
   if (isHot && budgetOK && fastTrack) {
-    closingStrategy = '🎯 ESTRATEGIA: CIERRE DIRECTO - Este lead está listo. Evalúa fit en primeros 15min y cierra si hay alineación total.';
+    closingStrategy = '🎯 ESTRATEGIA: ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
   } else if (score >= 7) {
-    closingStrategy = '🎯 ESTRATEGIA: CUALIFICACIÓN PROFUNDA - Explora situación, diseña Sprint personalizado, cierra si hay compromiso claro.';
+    closingStrategy = '🎯 ESTRATEGIA: EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
-    closingStrategy = '🎯 ESTRATEGIA: EDUCACIÓN + NURTURING - Aporta valor, identifica gaps, agenda seguimiento si hay potencial a medio plazo.';
+    closingStrategy = '🎯 ESTRATEGIA: EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
   }
   
   return `
-═══════════════════════════════════════════
-📞 PREP LLAMADA: ${firstName}
-═══════════════════════════════════════════
+${mysticHeader}
 
-⏰ LLAMADA EN: [VER CALENDARIO]
+⏰ RITUAL EN: [VER CALENDARIO]
 ⏱️ DURACIÓN: 45-60 min
 
 🎯 PERFIL RÁPIDO:
@@ -559,12 +604,12 @@ ${closingStrategy}
 □ Link de pago preparado (si aplica)
 □ Confirmar que el lead recibió el link de Zoom
 
-🎯 OBJETIVOS LLAMADA:
+🎯 OBJETIVOS DEL RITUAL:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. Evaluar fit real (primeros 15 min)
-2. Diseñar Sprint de Ascensión personalizado
-3. ${isHot ? 'Cerrar en llamada si hay alineación total' : 'Identificar next steps y timing de decisión'}
-4. Dejar puerta abierta para follow-up
+1. Evaluar fit real como Miembro Honorario (primeros 15 min)
+2. Diseñar Sprint de Ascensión si hay alineación
+3. ${isHot ? 'Decidir admisión al Círculo en este ritual' : 'Identificar next steps y decisión de admisión'}
+4. Mantener postura de evaluador, no vendedor
 
 ═══════════════════════════════════════════
 📋 Ver análisis completo: notification_internal
