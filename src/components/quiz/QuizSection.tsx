@@ -63,11 +63,11 @@ const steps = [
   },
   {
     id: "q5",
-    question: "Compromiso de tiempo para ejecutar",
+    question: "¿Cómo quieres ascender al Círculo?",
     type: "radio",
     options: [
-      "7-Day Sprint (1–2 h/día)",
-      "30-Day Plan (30–60 min/día)",
+      "Ascensión Rápida (7 días, 1-2h/día)",
+      "Ascensión Progresiva (30 días, 30-60 min/día)",
       "Ahora no puedo"
     ]
   },
@@ -79,18 +79,6 @@ const steps = [
       "Sí, decido yo",
       "Decido con otra persona",
       "No, no decido yo"
-    ]
-  },
-  {
-    id: "q7",
-    question: "¿Qué tan urgente es para ti?",
-    type: "radio",
-    options: [
-      "1 - Solo estoy mirando",
-      "2 - Me interesa, sin prisa",
-      "3 - Quiero empezar pronto",
-      "4 - Es importante para mí",
-      "5 - Necesito empezar ya"
     ]
   }
 ];
@@ -159,24 +147,13 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     // Q4 - Budget
     if (state.q4 === "Sí, puedo pagar 2.000€ hoy") score += 3;
 
-    // Q5 - Time
-    if (state.q5 === "7-Day Sprint (1–2 h/día)" || state.q5 === "30-Day Plan (30–60 min/día)") score += 2;
+    // Q5 - Time commitment (la urgencia está implícita en la elección)
+    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 3; // Más urgencia = más score
+    else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 2;
 
     // Q6 - Authority
     if (state.q6 === "Sí, decido yo") score += 2;
     else if (state.q6 === "Decido con otra persona") score += 1;
-
-    // Q7 - Urgency
-    const urgencyMap: { [key: string]: number } = {
-      "1 - Solo estoy mirando": 1,
-      "2 - Me interesa, sin prisa": 2,
-      "3 - Quiero empezar pronto": 3,
-      "4 - Es importante para mí": 4,
-      "5 - Necesito empezar ya": 5
-    };
-    if (state.q7 && typeof state.q7 === 'string') {
-      score += urgencyMap[state.q7] || 0;
-    }
 
     return score;
   };
