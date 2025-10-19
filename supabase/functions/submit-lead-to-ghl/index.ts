@@ -721,6 +721,51 @@ serve(async (req) => {
     
     if (!ghlResponse.ok) {
       const errorText = await ghlResponse.text();
+      let errorData;
+      
+      try {
+        errorData = JSON.parse(errorText);
+      } catch (e) {
+        errorData = null;
+      }
+      
+      // Check if it's a duplicate contact error
+      if (ghlResponse.status === 400 && 
+          errorData?.meta?.contactId && 
+          errorData.message?.includes('duplicated contacts')) {
+        
+        console.log('Contact already exists (duplicate phone/email), updating instead...');
+        console.log('Existing contactId:', errorData.meta.contactId);
+        
+        // Update the existing contact instead
+        const updateUrl = `https://services.leadconnectorhq.com/contacts/${errorData.meta.contactId}`;
+        const updateResponse = await fetch(updateUrl, {
+          method: 'PUT',
+          headers: ghlHeaders,
+          body: JSON.stringify(contactPayload)
+        });
+        
+        if (!updateResponse.ok) {
+          const updateError = await updateResponse.text();
+          console.error('Failed to update existing contact:', updateError);
+          throw new Error(`Failed to update contact: ${updateResponse.status} - ${updateError}`);
+        }
+        
+        const updatedContact = await updateResponse.json();
+        console.log('Successfully updated existing contact');
+        
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            contactId: errorData.meta.contactId,
+            tags: tags,
+            message: 'Contact updated successfully (duplicate resolved)'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        );
+      }
+      
+      // If it's not a duplicate error, fail as before
       console.error('=== GHL API ERROR ===');
       console.error('Status:', ghlResponse.status);
       console.error('Status Text:', ghlResponse.statusText);
