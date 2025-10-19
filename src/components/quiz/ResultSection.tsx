@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { QuizState } from "@/pages/Index";
+import { useEffect } from "react";
 
 interface ResultSectionProps {
   isQualified: boolean;
@@ -8,9 +9,21 @@ interface ResultSectionProps {
 }
 
 const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) => {
-  // Placeholder URLs - these should be replaced with actual values
-  const CALENDAR_EMBED = "https://calendar.google.com/calendar/appointments/schedules/YOUR_CALENDAR_ID";
   const BONUS_URL = "#bonos";
+
+  useEffect(() => {
+    if (isQualified) {
+      const script = document.createElement('script');
+      script.src = 'https://link.msgsndr.com/js/form_embed.js';
+      script.type = 'text/javascript';
+      script.async = true;
+      document.body.appendChild(script);
+      
+      return () => {
+        document.body.removeChild(script);
+      };
+    }
+  }, [isQualified]);
 
   return (
     <div className="w-full space-y-4 animate-fade-in">
@@ -31,12 +44,11 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
 
               <div className="rounded-xl overflow-hidden border border-border bg-background/50">
                 <iframe
-                  src={CALENDAR_EMBED}
-                  width="100%"
-                  height="600"
-                  frameBorder="0"
-                  loading="lazy"
-                  className="w-full"
+                  src="https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke"
+                  style={{ width: '100%', border: 'none', overflow: 'hidden' }}
+                  scrolling="no"
+                  id="xkfGe4Gjr8REwK34dZke_1760881701916"
+                  className="w-full min-h-[500px]"
                   title="Reserva tu sesión estratégica"
                 />
               </div>
