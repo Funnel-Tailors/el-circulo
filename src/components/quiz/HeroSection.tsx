@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
-
 interface HeroSectionProps {
   onStart: () => void;
 }
-
-const HeroSection = ({ onStart }: HeroSectionProps) => {
-  return (
-    <div className="w-full text-center space-y-3 animate-fade-in">
+const HeroSection = ({
+  onStart
+}: HeroSectionProps) => {
+  return <div className="w-full text-center space-y-3 animate-fade-in">
         {/* Runic divider */}
         <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
           <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
@@ -14,7 +13,7 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
         </div>
 
-        <h1 className="text-base md:text-5xl font-display font-black leading-tight">
+        <h1 className="md:text-5xl font-display font-black leading-tight text-5xl">
           Recorre la{" "}
           <span className="glow">Senda</span>
         </h1>
@@ -24,11 +23,7 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
         </p>
 
         <div className="pt-4">
-          <Button
-            onClick={onStart}
-            size="lg"
-            className="dark-button focus-glow text-base px-6 py-4 rounded-xl font-medium text-white"
-          >
+          <Button onClick={onStart} size="lg" className="dark-button focus-glow text-base px-6 py-4 rounded-xl font-medium text-white">
             Entrar al Camino
           </Button>
         </div>
@@ -43,8 +38,6 @@ const HeroSection = ({ onStart }: HeroSectionProps) => {
           <div className="text-muted-foreground text-xs">✦</div>
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
         </div>
-    </div>
-  );
+    </div>;
 };
-
 export default HeroSection;
