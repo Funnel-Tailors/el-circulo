@@ -1,1 +1,4 @@
 project_id = "yewfryggiinoebnobbuq"
+
+[functions.submit-lead-to-ghl]
+verify_jwt = false

@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/pages/Index";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
@@ -90,6 +92,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   const [answers, setAnswers] = useState<QuizState>({});
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
@@ -122,8 +125,10 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     }
   };
 
-  const handleContactSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     const formData = new FormData(e.currentTarget);
     const contactData = {
       name: formData.get('name') as string,
@@ -131,8 +136,43 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
       whatsapp: formData.get('whatsapp') as string
     };
     
-    const finalState = { ...answers, ...contactData };
-    onComplete(finalState, true);
+    const score = calculateScore(answers);
+    const qualified = score >= 7 && !hasAutoDisqualify(answers);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
+        body: {
+          ...contactData,
+          answers,
+          score,
+          qualified
+        }
+      });
+      
+      if (error) throw error;
+      
+      console.log('Lead enviado a GHL:', data);
+      toast({
+        title: "¡Perfecto!",
+        description: "Tus datos han sido guardados correctamente",
+      });
+      
+      const finalState = { ...answers, ...contactData };
+      onComplete(finalState, true);
+      
+    } catch (error) {
+      console.error('Error al enviar lead a GHL:', error);
+      toast({
+        title: "Aviso",
+        description: "Hubo un problema al guardar tus datos, pero puedes continuar",
+        variant: "destructive",
+      });
+      
+      const finalState = { ...answers, ...contactData };
+      onComplete(finalState, true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const calculateScore = (state: QuizState): number => {
@@ -264,10 +304,11 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
               <Button
                 type="submit"
+                disabled={isSubmitting}
                 className="w-full dark-button text-base py-4"
                 size="lg"
               >
-                Ver mi Agenda
+                {isSubmitting ? 'Enviando...' : 'Ver mi Agenda'}
               </Button>
             </form>
         </div>
