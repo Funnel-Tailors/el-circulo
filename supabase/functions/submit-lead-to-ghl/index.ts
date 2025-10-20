@@ -634,6 +634,7 @@ serve(async (req) => {
         { key: 'quiz_authority', field_value: answers.q6 || '' },
         { key: 'quiz_score', field_value: score.toString() },
         { key: 'quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
+        { key: 'circulo_score', field_value: score.toString() },
         { key: 'notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
         { key: 'notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
         { key: 'notification_client', field_value: generateClientNotification(name, answers, tags, score) },
