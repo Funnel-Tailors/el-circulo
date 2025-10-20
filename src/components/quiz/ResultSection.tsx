@@ -9,7 +9,7 @@ interface ResultSectionProps {
 }
 
 const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) => {
-  const BONUS_URL = "#bonos";
+  const BONUS_URL = "https://vendenautomatico.com/la-senda-extended";
 
   useEffect(() => {
     if (isQualified) {
@@ -100,7 +100,7 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
               <div className="space-y-3 pt-4">
                 <Button
                   onClick={() => window.open(BONUS_URL, '_blank')}
-                  className="w-full dark-button text-base py-4"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all"
                   size="lg"
                 >
                   📚 Acceder a Recursos
