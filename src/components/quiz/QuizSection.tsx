@@ -385,10 +385,10 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full dark-button text-base py-4"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all"
                 size="lg"
               >
-                {isSubmitting ? 'Enviando...' : 'Ver mi Agenda'}
+                {isSubmitting ? 'Enviando...' : 'Cruza el Umbral'}
               </Button>
             </form>
           </Form>
