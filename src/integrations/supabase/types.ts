@@ -100,6 +100,16 @@ export type Database = {
       }
     }
     Views: {
+      quiz_answer_distribution: {
+        Row: {
+          answer_value: string | null
+          percentage: number | null
+          response_count: number | null
+          step_id: string | null
+          step_index: number | null
+        }
+        Relationships: []
+      }
       quiz_conversion_by_step: {
         Row: {
           conversion_rate_percent: number | null
