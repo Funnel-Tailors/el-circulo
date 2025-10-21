@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -113,6 +114,19 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
 
+  useEffect(() => {
+    const step = steps[currentStep];
+    if (step) {
+      quizAnalytics.startStep(step.id, currentStep);
+    }
+  }, [currentStep]);
+
+  useEffect(() => {
+    if (showContactForm) {
+      quizAnalytics.viewContactForm();
+    }
+  }, [showContactForm]);
+
   const handleNext = () => {
     const currentAnswer = answers[currentQuestion.id as keyof QuizState];
     
@@ -169,6 +183,9 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
       if (error) throw error;
       
       console.log('Lead enviado a GHL:', responseData);
+      
+      quizAnalytics.completeQuiz();
+      
       toast({
         title: "Perfecto",
         description: "Tus datos han sido guardados correctamente",
@@ -228,9 +245,12 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     switch (currentQuestion.type) {
       case "radio":
         return (
-          <RadioGroup
+            <RadioGroup
             value={answers[currentQuestion.id as keyof QuizState] as string || ""}
-            onValueChange={(value) => setAnswers({ ...answers, [currentQuestion.id]: value })}
+            onValueChange={(value) => {
+              setAnswers({ ...answers, [currentQuestion.id]: value });
+              quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
+            }}
             className="space-y-3"
           >
             {currentQuestion.options?.map((option) => (
@@ -258,6 +278,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                       ? [...current, option]
                       : current.filter(v => v !== option);
                     setAnswers({ ...answers, q3: updated });
+                    quizAnalytics.answerStep(currentQuestion.id, currentStep, updated.join(', '));
                   }}
                   className="border-2"
                 />

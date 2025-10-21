@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import HeroSection from "@/components/quiz/HeroSection";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
+import { quizAnalytics } from "@/lib/analytics";
 
 export type QuizState = {
   q1?: string;
@@ -20,6 +21,7 @@ const Index = () => {
   const [currentScreen, setCurrentScreen] = useState<"hero" | "quiz" | "result">("hero");
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
+  const hasTrackedStart = useRef(false);
 
   const startQuiz = () => {
     setCurrentScreen("quiz");
@@ -35,6 +37,19 @@ const Index = () => {
     setQuizState({});
     setCurrentScreen("hero");
   };
+
+  useEffect(() => {
+    if (currentScreen === "hero" && !hasTrackedStart.current) {
+      quizAnalytics.trackEvent({ event_type: 'quiz_started' });
+      hasTrackedStart.current = true;
+    }
+
+    return () => {
+      if (currentScreen === "quiz") {
+        quizAnalytics.trackAbandonment();
+      }
+    };
+  }, [currentScreen]);
 
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-transparent">

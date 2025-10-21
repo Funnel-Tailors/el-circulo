@@ -14,16 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      quiz_analytics: {
+        Row: {
+          answer_value: string | null
+          created_at: string
+          device_type: string | null
+          error_message: string | null
+          error_type: string | null
+          event_type: string
+          id: string
+          language: string | null
+          referrer: string | null
+          session_id: string
+          step_id: string | null
+          step_index: number | null
+          time_spent_seconds: number | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          answer_value?: string | null
+          created_at?: string
+          device_type?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          event_type: string
+          id?: string
+          language?: string | null
+          referrer?: string | null
+          session_id: string
+          step_id?: string | null
+          step_index?: number | null
+          time_spent_seconds?: number | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          answer_value?: string | null
+          created_at?: string
+          device_type?: string | null
+          error_message?: string | null
+          error_type?: string | null
+          event_type?: string
+          id?: string
+          language?: string | null
+          referrer?: string | null
+          session_id?: string
+          step_id?: string | null
+          step_index?: number | null
+          time_spent_seconds?: number | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      quiz_conversion_by_step: {
+        Row: {
+          conversion_rate_percent: number | null
+          previous_step_sessions: number | null
+          sessions_reached: number | null
+          step_id: string | null
+          step_index: number | null
+        }
+        Relationships: []
+      }
+      quiz_funnel_stats: {
+        Row: {
+          avg_time_seconds: number | null
+          event_type: string | null
+          step_id: string | null
+          total_events: number | null
+          unique_sessions: number | null
+        }
+        Relationships: []
+      }
+      quiz_kpis: {
+        Row: {
+          abandoned_sessions: number | null
+          avg_time_to_complete: number | null
+          completed_sessions: number | null
+          conversion_rate: number | null
+          started_sessions: number | null
+          total_sessions: number | null
+        }
+        Relationships: []
+      }
+      quiz_step_metrics: {
+        Row: {
+          answer_rate: number | null
+          answers: number | null
+          avg_time_seconds: number | null
+          step_id: string | null
+          step_index: number | null
+          views: number | null
+        }
+        Relationships: []
+      }
+      quiz_utm_performance: {
+        Row: {
+          conversion_rate: number | null
+          conversions: number | null
+          sessions: number | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +291,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
