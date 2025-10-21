@@ -461,18 +461,15 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
               Anterior
             </Button>
 
-            {/* Solo mostrar botón Siguiente en preguntas checkbox (Q3) */}
-            {currentQuestion.type === "checkbox" && (
-              <Button
-                onClick={handleNext}
-                disabled={!answers[currentQuestion.id as keyof QuizState] || 
-                  (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
-                   (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
-                className="dark-button-primary flex-1"
-              >
-                {isLastStep ? "Finalizar" : "Siguiente"}
-              </Button>
-            )}
+            <Button
+              onClick={handleNext}
+              disabled={!answers[currentQuestion.id as keyof QuizState] || 
+                (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
+                 (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
+              className="dark-button-primary flex-1"
+            >
+              {isLastStep ? "Finalizar" : "Siguiente"}
+            </Button>
         </div>
       </div>
 
