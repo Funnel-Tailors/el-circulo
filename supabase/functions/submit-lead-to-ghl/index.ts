@@ -226,55 +226,48 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
   const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
   
-  // Solo objeciones REALES (REMOVIDO revenue bajo)
+  // Solo objeciones REALES
   const realObjections: string[] = [];
   if (!budgetOK) realObjections.push('⚠️ Budget no confirmado');
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
   
   // Solo oportunidades CRÍTICAS
   const criticalOpportunities: string[] = [];
-  if (lowRevenue && budgetOK) criticalOpportunities.push('🎯 PERFIL IDEAL: Dolor agudo (cobra poco) + tiene budget');
-  if (score >= 10) criticalOpportunities.push('✅ Premium - Prioridad máxima');
-  if (fastTrack && budgetOK) criticalOpportunities.push('✅ Budget + Urgencia = Cierre rápido');
-  if (authSolo) criticalOpportunities.push('✅ Decisor único');
+  if (lowRevenue && budgetOK) criticalOpportunities.push('• PERFIL IDEAL: Dolor agudo (cobra poco) + tiene budget');
+  if (score >= 10) criticalOpportunities.push('• Premium - Prioridad máxima');
+  if (fastTrack && budgetOK) criticalOpportunities.push('• Budget + Urgencia = Cierre inmediato');
+  if (authSolo) criticalOpportunities.push('• Decisor único');
   
   // Estrategia en 1 línea
   let strategy = '';
   if (lowRevenue && budgetOK && fastTrack) {
-    strategy = '🎯 CLIENTE IDEAL → ADMISIÓN DIRECTA si fit en primeros 15min (máximo potencial de crecimiento)';
+    strategy = 'CLIENTE IDEAL → Admisión directa si fit mínimo en primeros 15min (máximo potencial de crecimiento)';
   } else if (score >= 10 && budgetOK && fastTrack) {
-    strategy = '🎯 ADMISIÓN DIRECTA si fit en primeros 15min';
+    strategy = 'ADMISIÓN DIRECTA si fit en primeros 15min';
   } else if (score >= 7) {
-    strategy = '🎯 EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
+    strategy = 'EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
   } else {
-    strategy = '🎯 EXPLORACIÓN → Aportar valor → Identificar potencial';
+    strategy = 'EXPLORACIÓN → Aportar valor → Identificar potencial';
   }
   
   return `
-═══════════════════════════════════════════
-⚔️ PERFIL INICIÁTICO: ${contact.name.split(' ')[0]}
-═══════════════════════════════════════════
+🔮 PERFIL INICIÁTICO: ${contact.name.split(' ')[0]}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🔮 VEREDICTO: ${classification} | ${score}/10 ${scoreBar}
-
+VEREDICTO: ${classification} | ${score}/10 ${scoreBar}
 📞 ${contact.name} | ${contact.email}
 💬 ${contact.whatsapp || 'Sin WhatsApp'} | 🗓️ ${new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
 
 ⚡ RESUMEN INICIÁTICO:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • ${answers.q1} | Max: ${answers.q2}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
 • Budget 2K: ${budgetOK ? '✅' : '❌'} | Decide: ${authSolo ? '✅ Solo' : answers.q6}
-• Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(' • ') : answers.q3}
+• Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
 • Urgencia: ${fastTrack ? '🚀 7 días' : answers.q5}
+${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
+${realObjections.length > 0 ? `\n⚠️ FRICCIONES:\n${realObjections.map(o => `• ${o.replace('⚠️ ', '')}`).join('\n')}` : ''}
 
-${criticalOpportunities.length > 0 ? `🎯 PALANCAS:\n${criticalOpportunities.join('\n')}` : ''}
-
-${realObjections.length > 0 ? `⚠️ FRICCIONES:\n${realObjections.join('\n')}` : ''}
-
-🔥 ESTRATEGIA:
+🔥 ESTRATEGIA DE ADMISIÓN:
 ${strategy}
-
-═══════════════════════════════════════════
   `.trim();
 }
 
@@ -506,7 +499,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const scoreEmoji = score >= 10 ? '🔥 HOT' : score >= 7 ? '⭐ WARM' : '❄️ COLD';
   const scoreBar = '█'.repeat(Math.floor(score / 10 * 10)) + '░'.repeat(10 - Math.floor(score / 10 * 10));
   
-  // Ángulos de apertura (INVERTIDOS - low revenue = oportunidad)
+  // Ángulos de apertura
   const openingAngles: string[] = [];
   if (lowRevenue) {
     openingAngles.push(`"Vi que cobras ${answers.q2} por proyecto. Aquí hay una oportunidad ENORME de crecimiento. ¿Cuánto crees que deberías estar cobrando?"`);
@@ -520,11 +513,11 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
     openingAngles.push(`"Veo que tu adquisición viene de ${answers.q3[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
   }
   
-  // Objeciones reales (ELIMINADO low revenue como fricción)
+  // Objeciones reales
   const potentialObjections: string[] = [];
-  if (!budgetOK) potentialObjections.push('💰 PRECIO: "¿Opciones de pago?" → ROI + casos rápidos');
-  if (!authSolo) potentialObjections.push('👥 DECISIÓN: "Debo consultarlo" → Incluir a esa persona');
-  if (!fastTrack) potentialObjections.push('⏰ TIMING: "Ahora no puedo" → ¿Qué debe pasar para estar listo/a?');
+  if (!budgetOK) potentialObjections.push('PRECIO: "¿Opciones de pago?" → ROI + casos rápidos');
+  if (!authSolo) potentialObjections.push('DECISIÓN: "Debo consultarlo" → Incluir a esa persona');
+  if (!fastTrack) potentialObjections.push('TIMING: "Ahora no puedo" → ¿Qué debe pasar para estar listo/a?');
   
   // Estrategia
   let closingStrategy = '';
@@ -538,55 +531,41 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
     closingStrategy = 'EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
   }
   
-  
   return `
-═══════════════════════════════════════════
-🎭 RITUAL: ${firstName} | ${scoreEmoji}
-═══════════════════════════════════════════
+🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/10 ${scoreBar} | ${scoreEmoji}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
 Evalúa si este candidato debe cruzar el umbral.
 Esto no es una venta. Es un ritual de evaluación.
+${lowRevenue && budgetOK ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + budget confirmado = MÁXIMA PRIORIDAD' : ''}
 
-${lowRevenue && budgetOK ? '🚨 CLIENTE IDEAL: Dolor agudo (cobra poco) + tiene budget = MÁXIMA PRIORIDAD\n' : ''}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
 
-⏰ CUÁNDO: [VER CALENDARIO] | ⏱️ 45-60 min
-
-🔮 PERFIL:
-• ${answers.q1} | ${score}/10 ${scoreBar}
-• Budget 2K: ${budgetOK ? '✅' : '❌'} | Urgencia: ${fastTrack ? '🚀 7D' : answers.q5 || 'N/A'}
-• Decide: ${authSolo ? '👤 SOLO' : '👥 COMPARTIDO'} | Max: ${answers.q2}${lowRevenue ? ' (¡Oportunidad!)' : ''}
+📋 PERFIL DEL CANDIDATO:
+• ${answers.q1} | Budget: ${budgetOK ? '✅' : '❌'} | Urgencia: ${fastTrack ? '🚀 7D' : '📈 30D'}
+• Decide: ${authSolo ? 'SOLO' : 'COMPARTIDO'} | Max: ${answers.q2}${lowRevenue ? ' (¡Oportunidad alta!)' : ''}
 • Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
-
-📞 ${contact.name}
-💬 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
 
 ⚡ FRICCIONES A ANTICIPAR:
-${potentialObjections.length > 0 ? potentialObjections.map((obj, i) => `${i + 1}. ${obj}`).join('\n') : 'Sin objeciones previstas - Lead limpio'}
+${potentialObjections.length > 0 ? potentialObjections.map((obj, i) => `${i + 1}. ${obj}`).join('\n') : 'Sin objeciones previstas - Candidato limpio'}
 
-🎯 ESTRATEGIA: ${closingStrategy}
+🎯 ESTRATEGIA DE CIERRE:
+${closingStrategy}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ PREPARACIÓN PRE-RITUAL:
+• Análisis completo revisado (notification_internal)
+• Calendario y link de pago listos
+• Link de Zoom confirmado
 
-✅ PRE-RITUAL:
-□ Leer análisis completo (notification_internal)
-□ Calendario listo
-□ Link de pago preparado
-□ Confirmar que recibió link de Zoom
-
-🎭 OBJETIVOS:
-1. Evaluar fit (primeros 15 min)
+🎭 OBJETIVOS DEL RITUAL:
+1. Evaluar fit real (primeros 15 min)
 2. Diseñar Sprint de Ascensión si hay alineación
-3. ${isHot ? 'Decidir admisión en este ritual' : 'Identificar next steps'}
-4. Mantener postura de evaluador
-
-═══════════════════════════════════════════
+3. ${isHot ? 'Decidir admisión / Identificar next steps según score' : 'Identificar next steps'}
+4. Mantener postura de evaluador, no vendedor
   `.trim();
 }
 
