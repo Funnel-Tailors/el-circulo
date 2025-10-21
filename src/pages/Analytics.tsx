@@ -13,6 +13,7 @@ import FunnelChart from '@/components/analytics/FunnelChart';
 import QuestionMetrics from '@/components/analytics/QuestionMetrics';
 import UTMPerformance from '@/components/analytics/UTMPerformance';
 import InsightsCard from '@/components/analytics/InsightsCard';
+import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 
 interface KPIData {
   total_sessions: number;
@@ -49,6 +50,14 @@ interface UTMPerformanceData {
   conversion_rate: number;
 }
 
+interface AnswerDistributionData {
+  step_id: string;
+  step_index: number;
+  answer_value: string;
+  response_count: number;
+  percentage: number;
+}
+
 const Analytics = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -61,6 +70,7 @@ const Analytics = () => {
   const [stepMetrics, setStepMetrics] = useState<StepMetric[]>([]);
   const [conversionByStep, setConversionByStep] = useState<ConversionByStep[]>([]);
   const [utmPerformance, setUtmPerformance] = useState<UTMPerformanceData[]>([]);
+  const [answerDistribution, setAnswerDistribution] = useState<AnswerDistributionData[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -117,6 +127,11 @@ const Analytics = () => {
         .from('quiz_utm_performance')
         .select('*');
       setUtmPerformance(utmData || []);
+
+      const { data: distributionData } = await supabase
+        .from('quiz_answer_distribution')
+        .select('*');
+      setAnswerDistribution(distributionData || []);
 
       setLastUpdate(new Date());
     } catch (error) {
@@ -236,13 +251,18 @@ const Analytics = () => {
           </TabsContent>
 
           <TabsContent value="questions" className="space-y-6">
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => exportToCSV(answerDistribution, 'answer-distribution')}>
+                <Download className="mr-2 h-4 w-4" />
+                Exportar Distribución
+              </Button>
               <Button variant="outline" onClick={() => exportToCSV(stepMetrics, 'questions')}>
                 <Download className="mr-2 h-4 w-4" />
-                Exportar CSV
+                Exportar Métricas
               </Button>
             </div>
             <QuestionMetrics data={stepMetrics} loading={!stepMetrics.length} />
+            <AnswerDistribution data={answerDistribution} loading={!answerDistribution.length} />
           </TabsContent>
 
           <TabsContent value="utm" className="space-y-6">
