@@ -247,8 +247,25 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
             <RadioGroup
             value={answers[currentQuestion.id as keyof QuizState] as string || ""}
             onValueChange={(value) => {
-              setAnswers({ ...answers, [currentQuestion.id]: value });
+              const updatedAnswers = { ...answers, [currentQuestion.id]: value };
+              setAnswers(updatedAnswers);
               quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
+              
+              // Auto-avance después de 300ms para dar feedback visual
+              setTimeout(() => {
+                if (isLastStep) {
+                  const score = calculateScore(updatedAnswers);
+                  const qualified = score >= 7 && !hasAutoDisqualify(updatedAnswers);
+                  
+                  if (qualified) {
+                    setShowContactForm(true);
+                  } else {
+                    onComplete(updatedAnswers, false);
+                  }
+                } else {
+                  setCurrentStep(prev => prev + 1);
+                }
+              }, 300);
             }}
             className="space-y-3"
           >
@@ -444,15 +461,18 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
               Anterior
             </Button>
 
-            <Button
-              onClick={handleNext}
-              disabled={!answers[currentQuestion.id as keyof QuizState] || 
-                (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
-                 (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
-              className="dark-button-primary flex-1"
-            >
-              {isLastStep ? "Finalizar" : "Siguiente"}
-          </Button>
+            {/* Solo mostrar botón Siguiente en preguntas checkbox (Q3) */}
+            {currentQuestion.type === "checkbox" && (
+              <Button
+                onClick={handleNext}
+                disabled={!answers[currentQuestion.id as keyof QuizState] || 
+                  (Array.isArray(answers[currentQuestion.id as keyof QuizState]) && 
+                   (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0)}
+                className="dark-button-primary flex-1"
+              >
+                {isLastStep ? "Finalizar" : "Siguiente"}
+              </Button>
+            )}
         </div>
       </div>
 
