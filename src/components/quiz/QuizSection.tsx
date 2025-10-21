@@ -215,21 +215,19 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     // Q1 - ICP
     if (state.q1 && !state.q1.includes("Otro")) score += 2;
 
-    // Q2 - Revenue History (mejor predictor de capacidad de pago)
-    if (state.q2 === "Más de 5.000€") score += 3;
-    else if (state.q2 === "2.500€ - 5.000€") score += 2;
-    else if (state.q2 === "1.000€ - 2.500€") score += 1;
+    // Q2 - Revenue History (INVERTIDO - quien cobra MENOS puntúa MÁS)
+    if (state.q2 === "Menos de 500€") score += 3;
+    else if (state.q2 === "500€ - 1.000€") score += 3;
+    else if (state.q2 === "1.000€ - 2.500€") score += 2;
+    else if (state.q2 === "2.500€ - 5.000€") score += 1;
+    // "Más de 5.000€" = 0 puntos
 
     // Q4 - Budget
     if (state.q4 === "Sí, puedo pagar 2.000€ hoy") score += 3;
 
-    // Q5 - Time commitment (la urgencia está implícita en la elección)
-    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 3; // Más urgencia = más score
+    // Q5 - Time commitment (ambas opciones válidas)
+    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 2;
     else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 2;
-
-    // Q6 - Authority
-    if (state.q6 === "Sí, decido yo") score += 2;
-    else if (state.q6 === "Decido con otra persona") score += 1;
 
     return score;
   };
@@ -237,7 +235,8 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   const hasAutoDisqualify = (state: QuizState): boolean => {
     return (
       state.q4 === "No puedo" ||
-      state.q5 === "Ahora no puedo"
+      state.q5 === "Ahora no puedo" ||
+      state.q6 === "No, no decido yo"
     );
   };
 
