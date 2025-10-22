@@ -84,7 +84,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean): 
   }
   
   // Tags de presupuesto con prefijo CÍRCULO
-  if (answers.q4 === 'Sí, puedo pagar 2.000€ hoy') {
+  if (answers.q4 === 'Puedo hacer ese tributo ahora') {
     tags.push('✅ CÍRCULO-BUDGET-OK');
   } else {
     tags.push('⚠️ CÍRCULO-BUDGET-NO');
@@ -147,11 +147,11 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   }
   
   // 🎯 DOLOR AGUDO: Low revenue + budget = CLIENTE IDEAL
-  if ((answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€') && answers.q4 === 'Sí, puedo pagar 2.000€ hoy') {
+  if ((answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€') && answers.q4 === 'Puedo hacer ese tributo ahora') {
     insights.push('🎯 DOLOR AGUDO: Cobra poco + tiene budget = ¡CLIENTE IDEAL!');
   }
   
-  if (answers.q4 === 'Sí, puedo pagar 2.000€ hoy' && answers.q5 === 'Ascensión Rápida (7 días, 1-2h/día)') {
+  if (answers.q4 === 'Puedo hacer ese tributo ahora' && answers.q5 === 'Ascensión Rápida (7 días, 1-2h/día)') {
     insights.push('🔥 Combinación ideal: Budget + Urgencia');
   }
   
