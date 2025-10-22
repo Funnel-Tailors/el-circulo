@@ -63,12 +63,12 @@ const steps = [
   },
   {
     id: "q4",
-    question: "¿Puedes pagar 2.000€ hoy?",
-    description: "Sin rodeos: este es el coste de implementación.",
+    question: "El Círculo exige un tributo anual de 2.000€.",
+    description: "Un solo pago. Sin facilidades.",
     type: "radio",
     options: [
-      "Sí, puedo pagar 2.000€ hoy",
-      "No puedo"
+      "Puedo hacer ese tributo ahora",
+      "No dispongo de esa cantidad"
     ]
   },
   {
@@ -137,7 +137,8 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     if (isLastStep) {
       // Check if qualified before showing contact form
       const score = calculateScore(answers);
-      const qualified = score >= 7 && !hasAutoDisqualify(answers);
+      const hasBudget = answers.q4 === "Puedo hacer ese tributo ahora";
+      const qualified = (hasBudget && !hasAutoDisqualify(answers)) || (score >= 7 && !hasAutoDisqualify(answers));
       
       if (qualified) {
         setShowContactForm(true);
@@ -168,7 +169,8 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     };
     
     const score = calculateScore(answers);
-    const qualified = score >= 7 && !hasAutoDisqualify(answers);
+    const hasBudget = answers.q4 === "Puedo hacer ese tributo ahora";
+    const qualified = (hasBudget && !hasAutoDisqualify(answers)) || (score >= 7 && !hasAutoDisqualify(answers));
     
     try {
       const { data: responseData, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
@@ -223,7 +225,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
     // "Más de 5.000€" = 0 puntos
 
     // Q4 - Budget
-    if (state.q4 === "Sí, puedo pagar 2.000€ hoy") score += 3;
+    if (state.q4 === "Puedo hacer ese tributo ahora") score += 2;
 
     // Q5 - Time commitment (ambas opciones válidas)
     if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 2;
@@ -234,7 +236,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
   const hasAutoDisqualify = (state: QuizState): boolean => {
     return (
-      state.q4 === "No puedo" ||
+      state.q4 === "No dispongo de esa cantidad" ||
       state.q5 === "Ahora no puedo" ||
       state.q6 === "No, no decido yo"
     );
@@ -255,7 +257,8 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
               setTimeout(() => {
                 if (isLastStep) {
                   const score = calculateScore(updatedAnswers);
-                  const qualified = score >= 7 && !hasAutoDisqualify(updatedAnswers);
+                  const hasBudget = updatedAnswers.q4 === "Puedo hacer ese tributo ahora";
+                  const qualified = (hasBudget && !hasAutoDisqualify(updatedAnswers)) || (score >= 7 && !hasAutoDisqualify(updatedAnswers));
                   
                   if (qualified) {
                     setShowContactForm(true);
