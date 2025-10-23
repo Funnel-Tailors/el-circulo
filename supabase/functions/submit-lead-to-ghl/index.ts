@@ -83,16 +83,36 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean): 
   // Tag de origen con prefijo CÍRCULO
   tags.push('🎯 CÍRCULO-SOURCE-Quiz2025');
   
-  // Tags de cualificación MAESTROS con prefijo CÍRCULO
-  if (qualified && score >= 10) {
+  // Tags de cualificación con sistema 0-100
+  if (score >= 85) {
+    // HOT (85-100 pts)
     tags.push('🔥 CÍRCULO-HOT');
     tags.push('✅ CÍRCULO-CUALIFICADO');
-  } else if (qualified && score >= 7) {
+    if (score >= 95) {
+      tags.push('⭐ CÍRCULO-ICP-PERFECT');
+    } else {
+      tags.push('💎 CÍRCULO-ICP-STRONG');
+    }
+  } else if (score >= 75) {
+    // WARM-HIGH (75-84 pts)
     tags.push('⭐ CÍRCULO-WARM');
     tags.push('✅ CÍRCULO-CUALIFICADO');
+    tags.push('💎 CÍRCULO-ICP-STRONG');
+  } else if (score >= 65) {
+    // WARM-MID (65-74 pts)
+    tags.push('⭐ CÍRCULO-WARM');
+    tags.push('✅ CÍRCULO-CUALIFICADO');
+    tags.push('🟢 CÍRCULO-ICP-GOOD');
+  } else if (score >= 60) {
+    // WARM-LOW (60-64 pts)
+    tags.push('⭐ CÍRCULO-WARM');
+    tags.push('✅ CÍRCULO-CUALIFICADO');
+    tags.push('🟡 CÍRCULO-ICP-FAIR');
   } else {
+    // COLD (0-59 pts)
     tags.push('❄️ CÍRCULO-COLD');
     tags.push('❌ CÍRCULO-NO-CUALIFICADO');
+    tags.push('🔴 CÍRCULO-ICP-POOR');
   }
   
   // Tags de profesión con prefijo CÍRCULO
@@ -186,12 +206,16 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   
-  if (score >= 10) {
-    insights.push('⭐ LEAD PREMIUM - Alta prioridad de contacto');
-  } else if (score >= 7) {
-    insights.push('✅ Lead cualificado - Contactar en 24h');
+  if (score >= 85) {
+    insights.push('🔥 LEAD HOT (85-100 pts) - Contactar URGENTE');
+  } else if (score >= 75) {
+    insights.push('⭐ Lead WARM-HIGH (75-84 pts) - Alta prioridad');
+  } else if (score >= 65) {
+    insights.push('✅ Lead WARM-MID (65-74 pts) - Contactar en 24h');
+  } else if (score >= 60) {
+    insights.push('🟡 Lead WARM-LOW (60-64 pts) - Cualificado pero observar');
   } else {
-    insights.push('⚠️ Lead frío - Considerar nurturing');
+    insights.push('❄️ Lead COLD (<60 pts) - Considerar nurturing');
   }
   
   // 🎯 DOLOR AGUDO: Low revenue + budget = CLIENTE IDEAL
@@ -235,8 +259,8 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
     contactWindow = '🔥 CONTACTAR HOY: Antes de las 20:00';
   }
   
-  // Score visual actualizado (máximo 10)
-  const scoreBar = '█'.repeat(Math.floor(score / 10 * 10)) + '░'.repeat(10 - Math.floor(score / 10 * 10));
+  // Score visual actualizado (máximo 100)
+  const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
   
   return `
 🎯 NUEVO LEAD: ${firstName}
@@ -244,7 +268,7 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
 ${contactWindow}
 ${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Cobra poco + tiene budget = Alto potencial de crecimiento\n' : ''}
 
-📊 SCORE: ${score}/10 ${scoreBar}
+📊 SCORE: ${score}/100 ${scoreBar}
 ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD'))}
 
 💼 PERFIL:
@@ -266,8 +290,9 @@ ${budgetOK ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar par
 }
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
-  const scoreBar = '█'.repeat(Math.floor(score / 10 * 10)) + '░'.repeat(10 - Math.floor(score / 10 * 10));
+  const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
+  const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
   const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
@@ -282,7 +307,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   // Solo oportunidades CRÍTICAS
   const criticalOpportunities: string[] = [];
   if (lowRevenue && budgetOK) criticalOpportunities.push('• PERFIL IDEAL: Dolor agudo (cobra poco) + tiene budget');
-  if (score >= 10) criticalOpportunities.push('• Premium - Prioridad máxima');
+  if (score >= 85) criticalOpportunities.push('• HOT Lead - Prioridad máxima');
   if (fastTrack && budgetOK) criticalOpportunities.push('• Budget + Urgencia = Cierre inmediato');
   if (authSolo) criticalOpportunities.push('• Decisor único');
   
@@ -290,10 +315,12 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   let strategy = '';
   if (lowRevenue && budgetOK && fastTrack) {
     strategy = 'CLIENTE IDEAL → Admisión directa si fit mínimo en primeros 15min (máximo potencial de crecimiento)';
-  } else if (score >= 10 && budgetOK && fastTrack) {
+  } else if (score >= 85 && budgetOK && fastTrack) {
     strategy = 'ADMISIÓN DIRECTA si fit en primeros 15min';
-  } else if (score >= 7) {
+  } else if (score >= 75) {
     strategy = 'EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
+  } else if (score >= 60) {
+    strategy = 'CUALIFICACIÓN ACTIVA → Explorar motivación profunda';
   } else {
     strategy = 'EXPLORACIÓN → Aportar valor → Identificar potencial';
   }
@@ -302,7 +329,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
 🔮 PERFIL INICIÁTICO: ${contact.name.split(' ')[0]}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VEREDICTO: ${classification} | ${score}/10 ${scoreBar}
+VEREDICTO: ${classification} ${icpTag} | ${score}/100 ${scoreBar}
 📞 ${contact.name} | ${contact.email}
 💬 ${contact.whatsapp || 'Sin WhatsApp'} | 🗓️ ${new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
 

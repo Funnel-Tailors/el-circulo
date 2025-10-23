@@ -94,8 +94,7 @@ const QuizSection = ({
     if (isLastStep) {
       // Check if qualified before showing contact form
       const score = calculateScore(answers);
-      const hasBudget = answers.q4 === "Puedo hacer ese tributo ahora";
-      const qualified = hasBudget && !hasAutoDisqualify(answers) || score >= 7 && !hasAutoDisqualify(answers);
+      const qualified = score >= 60 && !hasAutoDisqualify(answers);
       if (qualified) {
         setShowContactForm(true);
       } else {
@@ -156,8 +155,7 @@ const QuizSection = ({
       whatsapp: fullPhone
     };
     const score = calculateScore(answers);
-    const hasBudget = answers.q4 === "Puedo hacer ese tributo ahora";
-    const qualified = hasBudget && !hasAutoDisqualify(answers) || score >= 7 && !hasAutoDisqualify(answers);
+    const qualified = score >= 60 && !hasAutoDisqualify(answers);
     try {
       const {
         data: responseData,
@@ -202,19 +200,58 @@ const QuizSection = ({
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - ICP
-    if (state.q1 && !state.q1.includes("Otro")) score += 2;
+    // Q1 - ICP/Profesión (0-25 puntos)
+    if (state.q1 === "Diseñador/a") score += 25;
+    else if (state.q1 === "Diseñador web") score += 25;
+    else if (state.q1 === "Filmmaker / Videógrafo/a") score += 25;
+    else if (state.q1 === "Automatizador/a (No-Code / IA)") score += 25;
+    else if (state.q1 === "Fotógrafo/a") score += 25;
+    else if (state.q1 === "Otro servicio creativo") score += 15;
+    else if (state.q1 === "Otro") score += 5;
 
-    // Q2 - Revenue History (INVERTIDO - quien cobra MENOS puntúa MÁS)
-    if (state.q2 === "Menos de 500€") score += 3;else if (state.q2 === "500€ - 1.000€") score += 3;else if (state.q2 === "1.000€ - 2.500€") score += 2;else if (state.q2 === "2.500€ - 5.000€") score += 1;
-    // "Más de 5.000€" = 0 puntos
+    // Q2 - Revenue History INVERTIDO (0-20 puntos - quien cobra MENOS puntúa MÁS)
+    if (state.q2 === "Menos de 500€") score += 20;
+    else if (state.q2 === "500€ - 1.000€") score += 18;
+    else if (state.q2 === "1.000€ - 2.500€") score += 12;
+    else if (state.q2 === "2.500€ - 5.000€") score += 6;
+    else if (state.q2 === "Más de 5.000€") score += 0;
 
-    // Q4 - Budget
-    if (state.q4 === "Puedo hacer ese tributo ahora") score += 2;
+    // Q3 - Métodos de adquisición (0-10 puntos)
+    if (Array.isArray(state.q3)) {
+      const methodScores: Record<string, number> = {
+        "Recomendaciones": 3,
+        "Contenido orgánico": 3,
+        "Anuncios pagados": 2,
+        "Cold outreach": 2,
+        "Aún no tengo un sistema": 0
+      };
+      state.q3.forEach(method => {
+        score += methodScores[method] || 0;
+      });
+      
+      // Bonus por tener múltiples canales (máx +5 pts)
+      if (state.q3.length >= 3 && !state.q3.includes("Aún no tengo un sistema")) {
+        score += 5;
+      } else if (state.q3.length === 2 && !state.q3.includes("Aún no tengo un sistema")) {
+        score += 2;
+      }
+    }
 
-    // Q5 - Time commitment (ambas opciones válidas)
-    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 2;else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 2;
-    return score;
+    // Q4 - Budget (0-30 puntos) - CRÍTICO
+    if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;
+    else score += 0;
+
+    // Q5 - Urgencia/Compromiso (0-10 puntos)
+    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 10;
+    else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 8;
+    else if (state.q5 === "Ahora no puedo") score += 0;
+
+    // Q6 - Autoridad de decisión (0-5 puntos)
+    if (state.q6 === "Sí, decido yo") score += 5;
+    else if (state.q6 === "Decido con otra persona") score += 2;
+    else if (state.q6 === "No, no decido yo") score += 0;
+
+    return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
     return state.q4 === "No dispongo de esa cantidad" || state.q5 === "Ahora no puedo" || state.q6 === "No, no decido yo";
@@ -234,8 +271,7 @@ const QuizSection = ({
           setTimeout(() => {
             if (isLastStep) {
               const score = calculateScore(updatedAnswers);
-              const hasBudget = updatedAnswers.q4 === "Puedo hacer ese tributo ahora";
-              const qualified = hasBudget && !hasAutoDisqualify(updatedAnswers) || score >= 7 && !hasAutoDisqualify(updatedAnswers);
+              const qualified = score >= 60 && !hasAutoDisqualify(updatedAnswers);
               if (qualified) {
                 setShowContactForm(true);
               } else {
