@@ -247,6 +247,10 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   // 🎯 CLIENTE IDEAL = Low revenue + budget
   const isIdealClient = lowRevenue && budgetOK;
   
+  // Emoji de temperatura e ICP tag para escaneo visual
+  const tempEmoji = score >= 85 ? '🔥' : score >= 60 ? '⭐' : '❄️';
+  const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
+  
   // Determinar urgencia de contacto
   let contactWindow = '⏰ CONTACTAR: En las próximas 48h';
   if (isIdealClient && fastTrack) {
@@ -263,7 +267,7 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
   
   return `
-🎯 NUEVO LEAD: ${firstName}
+${tempEmoji} NUEVO LEAD: ${firstName}${icpTag ? ` | ${icpTag}` : ''}
 
 ${contactWindow}
 ${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Cobra poco + tiene budget = Alto potencial de crecimiento\n' : ''}
@@ -571,8 +575,8 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
   const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
   
-  const scoreEmoji = score >= 10 ? '🔥 HOT' : score >= 7 ? '⭐ WARM' : '❄️ COLD';
-  const scoreBar = '█'.repeat(Math.floor(score / 10 * 10)) + '░'.repeat(10 - Math.floor(score / 10 * 10));
+  const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 60 ? '⭐ WARM' : '❄️ COLD';
+  const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
   
   // Ángulos de apertura
   const openingAngles: string[] = [];
@@ -607,7 +611,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   }
   
   return `
-🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/10 ${scoreBar} | ${scoreEmoji}
+🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/100 ${scoreBar} | ${scoreEmoji}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
@@ -618,9 +622,10 @@ ${lowRevenue && budgetOK ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + budget confi
 ⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
 
 📋 PERFIL DEL CANDIDATO:
-• ${answers.q1} | Budget: ${budgetOK ? '✅' : '❌'} | Urgencia: ${fastTrack ? '🚀 7D' : '📈 30D'}
-• Decide: ${authSolo ? 'SOLO' : 'COMPARTIDO'} | Max: ${answers.q2}${lowRevenue ? ' (¡Oportunidad alta!)' : ''}
-• Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
+• ${answers.q1} | Cobra: ${answers.q2}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Budget 2K: ${budgetOK ? '✅' : '❌'} | Decide: ${authSolo ? '✅ Solo' : answers.q6}
+• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q5}
+• Adquisición: ${Array.isArray(answers.q3) ? answers.q3[0] : answers.q3}${lowRevenue && budgetOK ? '\n🚨 PERFIL IDEAL: Cobra poco + tiene budget' : ''}
 
 🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
