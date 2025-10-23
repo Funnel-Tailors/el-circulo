@@ -108,6 +108,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
       email: "",
       countryCode: "+34",
       phone: "",
+      website: "", // Honeypot field
     },
   });
 
@@ -157,6 +158,46 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
   };
 
   const handleContactSubmit = async (data: ContactFormData) => {
+    // Honeypot check - rechazar silenciosamente si el campo está lleno
+    if (data.website && data.website.length > 0) {
+      console.log('Bot detectado por honeypot');
+      toast({
+        title: "Error",
+        description: "Hubo un problema. Por favor intenta de nuevo más tarde.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Rate limiting check
+    const lastSubmit = localStorage.getItem('lastSubmitTime');
+    const submitCount = parseInt(localStorage.getItem('submitCount') || '0');
+    const now = Date.now();
+    
+    if (lastSubmit) {
+      const timeDiff = now - parseInt(lastSubmit);
+      const tenMinutes = 10 * 60 * 1000;
+      
+      if (timeDiff < tenMinutes && submitCount >= 3) {
+        toast({
+          title: "Demasiados intentos",
+          description: "Por favor espera unos minutos antes de intentar de nuevo",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (timeDiff > tenMinutes) {
+        localStorage.setItem('submitCount', '1');
+      } else {
+        localStorage.setItem('submitCount', (submitCount + 1).toString());
+      }
+    } else {
+      localStorage.setItem('submitCount', '1');
+    }
+    
+    localStorage.setItem('lastSubmitTime', now.toString());
+    
     setIsSubmitting(true);
     
     // Combinar countryCode + phone para el campo whatsapp
@@ -326,6 +367,25 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleContactSubmit)} className="space-y-4">
+              {/* Campo Honeypot - invisible para usuarios reales */}
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
+                    <FormLabel>Website</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="text"
+                        autoComplete="off"
+                        tabIndex={-1}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
               {/* Campo Nombre Completo */}
               <FormField
                 control={form.control}
@@ -337,6 +397,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                       <Input
                         {...field}
                         placeholder="Juan Pérez"
+                        autoComplete="name"
                         className="dark-button text-base"
                       />
                     </FormControl>
@@ -357,6 +418,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                         {...field}
                         type="email"
                         placeholder="tu@email.com"
+                        autoComplete="email"
                         className="dark-button text-base"
                       />
                     </FormControl>
@@ -412,6 +474,7 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
                             {...field}
                             type="tel"
                             placeholder="600 000 000"
+                            autoComplete="tel"
                             className="dark-button text-base"
                           />
                         </FormControl>

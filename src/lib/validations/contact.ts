@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+// Lista de dominios de email desechables conocidos
+const DISPOSABLE_EMAIL_DOMAINS = [
+  'temp-mail.org', '10minutemail.com', 'guerrillamail.com',
+  'mailinator.com', 'throwaway.email', 'yopmail.com',
+  'tempmail.com', 'fakeinbox.com', 'trashmail.com',
+  'getnada.com', 'mohmal.com', 'throwawaymail.com'
+];
+
+// Patrones spam comunes
+const SPAM_PATTERNS = {
+  name: /^(test|asdf|qwerty|fake|spam|aaa|zzz|xxx|admin|user)\d*$/i,
+  email: /^(test|admin|fake|spam|no|none)@(test|admin|fake|spam|example)\./i,
+  phone: /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/
+};
+
 // Lista de países con códigos telefónicos más comunes
 export const COUNTRY_CODES = [
   { code: "+34", country: "España", flag: "🇪🇸" },
@@ -28,10 +43,27 @@ export const contactFormSchema = z.object({
   name: z
     .string()
     .min(1, "El nombre es obligatorio")
+    .max(100, "El nombre es demasiado largo")
     .refine(
       (value) => {
         const words = value.trim().split(/\s+/);
         return words.length >= 2 && words.every(word => word.length >= 2);
+      },
+      {
+        message: "Ingresa tu nombre completo (nombre y apellido)",
+      }
+    )
+    .refine(
+      (value) => !SPAM_PATTERNS.name.test(value.trim()),
+      {
+        message: "Por favor ingresa tu nombre real",
+      }
+    )
+    .refine(
+      (value) => {
+        // Detectar nombres con palabras repetidas (ej: "Juan Juan")
+        const words = value.trim().toLowerCase().split(/\s+/);
+        return words.length === new Set(words).size;
       },
       {
         message: "Ingresa tu nombre completo (nombre y apellido)",
@@ -41,6 +73,7 @@ export const contactFormSchema = z.object({
   email: z
     .string()
     .min(1, "El email es obligatorio")
+    .max(255, "El email es demasiado largo")
     .email("Ingresa un email válido")
     .refine(
       (value) => {
@@ -50,6 +83,21 @@ export const contactFormSchema = z.object({
       },
       {
         message: "Ingresa un email válido (ejemplo: tu@email.com)",
+      }
+    )
+    .refine(
+      (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
+      {
+        message: "Por favor ingresa un email válido",
+      }
+    )
+    .refine(
+      (value) => {
+        const domain = value.split('@')[1]?.toLowerCase();
+        return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
+      },
+      {
+        message: "No se permiten emails temporales",
       }
     ),
   
@@ -69,7 +117,19 @@ export const contactFormSchema = z.object({
       {
         message: "Ingresa un número de teléfono válido (6-15 dígitos)",
       }
+    )
+    .refine(
+      (value) => {
+        const cleaned = value.replace(/[\s-]/g, '');
+        return !SPAM_PATTERNS.phone.test(cleaned);
+      },
+      {
+        message: "Por favor ingresa un número de teléfono válido",
+      }
     ),
+  
+  // Campo honeypot (debe estar vacío)
+  website: z.string().max(0, "Campo inválido").optional(),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;

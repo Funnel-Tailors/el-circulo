@@ -5,6 +5,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Validación anti-spam server-side
+const DISPOSABLE_EMAIL_DOMAINS = [
+  'temp-mail.org', '10minutemail.com', 'guerrillamail.com',
+  'mailinator.com', 'throwaway.email', 'yopmail.com',
+  'tempmail.com', 'fakeinbox.com', 'trashmail.com',
+  'getnada.com', 'mohmal.com', 'throwawaymail.com'
+];
+
+const SPAM_PATTERNS = {
+  name: /^(test|asdf|qwerty|fake|spam|aaa|zzz|xxx|admin|user)\d*$/i,
+  email: /^(test|admin|fake|spam|no|none)@(test|admin|fake|spam|example)\./i,
+  phone: /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/
+};
+
+function isSpamSubmission(data: ContactData): { isSpam: boolean; reason?: string } {
+  // Verificar patrones spam en nombre
+  if (SPAM_PATTERNS.name.test(data.name.trim())) {
+    return { isSpam: true, reason: 'Spam pattern in name' };
+  }
+  
+  // Verificar email temporal/spam
+  const emailLower = data.email.toLowerCase();
+  if (SPAM_PATTERNS.email.test(emailLower)) {
+    return { isSpam: true, reason: 'Spam pattern in email' };
+  }
+  
+  const emailDomain = emailLower.split('@')[1];
+  if (DISPOSABLE_EMAIL_DOMAINS.includes(emailDomain)) {
+    return { isSpam: true, reason: 'Disposable email domain' };
+  }
+  
+  // Verificar teléfono con patrón spam
+  if (data.whatsapp) {
+    const cleanPhone = data.whatsapp.replace(/[^\d]/g, '');
+    if (SPAM_PATTERNS.phone.test(cleanPhone)) {
+      return { isSpam: true, reason: 'Spam pattern in phone' };
+    }
+  }
+  
+  // Verificar nombre con palabras repetidas
+  const nameWords = data.name.trim().toLowerCase().split(/\s+/);
+  if (nameWords.length !== new Set(nameWords).size) {
+    return { isSpam: true, reason: 'Repeated words in name' };
+  }
+  
+  return { isSpam: false };
+}
+
 interface QuizAnswers {
   q1?: string;
   q2?: string;
@@ -580,6 +628,24 @@ serve(async (req) => {
     
     console.log('Received lead submission:', { name, email, score, qualified });
     
+    // Validación anti-spam server-side
+    const contactData: ContactData = { name, email, whatsapp };
+    const spamCheck = isSpamSubmission(contactData);
+    
+    if (spamCheck.isSpam) {
+      console.log('Spam detected:', spamCheck.reason, { name, email, whatsapp });
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid submission' 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
+    }
+    
     // Get secrets
     const GHL_API_TOKEN = Deno.env.get('GHL_API_TOKEN');
     const GHL_LOCATION_ID = Deno.env.get('GHL_LOCATION_ID');
@@ -617,7 +683,7 @@ serve(async (req) => {
       }
     }
     
-    const contactData: ContactData = { name, email, whatsapp };
+    // contactData already defined above for spam check
     
     // Prepare contact payload
     const contactPayload = {
