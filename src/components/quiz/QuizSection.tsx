@@ -234,7 +234,11 @@ const QuizSection = ({ onComplete, onExit }: QuizSectionProps) => {
         description: "Tus datos han sido guardados correctamente",
       });
       
-      const finalState = { ...answers, ...contactData };
+      const finalState = { 
+        ...answers, 
+        ...contactData,
+        ghlContactId: responseData?.contactId
+      };
       onComplete(finalState, true);
       
     } catch (error) {

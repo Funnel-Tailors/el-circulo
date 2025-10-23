@@ -15,6 +15,7 @@ export type QuizState = {
   name?: string;
   email?: string;
   whatsapp?: string;
+  ghlContactId?: string;
 };
 
 const Index = () => {

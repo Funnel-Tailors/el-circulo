@@ -51,9 +51,20 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 </div>
               </div>
 
+              {quizState.ghlContactId && (
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-center">
+                  <p className="text-xs text-blue-200/90">
+                    ✨ Tus datos ya están pre-cargados en el calendario. 
+                    <span className="font-semibold"> Verifica que sean correctos</span> antes de confirmar tu cita.
+                  </p>
+                </div>
+              )}
+
               <div className="rounded-xl overflow-hidden border border-border bg-background/50 mt-6">
                 <iframe
-                  src="https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke"
+                  src={`https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke${
+                    quizState.ghlContactId ? `?contactId=${quizState.ghlContactId}` : ''
+                  }`}
                   style={{ width: '100%', border: 'none', overflow: 'hidden' }}
                   scrolling="no"
                   id="xkfGe4Gjr8REwK34dZke_1760881701916"
