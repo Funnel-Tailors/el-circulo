@@ -272,7 +272,7 @@ const Analytics = () => {
                 Exportar CSV
               </Button>
             </div>
-            <UTMPerformance data={utmPerformance} loading={!utmPerformance.length} />
+            <UTMPerformance data={utmPerformance} loading={loading} />
           </TabsContent>
         </Tabs>
       </div>
