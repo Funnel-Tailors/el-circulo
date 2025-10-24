@@ -383,7 +383,7 @@ const QuizSection = ({
   return <>
     <div className="w-full space-y-4 animate-fade-in">
       {/* Hero copy integrado - SOLO visible en Q1 */}
-      {currentStep === 0 && <div className="text-center space-y-1 pb-4">
+      {currentStep === 0 && <div className="text-center space-y-0 pb-4">
           {/* Runic divider */}
           <div className="flex items-center justify-center gap-4 mb-2" aria-hidden="true">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
