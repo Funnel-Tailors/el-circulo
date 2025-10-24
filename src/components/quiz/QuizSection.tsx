@@ -383,7 +383,7 @@ const QuizSection = ({
   return <>
     <div className="w-full space-y-4 animate-fade-in">
       {/* Hero copy integrado - SOLO visible en Q1 */}
-      {currentStep === 0 && <div className="text-center space-y-3 pb-4">
+      {currentStep === 0 && <div className="text-center space-y-1 pb-4">
           {/* Runic divider */}
           <div className="flex items-center justify-center gap-4 mb-2" aria-hidden="true">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
@@ -395,7 +395,7 @@ const QuizSection = ({
             Recorre la <span className="glow">Senda</span>
           </h1>
 
-          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto pt-3">
+          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto">
             Descubre si eres digno de entrar al Círculo
           </p>
 
