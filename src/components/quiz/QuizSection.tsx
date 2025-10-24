@@ -202,20 +202,10 @@ const QuizSection = ({
     let score = 0;
 
     // Q1 - ICP/Profesión (0-25 puntos)
-    if (state.q1 === "Diseñador/a") score += 25;
-    else if (state.q1 === "Diseñador web") score += 25;
-    else if (state.q1 === "Filmmaker / Videógrafo/a") score += 25;
-    else if (state.q1 === "Automatizador/a (No-Code / IA)") score += 25;
-    else if (state.q1 === "Fotógrafo/a") score += 25;
-    else if (state.q1 === "Otro servicio creativo") score += 15;
-    else if (state.q1 === "Otro") score += 5;
+    if (state.q1 === "Diseñador/a") score += 25;else if (state.q1 === "Diseñador web") score += 25;else if (state.q1 === "Filmmaker / Videógrafo/a") score += 25;else if (state.q1 === "Automatizador/a (No-Code / IA)") score += 25;else if (state.q1 === "Fotógrafo/a") score += 25;else if (state.q1 === "Otro servicio creativo") score += 15;else if (state.q1 === "Otro") score += 5;
 
     // Q2 - Revenue History INVERTIDO (0-20 puntos - quien cobra MENOS puntúa MÁS)
-    if (state.q2 === "Menos de 500€") score += 20;
-    else if (state.q2 === "500€ - 1.000€") score += 18;
-    else if (state.q2 === "1.000€ - 2.500€") score += 12;
-    else if (state.q2 === "2.500€ - 5.000€") score += 6;
-    else if (state.q2 === "Más de 5.000€") score += 0;
+    if (state.q2 === "Menos de 500€") score += 20;else if (state.q2 === "500€ - 1.000€") score += 18;else if (state.q2 === "1.000€ - 2.500€") score += 12;else if (state.q2 === "2.500€ - 5.000€") score += 6;else if (state.q2 === "Más de 5.000€") score += 0;
 
     // Q3 - Métodos de adquisición (0-10 puntos)
     if (Array.isArray(state.q3)) {
@@ -229,7 +219,7 @@ const QuizSection = ({
       state.q3.forEach(method => {
         score += methodScores[method] || 0;
       });
-      
+
       // Bonus por tener múltiples canales (máx +5 pts)
       if (state.q3.length >= 3 && !state.q3.includes("Aún no tengo un sistema")) {
         score += 5;
@@ -239,19 +229,13 @@ const QuizSection = ({
     }
 
     // Q4 - Budget (0-30 puntos) - CRÍTICO
-    if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;
-    else score += 0;
+    if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;else score += 0;
 
     // Q5 - Urgencia/Compromiso (0-10 puntos)
-    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 10;
-    else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 8;
-    else if (state.q5 === "Ahora no puedo") score += 0;
+    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 10;else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 8;else if (state.q5 === "Ahora no puedo") score += 0;
 
     // Q6 - Autoridad de decisión (0-5 puntos)
-    if (state.q6 === "Sí, decido yo") score += 5;
-    else if (state.q6 === "Decido con otra persona") score += 2;
-    else if (state.q6 === "No, no decido yo") score += 0;
-
+    if (state.q6 === "Sí, decido yo") score += 5;else if (state.q6 === "Decido con otra persona") score += 2;else if (state.q6 === "No, no decido yo") score += 0;
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
@@ -399,8 +383,7 @@ const QuizSection = ({
   return <>
     <div className="w-full space-y-4 animate-fade-in">
       {/* Hero copy integrado - SOLO visible en Q1 */}
-      {currentStep === 0 && (
-        <div className="text-center space-y-3 pb-4">
+      {currentStep === 0 && <div className="text-center space-y-3 pb-4">
           {/* Runic divider */}
           <div className="flex items-center justify-center gap-4 mb-2" aria-hidden="true">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
@@ -416,9 +399,7 @@ const QuizSection = ({
             Descubre si eres digno de entrar al Círculo
           </p>
 
-          <p className="text-xs text-muted-foreground pt-1">
-            Menos de 60s para saber si tu momento es ahora.
-          </p>
+          
 
           {/* Bottom divider */}
           <div className="flex items-center justify-center gap-4 pt-2" aria-hidden="true">
@@ -426,8 +407,7 @@ const QuizSection = ({
             <div className="text-muted-foreground text-xs">✦</div>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
           </div>
-        </div>
-      )}
+        </div>}
 
       <ProgressBar current={currentStep + 1} total={steps.length} />
 
