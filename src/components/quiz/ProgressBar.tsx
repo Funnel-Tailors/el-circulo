@@ -4,20 +4,14 @@ interface ProgressBarProps {
 }
 
 const ProgressBar = ({ current, total }: ProgressBarProps) => {
+  const progressPercentage = (current / total) * 100;
+  
   return (
-    <div className="flex gap-2 justify-center py-4">
-      {Array.from({ length: total }).map((_, index) => (
-        <div
-          key={index}
-          className={`h-1.5 w-8 rounded-full transition-all duration-300 ${
-            index < current
-              ? "bg-foreground"
-              : index === current
-              ? "bg-foreground/60"
-              : "bg-muted"
-          }`}
-        />
-      ))}
+    <div className="w-full h-1 bg-border/30 rounded-full overflow-hidden">
+      <div 
+        className="h-full bg-gradient-to-r from-muted-foreground/40 via-foreground/60 to-muted-foreground/40 transition-all duration-500 ease-out"
+        style={{ width: `${progressPercentage}%` }}
+      />
     </div>
   );
 };
