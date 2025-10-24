@@ -395,7 +395,7 @@ const QuizSection = ({
             Recorre la <span className="glow">Senda</span>
           </h1>
 
-          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto">
+          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto pt-3">
             Descubre si eres digno de entrar al Círculo
           </p>
 
