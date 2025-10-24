@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import HeroSection from "@/components/quiz/HeroSection";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { quizAnalytics } from "@/lib/analytics";
@@ -19,14 +18,10 @@ export type QuizState = {
 };
 
 const Index = () => {
-  const [currentScreen, setCurrentScreen] = useState<"hero" | "quiz" | "result">("hero");
+  const [currentScreen, setCurrentScreen] = useState<"hero" | "quiz" | "result">("quiz");
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
   const hasTrackedStart = useRef(false);
-
-  const startQuiz = () => {
-    setCurrentScreen("quiz");
-  };
 
   const completeQuiz = (state: QuizState, qualified: boolean) => {
     setQuizState(state);
@@ -36,11 +31,11 @@ const Index = () => {
 
   const resetQuiz = () => {
     setQuizState({});
-    setCurrentScreen("hero");
+    setCurrentScreen("quiz");
   };
 
   useEffect(() => {
-    if (currentScreen === "hero" && !hasTrackedStart.current) {
+    if (currentScreen === "quiz" && !hasTrackedStart.current) {
       quizAnalytics.trackEvent({ event_type: 'quiz_started' });
       hasTrackedStart.current = true;
     }
@@ -55,7 +50,6 @@ const Index = () => {
   return (
     <div className="flex items-center justify-center min-h-screen p-4 bg-transparent">
       <div className="dark-card p-6 md:p-8 rounded-2xl max-w-2xl w-full">
-        {currentScreen === "hero" && <HeroSection onStart={startQuiz} />}
         {currentScreen === "quiz" && (
           <QuizSection 
             onComplete={completeQuiz}
