@@ -75,6 +75,7 @@ interface LeadSubmission {
   answers: QuizAnswers;
   score: number;
   qualified: boolean;
+  fbclid?: string;
 }
 
 function generateTags(answers: QuizAnswers, score: number, qualified: boolean): string[] {
@@ -656,9 +657,9 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, whatsapp, answers, score, qualified }: LeadSubmission = await req.json();
+    const { name, email, whatsapp, answers, score, qualified, fbclid }: LeadSubmission = await req.json();
     
-    console.log('Received lead submission:', { name, email, score, qualified });
+    console.log('📊 Lead recibido:', { name, email, qualified, score, fbclid: fbclid || 'organic' });
     
     // Validación anti-spam server-side
     const contactData: ContactData = { name, email, whatsapp };
@@ -739,7 +740,8 @@ serve(async (req) => {
         { key: 'Notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
         { key: 'notification_client', field_value: generateClientNotification(name, answers, tags, score) },
         { key: 'notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
-        { key: 'Notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) }
+        { key: 'Notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) },
+        { key: 'circulo_fbclid', field_value: fbclid || 'organic' }
       ]
     };
     

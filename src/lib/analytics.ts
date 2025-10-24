@@ -22,6 +22,7 @@ interface TrackEventParams {
 class QuizAnalytics {
   private sessionId: string;
   private utmParams: Record<string, string>;
+  private fbclid: string | null;
   private referrer: string;
   private deviceType: string;
   private language: string;
@@ -61,6 +62,15 @@ class QuizAnalytics {
         if (stored) utmParams[key] = stored;
       }
     });
+
+    // Capturar fbclid para CAPI de Facebook
+    const fbclidValue = params.get('fbclid');
+    if (fbclidValue) {
+      this.fbclid = fbclidValue;
+      sessionStorage.setItem('fbclid', fbclidValue);
+    } else {
+      this.fbclid = sessionStorage.getItem('fbclid');
+    }
 
     return utmParams;
   }
@@ -158,6 +168,10 @@ class QuizAnalytics {
     this.trackEvent({
       event_type: 'contact_form_viewed',
     });
+  }
+
+  getFbclid(): string | null {
+    return this.fbclid;
   }
 }
 

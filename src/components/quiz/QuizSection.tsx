@@ -165,7 +165,8 @@ const QuizSection = ({
           ...contactData,
           answers,
           score,
-          qualified
+          qualified,
+          fbclid: quizAnalytics.getFbclid()
         }
       });
       if (error) throw error;
