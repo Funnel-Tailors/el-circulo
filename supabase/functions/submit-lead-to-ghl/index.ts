@@ -118,13 +118,10 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean): 
   
   // Tags de profesión con prefijo CÍRCULO
   const professionMap: Record<string, string> = {
-    'Diseñador/a': '🎨 CÍRCULO-PRO-Designer',
-    'Diseñador web': '💻 CÍRCULO-PRO-WebDesigner',
-    'Filmmaker / Videógrafo/a': '🎬 CÍRCULO-PRO-Filmmaker',
-    'Automatizador/a (No-Code / IA)': '🤖 CÍRCULO-PRO-Automation',
-    'Fotógrafo/a': '📸 CÍRCULO-PRO-Photographer',
-    'Otro servicio creativo': '✨ CÍRCULO-PRO-Creative',
-    'Otro': '🔹 CÍRCULO-PRO-Other'
+    'Diseñador Gráfico / Web': '🎨 CÍRCULO-PRO-Designer',
+    'Fotógrafo/Filmmaker': '🎬 CÍRCULO-PRO-Visual',
+    'Automatizador': '🤖 CÍRCULO-PRO-Automation',
+    'Otro servicio creativo': '✨ CÍRCULO-PRO-Creative'
   };
   if (answers.q1) tags.push(professionMap[answers.q1] || '🔹 CÍRCULO-PRO-Other');
   
@@ -358,11 +355,10 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
   
   // Insights de IDENTIDAD (sin income claims) - Enfoque en transformación
   const professionIdentity: Record<string, string> = {
-    'Diseñador/a': 'Los diseñadores del Círculo no cobran por horas. Cobran por transformación.',
-    'Diseñador web': 'Los diseñadores web del Círculo no son técnicos. Son arquitectos de experiencias digitales.',
-    'Filmmaker / Videógrafo/a': 'Los filmmakers del Círculo no graban videos. Crean activos visuales que venden por sí solos.',
-    'Automatizador/a (No-Code / IA)': 'Los automatizadores del Círculo no hacen Zapiers. Diseñan sistemas que escalan negocios.',
-    'Fotógrafo/a': 'Los fotógrafos del Círculo no toman fotos. Crean identidad visual de marca.',
+    'Diseñador Gráfico / Web': 'Los diseñadores del Círculo no cobran por horas. Cobran por transformación y experiencias digitales que escalan negocios.',
+    'Fotógrafo/Filmmaker': 'Los creadores visuales del Círculo no toman fotos ni graban videos. Crean activos visuales que venden por sí solos.',
+    'Automatizador': 'Los automatizadores del Círculo no hacen Zapiers. Diseñan sistemas que escalan negocios sin fricción.',
+    'Otro servicio creativo': 'Los miembros del Círculo no venden servicios. Venden resultados inevitables.'
   };
   
   const identity = professionIdentity[answers.q1 || ''] || 'Los miembros del Círculo no venden servicios. Venden resultados inevitables.';
@@ -443,44 +439,38 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
   
   // Objetivos específicos por profesión
   const professionGoals: Record<string, { goal: string; prep: string[] }> = {
-    'Diseñador/a': {
+    'Diseñador Gráfico / Web': {
       goal: 'convertirte en el diseñador de referencia de tu nicho',
       prep: [
         'Tu portfolio actual (3-5 mejores proyectos)',
         'Cuánto cobras actualmente por proyecto',
-        'Qué tipo de clientes quieres atraer'
+        'Qué tipo de clientes quieres atraer',
+        'Si haces diseño gráfico, web o ambos'
       ]
     },
-    'Diseñador web': {
-      goal: 'escalar tu agencia web y cerrar proyectos de 5-10K',
+    'Fotógrafo/Filmmaker': {
+      goal: 'posicionarte como el creador visual premium de tu mercado',
       prep: [
-        'Tus últimos 3 proyectos web y lo que cobraste',
-        'Cuántos proyectos cierras al mes actualmente',
-        'Tu stack tecnológico actual'
+        'Tu reel/portfolio (mejores 3-10 trabajos)',
+        'Qué cobras por proyecto/sesión actualmente',
+        'Tipo de producciones que quieres hacer',
+        'Si te enfocas en foto, video o ambos'
       ]
     },
-    'Filmmaker / Videógrafo/a': {
-      goal: 'posicionarte como el filmmaker premium de tu mercado',
-      prep: [
-        'Tu reel o mejores 3 trabajos',
-        'Qué cobras por video actualmente',
-        'Tipo de producciones que quieres hacer'
-      ]
-    },
-    'Automatizador/a (No-Code / IA)': {
+    'Automatizador': {
       goal: 'convertirte en el experto en automatización que todos buscan',
       prep: [
         'Tus últimos 3 proyectos de automatización',
         'Qué cobras actualmente',
-        'Herramientas que dominas (Make, Zapier, etc.)'
+        'Herramientas que dominas (Make, Zapier, IA, etc.)'
       ]
     },
-    'Fotógrafo/a': {
-      goal: 'elevar tu fotografía y cobrar lo que realmente vales',
+    'Otro servicio creativo': {
+      goal: 'alcanzar tus objetivos profesionales',
       prep: [
-        'Tu portfolio (mejores 10-15 fotos)',
-        'Qué cobras actualmente por sesión',
-        'Tipo de fotografía en la que quieres especializarte'
+        'Tu situación actual y servicios que ofreces',
+        'Tus objetivos principales',
+        'Tus mayores desafíos'
       ]
     }
   };
