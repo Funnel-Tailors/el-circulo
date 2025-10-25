@@ -52,12 +52,12 @@ const AnswerDistribution = ({ data, loading }: AnswerDistributionProps) => {
 
   // Mapeo de IDs a nombres legibles
   const questionNames: Record<string, string> = {
-    q1: '¿A qué te dedicas?',
-    q2: '¿Cuánto cobras por proyecto?',
-    q3: '¿Cómo consigues clientes?',
-    q4: '¿Tienes presupuesto disponible?',
-    q5: '¿Cuánto tiempo puedes dedicar?',
-    q6: '¿Tomas tú las decisiones?',
+    q1: 'Profesión',
+    q2: 'Facturación por proyecto',
+    q3: 'Sistema de adquisición',
+    q4: 'Capacidad de inversión',
+    q5: 'Disponibilidad horaria',
+    q6: 'Poder de decisión',
   };
 
   return (

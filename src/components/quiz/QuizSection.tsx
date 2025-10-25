@@ -23,7 +23,7 @@ const steps = [{
   id: "q1",
   question: "¿A qué te dedicas hoy?",
   type: "radio",
-  options: ["Diseñador/a", "Diseñador web", "Filmmaker / Videógrafo/a", "Automatizador/a (No-Code / IA)", "Fotógrafo/a", "Otro servicio creativo", "Otro"]
+  options: ["Diseñador Gráfico / Web", "Fotógrafo/Filmmaker", "Automatizador", "Otro servicio creativo"]
 }, {
   id: "q2",
   question: "¿Cuánto es lo máximo que has cobrado por un proyecto?",
