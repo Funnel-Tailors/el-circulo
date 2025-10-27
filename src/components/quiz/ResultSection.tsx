@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { QuizState } from "@/pages/Index";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ResultSectionProps {
   isQualified: boolean;
@@ -10,6 +10,8 @@ interface ResultSectionProps {
 
 const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) => {
   const BONUS_URL = "https://vendenautomatico.com/la-senda-extended";
+  const [bookingStarted, setBookingStarted] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(15 * 60); // 15 min countdown
 
   useEffect(() => {
     if (isQualified) {
@@ -24,6 +26,28 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
       };
     }
   }, [isQualified]);
+
+  // Countdown timer
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining(prev => prev > 0 ? prev - 1 : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = timeRemaining % 60;
+
+  // Detect iframe interaction (booking started)
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'booking_interaction') {
+        setBookingStarted(true);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   return (
     <div className="w-full space-y-4 animate-fade-in">
@@ -60,6 +84,37 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 </div>
               )}
 
+              {/* Micro-copy gamificado */}
+              <div className="space-y-3 mb-6">
+                {/* Escasez temporal */}
+                <div className="flex items-center justify-between bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">⏰</span>
+                    <span className="text-xs font-semibold text-red-200">Tu acceso expira en</span>
+                  </div>
+                  <span className="font-mono text-sm font-bold text-red-300">
+                    {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+                  </span>
+                </div>
+
+                {/* Validación social */}
+                <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-accent font-semibold">87 creativos</span> completaron la Senda esta semana
+                  </p>
+                </div>
+
+                {/* Progreso del usuario */}
+                {bookingStarted && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-center animate-fade-in">
+                    <p className="text-xs text-green-200 flex items-center justify-center gap-2">
+                      <span>✅</span>
+                      <span className="font-semibold">Último paso:</span> Confirma tu horario y accederás al Círculo
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div className="rounded-xl overflow-hidden border border-border bg-background/50 mt-6">
                 <iframe
                   src={`https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke${
@@ -73,21 +128,48 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 />
               </div>
 
-              <div className="text-center text-xs text-muted-foreground mt-4">
-                <p className="flex items-center justify-center gap-2">
-                  <span>⏳</span>
-                  Solo 3 espacios disponibles por semana
-                </p>
-              </div>
+              {/* Footer sticky con empuje psicológico */}
+              <div className="mt-6 space-y-3">
+                {/* Recordatorio de beneficio */}
+                {!bookingStarted && (
+                  <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      🔮 <span className="font-semibold text-foreground">¿Por qué reservar ahora?</span>
+                    </p>
+                    <ul className="text-xs text-left space-y-1.5 max-w-md mx-auto">
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent mt-0.5">→</span>
+                        <span>Acceso prioritario a la evaluación del Círculo (valor: 500€)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent mt-0.5">→</span>
+                        <span>Auditoría personalizada de tu negocio (solo 3 por semana)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent mt-0.5">→</span>
+                        <span>Estrategia de posicionamiento premium (sin compromiso)</span>
+                      </li>
+                    </ul>
+                  </div>
+                )}
 
-              <div className="text-center mt-6">
-                <Button
-                  onClick={onReset}
-                  variant="ghost"
-                  className="text-sm"
-                >
-                  ← Volver al inicio
-                </Button>
+                {/* Escasez de espacios */}
+                <div className="text-center text-xs text-muted-foreground">
+                  <p className="flex items-center justify-center gap-2">
+                    <span>⏳</span>
+                    Solo <span className="font-bold text-accent">3 espacios</span> disponibles esta semana
+                  </p>
+                </div>
+
+                <div className="text-center mt-4">
+                  <Button
+                    onClick={onReset}
+                    variant="ghost"
+                    className="text-sm"
+                  >
+                    ← Volver al inicio
+                  </Button>
+                </div>
               </div>
             </>
           ) : (
