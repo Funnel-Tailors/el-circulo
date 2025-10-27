@@ -73,8 +73,8 @@ const CircleHero = () => {
         Descubre el <span className="text-foreground font-semibold">secreto para conseguir clientes</span> que piensan que regatear <span className="text-foreground font-semibold">es de cutres</span>
       </p>
 
-      {/* VSL Container con glow pulsante y efecto sticky */}
-      <div className="relative max-w-4xl mx-auto my-12 sticky-video">
+      {/* VSL Container con glow pulsante */}
+      <div className="relative mx-auto my-12">
         <video
           src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
           autoPlay

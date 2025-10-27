@@ -33,9 +33,16 @@ const Roadmap = () => {
       <Starfield />
 
       {/* Container con max-width y padding fijos */}
-      <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
-        {/* HERO CON VSL */}
-        <CircleHero />
+      <div className="container max-w-7xl mx-auto px-6 pt-4 pb-12 relative z-10">
+        {/* Layout de dos columnas en desktop */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-12 lg:items-start">
+          {/* Columna izquierda - Video sticky en desktop */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
+            <CircleHero />
+          </div>
+
+          {/* Columna derecha - Contenido scrolleable */}
+          <div className="lg:pt-0">
 
         {/* ROADMAP */}
         <RoadmapHero />
@@ -177,6 +184,8 @@ const Roadmap = () => {
                 onReset={handleResetQuiz}
               />
             )}
+          </div>
+        </div>
           </div>
         </div>
       </div>
