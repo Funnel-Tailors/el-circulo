@@ -202,7 +202,10 @@ const QuizSection = ({
     let score = 0;
 
     // Q1 - ICP/Profesión (0-25 puntos)
-    if (state.q1 === "Diseñador/a") score += 25;else if (state.q1 === "Diseñador web") score += 25;else if (state.q1 === "Filmmaker / Videógrafo/a") score += 25;else if (state.q1 === "Automatizador/a (No-Code / IA)") score += 25;else if (state.q1 === "Fotógrafo/a") score += 25;else if (state.q1 === "Otro servicio creativo") score += 15;else if (state.q1 === "Otro") score += 5;
+    if (state.q1 === "Diseñador Gráfico / Web") score += 25;
+    else if (state.q1 === "Fotógrafo/Filmmaker") score += 25;
+    else if (state.q1 === "Automatizador") score += 25;
+    else if (state.q1 === "Otro servicio creativo") score += 15;
 
     // Q2 - Revenue History INVERTIDO (0-20 puntos - quien cobra MENOS puntúa MÁS)
     if (state.q2 === "Menos de 500€") score += 20;else if (state.q2 === "500€ - 1.000€") score += 18;else if (state.q2 === "1.000€ - 2.500€") score += 12;else if (state.q2 === "2.500€ - 5.000€") score += 6;else if (state.q2 === "Más de 5.000€") score += 0;
