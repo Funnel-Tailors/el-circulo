@@ -67,6 +67,7 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
           loop
           muted
           playsInline
+          controls
           className="w-full rounded-3xl shadow-2xl video-glow"
           style={{ aspectRatio: '16/9' }}
         />
