@@ -1,10 +1,33 @@
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 interface CircleHeroProps {
   onCTAClick: () => void;
 }
 
 const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
+  const [count, setCount] = useState(0);
+  const targetValue = 14300;
+
+  useEffect(() => {
+    const duration = 2000; // 2 segundos
+    const steps = 60;
+    const increment = targetValue / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= targetValue) {
+        setCount(targetValue);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="text-center space-y-8 mb-24 animate-fade-in -mt-8">
       {/* 5 Estrellas decorativas superiores */}
@@ -26,9 +49,9 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
         Los <span className="text-foreground font-semibold">Freelancers Y Profesionales Creativos</span> Del Círculo Han Facturado:
       </p>
 
-      {/* Cifra grande destacada */}
-      <h2 className="text-4xl md:text-5xl font-display font-black glow -mt-4 animate-scale-smooth">
-        14.300,00€
+      {/* Cifra grande destacada con contador animado */}
+      <h2 className="text-3xl md:text-4xl font-display font-black glow -mt-6">
+        {count.toLocaleString('es-ES')},00€
       </h2>
 
       {/* Subtítulo */}
