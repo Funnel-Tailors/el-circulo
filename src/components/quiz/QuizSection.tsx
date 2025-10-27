@@ -514,13 +514,6 @@ const QuizSection = ({
           </div>
         </div>
 
-        {/* NUEVO: Micro-copy de empuje en Q1 */}
-        <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center mb-2">
-          <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-            <span>⏱️</span>
-            <span>Tiempo estimado: <span className="font-semibold text-foreground">2 minutos</span> · Solo 6 preguntas</span>
-          </p>
-        </div>
       </>}
 
       <ProgressBar current={currentStep + 1} total={steps.length} />
