@@ -95,9 +95,7 @@ const CircleHero = () => {
 
         {/* Subheadline */}
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-          Consigue tu próximo cliente <span className="text-foreground font-bold">en menos de 30 días</span>
-          <br />
-          <span className="text-sm">(o en 7 si aguantas el ritmo)</span>
+          Consigue tu próximo cliente <span className="text-foreground font-bold">en menos de 30 días</span> (o en 7 si aguantas el ritmo)
         </p>
       </div>
 
