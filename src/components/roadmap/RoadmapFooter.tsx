@@ -17,7 +17,7 @@ const RoadmapFooter = () => {
         <div className="h-px w-20 bg-gradient-to-l from-transparent to-border"></div>
       </div>
 
-      <h2 className="text-2xl md:text-4xl font-display font-black">
+      <h2 className="text-base font-display font-black">
         🧙‍♂️ Ábrete camino de <span className="italic">malito</span> a miembro del Círculo
       </h2>
 
