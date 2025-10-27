@@ -31,15 +31,10 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
         14.300,00€
       </h2>
 
-      {/* Headline principal */}
-      <div className="max-w-3xl mx-auto space-y-2 px-4">
-        <p className="text-lg md:text-xl text-muted-foreground">
-          Descubre el <span className="text-foreground font-bold">secreto para conseguir clientes</span>
-        </p>
-        <p className="text-lg md:text-xl text-muted-foreground">
-          que piensan que regatear <span className="text-foreground font-bold">es de cutres</span>
-        </p>
-      </div>
+      {/* Subtítulo */}
+      <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto px-4">
+        Descubre el <span className="text-foreground font-semibold">secreto para conseguir clientes</span> que piensan que regatear <span className="text-foreground font-semibold">es de cutres</span>
+      </p>
 
       {/* VSL Container con glow pulsante */}
       <div className="relative max-w-4xl mx-auto my-12">
