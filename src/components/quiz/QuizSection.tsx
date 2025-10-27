@@ -302,7 +302,7 @@ const QuizSection = ({
           <div className="text-center space-y-3">
             {/* Badge de progreso */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
-              <span className="text-xs font-semibold text-accent">✦ Paso Final</span>
+              <span className="text-xs font-semibold text-foreground">✦ Paso Final</span>
             </div>
             
             <h2 className="text-2xl md:text-3xl font-display font-black">
