@@ -405,7 +405,7 @@ const QuizSection = ({
               <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center">
                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
                   <span>👥</span>
-                  <span><span className="font-semibold text-accent">127 creativos</span> cruzaron el umbral este mes</span>
+                  <span><span className="font-semibold text-foreground">127 creativos</span> cruzaron el umbral este mes</span>
                 </p>
               </div>
 
