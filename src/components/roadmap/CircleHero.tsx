@@ -59,7 +59,7 @@ const CircleHero = () => {
       </div>
 
       {/* Social proof text */}
-      <p className="text-sm md:text-base text-muted-foreground">
+      <p className="text-sm md:text-base text-muted-foreground italic">
         Los <span className="text-foreground font-semibold">Freelancers Y Profesionales Creativos</span> Del Círculo Han Facturado:
       </p>
 
