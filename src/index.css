@@ -73,8 +73,47 @@ All colors MUST be HSL.
   }
 }
 
-/* Solid dark cards - no glass */
+/* Glassmorphism dark cards */
 @layer utilities {
+  .glass-card-dark {
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px) saturate(100%);
+    -webkit-backdrop-filter: blur(12px) saturate(100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.5),
+      0 0 40px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .glass-card-dark:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.6),
+      0 0 60px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transform: scale(1.02);
+  }
+  
+  @supports not (backdrop-filter: blur(12px)) {
+    .glass-card-dark {
+      background: rgba(0, 0, 0, 0.85);
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .glass-card-dark {
+      transition: none;
+    }
+    
+    .glass-card-dark:hover {
+      transform: none;
+    }
+  }
+  
   .dark-card {
     background: hsl(0, 0%, 10%);
     border: 1px solid hsl(0, 0%, 20%);

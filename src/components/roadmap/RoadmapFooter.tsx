@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const RoadmapFooter = () => {
@@ -27,12 +26,6 @@ const RoadmapFooter = () => {
         <span className="text-foreground font-semibold">Honorario del Círculo</span>{" "}
         para ganar premios 🏆
       </p>
-
-      <div className="pt-6">
-        <Button size="lg" className="dark-button-primary text-lg px-8 py-6 rounded-xl">
-          El Círculo aguarda
-        </Button>
-      </div>
     </div>
   );
 };
