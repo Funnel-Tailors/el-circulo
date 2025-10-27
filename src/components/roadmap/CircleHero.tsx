@@ -50,7 +50,7 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
       </p>
 
       {/* Cifra grande destacada con contador animado */}
-      <h2 className="text-3xl md:text-4xl font-display font-black glow -mt-6">
+      <h2 className="text-3xl md:text-4xl font-display font-black glow -mt-7">
         {count.toLocaleString('es-ES')},00€
       </h2>
 
