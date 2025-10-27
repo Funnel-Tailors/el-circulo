@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 
-interface CircleHeroProps {
-  onCTAClick: () => void;
-}
-
-const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
+const CircleHero = () => {
+  const handleScrollToQuiz = () => {
+    const quizSection = document.getElementById('quiz-section');
+    if (quizSection) {
+      quizSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
   const [count, setCount] = useState(0);
   const targetValue = 14300;
 
@@ -90,7 +92,7 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
       {/* CTA Button */}
       <div className="pt-6">
         <Button 
-          onClick={onCTAClick}
+          onClick={handleScrollToQuiz}
           size="lg" 
           className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold"
         >

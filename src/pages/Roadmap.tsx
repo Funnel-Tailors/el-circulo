@@ -8,12 +8,10 @@ import SuccessCase from "@/components/roadmap/SuccessCase";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/pages/Index";
 
 const Roadmap = () => {
-  const [showQuizModal, setShowQuizModal] = useState(false);
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
   const [quizScreen, setQuizScreen] = useState<"quiz" | "result">("quiz");
@@ -37,7 +35,7 @@ const Roadmap = () => {
       {/* Container con max-width y padding fijos */}
       <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
         {/* HERO CON VSL */}
-        <CircleHero onCTAClick={() => setShowQuizModal(true)} />
+        <CircleHero />
 
         {/* ROADMAP */}
         <RoadmapHero />
@@ -138,16 +136,38 @@ const Roadmap = () => {
         </div>
 
         <RoadmapFooter />
-      </div>
 
-      {/* QUIZ MODAL */}
-      <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>
-        <DialogContent className="max-w-[640px] max-h-[90vh] overflow-hidden p-0">
-          <div className="overflow-y-auto max-h-[90vh] p-8">
+        {/* QUIZ SECTION */}
+        <div id="quiz-section" className="mt-24 scroll-mt-8">
+          <div className="text-center mb-8 animate-fade-in">
+            {/* Divider superior */}
+            <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
+              <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
+            </div>
+
+            <h2 className="text-4xl md:text-5xl font-display font-black mb-3 uppercase">
+              ENTRA AL <span className="glow">CÍRCULO</span>
+            </h2>
+            
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+              Responde unas preguntas para ver si calificas
+            </p>
+
+            {/* Divider inferior */}
+            <div className="flex items-center justify-center gap-4 mt-4" aria-hidden="true">
+              <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
+              <div className="text-muted-foreground text-xs">✦</div>
+              <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
+            </div>
+          </div>
+
+          <div className="bg-background/50 backdrop-blur-sm rounded-3xl p-8 border border-border/50">
             {quizScreen === "quiz" && (
               <QuizSection 
                 onComplete={handleCompleteQuiz}
-                onExit={() => setShowQuizModal(false)}
+                onExit={handleResetQuiz}
               />
             )}
             {quizScreen === "result" && (
@@ -158,8 +178,8 @@ const Roadmap = () => {
               />
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
     </div>
   );
 };
