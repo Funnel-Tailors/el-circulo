@@ -299,11 +299,25 @@ const QuizSection = ({
   if (showContactForm) {
     return <div className="w-full space-y-4 animate-fade-in">
         <div className="space-y-4">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
+            {/* Badge de progreso */}
+            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
+              <span className="text-xs font-semibold text-accent">✦ Paso Final</span>
+            </div>
+            
             <h2 className="text-2xl md:text-3xl font-display font-black">
               Casi listo. <span className="glow">Último paso</span>
             </h2>
-            <p className="text-muted-foreground text-sm">Déjanos tus datos para acceder al portal.</p>
+            
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              Déjanos tus datos para acceder al calendario de iniciación.
+            </p>
+            
+            {/* Trust badge - Privacidad */}
+            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80">
+              <span>🔒</span>
+              <span>El Círculo no comparte datos con terceros</span>
+            </div>
           </div>
 
           <Form {...form}>
@@ -333,7 +347,10 @@ const QuizSection = ({
               <FormField control={form.control} name="email" render={({
               field
             }) => <FormItem>
-                    <FormLabel className="text-sm">Email</FormLabel>
+                    <FormLabel className="text-sm flex items-center gap-2">
+                      Email
+                      <span className="text-xs text-muted-foreground font-normal">(para enviarte el acceso)</span>
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
                     </FormControl>
@@ -342,7 +359,10 @@ const QuizSection = ({
 
               {/* Campo Teléfono con Selector de País */}
               <div className="space-y-2">
-                <Label className="text-sm">WhatsApp</Label>
+                <Label className="text-sm flex items-center gap-2">
+                  WhatsApp
+                  <span className="text-xs text-muted-foreground font-normal">(para los próximos pasos)</span>
+                </Label>
                 <div className="grid grid-cols-[140px_1fr] gap-2">
                   {/* Selector de País */}
                   <FormField control={form.control} name="countryCode" render={({
@@ -373,11 +393,40 @@ const QuizSection = ({
                         <FormMessage />
                       </FormItem>} />
                 </div>
+                
+                {/* Micro-copy explicativo debajo del campo */}
+                <p className="text-xs text-muted-foreground/70 flex items-start gap-1.5 pt-1">
+                  <span className="mt-0.5">💬</span>
+                  <span>Usaremos WhatsApp para coordinar tu ritual de iniciación y hacerte llegar los detalles de acceso.</span>
+                </p>
+              </div>
+
+              {/* Validación social antes del botón */}
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center">
+                <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+                  <span>👥</span>
+                  <span><span className="font-semibold text-accent">127 creativos</span> cruzaron el umbral este mes</span>
+                </p>
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
-                {isSubmitting ? 'Enviando...' : 'Cruza el Umbral'}
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin">⟳</span>
+                    Verificando tu entrada...
+                  </span>
+                ) : (
+                  'Cruza el Umbral →'
+                )}
               </Button>
+
+              {/* Footer de confianza */}
+              <div className="text-center text-xs text-muted-foreground/60 pt-2">
+                <p className="flex items-center justify-center gap-1.5">
+                  <span>🛡️</span>
+                  <span>Protegido por el sello del Círculo</span>
+                </p>
+              </div>
             </form>
           </Form>
         </div>
