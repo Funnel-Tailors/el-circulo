@@ -1,4 +1,21 @@
+import { Button } from "@/components/ui/button";
+
 const ClientBubble = () => {
+  const handleScrollToQuiz = () => {
+    const quizSection = document.getElementById('quiz-section');
+    if (quizSection) {
+      const isMobile = window.innerHeight < 768;
+      const offset = isMobile ? 100 : 120;
+      const elementPosition = quizSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto mb-16 space-y-8 animate-fade-in">
       <div className="space-y-6 font-text text-base md:text-lg leading-relaxed text-foreground/90">
@@ -45,7 +62,28 @@ const ClientBubble = () => {
           Todos. Los. Días.
         </p>
 
-        <p className="font-light">
+        <p className="font-black text-2xl md:text-3xl text-center my-12">
+          ¿Acaso crees que no lo veo?
+        </p>
+
+        <div className="space-y-3 font-medium text-base md:text-lg">
+          <p>Lo veo en tu linktree con 0 de CTR.</p>
+          <p>En tu "agenda abierta" que nunca se ha llenado.</p>
+          <p>En tu contenido que camufla un deseo desesperado de colocar un proyecto.</p>
+          <p>En tus storis con CTAs desesperados y estructuras copiadas.</p>
+          <p>En tu bio "optimizada".</p>
+          <p>En tu "ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".</p>
+          <p>En tus emojis de mierda.</p>
+          <p>En tus conversaciones abiertas que murieron cuando dijiste el precio a gente que nunca tuvo el dinero.</p>
+        </div>
+
+        <div className="space-y-2 font-black text-xl md:text-2xl pt-6">
+          <p>Las veo.</p>
+          <p>Las he leído.</p>
+          <p>Las hemos trascendido.</p>
+        </div>
+
+        <p className="font-light pt-8">
           Miro a esta peña con una mezcla entre ternura y desesperación.
         </p>
 
@@ -101,6 +139,16 @@ const ClientBubble = () => {
         <p className="font-black text-2xl md:text-3xl">
           Juguetes.
         </p>
+
+        <div className="flex justify-center pt-12">
+          <Button 
+            onClick={handleScrollToQuiz}
+            size="lg"
+            className="font-bold text-lg"
+          >
+            Quiero ser uno de vosotros
+          </Button>
+        </div>
       </div>
     </div>
   );
