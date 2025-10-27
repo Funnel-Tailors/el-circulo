@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Starfield from "@/components/quiz/Starfield";
 import CircleHero from "@/components/roadmap/CircleHero";
+import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import TimelineDay from "@/components/roadmap/TimelineDay";
 import BonusCard from "@/components/roadmap/BonusCard";
@@ -43,6 +44,9 @@ const Roadmap = () => {
 
           {/* Columna derecha - Contenido scrolleable */}
           <div className="lg:pt-0">
+
+        {/* CLIENT BUBBLE */}
+        <ClientBubble />
 
         {/* ROADMAP */}
         <RoadmapHero />
