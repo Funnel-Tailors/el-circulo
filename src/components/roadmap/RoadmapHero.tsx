@@ -1,0 +1,33 @@
+const RoadmapHero = () => {
+  return (
+    <div className="text-center space-y-6 mb-16 animate-fade-in">
+      {/* Runic divider */}
+      <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
+        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+        <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+      </div>
+
+      <h1 className="text-4xl md:text-6xl font-display font-black leading-tight">
+        🌀 La <span className="glow">Senda</span>
+      </h1>
+
+      <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+        Consigue tu primer o próximo cliente como diseñador, filmmaker, 
+        automatizador, fotógrafo o freelance en menos de{" "}
+        <span className="text-foreground font-semibold">30 días</span>
+        <br />
+        <span className="text-sm">(o en 7 si aguantas el ritmo)</span>
+      </p>
+
+      {/* Bottom divider */}
+      <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">
+        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+        <div className="text-muted-foreground text-xs">✦</div>
+        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+      </div>
+    </div>
+  );
+};
+
+export default RoadmapHero;

@@ -170,6 +170,31 @@ All colors MUST be HSL.
   }
 }
 
+/* Timeline connector animation for roadmap */
+@layer utilities {
+  .timeline-connector {
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      hsl(0 0% 100% / 0.3),
+      transparent
+    );
+    animation: pulse-line 2s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-line {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-connector {
+      animation: none;
+      opacity: 0.5;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
