@@ -27,7 +27,7 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
       </p>
 
       {/* Cifra grande destacada */}
-      <h2 className="text-5xl md:text-7xl font-display font-black glow">
+      <h2 className="text-4xl md:text-5xl font-display font-black glow -mt-4 animate-scale-smooth">
         14.300,00€
       </h2>
 

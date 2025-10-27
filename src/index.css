@@ -262,6 +262,28 @@ All colors MUST be HSL.
   }
 }
 
+/* Animación smooth para cifras con aceleración y desaceleración */
+@layer utilities {
+  .animate-scale-smooth {
+    animation: scale-smooth 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+
+  @keyframes scale-smooth {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-scale-smooth {
+      animation: none;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
