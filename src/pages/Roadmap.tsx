@@ -21,14 +21,14 @@ const Roadmap = () => {
           ))}
         </div>
 
-        <div className="mt-20">
-          <div className="text-center mb-12 animate-fade-in">
+        <div className="mt-12">
+          <div className="text-center mb-6 animate-fade-in">
             <h2 className="text-3xl md:text-4xl font-display font-black mb-2">
-              🗺️ <span className="glow">BONUSES</span>
+              LOS <span className="glow">ARTEFACTOS</span>
             </h2>
             
             {/* Divider */}
-            <div className="flex items-center justify-center gap-4 mt-4" aria-hidden="true">
+            <div className="flex items-center justify-center gap-4 mt-2" aria-hidden="true">
               <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
               <div className="text-muted-foreground text-xs">✦</div>
               <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
