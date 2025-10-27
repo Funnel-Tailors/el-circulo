@@ -48,3 +48,33 @@ export const bonuses = [
     description: "Lo descubrirás dentro..."
   }
 ];
+
+export const successCases = [
+  {
+    name: "Nico",
+    highlight: "x10",
+    achievements: [
+      "De 200€ a +1.000€ por proyecto",
+      "Cierra consistente a 10x su precio inicial",
+      "Disfruta del momento de decir su valor"
+    ]
+  },
+  {
+    name: "Dani",
+    highlight: "ROI x10",
+    achievements: [
+      "2.000€ su primer cliente en 10 días",
+      "Marca personal → clientes con presupuesto real",
+      "Dejó de perder tiempo con prospectos sin pasta"
+    ]
+  },
+  {
+    name: "Cris",
+    highlight: "3.000€",
+    achievements: [
+      "De tirar la toalla a cerrar 3.000€",
+      "Un solo cambio de mentalidad lo cambió todo",
+      "De lanzamientos fallidos a tiburona de ventas"
+    ]
+  }
+];
