@@ -13,11 +13,7 @@ const RoadmapHero = () => {
       </h1>
 
       <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-        Consigue tu primer o próximo cliente como diseñador, filmmaker, 
-        automatizador, fotógrafo o freelance en menos de{" "}
-        <span className="text-foreground font-semibold">30 días</span>
-        <br />
-        <span className="text-sm">(o en 7 si aguantas el ritmo)</span>
+        un sistema paso a paso para que estés buscando clientes en 3 días (y tengas tu sistema en 7)
       </p>
 
       {/* Bottom divider */}
