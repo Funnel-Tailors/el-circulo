@@ -62,7 +62,7 @@ const ClientBubble = () => {
           Todos. Los. Días.
         </p>
 
-        <p className="font-black text-2xl md:text-3xl text-center my-12">
+        <p className="font-black text-xl md:text-2xl text-center my-12">
           ¿Acaso crees que no lo veo?
         </p>
 
@@ -77,10 +77,10 @@ const ClientBubble = () => {
           <p>En tus conversaciones abiertas que murieron cuando dijiste el precio a gente que nunca tuvo el dinero.</p>
         </div>
 
-        <div className="space-y-2 font-black text-xl md:text-2xl pt-6">
+        <div className="space-y-2 font-black text-base md:text-lg pt-6">
           <p>Las veo.</p>
           <p>Las he leído.</p>
-          <p>Las hemos trascendido.</p>
+          <p className="italic">Las hemos trascendido.</p>
         </div>
 
         <p className="font-light pt-8">
@@ -136,7 +136,7 @@ const ClientBubble = () => {
           Tu camarita. Tu portátil. El iMac que pagó papi?
         </p>
 
-        <p className="font-black text-2xl md:text-3xl">
+        <p className="font-black text-xl md:text-2xl">
           Juguetes.
         </p>
 
