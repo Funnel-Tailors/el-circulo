@@ -51,7 +51,7 @@ const steps: QuizStep[] = [{
   subtext: "Tu punto de partida determina tu camino de ascenso",
   motivator: {
     icon: "📈",
-    text: "Los miembros del Círculo cobran un promedio de 8.500€ por proyecto"
+    text: "Los creativos del Círculo cobran mínimo 1.000€ por proyecto"
   }
 }, {
   id: "q3",
@@ -73,14 +73,13 @@ const steps: QuizStep[] = [{
   options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
   badge: "💎 Paso 4/6 - Crucial",
   subtext: null,
-  valueStack: [
-    "✓ 1 año completo de membresía en el Círculo (acceso ilimitado)",
-    "✓ Onboarding personalizado con hoja de ruta adaptada a ti",
-    "✓ Mentorías semanales con miembros élite y facilitadores",
-    "✓ Acceso vitalicio a La Senda (programa de ascenso premium)",
-    "✓ Comunidad privada 24/7 de creativos que facturan 6 cifras+",
-    "✓ Rituales exclusivos de alto impacto cada mes"
-  ],
+    valueStack: [
+      "✓ 1 año completo de membresía en el Círculo (acceso ilimitado)",
+      "✓ Onboarding personalizado con hoja de ruta adaptada a ti",
+      "✓ Mentorías semanales con miembros élite y facilitadores",
+      "✓ Comunidad privada 24/7 de creativos que cobran 4-5 cifras por proyecto",
+      "✓ Rituales exclusivos de alto impacto cada mes"
+    ],
   motivator: {
     icon: "🔥",
     text: "Caso real: Dani recuperó x10 su inversión en los primeros 10 días"
