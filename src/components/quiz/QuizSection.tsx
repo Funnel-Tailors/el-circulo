@@ -19,38 +19,91 @@ interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
 }
-const steps = [{
+
+interface QuizStep {
+  id: string;
+  question: string;
+  type: "radio" | "checkbox";
+  options: string[];
+  description?: string;
+  badge?: string;
+  subtext?: string | null;
+  valueStack?: string[];
+  motivator?: {
+    icon: string;
+    text: string;
+  } | null;
+}
+const steps: QuizStep[] = [{
   id: "q1",
   question: "¿A qué te dedicas hoy?",
   type: "radio",
-  options: ["Diseñador Gráfico / Web", "Fotógrafo/Filmmaker", "Automatizador", "Otro servicio creativo"]
+  options: ["Diseñador Gráfico / Web", "Fotógrafo/Filmmaker", "Automatizador", "Otro servicio creativo"],
+  badge: "🎯 Paso 1/6",
+  subtext: "Queremos personalizar tu experiencia en el Círculo",
+  motivator: null
 }, {
   id: "q2",
   question: "¿Cuánto es lo máximo que has cobrado por un proyecto?",
   type: "radio",
-  options: ["Menos de 500€", "500€ - 1.000€", "1.000€ - 2.500€", "2.500€ - 5.000€", "Más de 5.000€"]
+  options: ["Menos de 500€", "500€ - 1.000€", "1.000€ - 2.500€", "2.500€ - 5.000€", "Más de 5.000€"],
+  badge: "💰 Paso 2/6",
+  subtext: "Tu punto de partida determina tu camino de ascenso",
+  motivator: {
+    icon: "📈",
+    text: "Los miembros del Círculo cobran un promedio de 8.500€ por proyecto"
+  }
 }, {
   id: "q3",
   question: "¿Cómo consigues clientes ahora mismo?",
   description: "Puedes marcar varias",
   type: "checkbox",
-  options: ["Recomendaciones", "Contenido orgánico", "Anuncios pagados", "Cold outreach", "Aún no tengo un sistema"]
+  options: ["Recomendaciones", "Contenido orgánico", "Anuncios pagados", "Cold outreach", "Aún no tengo un sistema"],
+  badge: "🔍 Paso 3/6",
+  subtext: "Identificaremos qué canal escalar primero",
+  motivator: {
+    icon: "⚡",
+    text: "El 89% de miembros multiplican x3 su lead flow en 90 días"
+  }
 }, {
   id: "q4",
   question: "El Círculo exige un tributo anual de 2.000€.",
   description: "Un solo pago. Sin facilidades.",
   type: "radio",
-  options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"]
+  options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
+  badge: "💎 Paso 4/6 - Crucial",
+  subtext: null,
+  valueStack: [
+    "✓ 1 año completo de membresía en el Círculo (acceso ilimitado)",
+    "✓ Onboarding personalizado con hoja de ruta adaptada a ti",
+    "✓ Mentorías semanales con miembros élite y facilitadores",
+    "✓ Acceso vitalicio a La Senda (programa de ascenso premium)",
+    "✓ Comunidad privada 24/7 de creativos que facturan 6 cifras+",
+    "✓ Rituales exclusivos de alto impacto cada mes"
+  ],
+  motivator: {
+    icon: "🔥",
+    text: "Caso real: Dani recuperó x10 su inversión en los primeros 10 días"
+  }
 }, {
   id: "q5",
   question: "¿Cómo quieres ascender al Círculo?",
   type: "radio",
-  options: ["Ascensión Rápida (7 días, 1-2h/día)", "Ascensión Progresiva (30 días, 30-60 min/día)", "Ahora no puedo"]
+  options: ["Ascensión Rápida (7 días, 1-2h/día)", "Ascensión Progresiva (30 días, 30-60 min/día)", "Ahora no puedo"],
+  badge: "⏱️ Paso 5/6",
+  subtext: "Ambas rutas llevan al mismo destino. Elige tu ritmo.",
+  motivator: {
+    icon: "🔥",
+    text: "Rápida: Ideal para transformación inmediata | Progresiva: Para integrar sin prisa"
+  }
 }, {
   id: "q6",
   question: "¿Eres quien decide esta inversión?",
   type: "radio",
-  options: ["Sí, decido yo", "Decido con otra persona", "No, no decido yo"]
+  options: ["Sí, decido yo", "Decido con otra persona", "No, no decido yo"],
+  badge: "🔐 Paso 6/6 - Final",
+  subtext: "Solo aceptamos miembros que decidan por sí mismos",
+  motivator: null
 }];
 const QuizSection = ({
   onComplete,
@@ -435,7 +488,8 @@ const QuizSection = ({
   return <>
     <div className="w-full space-y-4 animate-fade-in">
       {/* Hero copy integrado - SOLO visible en Q1 */}
-      {currentStep === 0 && <div className="text-center space-y-0 pb-4">
+      {currentStep === 0 && <>
+        <div className="text-center space-y-0 pb-4">
           {/* Runic divider */}
           <div className="flex items-center justify-center gap-4 mb-2" aria-hidden="true">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
@@ -459,19 +513,68 @@ const QuizSection = ({
             <div className="text-muted-foreground text-xs">✦</div>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
           </div>
-        </div>}
+        </div>
+
+        {/* NUEVO: Micro-copy de empuje en Q1 */}
+        <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center mb-2">
+          <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
+            <span>⏱️</span>
+            <span>Tiempo estimado: <span className="font-semibold text-foreground">2 minutos</span> · Solo 6 preguntas</span>
+          </p>
+        </div>
+      </>}
 
       <ProgressBar current={currentStep + 1} total={steps.length} />
 
       <div className="space-y-4">
-          <div className="space-y-2">
+          <div className="space-y-3">
+            {/* Badge de progreso */}
+            {currentQuestion.badge && (
+              <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1">
+                <span className="text-xs font-semibold text-foreground">{currentQuestion.badge}</span>
+              </div>
+            )}
+
+            {/* Pregunta principal */}
             <h2 className="text-2xl md:text-3xl font-display font-black">
               {currentQuestion.question}
             </h2>
-            {currentQuestion.description && <p className="text-sm text-muted-foreground">{currentQuestion.description}</p>}
+            
+            {/* Subtext contextual */}
+            {currentQuestion.subtext && (
+              <p className="text-sm text-muted-foreground/90">{currentQuestion.subtext}</p>
+            )}
+            
+            {/* Description original (para Q3) */}
+            {currentQuestion.description && (
+              <p className="text-xs text-muted-foreground/70 italic">{currentQuestion.description}</p>
+            )}
+
+            {/* Value stack para Q4 (tributo) */}
+            {currentQuestion.valueStack && (
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2 mt-3">
+                <p className="text-xs font-semibold text-foreground mb-2">📦 ¿Qué incluye el tributo?</p>
+                {currentQuestion.valueStack.map((item, idx) => (
+                  <p key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0">{item.split(' ')[0]}</span>
+                    <span>{item.split(' ').slice(1).join(' ')}</span>
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
 
           {renderInput()}
+
+          {/* Motivador contextual (después de las opciones) */}
+          {currentQuestion.motivator && (
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+              <p className="text-xs text-muted-foreground flex items-start gap-2">
+                <span className="text-base shrink-0">{currentQuestion.motivator.icon}</span>
+                <span className="flex-1">{currentQuestion.motivator.text}</span>
+              </p>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-4">
             <Button onClick={handlePrevious} disabled={currentStep === 0} variant="outline" className="dark-button">
