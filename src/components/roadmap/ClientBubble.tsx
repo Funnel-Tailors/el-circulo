@@ -62,28 +62,47 @@ const ClientBubble = () => {
           Todos. Los. Días.
         </p>
 
-        <p className="font-black text-xl md:text-2xl text-center my-12">
+        <p className="font-bold text-xl md:text-2xl pt-6">
           ¿Acaso crees que no lo veo?
         </p>
 
-        <div className="space-y-3 font-medium text-base md:text-lg">
-          <p>Lo veo en tu linktree con 0 de CTR.</p>
-          <p>En tu "agenda abierta" que nunca se ha llenado.</p>
-          <p>En tu contenido que camufla un deseo desesperado de colocar un proyecto.</p>
-          <p>En tus storis con CTAs desesperados y estructuras copiadas.</p>
-          <p>En tu bio "optimizada".</p>
-          <p>En tu "ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".</p>
-          <p>En tus emojis de mierda.</p>
-          <p>En tus conversaciones abiertas que murieron cuando dijiste el precio a gente que nunca tuvo el dinero.</p>
-        </div>
+        <p className="font-light">
+          Lo veo en tu linktree con 0 de CTR.
+        </p>
 
-        <div className="space-y-2 font-black text-base md:text-lg pt-6">
-          <p>Las veo.</p>
-          <p>Las he leído.</p>
-          <p className="italic">Las hemos trascendido.</p>
-        </div>
+        <p className="font-light">
+          En tu "agenda abierta" que nunca se ha llenado.
+        </p>
 
-        <p className="font-light pt-8">
+        <p className="font-light">
+          En tu contenido que camufla un deseo desesperado de colocar un proyecto.
+        </p>
+
+        <p className="font-light">
+          En tus storis con CTAs desesperados y estructuras copiadas.
+        </p>
+
+        <p className="font-light">
+          En tu bio "optimizada".
+        </p>
+
+        <p className="font-light">
+          En tu "ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".
+        </p>
+
+        <p className="font-light">
+          En tus emojis de mierda.
+        </p>
+
+        <p className="font-light">
+          En tus conversaciones abiertas que murieron cuando dijiste el precio a gente que nunca tuvo el dinero.
+        </p>
+
+        <p className="font-bold text-xl md:text-2xl pt-4">
+          Las veo. Las he leído. <span className="italic">Las hemos trascendido.</span>
+        </p>
+
+        <p className="font-light pt-4">
           Miro a esta peña con una mezcla entre ternura y desesperación.
         </p>
 
@@ -146,7 +165,7 @@ const ClientBubble = () => {
             size="lg"
             className="font-bold text-lg"
           >
-            Quiero ser uno de vosotros
+            Jugar con los mayores
           </Button>
         </div>
       </div>
