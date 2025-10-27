@@ -44,8 +44,24 @@ const ClientBubble = () => {
           </p>
 
           <p className="font-light">
+            Contenido que camufla un deseo desesperado de colocar un proyecto.
+          </p>
+
+          <p className="font-light">
+            Storis con CTAs desesperados y estructuras copiadas.
+          </p>
+
+          <p className="font-light">
+            "Ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".
+          </p>
+
+          <p className="font-light">
             3 trucos para (inserte nicho aquí)<br />
             <span className="text-sm text-muted-foreground italic">100mil visitas, 10 clicks, 0 ventas.</span>
+          </p>
+
+          <p className="font-light">
+            Emojis de mierda.
           </p>
 
           <p className="font-light">
@@ -63,100 +79,7 @@ const ClientBubble = () => {
         </p>
 
         <p className="font-bold text-xl md:text-2xl pt-6">
-          ¿Acaso crees que no lo veo?
-        </p>
-
-        <p className="font-light">
-          Lo veo en tu linktree con 0 de CTR.
-        </p>
-
-        <p className="font-light">
-          En tu "agenda abierta" que nunca se ha llenado.
-        </p>
-
-        <p className="font-light">
-          En tu contenido que camufla un deseo desesperado de colocar un proyecto.
-        </p>
-
-        <p className="font-light">
-          En tus storis con CTAs desesperados y estructuras copiadas.
-        </p>
-
-        <p className="font-light">
-          En tu bio "optimizada".
-        </p>
-
-        <p className="font-light">
-          En tu "ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".
-        </p>
-
-        <p className="font-light">
-          En tus emojis de mierda.
-        </p>
-
-        <p className="font-light">
-          En tus conversaciones abiertas que murieron cuando dijiste el precio a gente que nunca tuvo el dinero.
-        </p>
-
-        <p className="font-bold text-xl md:text-2xl pt-4">
           Las veo. Las he leído. <span className="italic">Las hemos trascendido.</span>
-        </p>
-
-        <p className="font-light pt-4">
-          Miro a esta peña con una mezcla entre ternura y desesperación.
-        </p>
-
-        <p className="font-medium">
-          Me dan ganas de agarrarla de los hombros y zarandearla y decirle en su puta cara que esto es lo que ha elegido.
-        </p>
-
-        <div className="space-y-4 pt-2">
-          <div>
-            <p className="font-light">
-              Cobrar una mierda, trabajar con gente que te cae mal.
-            </p>
-            <p className="font-bold text-foreground">
-              Lo has elegido.
-            </p>
-          </div>
-
-          <div>
-            <p className="font-light">
-              La desesperación del trimestre, lloriquear porque suben la cuota de autónomo.
-            </p>
-            <p className="font-bold text-foreground">
-              Lo has elegido.
-            </p>
-          </div>
-
-          <div>
-            <p className="font-light">
-              Plantearte si no eres lo suficientemente bueno para esto o para cobrar 1000€ por una sesión trabajo o proyecto.
-            </p>
-            <p className="font-bold text-foreground">
-              Cada día que te levantas y decides hacer lo mismo.
-            </p>
-          </div>
-        </div>
-
-        <p className="font-light">
-          Que pones una historia diciendo que vas a por el día mientras mueres por dentro.
-        </p>
-
-        <p className="font-light">
-          Que no sabes como vas a conseguir tu próximo cliente
-        </p>
-
-        <p className="text-sm text-muted-foreground italic">
-          (un síntoma de que sigues jugando en el patio de recreo)
-        </p>
-
-        <p className="font-light pt-4">
-          Tu camarita. Tu portátil. El iMac que pagó papi?
-        </p>
-
-        <p className="font-black text-xl md:text-2xl">
-          Juguetes.
         </p>
 
         <div className="flex justify-center pt-12">
@@ -165,7 +88,7 @@ const ClientBubble = () => {
             size="lg"
             className="font-bold text-lg"
           >
-            Jugar con los mayores
+            Trascender al círculo
           </Button>
         </div>
       </div>
