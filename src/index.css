@@ -294,17 +294,9 @@ All colors MUST be HSL.
     will-change: transform;
   }
   
-  @media (max-width: 768px) {
-    .sticky-video {
-      position: relative;
-      top: 0;
-    }
-  }
-  
   @media (prefers-reduced-motion: reduce) {
     .sticky-video {
-      position: relative;
-      top: 0;
+      transition: none;
     }
   }
 }
