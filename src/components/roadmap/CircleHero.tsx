@@ -6,13 +6,13 @@ interface CircleHeroProps {
 
 const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
   return (
-    <div className="text-center space-y-8 mb-24 animate-fade-in">
+    <div className="text-center space-y-8 mb-24 animate-fade-in -mt-8">
       {/* 5 Estrellas decorativas superiores */}
-      <div className="flex justify-center gap-2 mb-6" aria-hidden="true">
+      <div className="flex justify-center gap-1.5 mb-3" aria-hidden="true">
         {[...Array(5)].map((_, i) => (
           <svg 
             key={i}
-            className="w-6 h-6 text-foreground/80" 
+            className="w-3 h-3 text-foreground/60" 
             viewBox="0 0 24 24" 
             fill="currentColor"
           >

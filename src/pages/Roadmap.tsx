@@ -35,7 +35,7 @@ const Roadmap = () => {
       <Starfield />
 
       {/* Container con max-width y padding fijos */}
-      <div className="container max-w-4xl mx-auto px-6 py-12 relative z-10">
+      <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
         {/* HERO CON VSL */}
         <CircleHero onCTAClick={() => setShowQuizModal(true)} />
 
