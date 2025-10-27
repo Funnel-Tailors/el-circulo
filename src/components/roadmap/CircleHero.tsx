@@ -3,10 +3,22 @@ import { useEffect, useState } from "react";
 
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
-    const quizSection = document.getElementById('quiz-section');
-    if (quizSection) {
-      quizSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    setTimeout(() => {
+      const quizSection = document.getElementById('quiz-section');
+      if (quizSection) {
+        const isMobile = window.innerWidth < 768;
+        const offset = isMobile ? 80 : 100;
+        
+        const yOffset = -offset;
+        const y = quizSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        
+        try {
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        } catch (e) {
+          window.scrollTo(0, y);
+        }
+      }
+    }, 100);
   };
   const [count, setCount] = useState(0);
   const targetValue = 14300;
