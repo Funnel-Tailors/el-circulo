@@ -284,6 +284,23 @@ All colors MUST be HSL.
   }
 }
 
+/* Video sticky con smooth scroll */
+@layer utilities {
+  .sticky-video {
+    position: sticky;
+    top: 2rem;
+    z-index: 10;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .sticky-video {
+      position: relative;
+      top: 0;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
