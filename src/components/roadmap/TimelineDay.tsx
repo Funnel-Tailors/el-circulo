@@ -20,7 +20,7 @@ const TimelineDay = ({ day, title, description, index }: TimelineDayProps) => {
     >
       {/* Conector vertical glowing */}
       {index > 0 && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-16 timeline-connector" />
+        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-px h-16 timeline-connector -z-10" />
       )}
 
       {/* Círculo central animado */}
