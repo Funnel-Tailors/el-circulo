@@ -74,7 +74,7 @@ const CircleHero = ({ onCTAClick }: CircleHeroProps) => {
 
       {/* Logo EL CÍRCULO */}
       <div className="space-y-4">
-        <h1 className="text-5xl md:text-7xl font-display font-black uppercase tracking-tight glow">
+        <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow whitespace-nowrap">
           EL CÍRCULO
         </h1>
 
