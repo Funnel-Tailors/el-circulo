@@ -1,12 +1,34 @@
+import { useState } from "react";
 import Starfield from "@/components/quiz/Starfield";
+import CircleHero from "@/components/roadmap/CircleHero";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import TimelineDay from "@/components/roadmap/TimelineDay";
 import BonusCard from "@/components/roadmap/BonusCard";
 import SuccessCase from "@/components/roadmap/SuccessCase";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
+import QuizSection from "@/components/quiz/QuizSection";
+import ResultSection from "@/components/quiz/ResultSection";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
+import type { QuizState } from "@/pages/Index";
 
 const Roadmap = () => {
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [quizState, setQuizState] = useState<QuizState>({});
+  const [isQualified, setIsQualified] = useState(false);
+  const [quizScreen, setQuizScreen] = useState<"quiz" | "result">("quiz");
+
+  const handleCompleteQuiz = (state: QuizState, qualified: boolean) => {
+    setQuizState(state);
+    setIsQualified(qualified);
+    setQuizScreen("result");
+  };
+
+  const handleResetQuiz = () => {
+    setQuizState({});
+    setQuizScreen("quiz");
+  };
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-transparent">
       {/* Starfield de fondo */}
@@ -14,6 +36,10 @@ const Roadmap = () => {
 
       {/* Container con max-width y padding fijos */}
       <div className="container max-w-4xl mx-auto px-6 py-12 relative z-10">
+        {/* HERO CON VSL */}
+        <CircleHero onCTAClick={() => setShowQuizModal(true)} />
+
+        {/* ROADMAP */}
         <RoadmapHero />
 
         <div className="space-y-12 relative">
@@ -113,6 +139,27 @@ const Roadmap = () => {
 
         <RoadmapFooter />
       </div>
+
+      {/* QUIZ MODAL */}
+      <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>
+        <DialogContent className="max-w-[640px] max-h-[90vh] overflow-hidden p-0">
+          <div className="overflow-y-auto max-h-[90vh] p-8">
+            {quizScreen === "quiz" && (
+              <QuizSection 
+                onComplete={handleCompleteQuiz}
+                onExit={() => setShowQuizModal(false)}
+              />
+            )}
+            {quizScreen === "result" && (
+              <ResultSection 
+                isQualified={isQualified}
+                quizState={quizState}
+                onReset={handleResetQuiz}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -234,6 +234,34 @@ All colors MUST be HSL.
   }
 }
 
+/* Video glow pulsante para VSL */
+@layer utilities {
+  .video-glow {
+    box-shadow: 0 0 40px hsl(0 0% 100% / 0.15), 
+                0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: pulse-video-glow 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-video-glow {
+    from {
+      box-shadow: 0 0 30px hsl(0 0% 100% / 0.12), 
+                  0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    to {
+      box-shadow: 0 0 60px hsl(0 0% 100% / 0.25), 
+                  0 12px 48px rgba(0, 0, 0, 0.6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-glow {
+      animation: none;
+      box-shadow: 0 0 40px hsl(0 0% 100% / 0.15), 
+                  0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;
