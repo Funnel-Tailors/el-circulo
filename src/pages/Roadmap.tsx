@@ -23,7 +23,7 @@ const Roadmap = () => {
         </div>
 
         {/* ASCENDIDOS */}
-        <div className="mt-24">
+        <div className="mt-16">
           <div className="text-center mb-12 animate-fade-in">
             {/* Divider superior */}
             <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
