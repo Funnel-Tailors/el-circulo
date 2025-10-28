@@ -78,7 +78,7 @@ export const successCases = [
   },
   {
     name: "Cris",
-    role: "Coach Digital",
+    role: "Estratega de Ventas",
     offer: "Embudo Express",
     highlight: "3.000€",
     story: "Estaba a punto de tirar la toalla con su proyecto después de un par de lanzamientos que no le hicieron justicia, pero se ha convertido en una auténtica tiburona después de cerrar su primer proyecto por 3.000€ sólo con un cambio de mentalidad súper sencillo.",
