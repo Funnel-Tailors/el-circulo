@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 const ClientBubble = () => {
+  const { ref, isVisible } = useScrollReveal(0.2);
+
   const handleScrollToQuiz = () => {
     const quizSection = document.getElementById('quiz-section');
     if (quizSection) {
@@ -17,82 +20,96 @@ const ClientBubble = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mb-16 space-y-8 animate-fade-in">
-      <div className="space-y-6 font-text text-base md:text-lg leading-relaxed text-foreground/90">
-        <p className="font-semibold text-xl md:text-2xl">
-          Lo veo toooooodos los días.
-        </p>
+    <section ref={ref} className="relative py-24">
+      <div className="max-w-4xl mx-auto px-6 text-center">
+        {/* Divider superior */}
+        <div className="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
+          <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
+          <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+          <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
+        </div>
 
-        <p className="font-light">
+        {/* Título principal */}
+        <h2 
+          className={`text-5xl md:text-6xl font-display font-black mb-8 glow transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
+          Lo veo toooooodos los días.
+        </h2>
+
+        {/* Subtítulo */}
+        <p 
+          className={`text-lg md:text-xl text-muted-foreground mb-12 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+          style={{ transitionDelay: '150ms' }}
+        >
           Solo tienes que asomarte a instagram:
         </p>
 
-        <div className="space-y-3 pl-6">
-          <p className="font-light">
-            Biografías "optimizadas"<br />
-            <span className="text-sm text-muted-foreground italic">Mikel Gómez - Fotógrafo en Bilbao (el tipo que vio un video sobre SEO)</span>
-          </p>
-
-          <p className="font-light">
-            Open for commissions<br />
-            <span className="text-sm text-muted-foreground italic">(y tan open)</span>
-          </p>
-
-          <p className="font-light">
-            Abro agenda<br />
-            <span className="text-sm text-muted-foreground italic">(Como si no llevaras todo el año con ella abierta y vacía)</span>
-          </p>
-
-          <p className="font-light">
-            Contenido que camufla un deseo desesperado de colocar un proyecto.
-          </p>
-
-          <p className="font-light">
-            Storis con CTAs desesperados y estructuras copiadas.
-          </p>
-
-          <p className="font-light">
-            "Ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".
-          </p>
-
-          <p className="font-light">
-            3 trucos para (inserte nicho aquí)<br />
-            <span className="text-sm text-muted-foreground italic">100mil visitas, 10 clicks, 0 ventas.</span>
-          </p>
-
-          <p className="font-light">
-            Emojis de mierda.
-          </p>
-
-          <p className="font-light">
-            Colaboración no pagada
-          </p>
-
-          <p className="font-light">
-            Abro 5 huecos<br />
-            <span className="text-sm text-muted-foreground italic">(xdddddddddddddddddddddddddddddd)</span>
-          </p>
+        {/* Lista de ejemplos */}
+        <div className="space-y-6 max-w-3xl mx-auto mb-12">
+          {[
+            { main: 'Biografías "optimizadas"', sub: 'Mikel Gómez - Fotógrafo en Bilbao (el tipo que vio un video sobre SEO)' },
+            { main: 'Open for commissions', sub: '(y tan open)' },
+            { main: 'Abro agenda', sub: '(Como si no llevaras todo el año con ella abierta y vacía)' },
+            { main: 'Contenido que camufla un deseo desesperado de colocar un proyecto.', sub: null },
+            { main: 'Storis con CTAs desesperados y estructuras copiadas.', sub: null },
+            { main: '"Ayudo a marcas [adjetivo] a conseguir [resultado abstracto]".', sub: null },
+            { main: '3 trucos para (inserte nicho aquí)', sub: '100mil visitas, 10 clicks, 0 ventas.' },
+            { main: 'Emojis de mierda.', sub: null },
+            { main: 'Colaboración no pagada', sub: null },
+            { main: 'Abro 5 huecos', sub: '(xdddddddddddddddddddddddddddddd)' },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className={`text-lg md:text-xl text-muted-foreground leading-relaxed transition-all duration-700 ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+              }`}
+              style={{ transitionDelay: `${300 + index * 100}ms` }}
+            >
+              <p>{item.main}</p>
+              {item.sub && (
+                <p className="text-sm text-muted-foreground/70 italic mt-1">{item.sub}</p>
+              )}
+            </div>
+          ))}
         </div>
 
-        <p className="font-bold text-xl md:text-2xl pt-4">
-          Todos. Los. Días.
-        </p>
+        {/* Remate final */}
+        <div 
+          className={`mt-12 pt-8 border-t border-accent/20 transition-all duration-1000 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+          style={{ transitionDelay: '1500ms' }}
+        >
+          <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-relaxed mb-6">
+            Todos. Los. Días.
+          </p>
+          <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-relaxed glow mb-8">
+            Las veo. Las he leído. <span className="italic">Las hemos trascendido.</span>
+          </p>
 
-        <p className="font-bold text-xl md:text-2xl pt-6">
-          Las veo. Las he leído. <span className="italic">Las hemos trascendido.</span>
-        </p>
+          <div className="flex justify-center pt-6">
+            <Button 
+              onClick={handleScrollToQuiz}
+              size="lg"
+              className="font-bold text-lg dark-button-primary"
+            >
+              Trascender al círculo
+            </Button>
+          </div>
+        </div>
 
-        <div className="flex justify-center pt-12">
-          <Button 
-            onClick={handleScrollToQuiz}
-            size="lg"
-            className="font-bold text-lg"
-          >
-            Trascender al círculo
-          </Button>
+        {/* Divisor inferior con símbolo */}
+        <div className="flex items-center justify-center mt-16 gap-4">
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/20" />
+          <span className="text-accent text-xl">✦</span>
+          <div className="h-px flex-1 bg-gradient-to-l from-transparent to-accent/20" />
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
