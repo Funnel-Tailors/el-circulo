@@ -54,7 +54,7 @@ export const PainSection = () => {
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-4">
               Y lo peor no es eso.
             </p>
-            <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-relaxed glow">
+            <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow">
               Lo peor es que llevas tanto tiempo así que ya te has convencido de que es normal.
             </p>
           </div>
