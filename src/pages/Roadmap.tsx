@@ -11,6 +11,7 @@ import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/pages/Index";
+import { PainSection } from "@/components/roadmap/PainSection";
 
 const Roadmap = () => {
   const [quizState, setQuizState] = useState<QuizState>({});
@@ -47,6 +48,9 @@ const Roadmap = () => {
 
         {/* CLIENT BUBBLE */}
         <ClientBubble />
+
+        {/* PAIN SECTION */}
+        <PainSection />
 
         {/* ROADMAP */}
         <RoadmapHero />
