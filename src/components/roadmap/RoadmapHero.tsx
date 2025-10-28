@@ -7,7 +7,7 @@ const RoadmapHero = () => {
         <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
 
-      <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[1em]">
+      <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.5em]">
         LA SENDA AL CÍRCULO
       </h1>
 
