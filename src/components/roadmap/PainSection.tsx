@@ -29,6 +29,15 @@ export const PainSection = () => {
             "Que llevas 47 DMs enviados esta semana y 2 respuestas (una para decirte que no tiene presupuesto, otra preguntando si haces cambios gratis).",
             "Que cada vez que alguien te pregunta \"¿y de qué vives?\" tienes que inventarte una respuesta porque decir la verdad da vergüenza.",
             "Que ves a gente con la mitad de tu talento cerrando proyectos a €2.000 mientras tú sigues haciendo \"colaboraciones\" por exposición.",
+            "Es que te quedas hasta las dos de la mañana actualizando el Behance con la esperanza de que lo vea alguien más que otros diseñadores desesperados, mientras los miembros del Círculo venden más que tú sin ni siquiera enseñar su portfolio.",
+            "Es que te tiras la tarde puliendo un vídeo que nadie te pidió (y que no va a ver ni Dios), mientras los miembros del Círculo escriben un ad que dice lo necesario para tener llamadas cada dos por tres.",
+            "Es que envías un tocho de 14 páginas \"para que lo vean tranquilamente\" y te comes un ghosting de manual, mientras los miembros del Círculo preguntan \"¿quién decide y cuándo?\" y salen de la llamada con la pasta en el bolsillo.",
+            "Es que te adelantas tú mismo con el descuento \"por si acaso\" y acabas trabajando hasta las 23:47 por cuatro duros, mientras los miembros del Círculo dicen su precio sin tartamudear, cobra mínimo 4 cifras y aún así al cliente le parece una ganga (a ti te regatean 100€)",
+            "Es que te tragas el \"¿podría estar para mañana?\" del viernes a las 18:59 y cancelas tu noche, mientras los miembros del Círculo ni siquiera reciben esos mensajes de mierda (son de clientes de mierda)",
+            "Es que llevas tres semanas cambiando márgenes de una galería web que no ve ni dios, mientras los miembros del Círculo levantan una página fea pero clara que dicen lo suficiente para vender proyectos de 5.000€ a un desconocido.",
+            "Es que regalas ideas y propuestas \"para que vean por dónde irían los tiros\" y hasta preparas un par de mockups para que lo visualicen, mientras los miembros del Círculo son a los que contratan diciéndoles \"quiero algo como esto\" (lo que les hiciste gratis xd)",
+            "Es que te arrodilles y trabajes gratis \"porque es buen contacto\" o \"porque te van a recomendar\", mientras los miembros del Círculo ni siquiera hablarían con ese tipo de persona.",
+            "Es que culpas al algoritmo y te pasas la noche mirando numeritos de estadísticas irrelevantes, mientras los miembros del Círculo tienen picos en su estadística más importante, la pasta.",
             "Que sabes hacer el trabajo. Pero no sabes vender el trabajo."
           ].map((text, index) => (
             <p
