@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { quizAnalytics } from "@/lib/analytics";
@@ -14,7 +14,7 @@ import { QuizState } from "@/pages/Index";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { contactFormSchema, type ContactFormData, COUNTRY_CODES } from "@/lib/validations/contact";
+import { contactFormSchema, partialContactSchema, type ContactFormData, COUNTRY_CODES } from "@/lib/validations/contact";
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
@@ -106,6 +106,10 @@ const QuizSection = ({
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Estado para captura progresiva
+  const hasSubmittedPartial = useRef(false);
+  const [ghlContactId, setGhlContactId] = useState<string | null>(null);
 
   // Initialize form at component level (hooks must be called unconditionally)
   const form = useForm<ContactFormData>({
@@ -131,6 +135,62 @@ const QuizSection = ({
       quizAnalytics.viewContactForm();
     }
   }, [showContactForm]);
+
+  // Validación y captura progresiva de nombre y email
+  useEffect(() => {
+    const subscription = form.watch((value, { name: fieldName }) => {
+      // Solo procesar si cambian name o email
+      if (fieldName === 'name' || fieldName === 'email') {
+        // Validar solo name y email con schema parcial
+        const result = partialContactSchema.safeParse({
+          name: value.name,
+          email: value.email
+        });
+        
+        // Si ambos son válidos y no hemos enviado el parcial
+        if (result.success && !hasSubmittedPartial.current && showContactForm) {
+          submitPartialLead(value.name!, value.email!);
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form.watch, showContactForm]);
+
+  const submitPartialLead = async (name: string, email: string) => {
+    console.log('📤 Enviando lead parcial:', { name, email });
+    hasSubmittedPartial.current = true; // Marcar como enviado inmediatamente
+    
+    const score = calculateScore(answers);
+    const qualified = score >= 60 && !hasAutoDisqualify(answers);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
+        body: {
+          name,
+          email,
+          whatsapp: '', // Vacío por ahora
+          answers,
+          score,
+          qualified,
+          fbclid: quizAnalytics.getFbclid(),
+          isPartialSubmission: true
+        }
+      });
+      
+      if (error) {
+        console.error('Error al capturar lead parcial:', error);
+        return;
+      }
+      
+      if (data?.contactId) {
+        setGhlContactId(data.contactId);
+        console.log('✅ Lead parcial capturado. ContactId:', data.contactId);
+      }
+    } catch (error) {
+      console.error('Error al capturar lead parcial:', error);
+    }
+  };
   const handleNext = () => {
     const currentAnswer = answers[currentQuestion.id as keyof QuizState];
     if (!currentAnswer || Array.isArray(currentAnswer) && currentAnswer.length === 0) {
@@ -211,7 +271,9 @@ const QuizSection = ({
           answers,
           score,
           qualified,
-          fbclid: quizAnalytics.getFbclid()
+          fbclid: quizAnalytics.getFbclid(),
+          isPartialSubmission: false,
+          ghlContactId: ghlContactId || undefined // Pasar el contactId si existe
         }
       });
       if (error) throw error;

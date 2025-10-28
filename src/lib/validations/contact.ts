@@ -39,6 +39,68 @@ export const COUNTRY_CODES = [
   { code: "+351", country: "Portugal", flag: "🇵🇹" },
 ];
 
+// Schema parcial para validación de nombre y email solamente
+export const partialContactSchema = z.object({
+  name: z
+    .string()
+    .min(1, "El nombre es obligatorio")
+    .max(100, "El nombre es demasiado largo")
+    .refine(
+      (value) => {
+        const words = value.trim().split(/\s+/);
+        return words.length >= 2 && words.every(word => word.length >= 2);
+      },
+      {
+        message: "Ingresa tu nombre completo (nombre y apellido)",
+      }
+    )
+    .refine(
+      (value) => !SPAM_PATTERNS.name.test(value.trim()),
+      {
+        message: "Por favor ingresa tu nombre real",
+      }
+    )
+    .refine(
+      (value) => {
+        const words = value.trim().toLowerCase().split(/\s+/);
+        return words.length === new Set(words).size;
+      },
+      {
+        message: "Ingresa tu nombre completo (nombre y apellido)",
+      }
+    ),
+  
+  email: z
+    .string()
+    .min(1, "El email es obligatorio")
+    .max(255, "El email es demasiado largo")
+    .email("Ingresa un email válido")
+    .refine(
+      (value) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value);
+      },
+      {
+        message: "Ingresa un email válido (ejemplo: tu@email.com)",
+      }
+    )
+    .refine(
+      (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
+      {
+        message: "Por favor ingresa un email válido",
+      }
+    )
+    .refine(
+      (value) => {
+        const domain = value.split('@')[1]?.toLowerCase();
+        return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
+      },
+      {
+        message: "No se permiten emails temporales",
+      }
+    ),
+});
+
 export const contactFormSchema = z.object({
   name: z
     .string()

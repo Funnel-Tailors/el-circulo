@@ -76,10 +76,19 @@ interface LeadSubmission {
   score: number;
   qualified: boolean;
   fbclid?: string;
+  isPartialSubmission?: boolean;
+  ghlContactId?: string;
 }
 
-function generateTags(answers: QuizAnswers, score: number, qualified: boolean): string[] {
+function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false): string[] {
   const tags: string[] = [];
+  
+  // Tag de estado: parcial o completo
+  if (isPartial) {
+    tags.push('🟡 CÍRCULO-LEAD-PARCIAL');
+  } else {
+    tags.push('🟢 CÍRCULO-LEAD-COMPLETO');
+  }
   
   // Tag de origen con prefijo CÍRCULO
   tags.push('🎯 CÍRCULO-SOURCE-Quiz2025');
@@ -647,9 +656,17 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, whatsapp, answers, score, qualified, fbclid }: LeadSubmission = await req.json();
+    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId }: LeadSubmission = await req.json();
     
-    console.log('📊 Lead recibido:', { name, email, qualified, score, fbclid: fbclid || 'organic' });
+    console.log('📊 Lead recibido:', { 
+      name, 
+      email, 
+      qualified, 
+      score, 
+      fbclid: fbclid || 'organic',
+      isPartialSubmission: isPartialSubmission || false,
+      ghlContactId: ghlContactId || 'none'
+    });
     
     // Validación anti-spam server-side
     const contactData: ContactData = { name, email, whatsapp };
@@ -685,25 +702,31 @@ serve(async (req) => {
     };
     
     // Generate tags
-    const tags = generateTags(answers, score, qualified);
+    const tags = generateTags(answers, score, qualified, isPartialSubmission || false);
     console.log('Generated tags:', tags);
     
-    // Check if contact exists
-    const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&email=${encodeURIComponent(email)}`;
-    console.log('Searching for existing contact...');
+    // Determine contactId to use
+    let contactId: string | null = ghlContactId || null;
     
-    const searchResponse = await fetch(searchUrl, {
-      method: 'GET',
-      headers: ghlHeaders
-    });
-    
-    let contactId: string | null = null;
-    if (searchResponse.ok) {
-      const searchData = await searchResponse.json();
-      if (searchData.contacts && searchData.contacts.length > 0) {
-        contactId = searchData.contacts[0].id;
-        console.log('Found existing contact:', contactId);
+    // Si no tenemos ghlContactId, buscar por email
+    if (!contactId) {
+      const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&email=${encodeURIComponent(email)}`;
+      console.log('Searching for existing contact by email...');
+      
+      const searchResponse = await fetch(searchUrl, {
+        method: 'GET',
+        headers: ghlHeaders
+      });
+      
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        if (searchData.contacts && searchData.contacts.length > 0) {
+          contactId = searchData.contacts[0].id;
+          console.log('Found existing contact:', contactId);
+        }
       }
+    } else {
+      console.log('Using provided ghlContactId:', contactId);
     }
     
     // contactData already defined above for spam check
@@ -745,7 +768,16 @@ serve(async (req) => {
     if (contactId) {
       // Update existing
       const updateUrl = `https://services.leadconnectorhq.com/contacts/${contactId}`;
-      console.log('Updating existing contact...');
+      const updateType = isPartialSubmission ? 'partial lead' : 'lead to complete (adding phone)';
+      console.log(`Updating existing contact (${updateType})...`);
+      
+      // Si es la actualización final (no parcial), remover el tag PARCIAL
+      if (!isPartialSubmission) {
+        // Filtrar tags para remover PARCIAL si existe
+        contactPayload.tags = contactPayload.tags.filter(tag => !tag.includes('CÍRCULO-LEAD-PARCIAL'));
+        console.log('Removed PARCIAL tag, final tags:', contactPayload.tags);
+      }
+      
       ghlResponse = await fetch(updateUrl, {
         method: 'PUT',
         headers: ghlHeaders,
