@@ -19,7 +19,6 @@ interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
 }
-
 interface QuizStep {
   id: string;
   question: string;
@@ -73,13 +72,7 @@ const steps: QuizStep[] = [{
   options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
   badge: "💎 Paso 4/6 - Crucial",
   subtext: null,
-    valueStack: [
-      "✓ 1 año completo de membresía en el Círculo (acceso ilimitado)",
-      "✓ Onboarding personalizado con hoja de ruta adaptada a ti",
-      "✓ Mentorías semanales con miembros élite y facilitadores",
-      "✓ Comunidad privada 24/7 de creativos que cobran 4-5 cifras por proyecto",
-      "✓ Rituales exclusivos de alto impacto cada mes"
-    ],
+  valueStack: ["✓ 1 año completo de membresía en el Círculo (acceso ilimitado)", "✓ Onboarding personalizado con hoja de ruta adaptada a ti", "✓ Mentorías semanales con miembros élite y facilitadores", "✓ Comunidad privada 24/7 de creativos que cobran 4-5 cifras por proyecto", "✓ Rituales exclusivos de alto impacto cada mes"],
   motivator: {
     icon: "🔥",
     text: "Caso real: Dani recuperó x10 su inversión en los primeros 10 días"
@@ -254,10 +247,7 @@ const QuizSection = ({
     let score = 0;
 
     // Q1 - ICP/Profesión (0-25 puntos)
-    if (state.q1 === "Diseñador Gráfico / Web") score += 25;
-    else if (state.q1 === "Fotógrafo/Filmmaker") score += 25;
-    else if (state.q1 === "Automatizador") score += 25;
-    else if (state.q1 === "Otro servicio creativo") score += 15;
+    if (state.q1 === "Diseñador Gráfico / Web") score += 25;else if (state.q1 === "Fotógrafo/Filmmaker") score += 25;else if (state.q1 === "Automatizador") score += 25;else if (state.q1 === "Otro servicio creativo") score += 15;
 
     // Q2 - Revenue History INVERTIDO (0-20 puntos - quien cobra MENOS puntúa MÁS)
     if (state.q2 === "Menos de 500€") score += 20;else if (state.q2 === "500€ - 1.000€") score += 18;else if (state.q2 === "1.000€ - 2.500€") score += 12;else if (state.q2 === "2.500€ - 5.000€") score += 6;else if (state.q2 === "Más de 5.000€") score += 0;
@@ -453,23 +443,19 @@ const QuizSection = ({
                 </p>
               </div>
 
-              {/* Escasez real */}
+              {/* Validación social antes del botón */}
               <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center">
                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                  <span>⚡</span>
-                  <span>Solo quedan <span className="font-semibold text-foreground">3 huecos</span> disponibles esta semana</span>
+                  <span>👥</span>
+                  <span><span className="font-semibold text-foreground">127 creativos</span> cruzaron el umbral este mes</span>
                 </p>
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
+                {isSubmitting ? <span className="flex items-center gap-2">
                     <span className="animate-spin">⟳</span>
                     Verificando tu entrada...
-                  </span>
-                ) : (
-                  'Cruza el Umbral →'
-                )}
+                  </span> : 'Cruza el Umbral →'}
               </Button>
 
               {/* Footer de confianza */}
@@ -488,31 +474,7 @@ const QuizSection = ({
     <div className="w-full space-y-4 animate-fade-in">
       {/* Hero copy integrado - SOLO visible en Q1 */}
       {currentStep === 0 && <>
-        <div className="text-center space-y-0 pb-4">
-          {/* Runic divider */}
-          <div className="flex items-center justify-center gap-4 mb-2" aria-hidden="true">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-            <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-          </div>
-
-          <h1 className="text-3xl md:text-4xl font-display font-black leading-tight">
-            Recorre la <span className="glow">Senda</span>
-          </h1>
-
-          <p className="text-sm md:text-base text-muted-foreground max-w-md mx-auto">
-            Descubre si eres digno de entrar al Círculo
-          </p>
-
-          
-
-          {/* Bottom divider */}
-          <div className="flex items-center justify-center gap-4 pt-2" aria-hidden="true">
-            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-            <div className="text-muted-foreground text-xs">✦</div>
-            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-          </div>
-        </div>
+        
 
       </>}
 
@@ -521,11 +483,9 @@ const QuizSection = ({
       <div className="space-y-4">
           <div className="space-y-3">
             {/* Badge de progreso */}
-            {currentQuestion.badge && (
-              <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1">
+            {currentQuestion.badge && <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1">
                 <span className="text-xs font-semibold text-foreground">{currentQuestion.badge}</span>
-              </div>
-            )}
+              </div>}
 
             {/* Pregunta principal */}
             <h2 className="text-2xl md:text-3xl font-display font-black">
@@ -533,40 +493,30 @@ const QuizSection = ({
             </h2>
             
             {/* Subtext contextual */}
-            {currentQuestion.subtext && (
-              <p className="text-sm text-muted-foreground/90">{currentQuestion.subtext}</p>
-            )}
+            {currentQuestion.subtext && <p className="text-sm text-muted-foreground/90">{currentQuestion.subtext}</p>}
             
             {/* Description original (para Q3) */}
-            {currentQuestion.description && (
-              <p className="text-xs text-muted-foreground/70 italic">{currentQuestion.description}</p>
-            )}
+            {currentQuestion.description && <p className="text-xs text-muted-foreground/70 italic">{currentQuestion.description}</p>}
 
             {/* Value stack para Q4 (tributo) */}
-            {currentQuestion.valueStack && (
-              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2 mt-3">
+            {currentQuestion.valueStack && <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2 mt-3">
                 <p className="text-xs font-semibold text-foreground mb-2">📦 ¿Qué incluye el tributo?</p>
-                {currentQuestion.valueStack.map((item, idx) => (
-                  <p key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
+                {currentQuestion.valueStack.map((item, idx) => <p key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
                     <span className="mt-0.5 shrink-0">{item.split(' ')[0]}</span>
                     <span>{item.split(' ').slice(1).join(' ')}</span>
-                  </p>
-                ))}
-              </div>
-            )}
+                  </p>)}
+              </div>}
           </div>
 
           {renderInput()}
 
           {/* Motivador contextual (después de las opciones) */}
-          {currentQuestion.motivator && (
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+          {currentQuestion.motivator && <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
               <p className="text-xs text-muted-foreground flex items-start gap-2">
                 <span className="text-base shrink-0">{currentQuestion.motivator.icon}</span>
                 <span className="flex-1">{currentQuestion.motivator.text}</span>
               </p>
-            </div>
-          )}
+            </div>}
 
           <div className="flex gap-3 pt-4">
             <Button onClick={handlePrevious} disabled={currentStep === 0} variant="outline" className="dark-button">
