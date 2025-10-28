@@ -38,17 +38,17 @@ const Starfield = () => {
         duration = Math.random() * 2 + 1; // 1-3s
       }
       
+      star.textContent = "✦";
       star.style.cssText = `
         position: absolute;
-        width: ${size}px;
-        height: ${size}px;
-        background: white;
-        border-radius: 50%;
+        font-size: ${size * 8}px;
+        color: white;
         opacity: ${opacity};
         left: ${Math.random() * 100}%;
         top: ${Math.random() * 100}%;
         filter: blur(${blur}px);
-        animation: twinkle ${duration}s ease-in-out infinite;
+        animation: twinkleScale ${duration}s ease-in-out infinite;
+        line-height: 1;
       `;
       container.appendChild(star);
     }
@@ -66,9 +66,15 @@ const Starfield = () => {
         aria-hidden="true"
       />
       <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.6; }
+        @keyframes twinkleScale {
+          0%, 100% { 
+            opacity: 0.2; 
+            transform: scale(0.8);
+          }
+          50% { 
+            opacity: 0.6; 
+            transform: scale(1.2);
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .star { animation: none !important; }
