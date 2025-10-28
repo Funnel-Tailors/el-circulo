@@ -749,11 +749,11 @@ serve(async (req) => {
         { key: 'quiz_score', field_value: score.toString() },
         { key: 'quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
         { key: 'circulo_score', field_value: score.toString() },
-        { key: 'Notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
-        { key: 'Notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
+        { key: 'notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
+        { key: 'notification_internal', field_value: generateInternalNotification(contactData, answers, score, tags) },
         { key: 'notification_client', field_value: generateClientNotification(name, answers, tags, score) },
         { key: 'notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
-        { key: 'Notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) },
+        { key: 'notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) },
         { key: 'circulo_fbclid', field_value: fbclid || 'organic' }
       ]
     };
