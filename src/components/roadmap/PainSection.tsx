@@ -12,7 +12,7 @@ export const PainSection = () => {
           
           {/* Título principal */}
           <h2 
-            className={`text-5xl md:text-6xl font-display font-black text-center mb-16 glow transition-all duration-1000 ${
+            className={`text-5xl md:text-6xl font-display font-black text-left leading-[1em] mb-16 glow transition-all duration-1000 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
             }`}
           >
