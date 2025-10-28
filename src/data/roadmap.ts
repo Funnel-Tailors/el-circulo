@@ -52,29 +52,41 @@ export const bonuses = [
 export const successCases = [
   {
     name: "Nico",
+    role: "Diseñador Web",
+    offer: "Elevate-Solo",
     highlight: "x10",
-    achievements: [
+    story: "Entró malvendiendo sus trabajos por 200 pavos y ha ido escalando poco a poco, perdiendo el miedo a cobrar 10 veces más. Ahora hasta disfruta del momento incómodo de decir lo que vale su trabajo.",
+    results: [
+      "Multiplicó x10 su ticket medio",
       "De 200€ a +1.000€ por proyecto",
-      "Cierra consistente a 10x su precio inicial",
-      "Disfruta del momento de decir su valor"
+      "Factura miles de euros de forma consistente",
+      "Domina el momento del cierre sin miedo"
     ]
   },
   {
     name: "Dani",
+    role: "Brand Strategist",
+    offer: "Cook Your Brand",
     highlight: "ROI x10",
-    achievements: [
+    story: "Tenía una marca personal poderosa y un montón de prospectos, así entre comillas, que nunca iban a tener la pasta suficiente para pagarle y hacían perder el tiempo a un equipo de setters que tenía que mantener. En apenas 10 días en el círculo y en 3 con su anuncio rulando consiguió su primer cliente.",
+    results: [
       "2.000€ su primer cliente en 10 días",
       "Marca personal → clientes con presupuesto real",
-      "Dejó de perder tiempo con prospectos sin pasta"
+      "Dejó de perder tiempo con prospectos sin pasta",
+      "Optimizó su embudo de ventas"
     ]
   },
   {
     name: "Cris",
+    role: "Coach Digital",
+    offer: "Embudo Express",
     highlight: "3.000€",
-    achievements: [
+    story: "Estaba a punto de tirar la toalla con su proyecto después de un par de lanzamientos que no le hicieron justicia, pero se ha convertido en una auténtica tiburona después de cerrar su primer proyecto por 3.000€ sólo con un cambio de mentalidad súper sencillo.",
+    results: [
       "De tirar la toalla a cerrar 3.000€",
       "Un solo cambio de mentalidad lo cambió todo",
-      "De lanzamientos fallidos a tiburona de ventas"
+      "De lanzamientos fallidos a tiburona de ventas",
+      "Transformó su confianza en el cierre"
     ]
   }
 ];

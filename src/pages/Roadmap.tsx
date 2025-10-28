@@ -93,8 +93,11 @@ const Roadmap = () => {
               <SuccessCase 
                 key={case_.name} 
                 name={case_.name}
+                role={case_.role}
+                offer={case_.offer}
                 highlight={case_.highlight}
-                achievements={case_.achievements}
+                story={case_.story}
+                results={case_.results}
                 index={index}
               />
             ))}
