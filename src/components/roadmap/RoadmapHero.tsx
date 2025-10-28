@@ -7,8 +7,8 @@ const RoadmapHero = () => {
         <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
 
-      <h1 className="text-4xl md:text-6xl font-display font-black leading-tight uppercase">
-        LA SENDA AL <span className="glow">CÍRCULO</span>
+      <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[1em]">
+        LA SENDA AL CÍRCULO
       </h1>
 
       <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
