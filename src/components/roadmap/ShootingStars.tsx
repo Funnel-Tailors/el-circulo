@@ -103,7 +103,7 @@ const ShootingStars = () => {
         ref={containerRef}
         className="fixed inset-0 overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, hsl(0, 0%, 8%) 0%, hsl(0, 0%, 4%) 50%, hsl(0, 0%, 0%) 100%)',
+          background: 'linear-gradient(180deg, hsl(0, 0%, 3%) 0%, hsl(0, 0%, 1%) 50%, hsl(0, 0%, 0%) 100%)',
           zIndex: 0,
           pointerEvents: 'none'
         }}

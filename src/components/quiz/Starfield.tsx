@@ -7,7 +7,7 @@ const Starfield = () => {
     if (!canvasRef.current) return;
 
     const container = canvasRef.current;
-    const starCount = 40;
+    const starCount = 80;
 
     // Create stars with depth layers
     for (let i = 0; i < starCount; i++) {
@@ -40,15 +40,16 @@ const Starfield = () => {
       
       star.textContent = "✦";
       star.style.cssText = `
-        position: absolute;
+        position: fixed;
         font-size: ${size * 4}px;
         color: white;
         opacity: ${opacity};
         left: ${Math.random() * 100}%;
-        top: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}vh;
         filter: blur(${blur}px);
         animation: twinkleScale ${duration}s ease-in-out infinite;
         line-height: 1;
+        pointer-events: none;
       `;
       container.appendChild(star);
     }
@@ -62,7 +63,7 @@ const Starfield = () => {
     <>
       <div 
         ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
+        className="fixed inset-0 pointer-events-none"
         aria-hidden="true"
       />
       <style>{`
