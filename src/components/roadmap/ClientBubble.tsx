@@ -20,7 +20,7 @@ const ClientBubble = () => {
   };
 
   return (
-    <section ref={ref} className="relative pb-12">
+    <section ref={ref} className="relative mt-5 pb-12">
       <div className="max-w-4xl mx-auto px-6 text-center">
         {/* Divider superior */}
         <div className="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
