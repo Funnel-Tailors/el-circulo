@@ -13,6 +13,7 @@ import ResultSection from "@/components/quiz/ResultSection";
 import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
+import { FAQSection } from "@/components/roadmap/FAQSection";
 
 const Index = () => {
   const [quizState, setQuizState] = useState<QuizState>({});
@@ -158,6 +159,9 @@ const Index = () => {
           </div>
 
           <RoadmapFooter />
+
+          {/* FAQ SECTION */}
+          <FAQSection />
 
           {/* QUIZ SECTION */}
           <div id="quiz-section" className="mt-16 scroll-mt-16 md:scroll-mt-8">
