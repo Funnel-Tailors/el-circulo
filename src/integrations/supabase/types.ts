@@ -214,6 +214,20 @@ export type Database = {
         }
         Relationships: []
       }
+      session_funnel: {
+        Row: {
+          completed: number | null
+          overall_conversion_rate: number | null
+          quiz_completion_rate: number | null
+          quiz_started: number | null
+          reached_contact_form: number | null
+          reached_q1: number | null
+          session_to_quiz_rate: number | null
+          total_sessions: number | null
+          vsl_views: number | null
+        }
+        Relationships: []
+      }
       vsl_performance_kpis: {
         Row: {
           avg_duration_seconds: number | null

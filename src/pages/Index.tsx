@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
@@ -14,11 +14,16 @@ import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
 import { FAQSection } from "@/components/roadmap/FAQSection";
+import { quizAnalytics } from "@/lib/analytics";
 
 const Index = () => {
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
   const [quizScreen, setQuizScreen] = useState<"quiz" | "result">("quiz");
+  
+  // Track quiz_started when quiz section enters viewport
+  const quizSectionRef = useRef<HTMLDivElement>(null);
+  const hasTrackedQuizInView = useRef(false);
 
   const handleCompleteQuiz = (state: QuizState, qualified: boolean) => {
     setQuizState(state);
@@ -30,6 +35,26 @@ const Index = () => {
     setQuizState({});
     setQuizScreen("quiz");
   };
+
+  // IntersectionObserver to track when quiz enters viewport
+  useEffect(() => {
+    if (!quizSectionRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasTrackedQuizInView.current) {
+            quizAnalytics.trackQuizStart();
+            hasTrackedQuizInView.current = true;
+          }
+        });
+      },
+      { threshold: 0.5 } // 50% of quiz visible
+    );
+
+    observer.observe(quizSectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-transparent">
@@ -164,7 +189,7 @@ const Index = () => {
           <FAQSection />
 
           {/* QUIZ SECTION */}
-          <div id="quiz-section" className="mt-16 scroll-mt-16 md:scroll-mt-8">
+          <div id="quiz-section" ref={quizSectionRef} className="mt-16 scroll-mt-16 md:scroll-mt-8">
             <div className="text-center mb-8 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">

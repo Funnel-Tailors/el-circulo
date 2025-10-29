@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { RefreshCw, Download, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import SessionFunnelChart from '@/components/analytics/SessionFunnelChart';
 import StatsCards from '@/components/analytics/StatsCards';
 import FunnelChart from '@/components/analytics/FunnelChart';
 import QuestionMetrics from '@/components/analytics/QuestionMetrics';
@@ -17,6 +18,17 @@ import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
 import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import VSLWatchDistribution from '@/components/analytics/VSLWatchDistribution';
+
+interface SessionFunnelData {
+  total_sessions: number;
+  vsl_views: number;
+  quiz_started: number;
+  reached_contact_form: number;
+  completed: number;
+  session_to_quiz_rate: number;
+  quiz_completion_rate: number;
+  overall_conversion_rate: number;
+}
 
 interface KPIData {
   total_sessions: number;
@@ -89,6 +101,7 @@ const Analytics = () => {
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   const [kpis, setKpis] = useState<KPIData | null>(null);
+  const [sessionFunnel, setSessionFunnel] = useState<SessionFunnelData | null>(null);
   const [stepMetrics, setStepMetrics] = useState<StepMetric[]>([]);
   const [conversionByStep, setConversionByStep] = useState<ConversionByStep[]>([]);
   const [utmPerformance, setUtmPerformance] = useState<UTMPerformanceData[]>([]);
@@ -136,6 +149,12 @@ const Analytics = () => {
         .select('*')
         .maybeSingle();
       setKpis(kpisData);
+
+      const { data: sessionFunnelData } = await supabase
+        .from('session_funnel')
+        .select('*')
+        .maybeSingle();
+      setSessionFunnel(sessionFunnelData);
 
       const { data: stepData } = await supabase
         .from('quiz_step_metrics')
@@ -272,8 +291,9 @@ const Analytics = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            <SessionFunnelChart data={sessionFunnel} loading={!sessionFunnel} />
+            <StatsCards kpis={kpis} sessionFunnel={sessionFunnel} loading={!kpis} />
             <InsightsCard kpis={kpis} stepMetrics={stepMetrics} />
-            <StatsCards kpis={kpis} loading={!kpis} />
             <FunnelChart data={conversionByStep} loading={!conversionByStep.length} />
           </TabsContent>
 

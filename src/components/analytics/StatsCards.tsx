@@ -4,6 +4,12 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
+interface SessionFunnelData {
+  session_to_quiz_rate: number;
+  quiz_completion_rate: number;
+  overall_conversion_rate: number;
+}
+
 interface StatsCardsProps {
   kpis: {
     total_sessions: number;
@@ -11,10 +17,11 @@ interface StatsCardsProps {
     abandoned_sessions: number;
     conversion_rate: number;
   } | null;
+  sessionFunnel?: SessionFunnelData | null;
   loading: boolean;
 }
 
-const StatsCards = ({ kpis, loading }: StatsCardsProps) => {
+const StatsCards = ({ kpis, sessionFunnel, loading }: StatsCardsProps) => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -36,21 +43,12 @@ const StatsCards = ({ kpis, loading }: StatsCardsProps) => {
 
   const stats = [
     {
-      title: 'Sesiones Totales',
+      title: 'Quiz Iniciados',
       value: kpis.total_sessions,
       icon: Users,
       color: 'text-blue-500',
       borderColor: 'border-l-blue-500',
-      description: 'Total de usuarios que iniciaron el quiz',
-    },
-    {
-      title: 'Tasa de Conversión',
-      value: `${kpis.conversion_rate}%`,
-      icon: TrendingUp,
-      color: 'text-green-500',
-      borderColor: 'border-l-green-500',
-      description: 'Porcentaje de usuarios que completaron el quiz',
-      progress: kpis.conversion_rate,
+      description: 'Usuarios que llegaron al quiz con intención real (scroll o CTA)',
     },
     {
       title: 'Quiz Completados',
@@ -68,11 +66,50 @@ const StatsCards = ({ kpis, loading }: StatsCardsProps) => {
       borderColor: 'border-l-red-500',
       description: 'Usuarios que no completaron el quiz',
     },
+    ...(sessionFunnel ? [
+      {
+        title: 'Engagement con Contenido',
+        value: `${sessionFunnel.session_to_quiz_rate.toFixed(1)}%`,
+        icon: TrendingUp,
+        color: 'text-yellow-500',
+        borderColor: 'border-l-yellow-500',
+        description: '% de sesiones totales que iniciaron el quiz',
+        progress: sessionFunnel.session_to_quiz_rate,
+      },
+      {
+        title: 'Conversión del Quiz',
+        value: `${sessionFunnel.quiz_completion_rate.toFixed(1)}%`,
+        icon: TrendingUp,
+        color: 'text-purple-500',
+        borderColor: 'border-l-purple-500',
+        description: '% de quiz iniciados que se completaron',
+        progress: sessionFunnel.quiz_completion_rate,
+      },
+      {
+        title: 'Conversión Global',
+        value: `${sessionFunnel.overall_conversion_rate.toFixed(1)}%`,
+        icon: CheckCircle,
+        color: 'text-pink-500',
+        borderColor: 'border-l-pink-500',
+        description: '% de sesiones totales que completaron',
+        progress: sessionFunnel.overall_conversion_rate,
+      }
+    ] : [
+      {
+        title: 'Tasa de Conversión',
+        value: `${kpis.conversion_rate}%`,
+        icon: TrendingUp,
+        color: 'text-green-500',
+        borderColor: 'border-l-green-500',
+        description: 'Porcentaje de usuarios que completaron el quiz',
+        progress: kpis.conversion_rate,
+      }
+    ])
   ];
 
   return (
     <TooltipProvider>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {stats.map((stat) => (
           <Tooltip key={stat.title}>
             <TooltipTrigger asChild>

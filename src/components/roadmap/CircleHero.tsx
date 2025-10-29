@@ -5,6 +5,9 @@ import { X } from "lucide-react";
 
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
+    // Track quiz start when CTA is clicked
+    quizAnalytics.trackQuizStart();
+    
     setTimeout(() => {
       const quizSection = document.getElementById('quiz-section');
       if (quizSection) {

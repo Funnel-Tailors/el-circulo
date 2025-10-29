@@ -178,6 +178,22 @@ class QuizAnalytics {
     return this.sessionId;
   }
 
+  // Quiz Start Tracking Methods
+  hasTrackedQuizStart(): boolean {
+    return sessionStorage.getItem('quiz_start_tracked') === 'true';
+  }
+
+  markQuizStartTracked(): void {
+    sessionStorage.setItem('quiz_start_tracked', 'true');
+  }
+
+  trackQuizStart(): void {
+    if (!this.hasTrackedQuizStart()) {
+      this.trackEvent({ event_type: 'quiz_started' });
+      this.markQuizStartTracked();
+    }
+  }
+
   // VSL Tracking Methods
   async trackVSLView(vslType: 'roadmap_hero' | 'booking_iframe'): Promise<void> {
     try {

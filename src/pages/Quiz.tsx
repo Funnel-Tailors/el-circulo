@@ -8,7 +8,6 @@ const Quiz = () => {
   const [currentScreen, setCurrentScreen] = useState<"hero" | "quiz" | "result">("quiz");
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
-  const hasTrackedStart = useRef(false);
 
   const completeQuiz = (state: QuizState, qualified: boolean) => {
     setQuizState(state);
@@ -22,11 +21,6 @@ const Quiz = () => {
   };
 
   useEffect(() => {
-    if (currentScreen === "quiz" && !hasTrackedStart.current) {
-      quizAnalytics.trackEvent({ event_type: 'quiz_started' });
-      hasTrackedStart.current = true;
-    }
-
     return () => {
       if (currentScreen === "quiz") {
         quizAnalytics.trackAbandonment();
