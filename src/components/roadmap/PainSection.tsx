@@ -1,7 +1,7 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export const PainSection = () => {
-  const { ref, isVisible } = useScrollReveal(0.2);
+  const { ref, isVisible } = useScrollReveal(0.1);
 
   return (
     <section ref={ref} className="relative pt-0 pb-8">
