@@ -52,7 +52,7 @@ const Index = () => {
           {/* ROADMAP */}
           <RoadmapHero />
 
-          <div className="space-y-12 relative">
+          <div className="space-y-12 relative mb-24 md:mb-16">
             {/* Timeline circle symbol */}
             <div className="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
               <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
