@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { QuizState } from "@/pages/Index";
 import { useEffect, useState } from "react";
+import { quizAnalytics } from "@/lib/analytics";
 
 interface ResultSectionProps {
   isQualified: boolean;
@@ -26,6 +27,13 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
       };
     }
   }, [isQualified]);
+
+  // Link VSL views to GHL contact when available
+  useEffect(() => {
+    if (quizState.ghlContactId) {
+      quizAnalytics.linkVSLtoContact(quizState.ghlContactId);
+    }
+  }, [quizState.ghlContactId]);
 
   // Countdown timer
   useEffect(() => {

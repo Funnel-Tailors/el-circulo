@@ -2,3 +2,6 @@ project_id = "yewfryggiinoebnobbuq"
 
 [functions.submit-lead-to-ghl]
 verify_jwt = false
+
+[functions.sync-vsl-to-ghl]
+verify_jwt = false

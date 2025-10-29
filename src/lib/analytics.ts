@@ -173,6 +173,64 @@ class QuizAnalytics {
   getFbclid(): string | null {
     return this.fbclid;
   }
+
+  // VSL Tracking Methods
+  async trackVSLView(vslType: 'roadmap_hero' | 'booking_iframe'): Promise<void> {
+    try {
+      const { error } = await supabase.from('vsl_views').insert({
+        session_id: this.sessionId,
+        vsl_type: vslType,
+        utm_source: this.utmParams.utm_source,
+        utm_medium: this.utmParams.utm_medium,
+        utm_campaign: this.utmParams.utm_campaign,
+        device_type: this.deviceType,
+        referrer: this.referrer,
+      });
+
+      if (error) {
+        console.error('VSL tracking error:', error);
+      }
+    } catch (err) {
+      console.error('VSL tracking exception:', err);
+    }
+  }
+
+  async trackVSLProgress(percentage: number, duration: number): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('vsl_views')
+        .update({
+          video_percentage_watched: percentage,
+          view_duration_seconds: duration,
+          user_interacted: true,
+        })
+        .eq('session_id', this.sessionId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (error) {
+        console.error('VSL progress tracking error:', error);
+      }
+    } catch (err) {
+      console.error('VSL progress tracking exception:', err);
+    }
+  }
+
+  async linkVSLtoContact(ghlContactId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('vsl_views')
+        .update({ ghl_contact_id: ghlContactId })
+        .eq('session_id', this.sessionId)
+        .is('ghl_contact_id', null);
+
+      if (error) {
+        console.error('VSL contact linking error:', error);
+      }
+    } catch (err) {
+      console.error('VSL contact linking exception:', err);
+    }
+  }
 }
 
 export const quizAnalytics = new QuizAnalytics();

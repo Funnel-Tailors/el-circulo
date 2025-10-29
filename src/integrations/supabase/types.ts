@@ -98,6 +98,57 @@ export type Database = {
         }
         Relationships: []
       }
+      vsl_views: {
+        Row: {
+          created_at: string | null
+          device_type: string | null
+          ghl_contact_id: string | null
+          id: string
+          referrer: string | null
+          session_id: string
+          user_interacted: boolean | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          video_percentage_watched: number | null
+          view_duration_seconds: number | null
+          view_started_at: string | null
+          vsl_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_type?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          referrer?: string | null
+          session_id: string
+          user_interacted?: boolean | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          video_percentage_watched?: number | null
+          view_duration_seconds?: number | null
+          view_started_at?: string | null
+          vsl_type: string
+        }
+        Update: {
+          created_at?: string | null
+          device_type?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          referrer?: string | null
+          session_id?: string
+          user_interacted?: boolean | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          video_percentage_watched?: number | null
+          view_duration_seconds?: number | null
+          view_started_at?: string | null
+          vsl_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       quiz_answer_distribution: {

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { quizAnalytics } from "@/lib/analytics";
 
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
@@ -22,6 +23,7 @@ const CircleHero = () => {
   };
   const [count, setCount] = useState(0);
   const targetValue = 14300;
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const duration = 2000; // 2 segundos
@@ -40,6 +42,35 @@ const CircleHero = () => {
     }, duration / steps);
 
     return () => clearInterval(timer);
+  }, []);
+
+  // Track VSL view on component mount
+  useEffect(() => {
+    quizAnalytics.trackVSLView('roadmap_hero');
+  }, []);
+
+  // Track VSL video progress
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handlePlay = () => {
+      quizAnalytics.trackVSLProgress(0, 0);
+    };
+
+    const handleTimeUpdate = () => {
+      const percentage = Math.round((video.currentTime / video.duration) * 100);
+      const duration = Math.round(video.currentTime);
+      quizAnalytics.trackVSLProgress(percentage, duration);
+    };
+
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    
+    return () => {
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+    };
   }, []);
 
   return (
@@ -76,6 +107,7 @@ const CircleHero = () => {
       {/* VSL Container con glow pulsante */}
       <div className="relative mx-auto my-12">
         <video
+          ref={videoRef}
           src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
           autoPlay
           loop
