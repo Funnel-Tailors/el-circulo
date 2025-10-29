@@ -25,6 +25,7 @@ const CircleHero = () => {
   const [count, setCount] = useState(0);
   const targetValue = 14300;
   const videoRef = useRef<HTMLVideoElement>(null);
+  const stickyVideoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
@@ -93,6 +94,32 @@ const CircleHero = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Sincronizar tiempo de reproducción entre videos
+  useEffect(() => {
+    const mainVideo = videoRef.current;
+    const stickyVideo = stickyVideoRef.current;
+    
+    if (!mainVideo || !stickyVideo) return;
+
+    if (isVideoSticky && showSticky) {
+      // Transferir al video sticky
+      stickyVideo.currentTime = mainVideo.currentTime;
+      if (!mainVideo.paused) {
+        stickyVideo.play().catch(() => {});
+      }
+      mainVideo.pause();
+    } else if (!isVideoSticky) {
+      // Volver al video principal
+      mainVideo.currentTime = stickyVideo.currentTime;
+      if (!stickyVideo.paused) {
+        mainVideo.play().catch(() => {});
+      }
+      if (stickyVideo) {
+        stickyVideo.pause();
+      }
+    }
+  }, [isVideoSticky, showSticky]);
+
   return (
     <div className="text-center space-y-8 mb-8 animate-fade-in -mt-8">
       {/* 5 Estrellas decorativas superiores */}
@@ -144,15 +171,25 @@ const CircleHero = () => {
         <div className="fixed top-4 left-0 right-0 z-50 px-4 animate-fade-in">
           <div className="relative max-w-4xl mx-auto">
             <button
-              onClick={() => setShowSticky(false)}
+              onClick={() => {
+                const mainVideo = videoRef.current;
+                const stickyVideo = stickyVideoRef.current;
+                if (mainVideo && stickyVideo) {
+                  mainVideo.currentTime = stickyVideo.currentTime;
+                  if (!stickyVideo.paused) {
+                    mainVideo.play().catch(() => {});
+                  }
+                }
+                setShowSticky(false);
+              }}
               className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors shadow-lg"
               aria-label="Cerrar video"
             >
               <X className="w-4 h-4" />
             </button>
             <video
+              ref={stickyVideoRef}
               src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
-              autoPlay
               loop
               muted
               playsInline
