@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Starfield from "@/components/quiz/Starfield";
+import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
 import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
@@ -31,6 +32,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-transparent">
+      {/* Shooting stars con gradiente de fondo */}
+      <ShootingStars />
       {/* Starfield de fondo */}
       <Starfield />
 
