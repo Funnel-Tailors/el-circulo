@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
+import { X } from "lucide-react";
 
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
@@ -24,6 +25,9 @@ const CircleHero = () => {
   const [count, setCount] = useState(0);
   const targetValue = 14300;
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const [isVideoSticky, setIsVideoSticky] = useState(false);
+  const [showSticky, setShowSticky] = useState(true);
 
   useEffect(() => {
     const duration = 2000; // 2 segundos
@@ -73,6 +77,22 @@ const CircleHero = () => {
     };
   }, []);
 
+  // Sticky video logic
+  useEffect(() => {
+    const container = videoContainerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsVideoSticky(!entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="text-center space-y-8 mb-8 animate-fade-in -mt-8">
       {/* 5 Estrellas decorativas superiores */}
@@ -105,7 +125,7 @@ const CircleHero = () => {
       </p>
 
       {/* VSL Container con glow pulsante */}
-      <div className="relative mx-auto my-12">
+      <div ref={videoContainerRef} className="relative mx-auto my-12">
         <video
           ref={videoRef}
           src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
@@ -118,6 +138,31 @@ const CircleHero = () => {
           style={{ aspectRatio: '16/9' }}
         />
       </div>
+
+      {/* Sticky Video */}
+      {isVideoSticky && showSticky && (
+        <div className="fixed top-4 left-0 right-0 z-50 px-4 animate-fade-in">
+          <div className="relative max-w-4xl mx-auto">
+            <button
+              onClick={() => setShowSticky(false)}
+              className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors shadow-lg"
+              aria-label="Cerrar video"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <video
+              src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              controls
+              className="w-full rounded-2xl shadow-2xl video-glow sticky-video-smooth"
+              style={{ aspectRatio: '16/9' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Logo EL CÍRCULO */}
       <div className="space-y-4">
