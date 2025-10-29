@@ -40,7 +40,7 @@ const Index = () => {
       {/* Container con max-width y padding fijos */}
       <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
         {/* Layout vertical único */}
-        <div className="space-y-0">
+        <div>
           <CircleHero />
           
           {/* CLIENT BUBBLE */}
@@ -66,7 +66,7 @@ const Index = () => {
           </div>
 
           {/* ASCENDIDOS */}
-          <div className="mt-48 md:mt-40 mb-8">
+          <div className="mt-32 md:mt-24 mb-8">
             <div className="text-center mb-16 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
@@ -160,7 +160,7 @@ const Index = () => {
           <RoadmapFooter />
 
           {/* QUIZ SECTION */}
-          <div id="quiz-section" className="mt-56 md:mt-40 scroll-mt-16 md:scroll-mt-8">
+          <div id="quiz-section" className="mt-32 md:mt-24 scroll-mt-16 md:scroll-mt-8">
             <div className="text-center mb-8 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
