@@ -174,6 +174,10 @@ class QuizAnalytics {
     return this.fbclid;
   }
 
+  getSessionId(): string {
+    return this.sessionId;
+  }
+
   // VSL Tracking Methods
   async trackVSLView(vslType: 'roadmap_hero' | 'booking_iframe'): Promise<void> {
     try {

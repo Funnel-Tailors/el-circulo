@@ -1,4 +1,5 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,6 +79,7 @@ interface LeadSubmission {
   fbclid?: string;
   isPartialSubmission?: boolean;
   ghlContactId?: string;
+  sessionId?: string;
 }
 
 function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false): string[] {
@@ -656,7 +658,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId }: LeadSubmission = await req.json();
+    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId }: LeadSubmission = await req.json();
     
     console.log('📊 Lead recibido:', { 
       name, 
@@ -665,8 +667,41 @@ serve(async (req) => {
       score, 
       fbclid: fbclid || 'organic',
       isPartialSubmission: isPartialSubmission || false,
-      ghlContactId: ghlContactId || 'none'
+      ghlContactId: ghlContactId || 'none',
+      sessionId: sessionId || 'none'
     });
+    
+    // Query VSL data if sessionId is provided
+    let vslWatched = 'no';
+    let vslPercentage = '0';
+    let vslDuration = '0';
+    
+    if (sessionId) {
+      console.log('🎥 Consultando datos VSL para session_id:', sessionId);
+      const supabaseUrl = Deno.env.get('SUPABASE_URL');
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        const { data: vslData, error: vslError } = await supabase
+          .from('vsl_views')
+          .select('video_percentage_watched, view_duration_seconds')
+          .eq('session_id', sessionId)
+          .order('video_percentage_watched', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (!vslError && vslData) {
+          vslPercentage = vslData.video_percentage_watched?.toString() || '0';
+          vslDuration = vslData.view_duration_seconds?.toString() || '0';
+          vslWatched = parseInt(vslPercentage) > 10 ? 'yes' : 'no';
+          console.log('✅ Datos VSL encontrados:', { vslWatched, vslPercentage, vslDuration });
+        } else {
+          console.log('ℹ️ No se encontraron datos VSL para esta sesión');
+        }
+      }
+    }
     
     // Validación anti-spam server-side
     const contactData: ContactData = { name, email, whatsapp };
@@ -754,7 +789,10 @@ serve(async (req) => {
         { key: 'notification_client', field_value: generateClientNotification(name, answers, tags, score) },
         { key: 'notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
         { key: 'notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) },
-        { key: 'circulo_fbclid', field_value: fbclid || 'organic' }
+        { key: 'circulo_fbclid', field_value: fbclid || 'organic' },
+        { key: 'vsl_watched', field_value: vslWatched },
+        { key: 'vsl_percentage', field_value: vslPercentage },
+        { key: 'vsl_duration', field_value: vslDuration }
       ]
     };
     

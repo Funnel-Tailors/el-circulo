@@ -174,7 +174,8 @@ const QuizSection = ({
           score,
           qualified,
           fbclid: quizAnalytics.getFbclid(),
-          isPartialSubmission: true
+          isPartialSubmission: true,
+          sessionId: quizAnalytics.getSessionId()
         }
       });
       
@@ -273,7 +274,8 @@ const QuizSection = ({
           qualified,
           fbclid: quizAnalytics.getFbclid(),
           isPartialSubmission: false,
-          ghlContactId: ghlContactId || undefined // Pasar el contactId si existe
+          ghlContactId: ghlContactId || undefined, // Pasar el contactId si existe
+          sessionId: quizAnalytics.getSessionId()
         }
       });
       if (error) throw error;
