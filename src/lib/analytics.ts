@@ -7,7 +7,8 @@ type EventType =
   | 'contact_form_viewed'
   | 'validation_error'
   | 'quiz_abandoned'
-  | 'quiz_completed';
+  | 'quiz_completed'
+  | 'error_occurred';
 
 interface TrackEventParams {
   event_type: EventType;
@@ -140,6 +141,15 @@ class QuizAnalytics {
   trackValidationError(stepId: string, errorType: string, errorMessage: string): void {
     this.trackEvent({
       event_type: 'validation_error',
+      step_id: stepId,
+      error_type: errorType,
+      error_message: errorMessage,
+    });
+  }
+
+  trackError(errorType: string, errorMessage: string, stepId?: string): void {
+    this.trackEvent({
+      event_type: 'error_occurred',
       step_id: stepId,
       error_type: errorType,
       error_message: errorMessage,

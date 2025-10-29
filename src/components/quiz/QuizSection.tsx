@@ -283,7 +283,30 @@ const QuizSection = ({
           sessionId: quizAnalytics.getSessionId()
         }
       });
-      if (error) throw error;
+      
+      if (error) {
+        console.error('❌ Edge function error:', error);
+        throw error;
+      }
+      
+      // ✅ LOGGING EXHAUSTIVO del contactId
+      console.log('📦 Full response from edge function:', responseData);
+      
+      if (!responseData?.contactId) {
+        console.warn('⚠️ No contactId in response. Response data:', responseData);
+        
+        // Track error en analytics
+        quizAnalytics.trackValidationError(
+          'contact_form',
+          'missing_contact_id',
+          'Edge function did not return contactId'
+        );
+      } else {
+        console.log('✅ ContactId received successfully:', responseData.contactId);
+        console.log('📋 ContactId type:', typeof responseData.contactId);
+        console.log('📏 ContactId length:', responseData.contactId.length);
+      }
+      
       console.log('Lead enviado a GHL:', responseData);
       quizAnalytics.completeQuiz();
       
@@ -297,23 +320,37 @@ const QuizSection = ({
         title: "Perfecto",
         description: "Tus datos han sido guardados correctamente"
       });
+      
       const finalState = {
         ...answers,
         ...contactData,
-        ghlContactId: responseData?.contactId
+        ghlContactId: responseData?.contactId || null // Explicit null si no existe
       };
+      
+      console.log('🎯 Final state with contactId:', finalState.ghlContactId);
       onComplete(finalState, true);
     } catch (error) {
-      console.error('Error al enviar lead a GHL:', error);
+      console.error('💥 Failed to submit lead to GHL:', error);
+      console.error('💥 Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: typeof error,
+        error
+      });
+      
       toast({
         title: "Aviso",
         description: "Hubo un problema al guardar tus datos, pero puedes continuar",
         variant: "destructive"
       });
+      
+      // Continuar sin contactId - el calendario funcionará pero sin pre-rellenar
       const finalState = {
         ...answers,
-        ...contactData
+        ...contactData,
+        ghlContactId: null
       };
+      
+      console.log('⚠️ Continuing without contactId due to error');
       onComplete(finalState, true);
     } finally {
       setIsSubmitting(false);

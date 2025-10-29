@@ -14,6 +14,23 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
   const [bookingStarted, setBookingStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(15 * 60); // 15 min countdown
 
+  // ✅ Helper para validar contactId
+  const isValidContactId = (id: string | undefined | null): id is string => {
+    const isValid = typeof id === 'string' && 
+                    id.length > 0 && 
+                    id !== 'undefined' && 
+                    id !== 'null';
+    
+    console.log('🔍 Validating contactId:', { 
+      id, 
+      type: typeof id, 
+      length: typeof id === 'string' ? id.length : 'N/A',
+      isValid 
+    });
+    
+    return isValid;
+  };
+
   useEffect(() => {
     if (isQualified) {
       const script = document.createElement('script');
@@ -83,11 +100,18 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 </div>
               </div>
 
-              {quizState.ghlContactId && (
+              {/* ✅ Info: Datos pre-cargados si contactId es válido */}
+              {isValidContactId(quizState.ghlContactId) ? (
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-center">
                   <p className="text-xs text-blue-200/90">
                     ✨ Tus datos ya están pre-cargados en el calendario. 
                     <span className="font-semibold"> Verifica que sean correctos</span> antes de confirmar tu cita.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4 text-center">
+                  <p className="text-xs text-yellow-200">
+                    ⚠️ Tendrás que rellenar tus datos manualmente en el calendario.
                   </p>
                 </div>
               )}
@@ -125,9 +149,20 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
 
               <div className="rounded-xl overflow-hidden border border-border bg-background/50 mt-6">
                 <iframe
-                  src={`https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke${
-                    quizState.ghlContactId ? `?contactId=${quizState.ghlContactId}` : ''
-                  }`}
+                  src={(() => {
+                    const baseUrl = 'https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke';
+                    
+                    // ✅ Construir URL con o sin contactId según validación
+                    const finalUrl = isValidContactId(quizState.ghlContactId)
+                      ? `${baseUrl}?contactId=${encodeURIComponent(quizState.ghlContactId)}`
+                      : baseUrl;
+                    
+                    // ✅ LOGGING de la URL del calendario
+                    console.log('📅 Calendar iframe URL:', finalUrl);
+                    console.log('📋 ContactId used:', quizState.ghlContactId || 'NONE (fallback)');
+                    
+                    return finalUrl;
+                  })()}
                   style={{ width: '100%', border: 'none', overflow: 'hidden' }}
                   scrolling="no"
                   id="xkfGe4Gjr8REwK34dZke_1760881701916"
