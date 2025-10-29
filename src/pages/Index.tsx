@@ -160,7 +160,7 @@ const Index = () => {
           <RoadmapFooter />
 
           {/* QUIZ SECTION */}
-          <div id="quiz-section" className="mt-40 scroll-mt-16 md:scroll-mt-8">
+          <div id="quiz-section" className="mt-56 md:mt-40 scroll-mt-16 md:scroll-mt-8">
             <div className="text-center mb-8 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
