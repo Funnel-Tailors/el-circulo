@@ -52,7 +52,7 @@ const Index = () => {
           {/* ROADMAP */}
           <RoadmapHero />
 
-          <div className="space-y-12 relative mb-24 md:mb-16">
+          <div className="space-y-12 relative mb-16">
             {/* Timeline circle symbol */}
             <div className="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
               <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
@@ -66,7 +66,7 @@ const Index = () => {
           </div>
 
           {/* ASCENDIDOS */}
-          <div className="mt-32 md:mt-24 mb-8">
+          <div className="mt-16 mb-8">
             <div className="text-center mb-16 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
@@ -122,7 +122,7 @@ const Index = () => {
           </div>
 
           {/* LOS ARTEFACTOS */}
-          <div className="mt-24">
+          <div className="mt-16">
             <div className="text-center mb-8 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
@@ -160,7 +160,7 @@ const Index = () => {
           <RoadmapFooter />
 
           {/* QUIZ SECTION */}
-          <div id="quiz-section" className="mt-32 md:mt-24 scroll-mt-16 md:scroll-mt-8">
+          <div id="quiz-section" className="mt-16 scroll-mt-16 md:scroll-mt-8">
             <div className="text-center mb-8 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
