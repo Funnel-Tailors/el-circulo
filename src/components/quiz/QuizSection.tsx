@@ -106,7 +106,7 @@ const QuizSection = ({
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Estado para captura progresiva
   const hasSubmittedPartial = useRef(false);
   const [ghlContactId, setGhlContactId] = useState<string | null>(null);
@@ -138,7 +138,9 @@ const QuizSection = ({
 
   // Validación y captura progresiva de nombre y email
   useEffect(() => {
-    const subscription = form.watch((value, { name: fieldName }) => {
+    const subscription = form.watch((value, {
+      name: fieldName
+    }) => {
       // Solo procesar si cambian name o email
       if (fieldName === 'name' || fieldName === 'email') {
         // Validar solo name y email con schema parcial
@@ -146,30 +148,34 @@ const QuizSection = ({
           name: value.name,
           email: value.email
         });
-        
+
         // Si ambos son válidos y no hemos enviado el parcial
         if (result.success && !hasSubmittedPartial.current && showContactForm) {
           submitPartialLead(value.name!, value.email!);
         }
       }
     });
-    
     return () => subscription.unsubscribe();
   }, [form.watch, showContactForm]);
-
   const submitPartialLead = async (name: string, email: string) => {
-    console.log('📤 Enviando lead parcial:', { name, email });
+    console.log('📤 Enviando lead parcial:', {
+      name,
+      email
+    });
     hasSubmittedPartial.current = true; // Marcar como enviado inmediatamente
-    
+
     const score = calculateScore(answers);
     const qualified = score >= 60 && !hasAutoDisqualify(answers);
-    
     try {
-      const { data, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('submit-lead-to-ghl', {
         body: {
           name,
           email,
-          whatsapp: '', // Vacío por ahora
+          whatsapp: '',
+          // Vacío por ahora
           answers,
           score,
           qualified,
@@ -178,12 +184,10 @@ const QuizSection = ({
           sessionId: quizAnalytics.getSessionId()
         }
       });
-      
       if (error) {
         console.error('Error al capturar lead parcial:', error);
         return;
       }
-      
       if (data?.contactId) {
         setGhlContactId(data.contactId);
         console.log('✅ Lead parcial capturado. ContactId:', data.contactId);
@@ -274,7 +278,8 @@ const QuizSection = ({
           qualified,
           fbclid: quizAnalytics.getFbclid(),
           isPartialSubmission: false,
-          ghlContactId: ghlContactId || undefined, // Pasar el contactId si existe
+          ghlContactId: ghlContactId || undefined,
+          // Pasar el contactId si existe
           sessionId: quizAnalytics.getSessionId()
         }
       });
@@ -593,11 +598,7 @@ const QuizSection = ({
         </div>
       </div>
 
-      <div className="text-center pt-2">
-        <Button onClick={() => setShowExitDialog(true)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
-          Salir
-        </Button>
-      </div>
+      
     </div>
 
     <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
