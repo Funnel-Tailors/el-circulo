@@ -1,5 +1,5 @@
 const RoadmapHero = () => {
-  return <div className="text-center space-y-6 mb-32 md:mb-16 animate-fade-in">
+  return <div className="text-center space-y-6 mb-11 md:mb-5 animate-fade-in">
       {/* Runic divider */}
       <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
         <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
