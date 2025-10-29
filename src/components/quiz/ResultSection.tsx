@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { QuizState } from "@/pages/Index";
+import { QuizState } from "@/types/quiz";
 import { useEffect, useState } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 

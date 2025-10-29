@@ -10,7 +10,7 @@ import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
-import type { QuizState } from "@/pages/Index";
+import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
 
 const Roadmap = () => {
