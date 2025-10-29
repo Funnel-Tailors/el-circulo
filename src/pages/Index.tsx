@@ -66,7 +66,7 @@ const Index = () => {
           </div>
 
           {/* ASCENDIDOS */}
-          <div className="mt-32 md:mt-40 mb-8">
+          <div className="mt-48 md:mt-40 mb-8">
             <div className="text-center mb-16 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
