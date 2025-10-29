@@ -74,7 +74,7 @@ const CircleHero = () => {
   }, []);
 
   return (
-    <div className="text-center space-y-8 mb-24 animate-fade-in -mt-8">
+    <div className="text-center space-y-8 mb-8 animate-fade-in -mt-8">
       {/* 5 Estrellas decorativas superiores */}
       <div className="flex justify-center gap-1.5 mb-3" aria-hidden="true">
         {[...Array(5)].map((_, i) => (
