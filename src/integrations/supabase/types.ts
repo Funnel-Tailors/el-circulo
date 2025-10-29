@@ -214,6 +214,29 @@ export type Database = {
         }
         Relationships: []
       }
+      vsl_performance_kpis: {
+        Row: {
+          avg_duration_seconds: number | null
+          avg_percentage_watched: number | null
+          engaged_viewers: number | null
+          engagement_rate: number | null
+          quiz_completed: number | null
+          quiz_started: number | null
+          total_vsl_views: number | null
+          vsl_to_conversion_rate: number | null
+          vsl_to_quiz_rate: number | null
+        }
+        Relationships: []
+      }
+      vsl_watch_brackets: {
+        Row: {
+          completed_quiz: number | null
+          conversion_rate: number | null
+          viewers: number | null
+          watch_bracket: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
