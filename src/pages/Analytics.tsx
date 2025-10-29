@@ -14,6 +14,9 @@ import QuestionMetrics from '@/components/analytics/QuestionMetrics';
 import UTMPerformance from '@/components/analytics/UTMPerformance';
 import InsightsCard from '@/components/analytics/InsightsCard';
 import AnswerDistribution from '@/components/analytics/AnswerDistribution';
+import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
+import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
+import VSLWatchDistribution from '@/components/analytics/VSLWatchDistribution';
 
 interface KPIData {
   total_sessions: number;
@@ -58,6 +61,25 @@ interface AnswerDistributionData {
   percentage: number;
 }
 
+interface VSLKPIData {
+  total_vsl_views: number;
+  engaged_viewers: number;
+  quiz_started: number;
+  quiz_completed: number;
+  avg_percentage_watched: number;
+  avg_duration_seconds: number;
+  engagement_rate: number;
+  vsl_to_quiz_rate: number;
+  vsl_to_conversion_rate: number;
+}
+
+interface VSLWatchBracket {
+  watch_bracket: string;
+  viewers: number;
+  completed_quiz: number;
+  conversion_rate: number;
+}
+
 const Analytics = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -71,6 +93,8 @@ const Analytics = () => {
   const [conversionByStep, setConversionByStep] = useState<ConversionByStep[]>([]);
   const [utmPerformance, setUtmPerformance] = useState<UTMPerformanceData[]>([]);
   const [answerDistribution, setAnswerDistribution] = useState<AnswerDistributionData[]>([]);
+  const [vslKpis, setVslKpis] = useState<VSLKPIData | null>(null);
+  const [vslWatchBrackets, setVslWatchBrackets] = useState<VSLWatchBracket[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -132,6 +156,18 @@ const Analytics = () => {
         .from('quiz_answer_distribution')
         .select('*');
       setAnswerDistribution(distributionData || []);
+
+      // Fetch VSL performance data
+      const { data: vslKpisData } = await supabase
+        .from('vsl_performance_kpis')
+        .select('*')
+        .maybeSingle();
+      setVslKpis(vslKpisData);
+
+      const { data: vslBracketsData } = await supabase
+        .from('vsl_watch_brackets')
+        .select('*');
+      setVslWatchBrackets(vslBracketsData || []);
 
       setLastUpdate(new Date());
     } catch (error) {
@@ -229,6 +265,7 @@ const Analytics = () => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Resumen</TabsTrigger>
+            <TabsTrigger value="vsl">VSL Performance</TabsTrigger>
             <TabsTrigger value="funnel">Embudo</TabsTrigger>
             <TabsTrigger value="questions">Preguntas</TabsTrigger>
             <TabsTrigger value="utm">UTM</TabsTrigger>
@@ -238,6 +275,18 @@ const Analytics = () => {
             <InsightsCard kpis={kpis} stepMetrics={stepMetrics} />
             <StatsCards kpis={kpis} loading={!kpis} />
             <FunnelChart data={conversionByStep} loading={!conversionByStep.length} />
+          </TabsContent>
+
+          <TabsContent value="vsl" className="space-y-6">
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => exportToCSV(vslWatchBrackets, 'vsl-watch-brackets')}>
+                <Download className="mr-2 h-4 w-4" />
+                Exportar Distribución
+              </Button>
+            </div>
+            <VSLPerformanceCards data={vslKpis} />
+            <VSLFunnelChart data={vslKpis} />
+            <VSLWatchDistribution data={vslWatchBrackets} />
           </TabsContent>
 
           <TabsContent value="funnel" className="space-y-6">
