@@ -166,9 +166,9 @@ const CircleHero = () => {
         />
       </div>
 
-      {/* Sticky Video */}
-      {isVideoSticky && showSticky && (
-        <div className="fixed top-4 left-0 right-0 z-50 px-4 animate-fade-in">
+        {/* Sticky Video */}
+        {isVideoSticky && showSticky && (
+          <div className="fixed top-0 left-0 right-0 z-50 p-2 animate-fade-in">
           <div className="relative max-w-4xl mx-auto">
             <button
               onClick={() => {
