@@ -286,6 +286,13 @@ const QuizSection = ({
       if (error) throw error;
       console.log('Lead enviado a GHL:', responseData);
       quizAnalytics.completeQuiz();
+      
+      // Disparar evento Lead de Meta Pixel
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'Lead');
+        console.log('✅ Meta Pixel Lead event fired');
+      }
+      
       toast({
         title: "Perfecto",
         description: "Tus datos han sido guardados correctamente"
