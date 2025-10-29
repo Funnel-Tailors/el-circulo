@@ -198,31 +198,6 @@ All colors MUST be HSL.
       text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
   }
-  
-  .underline-glow {
-    position: relative;
-    display: inline;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-    animation: pulse-underline-glow 2.4s ease-in-out infinite alternate;
-  }
-  
-  @keyframes pulse-underline-glow {
-    from {
-      border-bottom-color: rgba(255, 255, 255, 0.3);
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
-    }
-    to {
-      border-bottom-color: rgba(255, 255, 255, 0.65);
-      box-shadow: 0 2px 16px rgba(255, 255, 255, 0.35);
-    }
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    .underline-glow {
-      animation: none;
-      border-bottom-color: rgba(255, 255, 255, 0.4);
-    }
-  }
 }
 
 /* Focus states for accessibility */
