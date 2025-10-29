@@ -18,9 +18,9 @@ const RoadmapHero = () => {
       {/* Bottom divider */}
       <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">
         <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-        <div className="text-muted-foreground text-xs">✦</div>
         <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
     </div>;
 };
+
 export default RoadmapHero;

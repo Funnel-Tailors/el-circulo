@@ -53,6 +53,13 @@ const Index = () => {
           <RoadmapHero />
 
           <div className="space-y-12 relative">
+            {/* Timeline circle symbol */}
+            <div className="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
+              <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+              <div className="text-muted-foreground text-xs">✦</div>
+              <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+            </div>
+
             {roadmapDays.map((day, index) => (
               <TimelineDay key={day.day} {...day} index={index} />
             ))}
