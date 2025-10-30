@@ -37,13 +37,40 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
       script.src = 'https://link.msgsndr.com/js/form_embed.js';
       script.type = 'text/javascript';
       script.async = true;
+      
+      script.onload = () => {
+        // Esperar a que GHL esté disponible y cargar el widget con datos pre-rellenados
+        if (window.GHL && window.GHL.loadBookingWidget) {
+          console.log('🔮 Loading GHL booking widget with pre-filled data:', {
+            name: quizState.name,
+            email: quizState.email,
+            phone: quizState.whatsapp
+          });
+
+          const [firstName = '', ...lastNameParts] = (quizState.name || '').split(' ');
+          const lastName = lastNameParts.join(' ');
+
+          window.GHL.loadBookingWidget({
+            elementId: 'ghl-calendar-container',
+            calendarId: 'xkfGe4Gjr8REwK34dZke',
+            // Pre-rellenar datos del quiz - GHL asociará automáticamente al contacto existente
+            firstName: firstName,
+            lastName: lastName,
+            email: quizState.email || '',
+            phone: quizState.whatsapp || '',
+          });
+        }
+      };
+      
       document.body.appendChild(script);
       
       return () => {
-        document.body.removeChild(script);
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
       };
     }
-  }, [isQualified]);
+  }, [isQualified, quizState.name, quizState.email, quizState.whatsapp]);
 
   // Link VSL views to GHL contact when available
   useEffect(() => {
@@ -100,21 +127,13 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 </div>
               </div>
 
-              {/* ✅ Info: Datos pre-cargados si contactId es válido */}
-              {isValidContactId(quizState.ghlContactId) ? (
-                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-center">
-                  <p className="text-xs text-blue-200/90">
-                    ✨ Tus datos ya están pre-cargados en el calendario. 
-                    <span className="font-semibold"> Verifica que sean correctos</span> antes de confirmar tu cita.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-4 text-center">
-                  <p className="text-xs text-yellow-200">
-                    ⚠️ Tendrás que rellenar tus datos manualmente en el calendario.
-                  </p>
-                </div>
-              )}
+              {/* ✅ Info: Datos pre-cargados automáticamente */}
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-center">
+                <p className="text-xs text-blue-200/90">
+                  ✨ Tus datos ya están pre-cargados en el calendario. 
+                  <span className="font-semibold"> Verifica que sean correctos</span> antes de confirmar tu cita.
+                </p>
+              </div>
 
               {/* Micro-copy gamificado */}
               <div className="space-y-3 mb-6">
@@ -147,29 +166,11 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 )}
               </div>
 
-              <div className="rounded-xl overflow-hidden border border-border bg-background/50 mt-6">
-                <iframe
-                  src={(() => {
-                    const baseUrl = 'https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke';
-                    
-                    // ✅ Construir URL con o sin contactId según validación
-                    const finalUrl = isValidContactId(quizState.ghlContactId)
-                      ? `${baseUrl}?contactId=${encodeURIComponent(quizState.ghlContactId)}`
-                      : baseUrl;
-                    
-                    // ✅ LOGGING de la URL del calendario
-                    console.log('📅 Calendar iframe URL:', finalUrl);
-                    console.log('📋 ContactId used:', quizState.ghlContactId || 'NONE (fallback)');
-                    
-                    return finalUrl;
-                  })()}
-                  style={{ width: '100%', border: 'none', overflow: 'hidden' }}
-                  scrolling="no"
-                  id="xkfGe4Gjr8REwK34dZke_1760881701916"
-                  className="w-full min-h-[500px]"
-                  title="Reserva tu ritual de iniciación"
-                />
-              </div>
+              {/* ✅ Widget de GHL cargado dinámicamente con datos pre-rellenados */}
+              <div 
+                id="ghl-calendar-container" 
+                className="rounded-xl overflow-hidden border border-border bg-background/50 mt-6 min-h-[500px]"
+              />
 
               {/* Footer sticky con empuje psicológico */}
               <div className="mt-6 space-y-3">
