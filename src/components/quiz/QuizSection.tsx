@@ -110,6 +110,9 @@ const QuizSection = ({
   // Estado para captura progresiva
   const hasSubmittedPartial = useRef(false);
   const [ghlContactId, setGhlContactId] = useState<string | null>(null);
+  
+  // Timer de urgencia - 15 minutos
+  const [timeLeft, setTimeLeft] = useState(15 * 60); // 900 segundos
 
   // Initialize form at component level (hooks must be called unconditionally)
   const form = useForm<ContactFormData>({
@@ -157,6 +160,31 @@ const QuizSection = ({
     });
     return () => subscription.unsubscribe();
   }, [form.watch, showContactForm]);
+  
+  // Countdown timer - se ejecuta solo cuando el formulario está visible
+  useEffect(() => {
+    if (!showContactForm || timeLeft <= 0) return;
+    
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(timer);
+  }, [showContactForm, timeLeft]);
+  
+  // Formatear tiempo en mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+  
   const submitPartialLead = async (name: string, email: string) => {
     console.log('📤 Enviando lead parcial:', {
       name,
@@ -474,10 +502,10 @@ const QuizSection = ({
               <span>El Círculo no comparte datos con terceros</span>
             </div>
             
-            {/* Micro-urgencia */}
+            {/* Micro-urgencia con timer */}
             <div className="flex items-center justify-center gap-2 text-xs text-primary/90 bg-primary/5 border border-primary/20 rounded-full px-3 py-1.5">
               <span>⚡</span>
-              <span>Tu pre-selección expira en <span className="font-semibold text-primary">15 minutos</span></span>
+              <span>Tu pre-selección expira en <span className="font-semibold text-primary font-mono">{formatTime(timeLeft)}</span></span>
             </div>
           </div>
 
