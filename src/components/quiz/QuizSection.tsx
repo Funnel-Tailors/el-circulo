@@ -461,17 +461,23 @@ const QuizSection = ({
             </div>
             
             <h2 className="text-2xl md:text-3xl font-display font-black">
-              Casi listo. <span className="glow">Último paso</span>
+              Has sido <span className="glow">preseleccionado</span>
             </h2>
             
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
-              Déjanos tus datos para acceder al calendario de iniciación.
+              Completa estos datos para acceder al calendario de iniciación.
             </p>
             
             {/* Trust badge - Privacidad */}
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80">
               <span>🔒</span>
               <span>El Círculo no comparte datos con terceros</span>
+            </div>
+            
+            {/* Micro-urgencia */}
+            <div className="flex items-center justify-center gap-2 text-xs text-primary/90 bg-primary/5 border border-primary/20 rounded-full px-3 py-1.5">
+              <span>⚡</span>
+              <span>Tu pre-selección expira en <span className="font-semibold text-primary">15 minutos</span></span>
             </div>
           </div>
 
@@ -556,11 +562,11 @@ const QuizSection = ({
                 </p>
               </div>
 
-              {/* Validación social antes del botón */}
+              {/* Próximo ritual de iniciación */}
               <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center">
                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                  <span>👥</span>
-                  <span><span className="font-semibold text-foreground">127 creativos</span> cruzaron el umbral este mes</span>
+                  <span>🌙</span>
+                  <span>Próximo ritual de iniciación: <span className="font-semibold text-foreground">Viernes 1 Nov</span></span>
                 </p>
               </div>
 
