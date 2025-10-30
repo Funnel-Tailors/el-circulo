@@ -590,11 +590,11 @@ const QuizSection = ({
                 </p>
               </div>
 
-              {/* Próximo ritual de iniciación */}
+              {/* Evento de Noviembre */}
               <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center">
                 <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
                   <span>🌙</span>
-                  <span>Próximo ritual de iniciación: <span className="font-semibold text-foreground">Viernes 1 Nov</span></span>
+                  <span>Evento de Noviembre: <span className="font-semibold text-foreground">Samheim Rush</span></span>
                 </p>
               </div>
 
