@@ -144,48 +144,41 @@ const Analytics = () => {
 
   const fetchData = async () => {
     try {
+      const intervalDays = parseInt(dateRange);
+
       const { data: kpisData } = await supabase
-        .from('quiz_kpis')
-        .select('*')
+        .rpc('get_quiz_kpis_filtered', { interval_days: intervalDays })
         .maybeSingle();
       setKpis(kpisData);
 
       const { data: sessionFunnelData } = await supabase
-        .from('session_funnel')
-        .select('*')
+        .rpc('get_session_funnel_filtered', { interval_days: intervalDays })
         .maybeSingle();
       setSessionFunnel(sessionFunnelData);
 
       const { data: stepData } = await supabase
-        .from('quiz_step_metrics')
-        .select('*');
+        .rpc('get_quiz_step_metrics_filtered', { interval_days: intervalDays });
       setStepMetrics(stepData || []);
 
       const { data: conversionData } = await supabase
-        .from('quiz_conversion_by_step')
-        .select('*');
+        .rpc('get_quiz_conversion_by_step_filtered', { interval_days: intervalDays });
       setConversionByStep(conversionData || []);
 
       const { data: utmData } = await supabase
-        .from('quiz_utm_performance')
-        .select('*');
+        .rpc('get_utm_performance_filtered', { interval_days: intervalDays });
       setUtmPerformance(utmData || []);
 
       const { data: distributionData } = await supabase
-        .from('quiz_answer_distribution')
-        .select('*');
+        .rpc('get_answer_distribution_filtered', { interval_days: intervalDays });
       setAnswerDistribution(distributionData || []);
 
-      // Fetch VSL performance data
       const { data: vslKpisData } = await supabase
-        .from('vsl_performance_kpis')
-        .select('*')
+        .rpc('get_vsl_performance_filtered', { interval_days: intervalDays })
         .maybeSingle();
       setVslKpis(vslKpisData);
 
       const { data: vslBracketsData } = await supabase
-        .from('vsl_watch_brackets')
-        .select('*');
+        .rpc('get_vsl_watch_brackets_filtered', { interval_days: intervalDays });
       setVslWatchBrackets(vslBracketsData || []);
 
       setLastUpdate(new Date());
@@ -268,7 +261,10 @@ const Analytics = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="1">Últimas 24 horas</SelectItem>
+                <SelectItem value="3">Últimos 3 días</SelectItem>
                 <SelectItem value="7">Últimos 7 días</SelectItem>
+                <SelectItem value="14">Últimas 2 semanas</SelectItem>
                 <SelectItem value="30">Últimos 30 días</SelectItem>
                 <SelectItem value="90">Últimos 90 días</SelectItem>
                 <SelectItem value="365">Último año</SelectItem>
