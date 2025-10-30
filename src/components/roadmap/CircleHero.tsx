@@ -158,7 +158,7 @@ const CircleHero = () => {
       <div ref={videoContainerRef} className="relative mx-auto my-12">
         <video
           ref={videoRef}
-          src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
+          src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4"
           autoPlay
           loop
           muted
@@ -192,7 +192,7 @@ const CircleHero = () => {
             </button>
             <video
               ref={stickyVideoRef}
-              src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68f3de126a7dfa9d46e8dd3f.mp4"
+              src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4"
               loop
               muted
               playsInline
