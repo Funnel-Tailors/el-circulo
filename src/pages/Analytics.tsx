@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Download, LogOut } from 'lucide-react';
+import { RefreshCw, Download, LogOut, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import SessionFunnelChart from '@/components/analytics/SessionFunnelChart';
 import StatsCards from '@/components/analytics/StatsCards';
 import FunnelChart from '@/components/analytics/FunnelChart';
@@ -18,6 +20,7 @@ import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
 import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import VSLWatchDistribution from '@/components/analytics/VSLWatchDistribution';
+import AIInsightsCard from '@/components/analytics/AIInsightsCard';
 
 interface SessionFunnelData {
   total_sessions: number;
@@ -92,6 +95,23 @@ interface VSLWatchBracket {
   conversion_rate: number;
 }
 
+interface AIInsights {
+  critical: string | null;
+  topInsights: string[];
+  actions: string[];
+  correlations: string[];
+}
+
+interface StoredInsight {
+  id: string;
+  created_at: string;
+  date_range_start: string;
+  date_range_end: string;
+  interval_days: number;
+  insights: AIInsights;
+  raw_data: any;
+}
+
 const Analytics = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -108,6 +128,12 @@ const Analytics = () => {
   const [answerDistribution, setAnswerDistribution] = useState<AnswerDistributionData[]>([]);
   const [vslKpis, setVslKpis] = useState<VSLKPIData | null>(null);
   const [vslWatchBrackets, setVslWatchBrackets] = useState<VSLWatchBracket[]>([]);
+  
+  // AI Insights state
+  const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
+  const [generatingInsights, setGeneratingInsights] = useState(false);
+  const [lastInsightGenerated, setLastInsightGenerated] = useState<Date | null>(null);
+  const [storedInsights, setStoredInsights] = useState<StoredInsight[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -205,6 +231,106 @@ const Analytics = () => {
     }
   }, [autoRefresh]);
 
+  // Fetch stored insights
+  const fetchStoredInsights = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('analytics_insights')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setStoredInsights(data || []);
+    } catch (error) {
+      console.error('Error fetching stored insights:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStoredInsights();
+    }
+  }, [isAdmin]);
+
+  // Generate AI insights
+  const generateAIInsights = async () => {
+    setGeneratingInsights(true);
+    try {
+      // Prepare analytics data for AI
+      const analyticsData = {
+        dateRange: {
+          start: new Date(Date.now() - parseInt(dateRange) * 24 * 60 * 60 * 1000).toISOString(),
+          end: new Date().toISOString(),
+          intervalDays: parseInt(dateRange)
+        },
+        sessionFunnel,
+        quizKPIs: kpis,
+        stepMetrics,
+        conversionByStep,
+        utmPerformance,
+        vslKPIs: vslKpis,
+        vslWatchBrackets,
+        answerDistribution
+      };
+
+      // Call edge function
+      const { data, error } = await supabase.functions.invoke('generate-analytics-insights', {
+        body: { analyticsData }
+      });
+
+      if (error) throw error;
+
+      if (!data?.insights) {
+        throw new Error('No insights returned from AI');
+      }
+
+      setAiInsights(data.insights);
+      setLastInsightGenerated(new Date());
+
+      // Store in database
+      const { error: insertError } = await supabase
+        .from('analytics_insights')
+        .insert({
+          date_range_start: analyticsData.dateRange.start,
+          date_range_end: analyticsData.dateRange.end,
+          interval_days: parseInt(dateRange),
+          insights: data.insights,
+          raw_data: analyticsData
+        });
+
+      if (insertError) {
+        console.error('Error storing insights:', insertError);
+      } else {
+        await fetchStoredInsights();
+      }
+
+      toast({
+        title: 'Insights generados',
+        description: 'Análisis con IA completado exitosamente',
+      });
+    } catch (error) {
+      console.error('Error generating insights:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudieron generar los insights con IA. Por favor intenta de nuevo.',
+      });
+    } finally {
+      setGeneratingInsights(false);
+    }
+  };
+
+  // Load historical insight
+  const loadHistoricalInsight = (insight: StoredInsight) => {
+    setAiInsights(insight.insights);
+    setLastInsightGenerated(new Date(insight.created_at));
+    toast({
+      title: 'Insight cargado',
+      description: `Mostrando análisis del ${new Date(insight.created_at).toLocaleDateString('es-ES')}`,
+    });
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
@@ -280,6 +406,10 @@ const Analytics = () => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Resumen</TabsTrigger>
+            <TabsTrigger value="ai-insights">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Insights IA
+            </TabsTrigger>
             <TabsTrigger value="vsl">VSL Performance</TabsTrigger>
             <TabsTrigger value="funnel">Embudo</TabsTrigger>
             <TabsTrigger value="questions">Preguntas</TabsTrigger>
@@ -291,6 +421,56 @@ const Analytics = () => {
             <StatsCards kpis={kpis} sessionFunnel={sessionFunnel} loading={!kpis} />
             <InsightsCard kpis={kpis} stepMetrics={stepMetrics} />
             <FunnelChart data={conversionByStep} loading={!conversionByStep.length} />
+          </TabsContent>
+
+          <TabsContent value="ai-insights" className="space-y-6">
+            <AIInsightsCard
+              insights={aiInsights}
+              loading={generatingInsights}
+              onGenerate={generateAIInsights}
+              lastGenerated={lastInsightGenerated}
+              disabled={generatingInsights || !sessionFunnel}
+            />
+            
+            {storedInsights.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Historial de Insights</CardTitle>
+                  <CardDescription>
+                    Insights generados anteriormente (últimos 10)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {storedInsights.map((insight) => (
+                      <div
+                        key={insight.id}
+                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                        onClick={() => loadHistoricalInsight(insight)}
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">
+                            {new Date(insight.created_at).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Período: {insight.interval_days} días
+                          </p>
+                        </div>
+                        <Badge variant="outline">
+                          {insight.insights.critical ? 'Con alerta' : 'Normal'}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="vsl" className="space-y-6">

@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_insights: {
+        Row: {
+          created_at: string
+          date_range_end: string
+          date_range_start: string
+          generated_by: string | null
+          id: string
+          insights: Json
+          interval_days: number
+          raw_data: Json
+        }
+        Insert: {
+          created_at?: string
+          date_range_end: string
+          date_range_start: string
+          generated_by?: string | null
+          id?: string
+          insights: Json
+          interval_days: number
+          raw_data: Json
+        }
+        Update: {
+          created_at?: string
+          date_range_end?: string
+          date_range_start?: string
+          generated_by?: string | null
+          id?: string
+          insights?: Json
+          interval_days?: number
+          raw_data?: Json
+        }
+        Relationships: []
+      }
       quiz_analytics: {
         Row: {
           answer_value: string | null
