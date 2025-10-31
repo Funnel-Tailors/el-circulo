@@ -134,7 +134,7 @@ const CircleHero = () => {
           className={`
             w-full transition-all duration-300
             ${isVideoSticky && showSticky 
-              ? 'fixed top-2 left-4 right-4 z-50 max-w-4xl mx-auto' 
+              ? 'fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-4xl' 
               : 'relative'
             }
           `}
@@ -143,7 +143,7 @@ const CircleHero = () => {
           {isVideoSticky && showSticky && (
             <button
               onClick={() => setShowSticky(false)}
-              className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors shadow-lg"
+              className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors shadow-lg"
               aria-label="Cerrar video sticky"
             >
               <X className="w-4 h-4" />
