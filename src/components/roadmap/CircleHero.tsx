@@ -28,7 +28,6 @@ const CircleHero = () => {
   const [count, setCount] = useState(0);
   const targetValue = 14300;
   const videoRef = useRef<HTMLVideoElement>(null);
-  const stickyVideoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
@@ -97,31 +96,6 @@ const CircleHero = () => {
     return () => observer.disconnect();
   }, []);
 
-  // Sincronizar tiempo de reproducción entre videos
-  useEffect(() => {
-    const mainVideo = videoRef.current;
-    const stickyVideo = stickyVideoRef.current;
-    
-    if (!mainVideo || !stickyVideo) return;
-
-    if (isVideoSticky && showSticky) {
-      // Transferir al video sticky
-      stickyVideo.currentTime = mainVideo.currentTime;
-      if (!mainVideo.paused) {
-        stickyVideo.play().catch(() => {});
-      }
-      mainVideo.pause();
-    } else if (!isVideoSticky) {
-      // Volver al video principal
-      mainVideo.currentTime = stickyVideo.currentTime;
-      if (!stickyVideo.paused) {
-        mainVideo.play().catch(() => {});
-      }
-      if (stickyVideo) {
-        stickyVideo.pause();
-      }
-    }
-  }, [isVideoSticky, showSticky]);
 
   return (
     <div className="text-center space-y-8 mb-8 animate-fade-in -mt-8">
@@ -156,53 +130,47 @@ const CircleHero = () => {
 
       {/* VSL Container con glow pulsante */}
       <div ref={videoContainerRef} className="relative mx-auto my-12">
-        <video
-          ref={videoRef}
-          src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          controls
-          className="w-full rounded-3xl shadow-2xl video-glow"
-          style={{ aspectRatio: '16/9' }}
-        />
-      </div>
-
-        {/* Sticky Video */}
-        {isVideoSticky && showSticky && (
-          <div className="fixed top-0 left-0 right-0 z-50 px-4 pt-2 animate-fade-in">
-          <div className="relative max-w-4xl mx-auto">
+        <div 
+          className={`
+            w-full transition-all duration-300
+            ${isVideoSticky && showSticky 
+              ? 'fixed top-2 left-4 right-4 z-50 max-w-4xl mx-auto' 
+              : 'relative'
+            }
+          `}
+        >
+          {/* Botón de cerrar - solo visible en modo sticky */}
+          {isVideoSticky && showSticky && (
             <button
-              onClick={() => {
-                const mainVideo = videoRef.current;
-                const stickyVideo = stickyVideoRef.current;
-                if (mainVideo && stickyVideo) {
-                  mainVideo.currentTime = stickyVideo.currentTime;
-                  if (!stickyVideo.paused) {
-                    mainVideo.play().catch(() => {});
-                  }
-                }
-                setShowSticky(false);
-              }}
+              onClick={() => setShowSticky(false)}
               className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-background/90 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors shadow-lg"
-              aria-label="Cerrar video"
+              aria-label="Cerrar video sticky"
             >
               <X className="w-4 h-4" />
             </button>
-            <video
-              ref={stickyVideoRef}
-              src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4"
-              loop
-              muted
-              playsInline
-              controls
-              className="w-full rounded-2xl shadow-2xl video-glow sticky-video-smooth"
-              style={{ aspectRatio: '16/9' }}
-            />
-          </div>
+          )}
+          
+          <video
+            ref={videoRef}
+            src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls
+            className={`
+              w-full shadow-2xl video-glow transition-all duration-300
+              ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
+            `}
+            style={{ aspectRatio: '16/9' }}
+          />
         </div>
-      )}
+        
+        {/* Spacer invisible cuando el video se vuelve sticky */}
+        {isVideoSticky && showSticky && (
+          <div className="w-full" style={{ aspectRatio: '16/9' }} />
+        )}
+      </div>
 
       {/* Logo EL CÍRCULO */}
       <div className="space-y-4">
