@@ -108,8 +108,9 @@ interface StoredInsight {
   date_range_start: string;
   date_range_end: string;
   interval_days: number;
-  insights: AIInsights;
+  insights: AIInsights | any;
   raw_data: any;
+  generated_by?: string;
 }
 
 const Analytics = () => {
@@ -170,7 +171,7 @@ const Analytics = () => {
 
   const fetchData = async () => {
     try {
-      const intervalDays = parseInt(dateRange);
+      const intervalDays = parseFloat(dateRange);
 
       const { data: kpisData } = await supabase
         .rpc('get_quiz_kpis_filtered', { interval_days: intervalDays })
@@ -260,9 +261,9 @@ const Analytics = () => {
       // Prepare analytics data for AI
       const analyticsData = {
         dateRange: {
-          start: new Date(Date.now() - parseInt(dateRange) * 24 * 60 * 60 * 1000).toISOString(),
+          start: new Date(Date.now() - parseFloat(dateRange) * 24 * 60 * 60 * 1000).toISOString(),
           end: new Date().toISOString(),
-          intervalDays: parseInt(dateRange)
+          intervalDays: parseFloat(dateRange)
         },
         sessionFunnel,
         quizKPIs: kpis,
@@ -291,13 +292,13 @@ const Analytics = () => {
       // Store in database
       const { error: insertError } = await supabase
         .from('analytics_insights')
-        .insert({
+        .insert([{
           date_range_start: analyticsData.dateRange.start,
           date_range_end: analyticsData.dateRange.end,
-          interval_days: parseInt(dateRange),
-          insights: data.insights,
-          raw_data: analyticsData
-        });
+          interval_days: parseFloat(dateRange),
+          insights: data.insights as any,
+          raw_data: analyticsData as any
+        }]);
 
       if (insertError) {
         console.error('Error storing insights:', insertError);
@@ -387,13 +388,14 @@ const Analytics = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="0.33">Últimas 8 horas</SelectItem>
+                <SelectItem value="0.5">Últimas 12 horas</SelectItem>
                 <SelectItem value="1">Últimas 24 horas</SelectItem>
                 <SelectItem value="3">Últimos 3 días</SelectItem>
                 <SelectItem value="7">Últimos 7 días</SelectItem>
                 <SelectItem value="14">Últimas 2 semanas</SelectItem>
                 <SelectItem value="30">Últimos 30 días</SelectItem>
                 <SelectItem value="90">Últimos 90 días</SelectItem>
-                <SelectItem value="365">Último año</SelectItem>
               </SelectContent>
             </Select>
           </div>
