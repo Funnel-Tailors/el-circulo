@@ -72,9 +72,21 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
     }
   }, [isQualified, quizState.name, quizState.email, quizState.whatsapp]);
 
+  // Track quiz completion when ResultSection mounts
+  useEffect(() => {
+    console.log('✅ ResultSection mounted - tracking quiz completion', {
+      sessionId: quizAnalytics.getSessionId(),
+      isQualified,
+      hasEmail: !!quizState.email,
+      hasWhatsapp: !!quizState.whatsapp
+    });
+    quizAnalytics.completeQuiz();
+  }, []); // Solo una vez al montar
+
   // Link VSL views to GHL contact when available
   useEffect(() => {
     if (quizState.ghlContactId) {
+      console.log('🔗 Linking VSL views to GHL contact:', quizState.ghlContactId);
       quizAnalytics.linkVSLtoContact(quizState.ghlContactId);
     }
   }, [quizState.ghlContactId]);

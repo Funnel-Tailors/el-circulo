@@ -89,7 +89,7 @@ class QuizAnalytics {
 
   async trackEvent(params: TrackEventParams): Promise<void> {
     try {
-      const { error } = await supabase.from('quiz_analytics').insert({
+      const payload = {
         session_id: this.sessionId,
         event_type: params.event_type,
         step_index: params.step_index,
@@ -106,13 +106,25 @@ class QuizAnalytics {
         utm_term: this.utmParams.utm_term,
         utm_content: this.utmParams.utm_content,
         referrer: this.referrer,
+      };
+
+      console.log('📤 Sending analytics event:', {
+        event_type: params.event_type,
+        session_id: this.sessionId,
+        step_id: params.step_id
       });
 
+      const { error } = await supabase.from('quiz_analytics').insert(payload);
+
       if (error) {
-        console.error('Analytics tracking error:', error);
+        console.error('❌ Analytics tracking error:', error);
+        throw error;
       }
+
+      console.log('✅ Event tracked successfully:', params.event_type);
     } catch (err) {
-      console.error('Analytics tracking exception:', err);
+      console.error('❌ Analytics tracking exception:', err);
+      throw err;
     }
   }
 
@@ -168,9 +180,20 @@ class QuizAnalytics {
 
   completeQuiz(): void {
     const timeSpent = Math.round((Date.now() - this.startTime) / 1000);
+    
+    console.log('📊 Tracking quiz completion:', {
+      sessionId: this.sessionId,
+      timeSpent,
+      deviceType: this.deviceType,
+      utmSource: this.utmParams.utm_source,
+      timestamp: new Date().toISOString()
+    });
+
     this.trackEvent({
       event_type: 'quiz_completed',
       time_spent_seconds: timeSpent,
+    }).catch(error => {
+      console.error('❌ Failed to track quiz completion:', error);
     });
   }
 
