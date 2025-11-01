@@ -359,41 +359,161 @@ ${strategy}
   `.trim();
 }
 
+// Helper: Generar insights personalizados según respuestas del quiz
+function generatePersonalizedInsight(answers: QuizAnswers, score: number): string {
+  const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
+  const midRevenue = answers.q2 === '2.000€ - 5.000€' || answers.q2 === 'Más de 5.000€';
+  const hasMoney = answers.q4 === 'Sí, puedo invertir 2.000€';
+  const uncertain = answers.q4 === 'No estoy seguro';
+  const noMoney = answers.q4 === 'No, no puedo permitírmelo ahora';
+  const urgent = answers.q5 === 'Esta semana (tengo un deadline inminente)';
+  const hasReferrals = Array.isArray(answers.q3) && answers.q3.includes('Referidos/boca a boca');
+  const soloDecision = answers.q6 === 'Decido solo/a';
+  const noHurry = answers.q5 === 'No tengo prisa, solo estoy explorando';
+  
+  // HOT Insights
+  if (lowRevenue && hasMoney) {
+    return 'Cobras poco pero tienes para invertir en ti mismo. El problema no es la pasta. Es que nadie te enseñó a pedir más sin que te tiemble la voz.';
+  }
+  
+  if (urgent && hasMoney) {
+    return 'Tienes urgencia y tienes claro que hay que invertir. Perfecto. Los que actúan rápido siempre comen antes.';
+  }
+  
+  if (hasReferrals && midRevenue) {
+    return 'Ya cobras bien y tus clientes te recomiendan. Ahora imagina tener una fila de leads persiguiéndote en lugar de esperar a que alguien se acuerde de ti.';
+  }
+  
+  if (lowRevenue && answers.q1 === 'Diseñador Gráfico / Web') {
+    return 'Estás diseñando por 500€ lo que otros cobran 5.000€. El problema no es tu skill. Es que nadie te enseñó a vender transformación en lugar de píxeles bonitos.';
+  }
+  
+  if (score >= 80) {
+    return 'Tu perfil tiene todas las marcas de alguien listo para el siguiente nivel. Solo falta que decidas dar el paso.';
+  }
+  
+  // WARM Insights
+  if (uncertain && score >= 60) {
+    return 'No estás seguro de si puedes permitirte invertir. Normal. Cuando ves algo como "gasto", dudas. Cuando lo ves como lo que es, decides. En la evaluación descubrimos si tiene sentido para ti.';
+  }
+  
+  if (!soloDecision && score >= 60) {
+    return 'Necesitas que alguien más dé el visto bueno. Eso está bien. Pero si quien decide no entiende el valor, vas a seguir estancado. O aprendes a vender la idea o traes a esa persona a la llamada.';
+  }
+  
+  if (noHurry && score > 65) {
+    return 'Tienes todo para crecer pero "no tienes prisa". Suena a miedo disfrazado de calma. En la evaluación vemos qué te está frenando de verdad.';
+  }
+  
+  // COLD Insights
+  if (noMoney && score < 60) {
+    return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. El Círculo no es para quien no puede. Es para quien decide que tiene que hacerlo.';
+  }
+  
+  if (lowRevenue && noMoney) {
+    return 'Cobras poco y no tienes para invertir. Eso es un círculo vicioso. Necesitas romperlo. Pero primero necesitas creer que puedes cobrar 10 veces más por lo que ya haces.';
+  }
+  
+  if (noHurry && score < 50) {
+    return 'Sin prisa, sin inversión, sin claridad. Estás a años luz de estar listo para esto. Vuelve cuando sepas lo que quieres.';
+  }
+  
+  // Default por score
+  if (score >= 75) {
+    return 'Tu perfil muestra que estás cerca. Muy cerca. Solo falta el último empujón.';
+  } else if (score >= 60) {
+    return 'Hay potencial, pero también fricciones que necesitamos resolver antes de que avances.';
+  } else {
+    return 'Tu perfil muestra más dudas que decisiones. El Círculo es para los que ejecutan, no para los que exploran eternamente.';
+  }
+}
+
+// Helper: Generar notas contextuales según perfil del lead
+function generateContextualNote(
+  answers: QuizAnswers, 
+  tags: string[], 
+  isHot: boolean,
+  score: number
+): string {
+  const urgent = answers.q5 === 'Esta semana (tengo un deadline inminente)';
+  const socialMediaDependent = Array.isArray(answers.q3) && answers.q3.includes('Redes sociales (Instagram, LinkedIn, etc.)');
+  const isAutomator = answers.q1 === 'Automatizador';
+  const noSoloDecision = answers.q6 !== 'Decido solo/a';
+  
+  // Uso de "malito" con 30% de probabilidad en HOT/WARM
+  const shouldUseMalito = (isHot || score >= 60) && Math.random() < 0.3;
+  
+  if (isHot && urgent) {
+    return '⚡ Nota: Tu urgencia es real. Reserva en las próximas 8 horas y tendrás análisis preliminar en 24h.';
+  }
+  
+  if (socialMediaDependent) {
+    return '💡 Nota: Si las redes son tu única vía, estás jugando a la lotería. Eso tiene solución.';
+  }
+  
+  if (isAutomator) {
+    return '🤖 Nota: No vamos a enseñarte a montar flujos. Vamos a enseñarte a vender sistemas como si fueran el puto Santo Grial.';
+  }
+  
+  if (noSoloDecision && score < 70) {
+    return '👥 Nota: Si quien decide no entiende por qué esto importa, trae a esa persona a la llamada. O aprende a explicárselo tú.';
+  }
+  
+  if (shouldUseMalito) {
+    return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial de miembro honorario si das el paso.';
+  }
+  
+  return '';
+}
+
 function generateClientNotification(name: string, answers: QuizAnswers, tags: string[], score: number): string {
   const firstName = name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
   
-  // Insights de IDENTIDAD (sin income claims) - Enfoque en transformación
+  // Identidades profesionales (sin revelar demasiado)
   const professionIdentity: Record<string, string> = {
-    'Diseñador Gráfico / Web': 'Los diseñadores del Círculo no cobran por horas. Cobran por transformación y experiencias digitales que escalan negocios.',
-    'Fotógrafo/Filmmaker': 'Los creadores visuales del Círculo no toman fotos ni graban videos. Crean activos visuales que venden por sí solos.',
-    'Automatizador': 'Los automatizadores del Círculo no hacen Zapiers. Diseñan sistemas que escalan negocios sin fricción.',
-    'Otro servicio creativo': 'Los miembros del Círculo no venden servicios. Venden resultados inevitables.'
+    'Diseñador Gráfico / Web': 
+      'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo. La diferencia no está en el portfolio. Está en lo que dices antes de enseñarlo.',
+    
+    'Fotógrafo/Filmmaker': 
+      'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€ por el mismo día de trabajo. Misma cámara. Distinta conversación.',
+    
+    'Automatizador': 
+      'Montar un proceso te paga 500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 10.000€. Mismo trabajo. Diferente forma de venderlo.',
+    
+    'Otro servicio creativo': 
+      'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale tu tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
   };
   
-  const identity = professionIdentity[answers.q1 || ''] || 'Los miembros del Círculo no venden servicios. Venden resultados inevitables.';
+  const identity = professionIdentity[answers.q1 || ''] || professionIdentity['Otro servicio creativo'];
+  
+  // Generar insight personalizado
+  const personalizedInsight = generatePersonalizedInsight(answers, score);
+  
+  // Generar nota contextual
+  const contextualNote = generateContextualNote(answers, tags, isHot, score);
   
   if (isHot) {
     return `
 ${firstName}.
 
-Tu evaluación revela algo.
+Tu evaluación revela algo que la mayoría nunca verá.
 
-⚔️ Tienes las marcas de alguien que está a punto de cruzar el umbral.
+⚔️ ${personalizedInsight}
 
-📜 ${identity}
+${identity}
 
-La pregunta no es si puedes. Es cuándo decides hacerlo.
+La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
 
 🔮 RESERVA TU RITUAL DE EVALUACIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-⏳ Solo 3 espacios semanales
-🎭 Un Miembro Honorario del Círculo evaluará tu candidatura (45-60 min)
+⏳ Solo 3 espacios semanales para candidatos prioritarios
+🎭 Un Guardián del Círculo evaluará tu caso específico (60 min)
 🗝️ Tienes 48h de acceso preferente antes de liberar tu plaza
 
-Tras reservar, un Miembro Honorario contactará para preparar tu ritual.
+${contextualNote}
 
 El portal cierra en 48h.
 
@@ -404,39 +524,46 @@ El Círculo
     return `
 ${firstName}.
 
-Tu perfil muestra potencial.
+Tu perfil muestra potencial. Pero potencial sin ejecución es teoría.
 
-⚔️ Pero potencial sin ejecución es solo teoría.
+⚔️ ${personalizedInsight}
 
-📜 ${identity}
+${identity}
 
-¿Estás listo/a para el salto o sigues en modo exploración?
+¿Listo/a para el salto o seguimos dándole vueltas?
 
 🔮 RESERVA TU SESIÓN DE EVALUACIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-⏳ Solo 3 espacios semanales
-🎭 Un Miembro Honorario evaluará si hay alineación (45-60 min)
+⏳ 3 espacios semanales para evaluaciones profundas
+🎭 Un Guardián evaluará si hay alineación real (45-60 min)
 
-Un Miembro Honorario confirmará tu candidatura tras reservar.
+${contextualNote}
+
+Si hay fit, recibirás el siguiente paso. Si no, al menos sabrás por qué.
 
 —
 El Círculo
     `.trim();
   } else {
+    // COLD
     return `
 ${firstName}.
 
-Tu evaluación revela fricciones.
+Tu evaluación revela fricciones importantes.
 
-⚔️ No todos están listos para el Círculo. Y está bien.
+⚔️ ${personalizedInsight}
 
-🔮 AGENDA TU SESIÓN EXPLORATORIA
+No todos están listos para el Círculo. Y eso está bien.
+
+🔮 AGENDA UNA SESIÓN EXPLORATORIA
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-🎭 Un Miembro Honorario explorará opciones (45-60 min)
+🎭 Un Miembro explorará si tiene sentido para ambos (30-45 min)
 
-Si hay alineación potencial, se te contactará con next steps.
+${contextualNote}
+
+Si hay potencial, lo veremos. Si no, te ahorras meses de frustraciones.
 
 —
 El Círculo
