@@ -286,96 +286,110 @@ export type Database = {
       }
     }
     Functions: {
-      get_answer_distribution_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          answer_value: string
-          percentage: number
-          response_count: number
-          step_id: string
-          step_index: number
-        }[]
-      }
-      get_quiz_conversion_by_step_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          conversion_rate_percent: number
-          previous_step_sessions: number
-          sessions_reached: number
-          step_id: string
-          step_index: number
-        }[]
-      }
-      get_quiz_kpis_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          abandoned_sessions: number
-          avg_time_to_complete: number
-          completed_sessions: number
-          conversion_rate: number
-          started_sessions: number
-          total_sessions: number
-        }[]
-      }
-      get_quiz_step_metrics_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          answer_rate: number
-          answers: number
-          avg_time_seconds: number
-          step_id: string
-          step_index: number
-          views: number
-        }[]
-      }
-      get_session_funnel_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          completed: number
-          overall_conversion_rate: number
-          quiz_completion_rate: number
-          quiz_started: number
-          reached_contact_form: number
-          reached_q1: number
-          session_to_quiz_rate: number
-          total_sessions: number
-          vsl_views: number
-        }[]
-      }
-      get_utm_performance_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          conversion_rate: number
-          conversions: number
-          sessions: number
-          utm_campaign: string
-          utm_medium: string
-          utm_source: string
-        }[]
-      }
-      get_vsl_performance_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          avg_duration_seconds: number
-          avg_percentage_watched: number
-          engaged_viewers: number
-          engagement_rate: number
-          quiz_completed: number
-          quiz_started: number
-          total_vsl_views: number
-          vsl_to_conversion_rate: number
-          vsl_to_quiz_rate: number
-        }[]
-      }
-      get_vsl_watch_brackets_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          completed_quiz: number
-          conversion_rate: number
-          viewers: number
-          watch_bracket: string
-        }[]
-      }
+      get_answer_distribution_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_answer_distribution_filtered(interval_days => int4), public.get_answer_distribution_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_answer_distribution_filtered(interval_days => int4), public.get_answer_distribution_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_quiz_conversion_by_step_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_quiz_conversion_by_step_filtered(interval_days => int4), public.get_quiz_conversion_by_step_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_quiz_conversion_by_step_filtered(interval_days => int4), public.get_quiz_conversion_by_step_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_quiz_kpis_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_quiz_kpis_filtered(interval_days => int4), public.get_quiz_kpis_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_quiz_kpis_filtered(interval_days => int4), public.get_quiz_kpis_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_quiz_step_metrics_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_quiz_step_metrics_filtered(interval_days => int4), public.get_quiz_step_metrics_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_quiz_step_metrics_filtered(interval_days => int4), public.get_quiz_step_metrics_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_session_funnel_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_session_funnel_filtered(interval_days => int4), public.get_session_funnel_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_session_funnel_filtered(interval_days => int4), public.get_session_funnel_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_utm_performance_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_utm_performance_filtered(interval_days => int4), public.get_utm_performance_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_utm_performance_filtered(interval_days => int4), public.get_utm_performance_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_vsl_performance_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_vsl_performance_filtered(interval_days => int4), public.get_vsl_performance_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_vsl_performance_filtered(interval_days => int4), public.get_vsl_performance_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+      get_vsl_watch_brackets_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_vsl_watch_brackets_filtered(interval_days => int4), public.get_vsl_watch_brackets_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.get_vsl_watch_brackets_filtered(interval_days => int4), public.get_vsl_watch_brackets_filtered(interval_days => numeric). Try renaming the parameters or the function itself in the database so function overloading can be resolved"[]
+          }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
