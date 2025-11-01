@@ -359,10 +359,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-analytics-insights:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to generate insights';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'Failed to generate insights',
-        details: error.stack 
+        error: errorMessage,
+        details: errorStack 
       }),
       { 
         status: 500, 
