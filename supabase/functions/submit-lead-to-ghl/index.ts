@@ -796,6 +796,9 @@ serve(async (req) => {
       ]
     };
     
+    // Prepare update payload (without locationId for PUT requests)
+    const { locationId, ...updatePayload } = contactPayload;
+    
     // Log payload before sending to GHL
     console.log('=== PAYLOAD SENT TO GHL ===');
     console.log(JSON.stringify(contactPayload, null, 2));
@@ -812,14 +815,14 @@ serve(async (req) => {
       // Si es la actualización final (no parcial), remover el tag PARCIAL
       if (!isPartialSubmission) {
         // Filtrar tags para remover PARCIAL si existe
-        contactPayload.tags = contactPayload.tags.filter(tag => !tag.includes('CÍRCULO-LEAD-PARCIAL'));
-        console.log('Removed PARCIAL tag, final tags:', contactPayload.tags);
+        updatePayload.tags = updatePayload.tags.filter(tag => !tag.includes('CÍRCULO-LEAD-PARCIAL'));
+        console.log('Removed PARCIAL tag, final tags:', updatePayload.tags);
       }
       
       ghlResponse = await fetch(updateUrl, {
         method: 'PUT',
         headers: ghlHeaders,
-        body: JSON.stringify(contactPayload)
+        body: JSON.stringify(updatePayload)
       });
     } else {
       // Create new
@@ -855,7 +858,7 @@ serve(async (req) => {
         const updateResponse = await fetch(updateUrl, {
           method: 'PUT',
           headers: ghlHeaders,
-          body: JSON.stringify(contactPayload)
+          body: JSON.stringify(updatePayload)
         });
         
         if (!updateResponse.ok) {
