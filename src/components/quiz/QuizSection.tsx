@@ -633,7 +633,7 @@ const QuizSection = ({
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1 animate-pulse">
               <span className="text-base">⏱️</span>
               <span className="text-xs font-semibold text-foreground">
-                ~{(steps.length - currentStep) * 20}s para completar
+                ~{(steps.length - currentStep) * 2}s para completar
               </span>
             </div>
 
