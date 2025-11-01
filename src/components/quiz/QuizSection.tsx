@@ -629,10 +629,13 @@ const QuizSection = ({
 
       <div className="space-y-4">
           <div className="space-y-3">
-            {/* Badge de progreso */}
-            {currentQuestion.badge && <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1">
-                <span className="text-xs font-semibold text-foreground">{currentQuestion.badge}</span>
-              </div>}
+            {/* Timer estimado */}
+            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1 animate-pulse">
+              <span className="text-base">⏱️</span>
+              <span className="text-xs font-semibold text-foreground">
+                ~{(steps.length - currentStep) * 20}s para completar
+              </span>
+            </div>
 
             {/* Pregunta principal */}
             <h2 className="text-2xl md:text-3xl font-display font-black">
