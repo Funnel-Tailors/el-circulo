@@ -14,8 +14,8 @@ import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
 import { FAQSection } from "@/components/roadmap/FAQSection";
-import { CTAScrollToQuiz } from "@/components/roadmap/CTAScrollToQuiz";
 import { quizAnalytics } from "@/lib/analytics";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [quizState, setQuizState] = useState<QuizState>({});
@@ -35,6 +35,21 @@ const Index = () => {
   const handleResetQuiz = () => {
     setQuizState({});
     setQuizScreen("quiz");
+  };
+
+  const handleScrollToQuiz = () => {
+    const quizSection = document.getElementById('quiz-section');
+    if (quizSection) {
+      const isMobile = window.innerHeight < 768;
+      const offset = isMobile ? 100 : 120;
+      const elementPosition = quizSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   // IntersectionObserver to track when quiz enters viewport
@@ -92,13 +107,16 @@ const Index = () => {
             ))}
           </div>
 
-          {/* CTA #2: Después del Timeline */}
-          <CTAScrollToQuiz
-            title="7 días para tener tu sistema listo."
-            subtitle="¿Quieres empezar en los próximos días?"
-            buttonText="Solicitar acceso →"
-            ctaLocation="after_timeline"
-          />
+          {/* CTA #2: Botón simple */}
+          <div className="flex justify-center my-12">
+            <Button 
+              onClick={handleScrollToQuiz}
+              size="lg"
+              className="font-bold text-lg dark-button-primary"
+            >
+              Accede al ritual →
+            </Button>
+          </div>
 
           {/* ASCENDIDOS */}
           <div className="mt-16 mb-8">
@@ -156,13 +174,16 @@ const Index = () => {
             </div>
           </div>
 
-          {/* CTA #3: Después de Success Cases */}
-          <CTAScrollToQuiz
-            title="Estos ya lo consiguieron. Tú puedes ser el siguiente."
-            subtitle="Responde 6 preguntas para ver si el Círculo es para ti"
-            buttonText="Quiero entrar →"
-            ctaLocation="after_testimonials"
-          />
+          {/* CTA #3: Botón simple */}
+          <div className="flex justify-center my-12">
+            <Button 
+              onClick={handleScrollToQuiz}
+              size="lg"
+              className="font-bold text-lg dark-button-primary"
+            >
+              Ascende ahora →
+            </Button>
+          </div>
 
           {/* LOS ARTEFACTOS */}
           <div className="mt-16">
@@ -200,13 +221,16 @@ const Index = () => {
             </div>
           </div>
 
-          {/* CTA #4: Después de Los Artefactos */}
-          <CTAScrollToQuiz
-            title="Todo esto (y más) te espera dentro del Círculo"
-            subtitle="Comprueba si estás listo para entrar"
-            buttonText="Comprobar ahora →"
-            ctaLocation="after_bonuses"
-          />
+          {/* CTA #4: Botón simple */}
+          <div className="flex justify-center my-12">
+            <Button 
+              onClick={handleScrollToQuiz}
+              size="lg"
+              className="font-bold text-lg dark-button-primary"
+            >
+              Reclamar los artefactos →
+            </Button>
+          </div>
 
           <RoadmapFooter />
 

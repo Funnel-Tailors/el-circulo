@@ -1,4 +1,5 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { Button } from "@/components/ui/button";
 
 export const PainSection = () => {
   const { ref, isVisible } = useScrollReveal(0.1);
@@ -69,19 +70,9 @@ export const PainSection = () => {
           </div>
         </div>
 
-        {/* CTA #1: Después del pain */}
-        <div 
-          className={`mt-12 text-center transition-all duration-700 delay-[2400ms] ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
-        >
-          <h3 className="text-2xl md:text-3xl font-display font-bold glow mb-3">
-            Ya vale de ser el malito del sector, ¿no?
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Descubre si el Círculo es para ti
-          </p>
-          <button
+        {/* CTA #1: Botón simple */}
+        <div className="flex justify-center my-12">
+          <Button 
             onClick={() => {
               const quizSection = document.getElementById("quiz-section");
               if (quizSection) {
@@ -96,10 +87,11 @@ export const PainSection = () => {
                 });
               }
             }}
-            className="dark-button-primary inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 px-8"
+            size="lg"
+            className="font-bold text-lg dark-button-primary"
           >
-            Ver si califico →
-          </button>
+            Ya vale de ser un malito, ¿no? →
+          </Button>
         </div>
 
         {/* Divisor inferior con símbolo */}
