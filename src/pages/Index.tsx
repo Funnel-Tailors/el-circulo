@@ -16,27 +16,23 @@ import { PainSection } from "@/components/roadmap/PainSection";
 import { FAQSection } from "@/components/roadmap/FAQSection";
 import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
-
 const Index = () => {
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
   const [quizScreen, setQuizScreen] = useState<"quiz" | "result">("quiz");
-  
+
   // Track quiz_started when quiz section enters viewport
   const quizSectionRef = useRef<HTMLDivElement>(null);
   const hasTrackedQuizInView = useRef(false);
-
   const handleCompleteQuiz = (state: QuizState, qualified: boolean) => {
     setQuizState(state);
     setIsQualified(qualified);
     setQuizScreen("result");
   };
-
   const handleResetQuiz = () => {
     setQuizState({});
     setQuizScreen("quiz");
   };
-
   const handleScrollToQuiz = () => {
     const quizSection = document.getElementById('quiz-section');
     if (quizSection) {
@@ -44,7 +40,6 @@ const Index = () => {
       const offset = isMobile ? 100 : 120;
       const elementPosition = quizSection.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.pageYOffset - offset;
-      
       window.scrollTo({
         top: offsetPosition,
         behavior: 'smooth'
@@ -55,25 +50,21 @@ const Index = () => {
   // IntersectionObserver to track when quiz enters viewport
   useEffect(() => {
     if (!quizSectionRef.current) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !hasTrackedQuizInView.current) {
-            quizAnalytics.trackQuizStart();
-            hasTrackedQuizInView.current = true;
-          }
-        });
-      },
-      { threshold: 0.5 } // 50% of quiz visible
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !hasTrackedQuizInView.current) {
+          quizAnalytics.trackQuizStart();
+          hasTrackedQuizInView.current = true;
+        }
+      });
+    }, {
+      threshold: 0.5
+    } // 50% of quiz visible
     );
-
     observer.observe(quizSectionRef.current);
     return () => observer.disconnect();
   }, []);
-
-  return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-transparent">
+  return <div className="min-h-screen w-full overflow-x-hidden bg-transparent">
       {/* Shooting stars con gradiente de fondo */}
       <ShootingStars />
       {/* Starfield de fondo */}
@@ -102,18 +93,12 @@ const Index = () => {
               <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
             </div>
 
-            {roadmapDays.map((day, index) => (
-              <TimelineDay key={day.day} {...day} index={index} />
-            ))}
+            {roadmapDays.map((day, index) => <TimelineDay key={day.day} {...day} index={index} />)}
           </div>
 
           {/* CTA #2: Botón simple */}
           <div className="flex justify-center my-12">
-            <Button 
-              onClick={handleScrollToQuiz}
-              size="lg"
-              className="font-bold text-lg dark-button-primary"
-            >
+            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">
               Accede al ritual →
             </Button>
           </div>
@@ -146,28 +131,16 @@ const Index = () => {
 
             {/* Grid de casos con animación staggered */}
             <div className="grid md:grid-cols-3 gap-8">
-              {successCases.map((case_, index) => (
-                <SuccessCase 
-                  key={case_.name} 
-                  name={case_.name}
-                  role={case_.role}
-                  offer={case_.offer}
-                  highlight={case_.highlight}
-                  story={case_.story}
-                  results={case_.results}
-                  index={index}
-                />
-              ))}
+              {successCases.map((case_, index) => <SuccessCase key={case_.name} name={case_.name} role={case_.role} offer={case_.offer} highlight={case_.highlight} story={case_.story} results={case_.results} index={index} />)}
             </div>
 
             {/* CTA con link animado */}
-            <div className="text-center mt-10 animate-fade-in" style={{ animationDelay: '800ms' }}>
+            <div className="text-center mt-10 animate-fade-in" style={{
+            animationDelay: '800ms'
+          }}>
               <p className="text-sm text-muted-foreground">
                 Y muchos más{" "}
-                <a 
-                  href="#footer" 
-                  className="text-foreground font-semibold relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left"
-                >
+                <a href="#footer" className="text-foreground font-semibold relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">
                   al fondo de la página
                 </a>
               </p>
@@ -176,11 +149,7 @@ const Index = () => {
 
           {/* CTA #3: Botón simple */}
           <div className="flex justify-center my-12">
-            <Button 
-              onClick={handleScrollToQuiz}
-              size="lg"
-              className="font-bold text-lg dark-button-primary"
-            >
+            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">
               Ascende ahora →
             </Button>
           </div>
@@ -213,23 +182,17 @@ const Index = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6">
-              {bonuses.map((bonus, index) => (
-                <div key={bonus.title} style={{ animationDelay: `${index * 150}ms` }}>
+              {bonuses.map((bonus, index) => <div key={bonus.title} style={{
+              animationDelay: `${index * 150}ms`
+            }}>
                   <BonusCard {...bonus} />
-                </div>
-              ))}
+                </div>)}
             </div>
           </div>
 
           {/* CTA #4: Botón simple */}
           <div className="flex justify-center my-12">
-            <Button 
-              onClick={handleScrollToQuiz}
-              size="lg"
-              className="font-bold text-lg dark-button-primary"
-            >
-              Reclamar los artefactos →
-            </Button>
+            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">Reclamar los artefactos </Button>
           </div>
 
           <RoadmapFooter />
@@ -264,25 +227,12 @@ const Index = () => {
             </div>
 
             <div className="bg-background/50 backdrop-blur-sm rounded-3xl p-8 border border-border/50">
-              {quizScreen === "quiz" && (
-                <QuizSection 
-                  onComplete={handleCompleteQuiz}
-                  onExit={handleResetQuiz}
-                />
-              )}
-              {quizScreen === "result" && (
-                <ResultSection 
-                  isQualified={isQualified}
-                  quizState={quizState}
-                  onReset={handleResetQuiz}
-                />
-              )}
+              {quizScreen === "quiz" && <QuizSection onComplete={handleCompleteQuiz} onExit={handleResetQuiz} />}
+              {quizScreen === "result" && <ResultSection isQualified={isQualified} quizState={quizState} onReset={handleResetQuiz} />}
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
