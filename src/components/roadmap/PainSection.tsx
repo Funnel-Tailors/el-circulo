@@ -69,6 +69,39 @@ export const PainSection = () => {
           </div>
         </div>
 
+        {/* CTA #1: Después del pain */}
+        <div 
+          className={`mt-12 text-center transition-all duration-700 delay-[2400ms] ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          <h3 className="text-2xl md:text-3xl font-display font-bold glow mb-3">
+            Ya vale de ser el malito del sector, ¿no?
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Descubre si el Círculo es para ti
+          </p>
+          <button
+            onClick={() => {
+              const quizSection = document.getElementById("quiz-section");
+              if (quizSection) {
+                const isMobile = window.innerHeight < 700;
+                const offset = isMobile ? 80 : 100;
+                const elementPosition = quizSection.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+                window.scrollTo({
+                  top: offsetPosition,
+                  behavior: "smooth",
+                });
+              }
+            }}
+            className="dark-button-primary inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-11 px-8"
+          >
+            Ver si califico →
+          </button>
+        </div>
+
         {/* Divisor inferior con símbolo */}
         <div className="flex items-center justify-center mt-16 gap-4">
           <div className="h-px flex-1 bg-gradient-to-r from-transparent to-accent/20" />

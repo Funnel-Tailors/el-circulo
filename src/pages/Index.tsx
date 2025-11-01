@@ -14,6 +14,7 @@ import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
 import { FAQSection } from "@/components/roadmap/FAQSection";
+import { CTAScrollToQuiz } from "@/components/roadmap/CTAScrollToQuiz";
 import { quizAnalytics } from "@/lib/analytics";
 
 const Index = () => {
@@ -91,6 +92,14 @@ const Index = () => {
             ))}
           </div>
 
+          {/* CTA #2: Después del Timeline */}
+          <CTAScrollToQuiz
+            title="7 días para tener tu sistema listo."
+            subtitle="¿Quieres empezar en los próximos días?"
+            buttonText="Solicitar acceso →"
+            ctaLocation="after_timeline"
+          />
+
           {/* ASCENDIDOS */}
           <div className="mt-16 mb-8">
             <div className="text-center mb-16 animate-fade-in">
@@ -147,6 +156,14 @@ const Index = () => {
             </div>
           </div>
 
+          {/* CTA #3: Después de Success Cases */}
+          <CTAScrollToQuiz
+            title="Estos ya lo consiguieron. Tú puedes ser el siguiente."
+            subtitle="Responde 6 preguntas para ver si el Círculo es para ti"
+            buttonText="Quiero entrar →"
+            ctaLocation="after_testimonials"
+          />
+
           {/* LOS ARTEFACTOS */}
           <div className="mt-16">
             <div className="text-center mb-8 animate-fade-in">
@@ -182,6 +199,14 @@ const Index = () => {
               ))}
             </div>
           </div>
+
+          {/* CTA #4: Después de Los Artefactos */}
+          <CTAScrollToQuiz
+            title="Todo esto (y más) te espera dentro del Círculo"
+            subtitle="Comprueba si estás listo para entrar"
+            buttonText="Comprobar ahora →"
+            ctaLocation="after_bonuses"
+          />
 
           <RoadmapFooter />
 
