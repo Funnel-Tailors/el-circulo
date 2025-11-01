@@ -149,9 +149,7 @@ const Index = () => {
 
           {/* CTA #3: Botón simple */}
           <div className="flex justify-center my-12">
-            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">
-              Ascende ahora →
-            </Button>
+            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">Asciende ahora</Button>
           </div>
 
           {/* LOS ARTEFACTOS */}
