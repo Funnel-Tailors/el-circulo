@@ -134,7 +134,7 @@ const CircleHero = () => {
           className={`
             w-full transition-all duration-300
             ${isVideoSticky && showSticky 
-              ? 'fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-4xl' 
+              ? 'fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4' 
               : 'relative'
             }
           `}
