@@ -660,6 +660,22 @@ serve(async (req) => {
   try {
     const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId }: LeadSubmission = await req.json();
     
+    console.log('📥 ===== EDGE FUNCTION INVOKED =====');
+    console.log('📋 Submission received:', {
+      timestamp: new Date().toISOString(),
+      email: email,
+      hasWhatsapp: !!whatsapp,
+      whatsappValue: whatsapp || 'N/A',
+      name: name,
+      sessionId: sessionId || 'N/A',
+      qualified: qualified,
+      score: score,
+      isPartial: isPartialSubmission || false,
+      fbclid: fbclid || 'N/A',
+      providedGhlContactId: ghlContactId || 'none'
+    });
+    console.log('📝 Quiz answers:', JSON.stringify(answers, null, 2));
+    
     console.log('📊 Lead recibido:', { 
       name, 
       email, 
@@ -810,29 +826,44 @@ serve(async (req) => {
       // Update existing
       const updateUrl = `https://services.leadconnectorhq.com/contacts/${contactId}`;
       const updateType = isPartialSubmission ? 'partial lead' : 'lead to complete (adding phone)';
-      console.log(`Updating existing contact (${updateType})...`);
+      
+      console.log('🔄 ===== UPDATING EXISTING CONTACT =====');
+      console.log('📍 Update URL:', updateUrl);
+      console.log('📋 Update type:', updateType);
+      console.log('🎫 Contact ID:', contactId);
+      console.log('📦 Payload keys:', Object.keys(updatePayload));
+      console.log('⚠️ IMPORTANT: locationId excluded from update payload');
       
       // Si es la actualización final (no parcial), remover el tag PARCIAL
       if (!isPartialSubmission) {
         // Filtrar tags para remover PARCIAL si existe
         updatePayload.tags = updatePayload.tags.filter(tag => !tag.includes('CÍRCULO-LEAD-PARCIAL'));
-        console.log('Removed PARCIAL tag, final tags:', updatePayload.tags);
+        console.log('🏷️ Removed PARCIAL tag, final tags:', updatePayload.tags);
       }
       
+      console.log('📤 Sending PUT request to GHL...');
       ghlResponse = await fetch(updateUrl, {
         method: 'PUT',
         headers: ghlHeaders,
         body: JSON.stringify(updatePayload)
       });
+      console.log('✅ PUT request completed, status:', ghlResponse.status);
     } else {
       // Create new
       const createUrl = 'https://services.leadconnectorhq.com/contacts/';
-      console.log('Creating new contact...');
+      
+      console.log('🆕 ===== CREATING NEW CONTACT =====');
+      console.log('📍 Create URL:', createUrl);
+      console.log('📦 Payload includes locationId:', GHL_LOCATION_ID);
+      console.log('📦 Payload keys:', Object.keys(contactPayload));
+      
+      console.log('📤 Sending POST request to GHL...');
       ghlResponse = await fetch(createUrl, {
         method: 'POST',
         headers: ghlHeaders,
         body: JSON.stringify(contactPayload)
       });
+      console.log('✅ POST request completed, status:', ghlResponse.status);
     }
     
     if (!ghlResponse.ok) {
@@ -893,7 +924,18 @@ serve(async (req) => {
     
     const ghlData = await ghlResponse.json();
     const finalContactId = ghlData.contact?.id || contactId;
-    console.log('GHL contact created/updated:', finalContactId);
+    
+    console.log('🎉 ===== SUCCESS =====');
+    console.log('✅ GHL Response:', {
+      status: ghlResponse.status,
+      statusText: ghlResponse.statusText,
+      contactId: finalContactId,
+      operation: contactId ? 'UPDATE' : 'CREATE'
+    });
+    console.log('📧 Lead email:', email);
+    console.log('📱 Lead phone:', whatsapp || 'N/A');
+    console.log('🏷️ Tags applied:', tags);
+    console.log('===== END SUCCESS =====');
     
     return new Response(
       JSON.stringify({
@@ -909,7 +951,13 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    console.error('Error in submit-lead-to-ghl:', error);
+    console.error('❌ ===== FATAL ERROR =====');
+    console.error('❌ Error in submit-lead-to-ghl:', error);
+    console.error('❌ Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('❌ Error message:', error instanceof Error ? error.message : String(error));
+    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'N/A');
+    console.error('===== END FATAL ERROR =====');
+    
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({
