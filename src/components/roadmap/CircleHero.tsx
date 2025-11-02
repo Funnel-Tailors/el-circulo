@@ -100,16 +100,9 @@ const CircleHero = () => {
   return (
     <div className="text-center space-y-8 mb-8 animate-fade-in -mt-8">
       {/* 5 Estrellas decorativas superiores */}
-      <div className="flex justify-center gap-1.5 mb-3" aria-hidden="true">
+      <div className="flex justify-center gap-3 mb-3" aria-hidden="true">
         {[...Array(5)].map((_, i) => (
-          <svg 
-            key={i}
-            className="w-3 h-3 text-foreground/60" 
-            viewBox="0 0 24 24" 
-            fill="currentColor"
-          >
-            <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
-          </svg>
+          <span key={i} className="text-xl glow">✦</span>
         ))}
       </div>
 
@@ -123,10 +116,15 @@ const CircleHero = () => {
         {count.toLocaleString('es-ES')},00€
       </h2>
 
-      {/* Subtítulo */}
-      <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto px-4">
-        Descubre el <span className="text-foreground font-semibold">secreto para conseguir clientes</span> que piensan que regatear <span className="text-foreground font-semibold">es de cutres</span>
-      </p>
+      {/* Headline edgy */}
+      <div className="max-w-3xl mx-auto px-4">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground leading-tight">
+          Cómo cerré 3 proyectos de 10.000€ en 30 días
+        </h2>
+        <p className="text-base md:text-lg text-muted-foreground mt-2">
+          (sin hacer un puto cold email ni bajar mis precios)
+        </p>
+      </div>
 
       {/* VSL Container con glow pulsante */}
       <div ref={videoContainerRef} className="relative mx-auto my-12">
