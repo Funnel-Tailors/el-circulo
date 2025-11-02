@@ -27,9 +27,10 @@ interface SessionFunnelData {
   vsl_views: number;
   quiz_started: number;
   reached_contact_form: number;
-  completed: number;
+  submitted_contact_form: number;
   session_to_quiz_rate: number;
   quiz_completion_rate: number;
+  form_submission_rate: number;
   overall_conversion_rate: number;
 }
 

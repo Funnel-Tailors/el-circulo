@@ -6,9 +6,10 @@ interface SessionFunnelData {
   vsl_views: number;
   quiz_started: number;
   reached_contact_form: number;
-  completed: number;
+  submitted_contact_form: number;
   session_to_quiz_rate: number;
   quiz_completion_rate: number;
+  form_submission_rate: number;
   overall_conversion_rate: number;
 }
 
@@ -61,18 +62,18 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
       description: "Intención activa de participar"
     },
     {
-      label: "Form de Contacto",
+      label: "Llegaron al Form",
       value: data.reached_contact_form,
       percentage: data.total_sessions > 0 ? (data.reached_contact_form / data.total_sessions) * 100 : 0,
       color: "bg-yellow-500",
-      description: "Cualificados y listos para convertir"
+      description: "Vieron el form de contacto"
     },
     {
-      label: "Completaron",
-      value: data.completed,
-      percentage: data.total_sessions > 0 ? (data.completed / data.total_sessions) * 100 : 0,
+      label: "Enviaron Datos",
+      value: data.submitted_contact_form,
+      percentage: data.total_sessions > 0 ? (data.submitted_contact_form / data.total_sessions) * 100 : 0,
       color: "bg-purple-500",
-      description: "Conversión final"
+      description: "Leads enviados a GHL"
     }
   ];
 
@@ -130,7 +131,7 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Engagement con Contenido</p>
               <div className="flex items-center gap-2">
@@ -154,7 +155,20 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
                   <TrendingDown className="w-4 h-4 text-yellow-500" />
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">De quiz iniciado a completado</p>
+              <p className="text-xs text-muted-foreground">De quiz iniciado a form visto</p>
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Tasa de Envío del Form</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold">{data.form_submission_rate.toFixed(1)}%</p>
+                {data.form_submission_rate > 60 ? (
+                  <TrendingUp className="w-4 h-4 text-green-500" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-yellow-500" />
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">De form visto a datos enviados</p>
             </div>
 
             <div className="space-y-1">

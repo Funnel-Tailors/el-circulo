@@ -331,13 +331,13 @@ export type Database = {
       get_session_funnel_filtered: {
         Args: { interval_days: number }
         Returns: {
-          completed: number
+          form_submission_rate: number
           overall_conversion_rate: number
           quiz_completion_rate: number
           quiz_started: number
           reached_contact_form: number
-          reached_q1: number
           session_to_quiz_rate: number
+          submitted_contact_form: number
           total_sessions: number
           vsl_views: number
         }[]
