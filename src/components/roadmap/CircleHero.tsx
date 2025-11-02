@@ -119,8 +119,8 @@ const CircleHero = () => {
       </p>
 
       {/* Subtítulo */}
-      <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto px-4">
-        Descubre el <span className="text-foreground font-semibold">secreto para conseguir clientes</span> que piensan que regatear <span className="text-foreground font-semibold">es de cutres</span>
+      <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow max-w-2xl mx-auto px-4">
+        Descubre el secreto para conseguir clientes que piensan que regatear es de cutres
       </p>
 
       {/* VSL Container con glow pulsante */}
