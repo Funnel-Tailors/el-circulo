@@ -114,8 +114,8 @@ const CircleHero = () => {
       </div>
 
       {/* Social proof text con contador integrado */}
-      <p className="text-sm md:text-base text-muted-foreground italic">
-        Los <span className="text-foreground font-semibold">Freelancers Y Profesionales Creativos</span> Del Círculo Han Facturado <span className="text-foreground font-semibold glow">{count.toLocaleString('es-ES')},00€</span> (En los últimos 30 días)
+      <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow">
+        Los Freelancers Y Profesionales Creativos Del Círculo Han Facturado {count.toLocaleString('es-ES')},00€ (En los últimos 30 días)
       </p>
 
       {/* Subtítulo */}
