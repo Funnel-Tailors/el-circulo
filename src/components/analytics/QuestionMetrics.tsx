@@ -51,7 +51,10 @@ const QuestionMetrics = ({ data, loading }: QuestionMetricsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Métricas por Pregunta</CardTitle>
+        <CardTitle>Métricas por Pregunta (Q2-Q6)</CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">
+          Q1 se excluye porque su tiempo está afectado por el VSL. Usa "Quiz Iniciados" como métrica de engagement inicial.
+        </p>
       </CardHeader>
       <CardContent>
         <Table>
