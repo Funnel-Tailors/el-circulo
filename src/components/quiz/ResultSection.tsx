@@ -120,30 +120,42 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
             <>
               <div className="text-center space-y-4">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent mb-3">
-                  <span className="text-3xl">⚔️</span>
+                  <span className="text-3xl">📅</span>
                 </div>
                 
                 <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
-                  Has cruzado <span className="glow">el umbral</span>
+                  Selecciona tu horario para la <span className="glow">consulta estratégica</span>
                 </h2>
                 
-                <div className="space-y-2 text-sm text-muted-foreground max-w-lg mx-auto">
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="text-lg">🔮</span>
-                    El Señor Supremo del Círculo se pondrá en contacto para confirmar tu candidatura
-                  </p>
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="text-lg">🎭</span>
-                    Un Miembro Honorario evaluará tu entrada en el ritual de iniciación
-                  </p>
+                <div className="space-y-3 text-sm text-muted-foreground max-w-lg mx-auto">
+                  {/* Value Prop de la Clase - Recordatorio */}
+                  <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+                    <p className="flex items-center justify-center gap-2 text-foreground font-semibold text-base mb-2">
+                      <span className="text-lg">🎁</span>
+                      Al agendar ahora, recibirás al instante:
+                    </p>
+                    <p className="text-base font-bold text-accent mb-1">
+                      "Crea Tu Oferta: Cómo cobrar 3 veces más haciendo lo mismo"
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Te la enviaremos por WhatsApp en menos de 60 segundos tras confirmar tu cita
+                    </p>
+                  </div>
+                  
+                  {/* Instrucción */}
+                  <div className="bg-background/50 border border-border rounded-lg p-3">
+                    <p className="text-xs">
+                      📚 <span className="font-semibold text-foreground">Ve la clase ANTES de la consulta</span> para que podamos diseñar tu oferta premium personalizada en vivo.
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* ✅ Info: Datos pre-cargados automáticamente */}
               <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-4 text-center">
                 <p className="text-xs text-blue-200/90">
-                  ✨ Tus datos ya están pre-cargados en el calendario. 
-                  <span className="font-semibold"> Verifica que sean correctos</span> antes de confirmar tu cita.
+                  ✨ Tus datos ya están pre-cargados. 
+                  <span className="font-semibold"> Solo confirma tu horario</span> y recibirás la clase al instante.
                 </p>
               </div>
 
@@ -190,20 +202,24 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                 {!bookingStarted && (
                   <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 text-center">
                     <p className="text-sm text-muted-foreground mb-2">
-                      🔮 <span className="font-semibold text-foreground">¿Por qué reservar ahora?</span>
+                      🎯 <span className="font-semibold text-foreground">Al agendar recibirás:</span>
                     </p>
-                    <ul className="text-xs text-left space-y-1.5 max-w-md mx-auto">
+                    <ul className="text-xs text-left space-y-2 max-w-md mx-auto">
                       <li className="flex items-start gap-2">
-                        <span className="text-accent mt-0.5">→</span>
-                        <span>Acceso prioritario a la evaluación del Círculo (valor: 500€)</span>
+                        <span className="text-accent mt-0.5">🎁</span>
+                        <span><strong>"Crea Tu Oferta"</strong> - Clase completa enviada a tu WhatsApp (Valor: €197)</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-accent mt-0.5">→</span>
-                        <span>Auditoría personalizada de tu negocio (solo 3 por semana)</span>
+                        <span className="text-accent mt-0.5">🔮</span>
+                        <span>Aplicación de la clase a TU negocio en la consulta (Valor: €500)</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <span className="text-accent mt-0.5">→</span>
-                        <span>Estrategia de posicionamiento premium (sin compromiso)</span>
+                        <span className="text-accent mt-0.5">⚔️</span>
+                        <span>Auditoría de oferta personalizada en vivo (solo 3 espacios/semana)</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="text-accent mt-0.5">🎯</span>
+                        <span>Estrategia de posicionamiento premium diseñada para ti</span>
                       </li>
                     </ul>
                   </div>

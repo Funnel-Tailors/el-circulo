@@ -493,21 +493,41 @@ const QuizSection = ({
           <div className="text-center space-y-3">
             {/* Badge de progreso */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
-              <span className="text-xs font-semibold text-foreground">✦ Paso Final</span>
+              <span className="text-xs font-semibold text-foreground">🎯 Último Paso</span>
             </div>
             
             <h2 className="text-2xl md:text-3xl font-display font-black">
-              Has sido <span className="glow">preseleccionado</span>
+              Has sido <span className="glow">pre-seleccionado</span>
             </h2>
             
+            {/* Value Prop Box - Clase "Crea Tu Oferta" como incentivo */}
+            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 space-y-2 max-w-md mx-auto">
+              <p className="text-sm font-semibold text-foreground flex items-center justify-center gap-2">
+                🎁 Accederás a nuestra clase gratuita:
+              </p>
+              <p className="text-base font-bold text-accent leading-tight">
+                "Crea Tu Oferta: Cómo cobrar 3 veces más haciendo lo mismo"
+              </p>
+              <div className="text-xs text-muted-foreground pt-1 space-y-1">
+                <p className="flex items-center justify-center gap-2">
+                  <span>📩</span>
+                  <span>Te la enviaremos en las <span className="font-semibold text-foreground">próximas 24h</span></span>
+                </p>
+                <p className="flex items-center justify-center gap-2">
+                  <span>⚡</span>
+                  <span className="font-semibold text-accent">O al instante si agendas ahora</span>
+                </p>
+              </div>
+            </div>
+
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
-              Completa estos datos para acceder al calendario de iniciación.
+              Completa estos datos para desbloquear tu acceso.
             </p>
             
             {/* Trust badge - Privacidad */}
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80">
               <span>🔒</span>
-              <span>El Círculo no comparte datos con terceros</span>
+              <span>No compartimos tu información con nadie</span>
             </div>
             
             {/* Micro-urgencia con timer */}
@@ -546,7 +566,7 @@ const QuizSection = ({
             }) => <FormItem>
                     <FormLabel className="text-sm flex items-center gap-2">
                       Email
-                      <span className="text-xs text-muted-foreground font-normal">(para enviarte el acceso)</span>
+                      <span className="text-xs text-muted-foreground font-normal">(para enviarte la clase)</span>
                     </FormLabel>
                     <FormControl>
                       <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
@@ -558,7 +578,7 @@ const QuizSection = ({
               <div className="space-y-2">
                 <Label className="text-sm flex items-center gap-2">
                   WhatsApp
-                  <span className="text-xs text-muted-foreground font-normal">(para los próximos pasos)</span>
+                  <span className="text-xs text-muted-foreground font-normal">(para coordinación rápida)</span>
                 </Label>
                 <div className="grid grid-cols-[140px_1fr] gap-2">
                   {/* Selector de País */}
@@ -593,24 +613,41 @@ const QuizSection = ({
                 
                 {/* Micro-copy explicativo debajo del campo */}
                 <p className="text-xs text-muted-foreground/70 flex items-start gap-1.5 pt-1">
-                  <span className="mt-0.5">💬</span>
-                  <span>Usaremos WhatsApp para coordinar tu ritual de iniciación y hacerte llegar los detalles de acceso.</span>
+                  <span className="mt-0.5">📩</span>
+                  <span>Te enviaremos la clase "Crea Tu Oferta" por email. Si agendas ahora, la recibirás al instante por WhatsApp.</span>
                 </p>
               </div>
 
-              {/* Evento de Noviembre */}
-              <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-center">
-                <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                  <span>🌙</span>
-                  <span>Evento de Noviembre: <span className="font-semibold text-foreground">Samheim Rush</span></span>
+              {/* Bullets de lo que aprenderán en la clase */}
+              <div className="bg-background/50 border border-border rounded-lg p-4 text-left space-y-2">
+                <p className="text-xs font-semibold text-foreground mb-2 text-center">
+                  📚 En esta clase aprenderás:
                 </p>
+                <ul className="text-xs text-muted-foreground space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="text-accent mt-0.5">→</span>
+                    <span>Cómo <strong className="text-foreground">transformar tu habilidad en un producto redondo</strong> que la gente percibe como una puta ganga, aún a cinco cifras</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-accent mt-0.5">→</span>
+                    <span>Por qué la gente compra lo que compra. <strong className="text-foreground">Dejas de mendigar</strong> para pasar a que <strong className="text-foreground">te persigan</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-accent mt-0.5">→</span>
+                    <span>Cómo <strong className="text-foreground">petar tu agenda hasta arriba y cobrar 5.000€</strong> sin que te tiemblen las piernas ni a tu cliente la cartera</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-accent mt-0.5">→</span>
+                    <span>El <strong className="text-foreground">sistema exacto</strong> para que ese cliente que te va a torear <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo</strong></span>
+                  </li>
+                </ul>
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
                 {isSubmitting ? <span className="flex items-center gap-2">
                     <span className="animate-spin">⟳</span>
-                    Verificando tu entrada...
-                  </span> : 'Cruza el Umbral →'}
+                    Verificando tu acceso...
+                  </span> : '🎁 Desbloquear Clase Gratuita →'}
               </Button>
 
               {/* Footer de confianza */}
