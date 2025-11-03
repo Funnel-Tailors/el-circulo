@@ -131,19 +131,14 @@ const Index = () => {
 
             {/* Grid de casos con animación staggered */}
             <div className="grid md:grid-cols-3 gap-8">
-              {successCases.map((case_, index) => <SuccessCase key={case_.name} name={case_.name} role={case_.role} offer={case_.offer} highlight={case_.highlight} videoUrl={case_.videoUrl} results={case_.results} index={index} />)}
+              {successCases.map((case_, index) => <SuccessCase key={case_.name} name={case_.name} role={case_.role} offer={case_.offer} highlight={case_.highlight} story={case_.story} results={case_.results} index={index} />)}
             </div>
 
             {/* CTA con link animado */}
             <div className="text-center mt-10 animate-fade-in" style={{
             animationDelay: '800ms'
           }}>
-              <p className="text-sm text-muted-foreground">
-                Y muchos más{" "}
-                <a href="#footer" className="text-foreground font-semibold relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left">
-                  al fondo de la página
-                </a>
-              </p>
+              
             </div>
           </div>
 
