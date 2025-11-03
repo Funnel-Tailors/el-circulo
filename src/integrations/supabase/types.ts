@@ -62,6 +62,7 @@ export type Database = {
           step_id: string | null
           step_index: number | null
           time_spent_seconds: number | null
+          user_journey_id: string | null
           utm_campaign: string | null
           utm_content: string | null
           utm_medium: string | null
@@ -82,6 +83,7 @@ export type Database = {
           step_id?: string | null
           step_index?: number | null
           time_spent_seconds?: number | null
+          user_journey_id?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
@@ -102,6 +104,7 @@ export type Database = {
           step_id?: string | null
           step_index?: number | null
           time_spent_seconds?: number | null
+          user_journey_id?: string | null
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
@@ -140,6 +143,7 @@ export type Database = {
           referrer: string | null
           session_id: string
           user_interacted: boolean | null
+          user_journey_id: string | null
           utm_campaign: string | null
           utm_medium: string | null
           utm_source: string | null
@@ -156,6 +160,7 @@ export type Database = {
           referrer?: string | null
           session_id: string
           user_interacted?: boolean | null
+          user_journey_id?: string | null
           utm_campaign?: string | null
           utm_medium?: string | null
           utm_source?: string | null
@@ -172,6 +177,7 @@ export type Database = {
           referrer?: string | null
           session_id?: string
           user_interacted?: boolean | null
+          user_journey_id?: string | null
           utm_campaign?: string | null
           utm_medium?: string | null
           utm_source?: string | null

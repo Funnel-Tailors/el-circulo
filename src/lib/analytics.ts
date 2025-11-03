@@ -23,6 +23,7 @@ interface TrackEventParams {
 
 class QuizAnalytics {
   private sessionId: string;
+  private userJourneyId: string;
   private utmParams: Record<string, string>;
   private fbclid: string | null;
   private referrer: string;
@@ -33,6 +34,7 @@ class QuizAnalytics {
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
+    this.userJourneyId = this.getOrCreateJourneyId();
     this.utmParams = this.captureUTMParams();
     this.referrer = document.referrer || 'direct';
     this.deviceType = this.getDeviceType();
@@ -47,6 +49,15 @@ class QuizAnalytics {
 
     const newId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
     sessionStorage.setItem('quiz_session_id', newId);
+    return newId;
+  }
+
+  private getOrCreateJourneyId(): string {
+    const existingId = localStorage.getItem('user_journey_id');
+    if (existingId) return existingId;
+
+    const newId = `journey_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    localStorage.setItem('user_journey_id', newId);
     return newId;
   }
 
@@ -92,6 +103,7 @@ class QuizAnalytics {
     try {
       const payload = {
         session_id: this.sessionId,
+        user_journey_id: this.userJourneyId,
         event_type: params.event_type,
         step_index: params.step_index,
         step_id: params.step_id,
@@ -229,6 +241,10 @@ class QuizAnalytics {
     return this.sessionId;
   }
 
+  getUserJourneyId(): string {
+    return this.userJourneyId;
+  }
+
   // Quiz Start Tracking Methods
   hasTrackedQuizStart(): boolean {
     return sessionStorage.getItem('quiz_start_tracked') === 'true';
@@ -250,6 +266,7 @@ class QuizAnalytics {
     try {
       const { error } = await supabase.from('vsl_views').insert({
         session_id: this.sessionId,
+        user_journey_id: this.userJourneyId,
         vsl_type: vslType,
         utm_source: this.utmParams.utm_source,
         utm_medium: this.utmParams.utm_medium,

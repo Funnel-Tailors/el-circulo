@@ -21,6 +21,7 @@ import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
 import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import VSLWatchDistribution from '@/components/analytics/VSLWatchDistribution';
 import AIInsightsCard from '@/components/analytics/AIInsightsCard';
+import JourneyFunnelChart from '@/components/analytics/JourneyFunnelChart';
 
 interface SessionFunnelData {
   total_sessions: number;
@@ -96,6 +97,13 @@ interface VSLWatchBracket {
   conversion_rate: number;
 }
 
+interface JourneyFunnelData {
+  vsl_views: number;
+  quiz_starts: number;
+  form_views: number;
+  form_submissions: number;
+}
+
 interface AIInsights {
   critical: string | null;
   topInsights: string[];
@@ -131,6 +139,7 @@ const Analytics = () => {
   const [answerDistribution, setAnswerDistribution] = useState<AnswerDistributionData[]>([]);
   const [vslKpis, setVslKpis] = useState<VSLKPIData | null>(null);
   const [vslWatchBrackets, setVslWatchBrackets] = useState<VSLWatchBracket[]>([]);
+  const [journeyFunnel, setJourneyFunnel] = useState<JourneyFunnelData | null>(null);
   
   // AI Insights state
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
@@ -183,6 +192,7 @@ const Analytics = () => {
     setAnswerDistribution([]);
     setVslKpis(null);
     setVslWatchBrackets([]);
+    setJourneyFunnel(null);
     
     try {
       const intervalDays = parseFloat(dateRange);
@@ -265,6 +275,40 @@ const Analytics = () => {
       } else {
         console.error('Failed to fetch VSL watch brackets:', vslWatchResult);
         setVslWatchBrackets([]);
+      }
+
+      // Fetch journey funnel data separately (needs raw SQL query)
+      try {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - intervalDays);
+        
+        const { data: vslData } = await supabase
+          .from('vsl_views')
+          .select('user_journey_id')
+          .gte('created_at', cutoffDate.toISOString())
+          .not('user_journey_id', 'is', null);
+
+        const uniqueJourneyIds = [...new Set(vslData?.map(v => v.user_journey_id) || [])];
+        
+        const { data: quizData } = await supabase
+          .from('quiz_analytics')
+          .select('user_journey_id, event_type')
+          .in('user_journey_id', uniqueJourneyIds.length > 0 ? uniqueJourneyIds : ['none'])
+          .gte('created_at', cutoffDate.toISOString());
+
+        const quizStarts = new Set(quizData?.filter(q => q.event_type === 'quiz_started').map(q => q.user_journey_id) || []);
+        const formViews = new Set(quizData?.filter(q => q.event_type === 'contact_form_viewed').map(q => q.user_journey_id) || []);
+        const formSubmits = new Set(quizData?.filter(q => q.event_type === 'contact_form_submitted').map(q => q.user_journey_id) || []);
+
+        setJourneyFunnel({
+          vsl_views: uniqueJourneyIds.length,
+          quiz_starts: quizStarts.size,
+          form_views: formViews.size,
+          form_submissions: formSubmits.size
+        });
+      } catch (journeyError) {
+        console.error('Failed to fetch journey funnel:', journeyError);
+        setJourneyFunnel(null);
       }
 
       setLastUpdate(new Date());
@@ -554,6 +598,7 @@ const Analytics = () => {
             </div>
             <VSLPerformanceCards data={vslKpis} />
             <VSLFunnelChart data={vslKpis} />
+            <JourneyFunnelChart data={journeyFunnel} />
             <VSLWatchDistribution data={vslWatchBrackets} />
           </TabsContent>
 
