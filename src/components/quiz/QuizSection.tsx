@@ -493,22 +493,22 @@ const QuizSection = ({
           <div className="text-center space-y-4">
             {/* Badge de cualificación */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
-              <span className="text-xs font-semibold text-accent">🔓 Eres digno de cruzar el umbral</span>
+              <span className="text-xs font-semibold text-foreground">🔓 Eres digno de cruzar el umbral</span>
             </div>
             
             <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
               <span className="glow">Artefacto desbloqueado</span>
             </h2>
             
-            <p className="text-sm text-accent/80 max-w-lg mx-auto leading-relaxed">
-              Clase secreta desbloqueada como bonus. <span className="font-semibold text-accent">Agenda en 60 segundos</span> y la recibes al instante.
+            <p className="text-sm text-foreground/90 max-w-lg mx-auto leading-relaxed">
+              Clase secreta desbloqueada como bonus. <span className="font-semibold glow">Agenda en 60 segundos</span> y la recibes al instante.
             </p>
 
             {/* Mini value prop de entrega */}
             <div className="flex items-center justify-center gap-4 text-xs">
-              <span className="text-accent/70">📩 Enviada en 24h</span>
-              <span className="text-accent/30">|</span>
-              <span className="text-accent font-semibold">⚡ O al instante si agendas</span>
+              <span className="text-foreground/80">📩 Enviada en 24h</span>
+              <span className="text-foreground/30">|</span>
+              <span className="font-semibold glow">⚡ O al instante si agendas</span>
             </div>
           </div>
 
