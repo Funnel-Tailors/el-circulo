@@ -83,7 +83,7 @@ const VSLFunnelChart = ({ data }: VSLFunnelChartProps) => {
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                       <div className="font-semibold">{data.name}</div>
                       <div className="text-sm text-muted-foreground">
-                        {data.value} usuarios ({data.percentage.toFixed(1)}%)
+                        {data.value} usuarios ({(data.percentage || 0).toFixed(1)}%)
                       </div>
                     </div>
                   );
@@ -102,14 +102,14 @@ const VSLFunnelChart = ({ data }: VSLFunnelChartProps) => {
           <div>
             <span className="text-muted-foreground">Drop-off VSL → Engaged:</span>
             <span className="ml-2 font-semibold">
-              {(100 - data.engagement_rate).toFixed(1)}%
+              {(100 - (data.engagement_rate || 0)).toFixed(1)}%
             </span>
           </div>
           <div>
             <span className="text-muted-foreground">Drop-off Engaged → Quiz:</span>
             <span className="ml-2 font-semibold">
-              {data.engaged_viewers > 0
-                ? ((1 - data.quiz_started / data.engaged_viewers) * 100).toFixed(1)
+              {(data.engaged_viewers || 0) > 0
+                ? (((1 - (data.quiz_started || 0) / (data.engaged_viewers || 1)) * 100) || 0).toFixed(1)
                 : "0"}%
             </span>
           </div>

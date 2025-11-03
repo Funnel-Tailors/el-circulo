@@ -62,7 +62,7 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
           <Play className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{data.engagement_rate.toFixed(1)}%</div>
+          <div className="text-2xl font-bold">{(data.engagement_rate || 0).toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
             Vieron +10% del video
           </p>
@@ -75,9 +75,9 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{data.vsl_to_quiz_rate.toFixed(1)}%</div>
+          <div className="text-2xl font-bold">{(data.vsl_to_quiz_rate || 0).toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {data.quiz_started} iniciaron el quiz
+            {data.quiz_started || 0} iniciaron el quiz
           </p>
         </CardContent>
       </Card>
@@ -88,9 +88,9 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
           <CheckCircle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{data.vsl_to_conversion_rate.toFixed(1)}%</div>
+          <div className="text-2xl font-bold">{(data.vsl_to_conversion_rate || 0).toFixed(1)}%</div>
           <p className="text-xs text-muted-foreground">
-            {data.quiz_completed} completaron
+            {data.quiz_completed || 0} completaron
           </p>
         </CardContent>
       </Card>
@@ -101,9 +101,9 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
           <Clock className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatDuration(data.avg_duration_seconds)}</div>
+          <div className="text-2xl font-bold">{formatDuration(data.avg_duration_seconds || 0)}</div>
           <p className="text-xs text-muted-foreground">
-            {data.avg_percentage_watched.toFixed(0)}% visto
+            {(data.avg_percentage_watched || 0).toFixed(0)}% visto
           </p>
         </CardContent>
       </Card>

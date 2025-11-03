@@ -113,15 +113,15 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
                       </div>
                       <div className="text-right">
                         <span className="text-sm font-bold">{step.value}</span>
-                        <p className="text-xs text-muted-foreground">{step.percentage.toFixed(1)}%</p>
+                        <p className="text-xs text-muted-foreground">{(step.percentage || 0).toFixed(1)}%</p>
                       </div>
                     </div>
                     <div className="h-8 bg-muted rounded-lg overflow-hidden">
                       <div
                         className={`h-full ${step.color} transition-all duration-500 flex items-center justify-center text-white text-xs font-medium`}
-                        style={{ width: `${step.percentage}%` }}
+                        style={{ width: `${step.percentage || 0}%` }}
                       >
-                        {step.percentage > 10 && `${step.percentage.toFixed(0)}%`}
+                        {step.percentage > 10 && `${(step.percentage || 0).toFixed(0)}%`}
                       </div>
                     </div>
                   </div>
@@ -135,8 +135,8 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Engagement con Contenido</p>
               <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold">{data.session_to_quiz_rate.toFixed(1)}%</p>
-                {data.session_to_quiz_rate > 30 ? (
+                <p className="text-2xl font-bold">{(data.session_to_quiz_rate || 0).toFixed(1)}%</p>
+                {(data.session_to_quiz_rate || 0) > 30 ? (
                   <TrendingUp className="w-4 h-4 text-green-500" />
                 ) : (
                   <TrendingDown className="w-4 h-4 text-yellow-500" />
@@ -148,8 +148,8 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Conversión del Quiz</p>
               <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold">{data.quiz_completion_rate.toFixed(1)}%</p>
-                {data.quiz_completion_rate > 50 ? (
+                <p className="text-2xl font-bold">{(data.quiz_completion_rate || 0).toFixed(1)}%</p>
+                {(data.quiz_completion_rate || 0) > 50 ? (
                   <TrendingUp className="w-4 h-4 text-green-500" />
                 ) : (
                   <TrendingDown className="w-4 h-4 text-yellow-500" />
@@ -161,8 +161,8 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Tasa de Envío del Form</p>
               <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold">{data.form_submission_rate.toFixed(1)}%</p>
-                {data.form_submission_rate > 60 ? (
+                <p className="text-2xl font-bold">{(data.form_submission_rate || 0).toFixed(1)}%</p>
+                {(data.form_submission_rate || 0) > 60 ? (
                   <TrendingUp className="w-4 h-4 text-green-500" />
                 ) : (
                   <TrendingDown className="w-4 h-4 text-yellow-500" />
@@ -174,8 +174,8 @@ const SessionFunnelChart = ({ data, loading }: SessionFunnelChartProps) => {
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Conversión Global</p>
               <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold">{data.overall_conversion_rate.toFixed(1)}%</p>
-                {data.overall_conversion_rate > 10 ? (
+                <p className="text-2xl font-bold">{(data.overall_conversion_rate || 0).toFixed(1)}%</p>
+                {(data.overall_conversion_rate || 0) > 10 ? (
                   <TrendingUp className="w-4 h-4 text-green-500" />
                 ) : (
                   <TrendingDown className="w-4 h-4 text-yellow-500" />

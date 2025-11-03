@@ -173,6 +173,17 @@ const Analytics = () => {
 
   const fetchData = async () => {
     setIsFetching(true);
+    
+    // Reset all states to null/empty to prevent rendering stale data
+    setKpis(null);
+    setSessionFunnel(null);
+    setStepMetrics([]);
+    setConversionByStep([]);
+    setUtmPerformance([]);
+    setAnswerDistribution([]);
+    setVslKpis(null);
+    setVslWatchBrackets([]);
+    
     try {
       const intervalDays = parseFloat(dateRange);
       
@@ -582,6 +593,16 @@ const Analytics = () => {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Loading overlay */}
+      {isFetching && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-card p-6 rounded-lg shadow-lg border">
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+            <p className="text-sm text-muted-foreground">Cargando datos...</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
