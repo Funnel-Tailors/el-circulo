@@ -1066,36 +1066,27 @@ serve(async (req) => {
     
     // Track contact_form_submitted event if not a partial submission
     if (!isPartialSubmission && sessionId) {
-      console.log('📊 [EDGE FUNCTION] Attempting to track contact_form_submitted event:', { 
+      console.log('📊 [EDGE FUNCTION] Tracking contact_form_submitted event:', { 
         sessionId,
         timestamp: new Date().toISOString()
       });
       
-      // Use the same supabase client created earlier in the function
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      const { error: analyticsError } = await supabaseClient
+        .from('quiz_analytics')
+        .insert({
+          session_id: sessionId,
+          event_type: 'contact_form_submitted',
+          device_type: 'unknown',
+          language: 'es-ES',
+        });
       
-      if (supabaseUrl && supabaseServiceKey) {
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
-        const { error: analyticsError } = await supabase
-          .from('quiz_analytics')
-          .insert({
-            session_id: sessionId,
-            event_type: 'contact_form_submitted',
-            device_type: 'unknown',
-            language: 'es-ES',
-          });
-        
-        if (analyticsError) {
-          console.error('❌ [EDGE FUNCTION] Failed to track contact_form_submitted:', analyticsError);
-        } else {
-          console.log('✅ [EDGE FUNCTION] contact_form_submitted event tracked successfully');
-        }
+      if (analyticsError) {
+        console.error('❌ [EDGE FUNCTION] Failed to track contact_form_submitted:', analyticsError);
       } else {
-        console.error('❌ [EDGE FUNCTION] Missing Supabase credentials for analytics tracking');
+        console.log('✅ [EDGE FUNCTION] contact_form_submitted tracked successfully');
       }
     } else {
-      console.warn('⚠️ [EDGE FUNCTION] Skipping analytics tracking:', { 
+      console.log('⚠️ [EDGE FUNCTION] Skipping analytics tracking:', { 
         isPartialSubmission, 
         hasSessionId: !!sessionId 
       });
