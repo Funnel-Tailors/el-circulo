@@ -22,6 +22,7 @@ import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import VSLWatchDistribution from '@/components/analytics/VSLWatchDistribution';
 import AIInsightsCard from '@/components/analytics/AIInsightsCard';
 import JourneyFunnelChart from '@/components/analytics/JourneyFunnelChart';
+import TestimonialVideoMetrics from '@/components/analytics/TestimonialVideoMetrics';
 
 interface SessionFunnelData {
   total_sessions: number;
@@ -140,6 +141,7 @@ const Analytics = () => {
   const [vslKpis, setVslKpis] = useState<VSLKPIData | null>(null);
   const [vslWatchBrackets, setVslWatchBrackets] = useState<VSLWatchBracket[]>([]);
   const [journeyFunnel, setJourneyFunnel] = useState<JourneyFunnelData | null>(null);
+  const [testimonialVideoData, setTestimonialVideoData] = useState<any>(null);
   
   // AI Insights state
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
@@ -193,6 +195,7 @@ const Analytics = () => {
     setVslKpis(null);
     setVslWatchBrackets([]);
     setJourneyFunnel(null);
+    setTestimonialVideoData(null);
     
     try {
       const intervalDays = parseFloat(dateRange);
@@ -312,6 +315,61 @@ const Analytics = () => {
       }
 
       setLastUpdate(new Date());
+      
+      // Fetch testimonial video engagement data
+      try {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - 7); // Last 7 days
+        
+        const { data: plays } = await supabase
+          .from('quiz_analytics')
+          .select('step_id, created_at')
+          .eq('event_type', 'video_testimonial_click')
+          .gte('created_at', cutoffDate.toISOString());
+
+        const { data: completions } = await supabase
+          .from('quiz_analytics')
+          .select('step_id, created_at')
+          .eq('event_type', 'video_testimonial_complete')
+          .gte('created_at', cutoffDate.toISOString());
+
+        const playsByTestimonial: Record<string, number> = {};
+        const completionsByTestimonial: Record<string, number> = {};
+        
+        plays?.forEach(p => {
+          const name = p.step_id?.replace('testimonial_', '') || 'unknown';
+          const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+          playsByTestimonial[capitalizedName] = (playsByTestimonial[capitalizedName] || 0) + 1;
+        });
+
+        completions?.forEach(c => {
+          const name = c.step_id?.replace('testimonial_', '') || 'unknown';
+          const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
+          completionsByTestimonial[capitalizedName] = (completionsByTestimonial[capitalizedName] || 0) + 1;
+        });
+
+        const byTestimonial: Record<string, { plays: number; completions: number; completion_rate: number }> = {};
+        
+        ['Cris', 'Nico', 'Dani'].forEach(name => {
+          const playsCount = playsByTestimonial[name] || 0;
+          const completionsCount = completionsByTestimonial[name] || 0;
+          byTestimonial[name] = {
+            plays: playsCount,
+            completions: completionsCount,
+            completion_rate: playsCount > 0 ? (completionsCount / playsCount) * 100 : 0
+          };
+        });
+
+        setTestimonialVideoData({
+          total_plays: plays?.length || 0,
+          total_completions: completions?.length || 0,
+          completion_rate: (plays?.length || 0) > 0 ? ((completions?.length || 0) / (plays?.length || 0)) * 100 : 0,
+          by_testimonial: byTestimonial
+        });
+      } catch (testimonialError) {
+        console.error('Failed to fetch testimonial video data:', testimonialError);
+        setTestimonialVideoData(null);
+      }
       
       console.log('📊 Analytics data fetched:', {
         dateRange: intervalDays,
@@ -600,6 +658,7 @@ const Analytics = () => {
             <VSLFunnelChart data={vslKpis} />
             <JourneyFunnelChart data={journeyFunnel} />
             <VSLWatchDistribution data={vslWatchBrackets} />
+            <TestimonialVideoMetrics data={testimonialVideoData} />
           </TabsContent>
 
           <TabsContent value="funnel" className="space-y-6">

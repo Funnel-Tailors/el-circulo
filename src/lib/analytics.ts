@@ -9,7 +9,9 @@ type EventType =
   | 'validation_error'
   | 'quiz_abandoned'
   | 'quiz_completed'
-  | 'error_occurred';
+  | 'error_occurred'
+  | 'video_testimonial_click'
+  | 'video_testimonial_complete';
 
 interface TrackEventParams {
   event_type: EventType;

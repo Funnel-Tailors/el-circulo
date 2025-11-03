@@ -1,17 +1,55 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { Play, VolumeX, Volume2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { quizAnalytics } from "@/lib/analytics";
 
 interface SuccessCaseProps {
   name: string;
   role: string;
   offer: string;
   highlight: string;
-  story: string;
+  videoUrl: string;
   results: string[];
   index: number;
 }
 
-const SuccessCase = ({ name, role, offer, highlight, story, results, index }: SuccessCaseProps) => {
+const SuccessCase = ({ name, role, offer, highlight, videoUrl, results, index }: SuccessCaseProps) => {
   const { ref, isVisible } = useScrollReveal(0.3);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePlay = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+      setIsPlaying(true);
+      
+      quizAnalytics.trackEvent({
+        event_type: 'video_testimonial_click',
+        step_id: `testimonial_${name.toLowerCase()}`
+      });
+    }
+  };
+
+  const handlePause = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleVideoEnd = () => {
+    setIsPlaying(false);
+    
+    quizAnalytics.trackEvent({
+      event_type: 'video_testimonial_complete',
+      step_id: `testimonial_${name.toLowerCase()}`
+    });
+  };
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
 
   return (
     <div 
@@ -51,11 +89,49 @@ const SuccessCase = ({ name, role, offer, highlight, story, results, index }: Su
       {/* Línea decorativa */}
       <div className="w-24 h-px bg-gradient-to-r from-transparent via-border to-transparent mx-auto mb-6" />
 
-      {/* Historia narrativa */}
-      <div className="mb-6">
-        <p className="text-sm leading-relaxed text-muted-foreground italic text-center">
-          "{story}"
-        </p>
+      {/* Video testimonial */}
+      <div className="mb-6 flex justify-center">
+        <div className="relative w-full max-w-[240px] mx-auto" style={{ aspectRatio: '9/16' }}>
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-full object-cover rounded-lg"
+            playsInline
+            preload="metadata"
+            muted={isMuted}
+            onEnded={handleVideoEnd}
+            onClick={isPlaying ? handlePause : handlePlay}
+          />
+          
+          {/* Play/Pause Overlay */}
+          {!isPlaying && (
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg cursor-pointer hover:bg-black/40 transition-colors"
+              onClick={handlePlay}
+            >
+              <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center backdrop-blur-sm hover:scale-110 transition-transform">
+                <Play className="w-8 h-8 text-primary ml-1" fill="currentColor" />
+              </div>
+            </div>
+          )}
+          
+          {/* Mute Toggle */}
+          {isPlaying && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleMute();
+              }}
+              className="absolute bottom-3 right-3 p-2 bg-black/60 backdrop-blur-sm rounded-full hover:bg-black/80 transition-colors"
+            >
+              {isMuted ? (
+                <VolumeX className="w-5 h-5 text-white" />
+              ) : (
+                <Volume2 className="w-5 h-5 text-white" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Separador con título */}

@@ -55,7 +55,7 @@ export const successCases = [
     role: "Diseñador Web",
     offer: "Elevate-Solo",
     highlight: "x10",
-    story: "Entró malvendiendo sus trabajos por 200 pavos y ha ido escalando poco a poco, perdiendo el miedo a cobrar 10 veces más. Ahora hasta disfruta del momento incómodo de decir lo que vale su trabajo.",
+    videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69090fa737c43a7bafb5b374.mp4",
     results: [
       "Multiplicó x10 su ticket medio",
       "De 200€ a +1.000€ por proyecto",
@@ -68,7 +68,7 @@ export const successCases = [
     role: "Brand Strategist",
     offer: "Cook Your Brand",
     highlight: "ROI x10",
-    story: "Tenía una marca personal poderosa y un montón de prospectos, así entre comillas, que nunca iban a tener la pasta suficiente para pagarle y hacían perder el tiempo a un equipo de setters que tenía que mantener. En apenas 10 días en el círculo y en 3 con su anuncio rulando consiguió su primer cliente.",
+    videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69090fa737c43acb39b5b373.mp4",
     results: [
       "2.000€ su primer cliente en 10 días",
       "Marca personal → clientes con presupuesto real",
@@ -81,7 +81,7 @@ export const successCases = [
     role: "Estratega de Ventas",
     offer: "Embudo Express",
     highlight: "3.000€",
-    story: "Estaba a punto de tirar la toalla con su proyecto después de un par de lanzamientos que no le hicieron justicia, pero se ha convertido en una auténtica tiburona después de cerrar su primer proyecto por 3.000€ sólo con un cambio de mentalidad súper sencillo.",
+    videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69090fa732cf68e1f09e7a24.mp4",
     results: [
       "De tirar la toalla a cerrar 3.000€",
       "Un solo cambio de mentalidad lo cambió todo",

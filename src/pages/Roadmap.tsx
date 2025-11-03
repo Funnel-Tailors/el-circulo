@@ -91,7 +91,7 @@ const Roadmap = () => {
                   role={case_.role}
                   offer={case_.offer}
                   highlight={case_.highlight}
-                  story={case_.story}
+                  videoUrl={case_.videoUrl}
                   results={case_.results}
                   index={index}
                 />
