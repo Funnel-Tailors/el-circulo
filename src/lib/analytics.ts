@@ -5,6 +5,7 @@ type EventType =
   | 'question_viewed'
   | 'question_answered'
   | 'contact_form_viewed'
+  | 'contact_form_submitted'
   | 'validation_error'
   | 'quiz_abandoned'
   | 'quiz_completed'
@@ -194,6 +195,19 @@ class QuizAnalytics {
       time_spent_seconds: timeSpent,
     }).catch(error => {
       console.error('❌ Failed to track quiz completion:', error);
+    });
+  }
+
+  submitContactForm(): void {
+    console.log('📝 Tracking contact form submission:', {
+      sessionId: this.sessionId,
+      timestamp: new Date().toISOString()
+    });
+    
+    this.trackEvent({
+      event_type: 'contact_form_submitted',
+    }).catch(error => {
+      console.error('❌ Failed to track contact form submission:', error);
     });
   }
 

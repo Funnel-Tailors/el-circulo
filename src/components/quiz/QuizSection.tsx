@@ -336,6 +336,9 @@ const QuizSection = ({
       }
       
       console.log('Lead enviado a GHL:', responseData);
+      
+      // Track contact form submission before completing quiz
+      quizAnalytics.submitContactForm();
       quizAnalytics.completeQuiz();
       
       // Disparar evento Lead de Meta Pixel

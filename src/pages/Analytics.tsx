@@ -117,6 +117,7 @@ interface StoredInsight {
 const Analytics = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [dateRange, setDateRange] = useState('30');
   const [autoRefresh, setAutoRefresh] = useState(false);
@@ -171,52 +172,109 @@ const Analytics = () => {
   }, [navigate]);
 
   const fetchData = async () => {
+    setIsFetching(true);
     try {
       const intervalDays = parseFloat(dateRange);
+      
+      console.log('📊 Fetching analytics data for interval:', intervalDays);
 
-      const { data: kpisData } = await supabase
-        .rpc('get_quiz_kpis_filtered', { interval_days: intervalDays })
-        .maybeSingle();
-      setKpis(kpisData);
+      // Use Promise.allSettled to handle individual failures gracefully
+      const [
+        kpisResult,
+        sessionFunnelResult,
+        stepMetricsResult,
+        conversionResult,
+        utmResult,
+        answerDistResult,
+        vslResult,
+        vslWatchResult
+      ] = await Promise.allSettled([
+        supabase.rpc('get_quiz_kpis_filtered', { interval_days: intervalDays }).maybeSingle(),
+        supabase.rpc('get_session_funnel_filtered', { interval_days: intervalDays }).maybeSingle(),
+        supabase.rpc('get_quiz_step_metrics_filtered', { interval_days: intervalDays }),
+        supabase.rpc('get_quiz_conversion_by_step_filtered', { interval_days: intervalDays }),
+        supabase.rpc('get_utm_performance_filtered', { interval_days: intervalDays }),
+        supabase.rpc('get_answer_distribution_filtered', { interval_days: intervalDays }),
+        supabase.rpc('get_vsl_performance_filtered', { interval_days: intervalDays }).maybeSingle(),
+        supabase.rpc('get_vsl_watch_brackets_filtered', { interval_days: intervalDays })
+      ]);
 
-      const { data: sessionFunnelData } = await supabase
-        .rpc('get_session_funnel_filtered', { interval_days: intervalDays })
-        .maybeSingle();
-      setSessionFunnel(sessionFunnelData);
+      // Handle each result individually
+      if (kpisResult.status === 'fulfilled' && kpisResult.value.data && !kpisResult.value.error) {
+        setKpis(kpisResult.value.data);
+      } else {
+        console.error('Failed to fetch KPIs:', kpisResult);
+        setKpis(null);
+      }
 
-      const { data: stepData } = await supabase
-        .rpc('get_quiz_step_metrics_filtered', { interval_days: intervalDays });
-      setStepMetrics(stepData || []);
+      if (sessionFunnelResult.status === 'fulfilled' && sessionFunnelResult.value.data && !sessionFunnelResult.value.error) {
+        setSessionFunnel(sessionFunnelResult.value.data);
+      } else {
+        console.error('Failed to fetch session funnel:', sessionFunnelResult);
+        setSessionFunnel(null);
+      }
 
-      const { data: conversionData } = await supabase
-        .rpc('get_quiz_conversion_by_step_filtered', { interval_days: intervalDays });
-      setConversionByStep(conversionData || []);
+      if (stepMetricsResult.status === 'fulfilled' && stepMetricsResult.value.data && !stepMetricsResult.value.error) {
+        setStepMetrics(stepMetricsResult.value.data || []);
+      } else {
+        console.error('Failed to fetch step metrics:', stepMetricsResult);
+        setStepMetrics([]);
+      }
 
-      const { data: utmData } = await supabase
-        .rpc('get_utm_performance_filtered', { interval_days: intervalDays });
-      setUtmPerformance(utmData || []);
+      if (conversionResult.status === 'fulfilled' && conversionResult.value.data && !conversionResult.value.error) {
+        setConversionByStep(conversionResult.value.data || []);
+      } else {
+        console.error('Failed to fetch conversion by step:', conversionResult);
+        setConversionByStep([]);
+      }
 
-      const { data: distributionData } = await supabase
-        .rpc('get_answer_distribution_filtered', { interval_days: intervalDays });
-      setAnswerDistribution(distributionData || []);
+      if (utmResult.status === 'fulfilled' && utmResult.value.data && !utmResult.value.error) {
+        setUtmPerformance(utmResult.value.data || []);
+      } else {
+        console.error('Failed to fetch UTM performance:', utmResult);
+        setUtmPerformance([]);
+      }
 
-      const { data: vslKpisData } = await supabase
-        .rpc('get_vsl_performance_filtered', { interval_days: intervalDays })
-        .maybeSingle();
-      setVslKpis(vslKpisData);
+      if (answerDistResult.status === 'fulfilled' && answerDistResult.value.data && !answerDistResult.value.error) {
+        setAnswerDistribution(answerDistResult.value.data || []);
+      } else {
+        console.error('Failed to fetch answer distribution:', answerDistResult);
+        setAnswerDistribution([]);
+      }
 
-      const { data: vslBracketsData } = await supabase
-        .rpc('get_vsl_watch_brackets_filtered', { interval_days: intervalDays });
-      setVslWatchBrackets(vslBracketsData || []);
+      if (vslResult.status === 'fulfilled' && vslResult.value.data && !vslResult.value.error) {
+        setVslKpis(vslResult.value.data);
+      } else {
+        console.error('Failed to fetch VSL KPIs:', vslResult);
+        setVslKpis(null);
+      }
+
+      if (vslWatchResult.status === 'fulfilled' && vslWatchResult.value.data && !vslWatchResult.value.error) {
+        setVslWatchBrackets(vslWatchResult.value.data || []);
+      } else {
+        console.error('Failed to fetch VSL watch brackets:', vslWatchResult);
+        setVslWatchBrackets([]);
+      }
 
       setLastUpdate(new Date());
+      
+      console.log('📊 Analytics data fetched:', {
+        dateRange: intervalDays,
+        hasKpis: !!kpisResult,
+        hasSessionFunnel: !!sessionFunnelResult,
+        hasStepMetrics: stepMetricsResult.status === 'fulfilled' && Array.isArray(stepMetricsResult.value?.data),
+        hasVslKpis: !!vslResult
+      });
     } catch (error) {
       console.error('Error fetching analytics:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'No se pudieron cargar las analíticas',
+        description: 'No se pudieron cargar algunas analíticas',
       });
+    } finally {
+      setIsFetching(false);
+      setLoading(false);
     }
   };
 
@@ -384,7 +442,7 @@ const Analytics = () => {
         <div className="flex flex-wrap items-center gap-4 bg-card p-4 rounded-lg border">
           <div className="flex items-center gap-2">
             <Label htmlFor="date-range">Período:</Label>
-            <Select value={dateRange} onValueChange={setDateRange}>
+            <Select value={dateRange} onValueChange={setDateRange} disabled={isFetching}>
               <SelectTrigger id="date-range" className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>

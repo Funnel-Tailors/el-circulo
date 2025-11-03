@@ -1064,6 +1064,25 @@ serve(async (req) => {
     console.log('🏷️ Tags applied:', tags);
     console.log('===== END SUCCESS =====');
     
+    // Track contact_form_submitted event if not a partial submission
+    if (!isPartialSubmission && sessionId) {
+      console.log('📊 Tracking contact_form_submitted event:', { sessionId });
+      const { error: analyticsError } = await supabaseClient
+        .from('quiz_analytics')
+        .insert({
+          session_id: sessionId,
+          event_type: 'contact_form_submitted',
+          device_type: 'unknown',
+          language: 'es-ES',
+        });
+      
+      if (analyticsError) {
+        console.error('❌ Failed to track contact_form_submitted:', analyticsError);
+      } else {
+        console.log('✅ contact_form_submitted event tracked');
+      }
+    }
+    
     return new Response(
       JSON.stringify({
         success: true,
