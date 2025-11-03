@@ -98,7 +98,7 @@ const CircleHero = () => {
       </p>
 
       {/* Subtítulo */}
-      <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow max-w-2xl mx-auto px-4">Descubre el secreto - en menos de 5 minutos - para vender proyectos a 5 cifras a gente que puede pagarlas (y no te da la chapa)</p>
+      <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow max-w-2xl mx-auto px-4">Descubre - en menos de 5 minutos - el secreto para vender proyectos a 5 cifras a gente que puede pagarlas (y no te da la chapa)</p>
 
       {/* VSL Container con glow pulsante */}
       <div ref={videoContainerRef} className="relative mx-auto my-12">
