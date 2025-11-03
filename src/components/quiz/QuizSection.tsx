@@ -496,7 +496,7 @@ const QuizSection = ({
               <span className="text-xs font-semibold text-foreground">🔓 Eres digno de cruzar el umbral</span>
             </div>
             
-            <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
+            <h2 className="text-2xl md:text-3xl font-display font-black leading-[1em]">
               <span className="glow">Artefacto desbloqueado</span>
             </h2>
             
