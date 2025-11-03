@@ -338,7 +338,12 @@ const QuizSection = ({
       console.log('Lead enviado a GHL:', responseData);
       
       // Track contact form submission before completing quiz
-      quizAnalytics.submitContactForm();
+      console.log('🚀 About to track contact form submission with sessionId:', quizAnalytics.getSessionId());
+      try {
+        await quizAnalytics.submitContactForm();
+      } catch (error) {
+        console.error('⚠️ Failed to track form submission, but continuing...', error);
+      }
       quizAnalytics.completeQuiz();
       
       // Disparar evento Lead de Meta Pixel

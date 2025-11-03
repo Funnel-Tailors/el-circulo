@@ -198,17 +198,21 @@ class QuizAnalytics {
     });
   }
 
-  submitContactForm(): void {
+  async submitContactForm(): Promise<void> {
     console.log('📝 Tracking contact form submission:', {
       sessionId: this.sessionId,
       timestamp: new Date().toISOString()
     });
     
-    this.trackEvent({
-      event_type: 'contact_form_submitted',
-    }).catch(error => {
+    try {
+      await this.trackEvent({
+        event_type: 'contact_form_submitted',
+      });
+      console.log('✅ Contact form submission tracked successfully');
+    } catch (error) {
       console.error('❌ Failed to track contact form submission:', error);
-    });
+      throw error;
+    }
   }
 
   viewContactForm(): void {
