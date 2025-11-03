@@ -501,7 +501,7 @@ const QuizSection = ({
             </h2>
             
             <p className="text-sm text-foreground/90 max-w-lg mx-auto leading-[1em]">
-              <em>Clase secreta desbloqueada como bonus.</em> Esta clase no existe para el resto. Solo los que demuestran que van en serio la reciben. <span className="font-semibold glow">Agenda ahora y la tienes en tu WhatsApp al instante.</span> O espera 24h. <span className="font-semibold glow">Tú decides.</span>
+              <em>Clase secreta desbloqueada como bonus.</em> Esta clase no existe para el resto. Solo los que demuestran que van en serio la reciben.
             </p>
 
             {/* Mini value prop de entrega */}
