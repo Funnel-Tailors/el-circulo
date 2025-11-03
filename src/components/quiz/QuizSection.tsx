@@ -490,50 +490,26 @@ const QuizSection = ({
   if (showContactForm) {
     return <div className="w-full space-y-4 animate-fade-in">
         <div className="space-y-4">
-          <div className="text-center space-y-3">
-            {/* Badge de progreso */}
+          <div className="text-center space-y-4">
+            {/* Badge de cualificación */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
-              <span className="text-xs font-semibold text-foreground">🎯 Último Paso</span>
+              <span className="text-xs font-semibold text-accent">✓ Has cualificado</span>
             </div>
             
-            <h2 className="text-2xl md:text-3xl font-display font-black">
-              Has sido <span className="glow">pre-seleccionado</span>
+            <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
+              Tienes acceso a <span className="glow">"Crea Tu Oferta"</span>
             </h2>
             
-            {/* Value Prop Box - Clase "Crea Tu Oferta" como incentivo */}
-            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 space-y-2 max-w-md mx-auto">
-              <p className="text-sm font-semibold text-foreground flex items-center justify-center gap-2">
-                🎁 Accederás a nuestra clase gratuita:
-              </p>
-              <p className="text-base font-bold text-accent leading-tight">
-                "Crea Tu Oferta: Cómo cobrar 3 veces más haciendo lo mismo"
-              </p>
-              <div className="text-xs text-muted-foreground pt-1 space-y-1">
-                <p className="flex items-center justify-center gap-2">
-                  <span>📩</span>
-                  <span>Te la enviaremos en las <span className="font-semibold text-foreground">próximas 24h</span></span>
-                </p>
-                <p className="flex items-center justify-center gap-2">
-                  <span>⚡</span>
-                  <span className="font-semibold text-accent">O al instante si agendas ahora</span>
-                </p>
-              </div>
-            </div>
-
-            <p className="text-muted-foreground text-sm max-w-md mx-auto">
-              Completa estos datos para desbloquear tu acceso.
+            <p className="text-sm text-muted-foreground max-w-lg mx-auto leading-relaxed">
+              Esta clase no está en YouTube. Solo los que cualifican pueden verla. 
+              Aquí aprenderás <span className="font-semibold text-accent">cómo cobrar 3 veces más haciendo lo mismo</span>.
             </p>
-            
-            {/* Trust badge - Privacidad */}
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80">
-              <span>🔒</span>
-              <span>No compartimos tu información con nadie</span>
-            </div>
-            
-            {/* Micro-urgencia con timer */}
-            <div className="flex items-center justify-center gap-2 text-xs text-primary/90 bg-primary/5 border border-primary/20 rounded-full px-3 py-1.5">
-              <span>⚡</span>
-              <span>Tu pre-selección expira en <span className="font-semibold text-primary font-mono">{formatTime(timeLeft)}</span></span>
+
+            {/* Mini value prop de entrega */}
+            <div className="flex items-center justify-center gap-4 text-xs">
+              <span className="text-muted-foreground">📩 Enviada en 24h</span>
+              <span className="text-muted-foreground/40">|</span>
+              <span className="text-accent font-semibold">⚡ O al instante si agendas</span>
             </div>
           </div>
 
@@ -564,10 +540,7 @@ const QuizSection = ({
               <FormField control={form.control} name="email" render={({
               field
             }) => <FormItem>
-                    <FormLabel className="text-sm flex items-center gap-2">
-                      Email
-                      <span className="text-xs text-muted-foreground font-normal">(para enviarte la clase)</span>
-                    </FormLabel>
+                    <FormLabel className="text-sm">Email</FormLabel>
                     <FormControl>
                       <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
                     </FormControl>
@@ -576,10 +549,7 @@ const QuizSection = ({
 
               {/* Campo Teléfono con Selector de País */}
               <div className="space-y-2">
-                <Label className="text-sm flex items-center gap-2">
-                  WhatsApp
-                  <span className="text-xs text-muted-foreground font-normal">(para coordinación rápida)</span>
-                </Label>
+                <Label className="text-sm">WhatsApp</Label>
                 <div className="grid grid-cols-[140px_1fr] gap-2">
                   {/* Selector de País */}
                   <FormField control={form.control} name="countryCode" render={({
@@ -610,34 +580,21 @@ const QuizSection = ({
                         <FormMessage />
                       </FormItem>} />
                 </div>
-                
-                {/* Micro-copy explicativo debajo del campo */}
-                <p className="text-xs text-muted-foreground/70 flex items-start gap-1.5 pt-1">
-                  <span className="mt-0.5">📩</span>
-                  <span>Te enviaremos la clase "Crea Tu Oferta" por email. Si agendas ahora, la recibirás al instante por WhatsApp.</span>
-                </p>
               </div>
 
-              {/* Bullets de lo que aprenderán en la clase */}
-              <div className="bg-background/50 border border-border rounded-lg p-4 text-left space-y-2">
-                <p className="text-xs font-semibold text-foreground mb-2 text-center">
-                  📚 En esta clase aprenderás:
-                </p>
-                <ul className="text-xs text-muted-foreground space-y-1.5">
+              {/* 3 bullets poderosos */}
+              <div className="text-left space-y-2 pt-2">
+                <ul className="text-xs text-muted-foreground space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-accent mt-0.5">→</span>
+                    <span className="text-accent">→</span>
                     <span>Cómo <strong className="text-foreground">transformar tu habilidad en un producto redondo</strong> que la gente percibe como una puta ganga, aún a cinco cifras</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-accent mt-0.5">→</span>
-                    <span>Por qué la gente compra lo que compra. <strong className="text-foreground">Dejas de mendigar</strong> para pasar a que <strong className="text-foreground">te persigan</strong></span>
+                    <span className="text-accent">→</span>
+                    <span>Cómo <strong className="text-foreground">petar tu agenda y cobrar 5.000€</strong> sin que te tiemblen las piernas ni a tu cliente la cartera</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-accent mt-0.5">→</span>
-                    <span>Cómo <strong className="text-foreground">petar tu agenda hasta arriba y cobrar 5.000€</strong> sin que te tiemblen las piernas ni a tu cliente la cartera</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent mt-0.5">→</span>
+                    <span className="text-accent">→</span>
                     <span>El <strong className="text-foreground">sistema exacto</strong> para que ese cliente que te va a torear <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo</strong></span>
                   </li>
                 </ul>
@@ -647,16 +604,8 @@ const QuizSection = ({
                 {isSubmitting ? <span className="flex items-center gap-2">
                     <span className="animate-spin">⟳</span>
                     Verificando tu acceso...
-                  </span> : '🎁 Desbloquear Clase Gratuita →'}
+                  </span> : '⚡ Reclamar Mi Acceso →'}
               </Button>
-
-              {/* Footer de confianza */}
-              <div className="text-center text-xs text-muted-foreground/60 pt-2">
-                <p className="flex items-center justify-center gap-1.5">
-                  <span>🛡️</span>
-                  <span>Protegido por el sello del Círculo</span>
-                </p>
-              </div>
             </form>
           </Form>
         </div>
