@@ -60,26 +60,33 @@ const CircleHero = () => {
     // Control de hitos disparados para evitar duplicados
     const milestonesFired = new Set<number>();
 
-    const handlePlay = () => {
-      quizAnalytics.trackVSLProgress(0, 0);
-    };
-
     const handleTimeUpdate = () => {
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
       
-      // Track analytics interno
-      quizAnalytics.trackVSLProgress(percentage, duration);
+      // Track analytics interno SOLO en hitos clave (no bloqueante)
+      const vslMilestones = [25, 50, 75, 100];
+      const currentMilestone = vslMilestones.find(m => percentage >= m && !milestonesFired.has(m));
+      
+      if (currentMilestone) {
+        milestonesFired.add(currentMilestone);
+        // Ejecutar tracking en background sin bloquear el video
+        setTimeout(() => {
+          quizAnalytics.trackVSLProgress(percentage, duration).catch(() => {
+            // Silenciar errores de tracking para no afectar video
+          });
+        }, 0);
+      }
 
       // Disparar ViewContent en hitos clave con valor progresivo
-      const milestones = [
+      const metaMilestones = [
         { threshold: 25, value: 500 },
         { threshold: 50, value: 1000 },
         { threshold: 75, value: 1500 },
         { threshold: 100, value: 2000 }
       ];
 
-      milestones.forEach(({ threshold, value }) => {
+      metaMilestones.forEach(({ threshold, value }) => {
         if (percentage >= threshold && !milestonesFired.has(threshold)) {
           milestonesFired.add(threshold);
           
@@ -99,11 +106,9 @@ const CircleHero = () => {
       });
     };
 
-    video.addEventListener('play', handlePlay);
     video.addEventListener('timeupdate', handleTimeUpdate);
 
     return () => {
-      video.removeEventListener('play', handlePlay);
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
   }, []);
