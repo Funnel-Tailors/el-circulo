@@ -446,6 +446,19 @@ const QuizSection = ({
           setAnswers(updatedAnswers);
           quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
 
+          // Disparar AddToCart si responde "Puedo hacer ese tributo ahora" en q4
+          if (currentQuestion.id === 'q4' && value === 'Puedo hacer ese tributo ahora') {
+            if (typeof window !== 'undefined' && (window as any).fbq) {
+              (window as any).fbq('track', 'AddToCart', {
+                value: 2000,
+                currency: 'EUR',
+                content_name: 'Círculo Membership',
+                content_category: 'Membership'
+              });
+              console.log('✅ Meta Pixel AddToCart event fired with value: 2000 EUR');
+            }
+          }
+
           // Auto-avance después de 300ms para dar feedback visual
           setTimeout(() => {
             if (isLastStep) {
