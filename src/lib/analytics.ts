@@ -33,6 +33,7 @@ class QuizAnalytics {
   private language: string;
   private startTime: number;
   private stepStartTimes: Map<string, number>;
+  private vslMilestones: Set<number>;
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -43,6 +44,7 @@ class QuizAnalytics {
     this.language = navigator.language || 'unknown';
     this.startTime = Date.now();
     this.stepStartTimes = new Map();
+    this.vslMilestones = new Set();
   }
 
   private getOrCreateSessionId(): string {
@@ -286,6 +288,15 @@ class QuizAnalytics {
   }
 
   async trackVSLProgress(percentage: number, duration: number): Promise<void> {
+    // Solo actualizar en hitos clave: 25%, 50%, 75%, 100%
+    const milestones = [25, 50, 75, 100];
+    const currentMilestone = milestones.find(m => percentage >= m && !this.vslMilestones.has(m));
+    
+    if (!currentMilestone) return;
+
+    // Marcar hito como alcanzado
+    this.vslMilestones.add(currentMilestone);
+
     try {
       const { error } = await supabase
         .from('vsl_views')
@@ -300,6 +311,8 @@ class QuizAnalytics {
 
       if (error) {
         console.error('VSL progress tracking error:', error);
+      } else {
+        console.log(`✅ VSL milestone tracked: ${currentMilestone}%`);
       }
     } catch (err) {
       console.error('VSL progress tracking exception:', err);
