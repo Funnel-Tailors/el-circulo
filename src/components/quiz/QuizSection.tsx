@@ -81,7 +81,7 @@ const steps: QuizStep[] = [{
   id: "q5",
   question: "¿Cómo quieres ascender al Círculo?",
   type: "radio",
-  options: ["Ascensión Rápida (7 días, 1-2h/día)", "Ascensión Progresiva (30 días, 30-60 min/día)", "Ahora no puedo"],
+  options: ["Ascensión Rápida (7 días, 1-2h/día)", "Ascensión Progresiva (30 días, 30-60 min/día)"],
   badge: "⏱️ Paso 5/6",
   subtext: "Ambas rutas llevan al mismo destino. Elige tu ritmo.",
   motivator: {
@@ -90,11 +90,11 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q6",
-  question: "¿Eres quien decide esta inversión?",
+  question: "¿Quién toma la decisión final sobre esta inversión?",
   type: "radio",
-  options: ["Sí, decido yo", "Decido con otra persona", "No, no decido yo"],
+  options: ["Solo yo", "Yo con mi pareja/socio (lo invitaré a la llamada)"],
   badge: "🔐 Paso 6/6 - Final",
-  subtext: "Solo aceptamos miembros que decidan por sí mismos",
+  subtext: "Si decides con alguien más, ambos deben estar en la llamada",
   motivator: null
 }];
 const QuizSection = ({
@@ -426,14 +426,14 @@ const QuizSection = ({
     if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;else score += 0;
 
     // Q5 - Urgencia/Compromiso (0-10 puntos)
-    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 10;else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 8;else if (state.q5 === "Ahora no puedo") score += 0;
+    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 10;else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 8;
 
     // Q6 - Autoridad de decisión (0-5 puntos)
-    if (state.q6 === "Sí, decido yo") score += 5;else if (state.q6 === "Decido con otra persona") score += 2;else if (state.q6 === "No, no decido yo") score += 0;
+    if (state.q6 === "Solo yo") score += 5;else if (state.q6 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3;
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
-    return state.q4 === "No dispongo de esa cantidad" || state.q5 === "Ahora no puedo" || state.q6 === "No, no decido yo";
+    return state.q4 === "No dispongo de esa cantidad";
   };
   const renderInput = () => {
     switch (currentQuestion.type) {
