@@ -66,8 +66,8 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q4",
-  question: "El Círculo exige un tributo anual de 2.000€.",
-  description: "Un solo pago. Sin facilidades.",
+  question: "El tributo anual al Círculo es de 2.000€",
+  description: "La mayoría lo recupera vendiendo su primer proyecto.",
   type: "radio",
   options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
   badge: "💎 Paso 4/6 - Crucial",
