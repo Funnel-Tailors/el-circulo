@@ -52,20 +52,56 @@ const CircleHero = () => {
     quizAnalytics.trackVSLView('roadmap_hero');
   }, []);
 
-  // Track VSL video progress
+  // Track VSL video progress + Meta Pixel ViewContent con valor progresivo
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    // Control de hitos disparados para evitar duplicados
+    const milestonesFired = new Set<number>();
+
     const handlePlay = () => {
       quizAnalytics.trackVSLProgress(0, 0);
     };
+
     const handleTimeUpdate = () => {
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
+      
+      // Track analytics interno
       quizAnalytics.trackVSLProgress(percentage, duration);
+
+      // Disparar ViewContent en hitos clave con valor progresivo
+      const milestones = [
+        { threshold: 25, value: 500 },
+        { threshold: 50, value: 1000 },
+        { threshold: 75, value: 1500 },
+        { threshold: 100, value: 2000 }
+      ];
+
+      milestones.forEach(({ threshold, value }) => {
+        if (percentage >= threshold && !milestonesFired.has(threshold)) {
+          milestonesFired.add(threshold);
+          
+          if (typeof window !== 'undefined' && (window as any).fbq) {
+            (window as any).fbq('track', 'ViewContent', {
+              content_type: 'video',
+              content_name: 'Roadmap VSL',
+              content_category: 'video_sales_letter',
+              video_title: 'Roadmap VSL',
+              video_type: 'sales_video',
+              value: value,
+              currency: 'EUR'
+            });
+            console.log(`✅ Meta Pixel ViewContent fired at ${threshold}% with value: ${value} EUR`);
+          }
+        }
+      });
     };
+
     video.addEventListener('play', handlePlay);
     video.addEventListener('timeupdate', handleTimeUpdate);
+
     return () => {
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('timeupdate', handleTimeUpdate);
