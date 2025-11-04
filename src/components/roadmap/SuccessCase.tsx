@@ -94,7 +94,7 @@ const SuccessCase = ({ name, role, offer, highlight, videoUrl, results, index }:
         <div className="relative w-full max-w-[240px] mx-auto" style={{ aspectRatio: '9/16' }}>
           <video
             ref={videoRef}
-            src={videoUrl}
+            src={videoUrl + "#t=3"}
             className="w-full h-full object-cover rounded-lg"
             playsInline
             preload="metadata"

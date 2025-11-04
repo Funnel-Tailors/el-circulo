@@ -131,7 +131,7 @@ const Index = () => {
 
             {/* Grid de casos con animación staggered */}
             <div className="grid md:grid-cols-3 gap-8">
-              {successCases.map((case_, index) => <SuccessCase key={case_.name} name={case_.name} role={case_.role} offer={case_.offer} highlight={case_.highlight} story={case_.story} results={case_.results} index={index} />)}
+              {successCases.map((case_, index) => <SuccessCase key={case_.name} name={case_.name} role={case_.role} offer={case_.offer} highlight={case_.highlight} videoUrl={case_.videoUrl} results={case_.results} index={index} />)}
             </div>
 
             {/* CTA con link animado */}
