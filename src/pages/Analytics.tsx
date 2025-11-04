@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, Download, LogOut, Sparkles } from 'lucide-react';
+import { RefreshCw, Download, LogOut, Sparkles, TrendingUp } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,7 @@ import VSLWatchDistribution from '@/components/analytics/VSLWatchDistribution';
 import AIInsightsCard from '@/components/analytics/AIInsightsCard';
 import JourneyFunnelChart from '@/components/analytics/JourneyFunnelChart';
 import TestimonialVideoMetrics from '@/components/analytics/TestimonialVideoMetrics';
+import MetaEventsJourney from '@/components/analytics/MetaEventsJourney';
 
 interface SessionFunnelData {
   total_sessions: number;
@@ -123,6 +124,16 @@ interface StoredInsight {
   generated_by?: string;
 }
 
+interface MetaEventData {
+  pageviews: number;
+  viewcontent_25: number;
+  viewcontent_50: number;
+  viewcontent_75: number;
+  viewcontent_100: number;
+  addtocart: number;
+  lead: number;
+}
+
 const Analytics = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -142,6 +153,7 @@ const Analytics = () => {
   const [vslWatchBrackets, setVslWatchBrackets] = useState<VSLWatchBracket[]>([]);
   const [journeyFunnel, setJourneyFunnel] = useState<JourneyFunnelData | null>(null);
   const [testimonialVideoData, setTestimonialVideoData] = useState<any>(null);
+  const [metaEvents, setMetaEvents] = useState<MetaEventData | null>(null);
   
   // AI Insights state
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
@@ -196,6 +208,7 @@ const Analytics = () => {
     setVslWatchBrackets([]);
     setJourneyFunnel(null);
     setTestimonialVideoData(null);
+    setMetaEvents(null);
     
     try {
       const intervalDays = parseFloat(dateRange);
@@ -369,6 +382,59 @@ const Analytics = () => {
       } catch (testimonialError) {
         console.error('Failed to fetch testimonial video data:', testimonialError);
         setTestimonialVideoData(null);
+      }
+
+      // Fetch Meta Events data
+      try {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - intervalDays);
+
+        // Count pageviews (estimated from unique sessions)
+        const { count: pageviewCount } = await supabase
+          .from('quiz_analytics')
+          .select('session_id', { count: 'exact', head: true })
+          .gte('created_at', cutoffDate.toISOString())
+          .eq('event_type', 'quiz_started');
+
+        // Count ViewContent events by milestone
+        const { data: vslData } = await supabase
+          .from('vsl_views')
+          .select('video_percentage_watched')
+          .gte('created_at', cutoffDate.toISOString());
+
+        const viewcontent_25 = vslData?.filter(v => v.video_percentage_watched >= 25).length || 0;
+        const viewcontent_50 = vslData?.filter(v => v.video_percentage_watched >= 50).length || 0;
+        const viewcontent_75 = vslData?.filter(v => v.video_percentage_watched >= 75).length || 0;
+        const viewcontent_100 = vslData?.filter(v => v.video_percentage_watched >= 100).length || 0;
+
+        // Count AddToCart events (q4=YES)
+        const { count: addtocartCount } = await supabase
+          .from('quiz_analytics')
+          .select('session_id', { count: 'exact', head: true })
+          .gte('created_at', cutoffDate.toISOString())
+          .eq('event_type', 'question_answered')
+          .eq('step_id', 'q4')
+          .eq('answer_value', 'yes');
+
+        // Count Lead events (contact form submitted)
+        const { count: leadCount } = await supabase
+          .from('quiz_analytics')
+          .select('session_id', { count: 'exact', head: true })
+          .gte('created_at', cutoffDate.toISOString())
+          .eq('event_type', 'contact_form_submitted');
+
+        setMetaEvents({
+          pageviews: pageviewCount || 0,
+          viewcontent_25,
+          viewcontent_50,
+          viewcontent_75,
+          viewcontent_100,
+          addtocart: addtocartCount || 0,
+          lead: leadCount || 0
+        });
+      } catch (metaError) {
+        console.error('Failed to fetch Meta events data:', metaError);
+        setMetaEvents(null);
       }
       
       console.log('📊 Analytics data fetched:', {
@@ -580,6 +646,10 @@ const Analytics = () => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Resumen</TabsTrigger>
+            <TabsTrigger value="meta-events">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Eventos Meta
+            </TabsTrigger>
             <TabsTrigger value="ai-insights">
               <Sparkles className="w-3 h-3 mr-1" />
               Insights IA
@@ -595,6 +665,10 @@ const Analytics = () => {
             <StatsCards kpis={kpis} sessionFunnel={sessionFunnel} loading={!kpis} />
             <InsightsCard kpis={kpis} stepMetrics={stepMetrics} />
             <FunnelChart data={conversionByStep} loading={!conversionByStep.length} />
+          </TabsContent>
+
+          <TabsContent value="meta-events" className="space-y-6">
+            <MetaEventsJourney data={metaEvents} loading={!metaEvents} />
           </TabsContent>
 
           <TabsContent value="ai-insights" className="space-y-6">
