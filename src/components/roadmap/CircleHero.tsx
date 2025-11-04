@@ -59,15 +59,13 @@ const CircleHero = () => {
 
     // Control de hitos disparados para evitar duplicados
     const milestonesFired = new Set<number>();
-
     const handleTimeUpdate = () => {
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
-      
+
       // Track analytics interno SOLO en hitos clave (no bloqueante)
       const vslMilestones = [25, 50, 75, 100];
       const currentMilestone = vslMilestones.find(m => percentage >= m && !milestonesFired.has(m));
-      
       if (currentMilestone) {
         milestonesFired.add(currentMilestone);
         // Ejecutar tracking en background sin bloquear el video
@@ -79,17 +77,25 @@ const CircleHero = () => {
       }
 
       // Disparar ViewContent en hitos clave con valor progresivo
-      const metaMilestones = [
-        { threshold: 25, value: 500 },
-        { threshold: 50, value: 1000 },
-        { threshold: 75, value: 1500 },
-        { threshold: 100, value: 2000 }
-      ];
-
-      metaMilestones.forEach(({ threshold, value }) => {
+      const metaMilestones = [{
+        threshold: 25,
+        value: 500
+      }, {
+        threshold: 50,
+        value: 1000
+      }, {
+        threshold: 75,
+        value: 1500
+      }, {
+        threshold: 100,
+        value: 2000
+      }];
+      metaMilestones.forEach(({
+        threshold,
+        value
+      }) => {
         if (percentage >= threshold && !milestonesFired.has(threshold)) {
           milestonesFired.add(threshold);
-          
           if (typeof window !== 'undefined' && (window as any).fbq) {
             (window as any).fbq('track', 'ViewContent', {
               content_type: 'video',
@@ -105,9 +111,7 @@ const CircleHero = () => {
         }
       });
     };
-
     video.addEventListener('timeupdate', handleTimeUpdate);
-
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
@@ -135,7 +139,7 @@ const CircleHero = () => {
 
       {/* Social proof text con contador integrado */}
       <p className="text-sm md:text-base text-muted-foreground italic">
-        Los <span className="text-foreground font-semibold">Freelancers Y Profesionales Creativos</span> Del Círculo Han Facturado <span className="text-foreground font-semibold glow">{count.toLocaleString('es-ES')},00€</span> (En los últimos 30 días)
+        Los <span className="text-foreground font-semibold">15.800,00€</span> Del Círculo Han Facturado <span className="text-foreground font-semibold glow">{count.toLocaleString('es-ES')},00€</span> (En los últimos 30 días)
       </p>
 
       {/* Subtítulo */}
