@@ -39,7 +39,7 @@ const steps: QuizStep[] = [{
   type: "radio",
   options: ["Diseñador Gráfico / Web", "Fotógrafo/Filmmaker", "Automatizador", "Otro servicio creativo"],
   badge: "🎯 Paso 1/6",
-  subtext: "Queremos personalizar tu experiencia en el Círculo",
+  subtext: "Tu especialidad dicta tu camino de ascenso",
   motivator: null
 }, {
   id: "q2",
@@ -50,7 +50,7 @@ const steps: QuizStep[] = [{
   subtext: "Tu punto de partida determina tu camino de ascenso",
   motivator: {
     icon: "📈",
-    text: "Los creativos del Círculo cobran mínimo 1.000€ por proyecto"
+    text: "Miembros del Círculo cobran 4.500€ de media (empezaron cobrando 1.200€)"
   }
 }, {
   id: "q3",
@@ -59,15 +59,15 @@ const steps: QuizStep[] = [{
   type: "checkbox",
   options: ["Recomendaciones", "Contenido orgánico", "Anuncios pagados", "Cold outreach", "Aún no tengo un sistema"],
   badge: "🔍 Paso 3/6",
-  subtext: "Identificaremos qué canal escalar primero",
+  subtext: "Vamos a petar ese canal x3",
   motivator: {
     icon: "⚡",
-    text: "El 89% de miembros multiplican x3 su lead flow en 90 días"
+    text: "El 89% pasa de 'a ver si suena el teléfono' a 4-6 leads/semana"
   }
 }, {
   id: "q4",
-  question: "El tributo anual al Círculo es de 2.000€",
-  description: "La mayoría lo recupera vendiendo su primer proyecto.",
+  question: "El tributo anual al Círculo es de 2.000€ (166€/mes)",
+  description: "Literalmente medio proyecto a tu precio actual. El 78% lo recupera x2 en 60 días.",
   type: "radio",
   options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
   badge: "💎 Paso 4/6 - Crucial",
@@ -75,13 +75,13 @@ const steps: QuizStep[] = [{
   valueStack: ["✓ 1 año completo de membresía en el Círculo (acceso ilimitado)", "✓ Onboarding personalizado con hoja de ruta adaptada a ti", "✓ Mentorías semanales con miembros élite y facilitadores", "✓ Comunidad privada 24/7 de creativos que cobran 4-5 cifras por proyecto", "✓ Rituales exclusivos de alto impacto cada mes"],
   motivator: {
     icon: "🔥",
-    text: "Caso real: Dani recuperó x10 su inversión en los primeros 10 días"
+    text: "El miembro medio suma +7.800€ extra en los primeros 90 días (ROI x4)"
   }
 }, {
   id: "q5",
   question: "¿Cómo quieres ascender al Círculo?",
   type: "radio",
-  options: ["Ascensión Rápida (7 días, 1-2h/día)", "Ascensión Progresiva (30 días, 30-60 min/día)"],
+  options: ["Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA", "Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas"],
   badge: "⏱️ Paso 5/6",
   subtext: "Ambas rutas llevan al mismo destino. Elige tu ritmo.",
   motivator: {
@@ -395,41 +395,47 @@ const QuizSection = ({
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - ICP/Profesión (0-25 puntos)
-    if (state.q1 === "Diseñador Gráfico / Web") score += 25;else if (state.q1 === "Fotógrafo/Filmmaker") score += 25;else if (state.q1 === "Automatizador") score += 25;else if (state.q1 === "Otro servicio creativo") score += 15;
+    // Q1 - ICP/Profesión (0-10 puntos)
+    if (state.q1 === "Diseñador Gráfico / Web") score += 10;
+    else if (state.q1 === "Fotógrafo/Filmmaker") score += 10;
+    else if (state.q1 === "Automatizador") score += 10;
+    else if (state.q1 === "Otro servicio creativo") score += 8;
 
-    // Q2 - Revenue History (0-20 puntos - quien cobra MÁS puntúa MÁS)
-    if (state.q2 === "Más de 5.000€") score += 20;else if (state.q2 === "2.500€ - 5.000€") score += 15;else if (state.q2 === "1.000€ - 2.500€") score += 10;else if (state.q2 === "500€ - 1.000€") score += 5;else if (state.q2 === "Menos de 500€") score += 0;
+    // Q2 - Revenue History (0-35 puntos) - SWEET SPOT en €1k-2.5k
+    if (state.q2 === "1.000€ - 2.500€") score += 35; // ← ICP SWEET SPOT
+    else if (state.q2 === "2.500€ - 5.000€") score += 30;
+    else if (state.q2 === "500€ - 1.000€") score += 20;
+    else if (state.q2 === "Más de 5.000€") score += 10; // Menos urgencia
+    else if (state.q2 === "Menos de 500€") score += 0; // Auto-disqualify
 
-    // Q3 - Métodos de adquisición (0-10 puntos)
+    // Q3 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
     if (Array.isArray(state.q3)) {
-      const methodScores: Record<string, number> = {
-        "Recomendaciones": 3,
-        "Contenido orgánico": 3,
-        "Anuncios pagados": 2,
-        "Cold outreach": 2,
-        "Aún no tengo un sistema": 0
-      };
-      state.q3.forEach(method => {
-        score += methodScores[method] || 0;
-      });
+      const hasNoSystem = state.q3.includes("Aún no tengo un sistema");
+      const methodCount = state.q3.filter(m => m !== "Aún no tengo un sistema").length;
 
-      // Bonus por tener múltiples canales (máx +5 pts)
-      if (state.q3.length >= 3 && !state.q3.includes("Aún no tengo un sistema")) {
-        score += 5;
-      } else if (state.q3.length === 2 && !state.q3.includes("Aún no tengo un sistema")) {
-        score += 2;
+      if (hasNoSystem) {
+        score += 0; // Sin sistema = 0 puntos
+      } else if (methodCount === 2 || methodCount === 3) {
+        score += 15; // 2-3 métodos = necesita sistematizar (IDEAL)
+      } else if (methodCount === 1) {
+        score += 10; // 1 método = necesita diversificar
+      } else if (methodCount >= 4) {
+        score += 5; // 4+ métodos = disperso
       }
     }
 
     // Q4 - Budget (0-30 puntos) - CRÍTICO
-    if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;else score += 0;
+    if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;
+    else score += 0;
 
-    // Q5 - Urgencia/Compromiso (0-10 puntos)
-    if (state.q5 === "Ascensión Rápida (7 días, 1-2h/día)") score += 10;else if (state.q5 === "Ascensión Progresiva (30 días, 30-60 min/día)") score += 8;
+    // Q5 - Urgencia/Compromiso (0-5 puntos)
+    if (state.q5?.includes("Rápido")) score += 5;
+    else if (state.q5?.includes("Gradual")) score += 4;
 
     // Q6 - Autoridad de decisión (0-5 puntos)
-    if (state.q6 === "Solo yo") score += 5;else if (state.q6 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3;
+    if (state.q6 === "Solo yo") score += 5;
+    else if (state.q6 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3;
+    
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
