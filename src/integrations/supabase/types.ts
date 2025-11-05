@@ -302,6 +302,16 @@ export type Database = {
           step_index: number
         }[]
       }
+      get_daily_trends: {
+        Args: { interval_days: number }
+        Returns: {
+          avg_vsl_engagement: number
+          conversion_rate: number
+          date: string
+          leads_count: number
+          quiz_completion_rate: number
+        }[]
+      }
       get_quiz_conversion_by_step_filtered: {
         Args: { interval_days: number }
         Returns: {
@@ -312,17 +322,29 @@ export type Database = {
           step_index: number
         }[]
       }
-      get_quiz_kpis_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          abandoned_sessions: number
-          avg_time_to_complete: number
-          completed_sessions: number
-          conversion_rate: number
-          started_sessions: number
-          total_sessions: number
-        }[]
-      }
+      get_quiz_kpis_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              abandoned_sessions: number
+              avg_time_to_complete: number
+              completed_sessions: number
+              conversion_rate: number
+              started_sessions: number
+              total_sessions: number
+            }[]
+          }
+        | {
+            Args: { interval_days: number; offset_days?: number }
+            Returns: {
+              abandoned_sessions: number
+              avg_time_to_complete: number
+              completed_sessions: number
+              conversion_rate: number
+              started_sessions: number
+              total_sessions: number
+            }[]
+          }
       get_quiz_step_metrics_filtered: {
         Args: { interval_days: number }
         Returns: {
@@ -334,20 +356,35 @@ export type Database = {
           views: number
         }[]
       }
-      get_session_funnel_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          form_submission_rate: number
-          overall_conversion_rate: number
-          quiz_completion_rate: number
-          quiz_started: number
-          reached_contact_form: number
-          session_to_quiz_rate: number
-          submitted_contact_form: number
-          total_sessions: number
-          vsl_views: number
-        }[]
-      }
+      get_session_funnel_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              form_submission_rate: number
+              overall_conversion_rate: number
+              quiz_completion_rate: number
+              quiz_started: number
+              reached_contact_form: number
+              session_to_quiz_rate: number
+              submitted_contact_form: number
+              total_sessions: number
+              vsl_views: number
+            }[]
+          }
+        | {
+            Args: { interval_days: number; offset_days?: number }
+            Returns: {
+              form_submission_rate: number
+              overall_conversion_rate: number
+              quiz_completion_rate: number
+              quiz_started: number
+              reached_contact_form: number
+              session_to_quiz_rate: number
+              submitted_contact_form: number
+              total_sessions: number
+              vsl_views: number
+            }[]
+          }
       get_utm_performance_filtered: {
         Args: { interval_days: number }
         Returns: {
@@ -359,20 +396,35 @@ export type Database = {
           utm_source: string
         }[]
       }
-      get_vsl_performance_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          avg_duration_seconds: number
-          avg_percentage_watched: number
-          engaged_viewers: number
-          engagement_rate: number
-          quiz_completed: number
-          quiz_started: number
-          total_vsl_views: number
-          vsl_to_conversion_rate: number
-          vsl_to_quiz_rate: number
-        }[]
-      }
+      get_vsl_performance_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              avg_duration_seconds: number
+              avg_percentage_watched: number
+              engaged_viewers: number
+              engagement_rate: number
+              quiz_completed: number
+              quiz_started: number
+              total_vsl_views: number
+              vsl_to_conversion_rate: number
+              vsl_to_quiz_rate: number
+            }[]
+          }
+        | {
+            Args: { interval_days: number; offset_days?: number }
+            Returns: {
+              avg_duration_seconds: number
+              avg_percentage_watched: number
+              engaged_viewers: number
+              engagement_rate: number
+              quiz_completed: number
+              quiz_started: number
+              total_vsl_views: number
+              vsl_to_conversion_rate: number
+              vsl_to_quiz_rate: number
+            }[]
+          }
       get_vsl_watch_brackets_filtered: {
         Args: { interval_days: number }
         Returns: {

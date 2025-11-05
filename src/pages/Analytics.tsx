@@ -24,6 +24,8 @@ import AIInsightsCard from '@/components/analytics/AIInsightsCard';
 import JourneyFunnelChart from '@/components/analytics/JourneyFunnelChart';
 import TestimonialVideoMetrics from '@/components/analytics/TestimonialVideoMetrics';
 import MetaEventsJourney from '@/components/analytics/MetaEventsJourney';
+import ComparisonSummaryCards from '@/components/analytics/ComparisonSummaryCards';
+import { DailyTrend } from '@/lib/analytics-comparison';
 
 interface SessionFunnelData {
   total_sessions: number;
@@ -155,6 +157,15 @@ const Analytics = () => {
   const [testimonialVideoData, setTestimonialVideoData] = useState<any>(null);
   const [metaEvents, setMetaEvents] = useState<MetaEventData | null>(null);
   
+  // Previous period data for comparison
+  const [previousKpis, setPreviousKpis] = useState<KPIData | null>(null);
+  const [previousSessionFunnel, setPreviousSessionFunnel] = useState<SessionFunnelData | null>(null);
+  const [previousVslKpis, setPreviousVslKpis] = useState<VSLKPIData | null>(null);
+  const [previousMetaEvents, setPreviousMetaEvents] = useState<MetaEventData | null>(null);
+  
+  // Daily trends for sparklines
+  const [dailyTrends, setDailyTrends] = useState<DailyTrend[]>([]);
+  
   // AI Insights state
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
   const [generatingInsights, setGeneratingInsights] = useState(false);
@@ -209,13 +220,18 @@ const Analytics = () => {
     setJourneyFunnel(null);
     setTestimonialVideoData(null);
     setMetaEvents(null);
+    setPreviousKpis(null);
+    setPreviousSessionFunnel(null);
+    setPreviousVslKpis(null);
+    setPreviousMetaEvents(null);
+    setDailyTrends([]);
     
     try {
       const intervalDays = parseFloat(dateRange);
       
       console.log('📊 Fetching analytics data for interval:', intervalDays);
 
-      // Use Promise.allSettled to handle individual failures gracefully
+      // Fetch CURRENT period and PREVIOUS period data in parallel
       const [
         kpisResult,
         sessionFunnelResult,
@@ -224,16 +240,29 @@ const Analytics = () => {
         utmResult,
         answerDistResult,
         vslResult,
-        vslWatchResult
+        vslWatchResult,
+        // Previous period data
+        prevKpisResult,
+        prevSessionFunnelResult,
+        prevVslResult,
+        // Daily trends
+        dailyTrendsResult
       ] = await Promise.allSettled([
-        supabase.rpc('get_quiz_kpis_filtered', { interval_days: intervalDays }).maybeSingle(),
-        supabase.rpc('get_session_funnel_filtered', { interval_days: intervalDays }).maybeSingle(),
+        // Current period
+        supabase.rpc('get_quiz_kpis_filtered', { interval_days: intervalDays, offset_days: 0 }).maybeSingle(),
+        supabase.rpc('get_session_funnel_filtered', { interval_days: intervalDays, offset_days: 0 }).maybeSingle(),
         supabase.rpc('get_quiz_step_metrics_filtered', { interval_days: intervalDays }),
         supabase.rpc('get_quiz_conversion_by_step_filtered', { interval_days: intervalDays }),
         supabase.rpc('get_utm_performance_filtered', { interval_days: intervalDays }),
         supabase.rpc('get_answer_distribution_filtered', { interval_days: intervalDays }),
-        supabase.rpc('get_vsl_performance_filtered', { interval_days: intervalDays }).maybeSingle(),
-        supabase.rpc('get_vsl_watch_brackets_filtered', { interval_days: intervalDays })
+        supabase.rpc('get_vsl_performance_filtered', { interval_days: intervalDays, offset_days: 0 }).maybeSingle(),
+        supabase.rpc('get_vsl_watch_brackets_filtered', { interval_days: intervalDays }),
+        // Previous period (offset by intervalDays)
+        supabase.rpc('get_quiz_kpis_filtered', { interval_days: intervalDays, offset_days: intervalDays }).maybeSingle(),
+        supabase.rpc('get_session_funnel_filtered', { interval_days: intervalDays, offset_days: intervalDays }).maybeSingle(),
+        supabase.rpc('get_vsl_performance_filtered', { interval_days: intervalDays, offset_days: intervalDays }).maybeSingle(),
+        // Daily trends for sparklines
+        supabase.rpc('get_daily_trends', { interval_days: intervalDays })
       ]);
 
       // Handle each result individually
@@ -291,6 +320,27 @@ const Analytics = () => {
       } else {
         console.error('Failed to fetch VSL watch brackets:', vslWatchResult);
         setVslWatchBrackets([]);
+      }
+
+      // Handle previous period data
+      if (prevKpisResult.status === 'fulfilled' && prevKpisResult.value.data && !prevKpisResult.value.error) {
+        setPreviousKpis(prevKpisResult.value.data);
+      }
+
+      if (prevSessionFunnelResult.status === 'fulfilled' && prevSessionFunnelResult.value.data && !prevSessionFunnelResult.value.error) {
+        setPreviousSessionFunnel(prevSessionFunnelResult.value.data);
+      }
+
+      if (prevVslResult.status === 'fulfilled' && prevVslResult.value.data && !prevVslResult.value.error) {
+        setPreviousVslKpis(prevVslResult.value.data);
+      }
+
+      // Handle daily trends
+      if (dailyTrendsResult.status === 'fulfilled' && dailyTrendsResult.value.data && !dailyTrendsResult.value.error) {
+        setDailyTrends(dailyTrendsResult.value.data || []);
+      } else {
+        console.error('Failed to fetch daily trends:', dailyTrendsResult);
+        setDailyTrends([]);
       }
 
       // Fetch journey funnel data separately (needs raw SQL query)
@@ -496,21 +546,48 @@ const Analytics = () => {
   const generateAIInsights = async () => {
     setGeneratingInsights(true);
     try {
-      // Prepare analytics data for AI
+      const intervalDays = parseFloat(dateRange);
+      
+      // Prepare analytics data for AI with comparison context
       const analyticsData = {
         dateRange: {
-          start: new Date(Date.now() - parseFloat(dateRange) * 24 * 60 * 60 * 1000).toISOString(),
+          start: new Date(Date.now() - intervalDays * 24 * 60 * 60 * 1000).toISOString(),
           end: new Date().toISOString(),
-          intervalDays: parseFloat(dateRange)
+          intervalDays
         },
-        sessionFunnel,
-        quizKPIs: kpis,
-        stepMetrics,
-        conversionByStep,
-        utmPerformance,
-        vslKPIs: vslKpis,
-        vslWatchBrackets,
-        answerDistribution
+        // Current period
+        current: {
+          sessionFunnel,
+          quizKPIs: kpis,
+          stepMetrics,
+          conversionByStep,
+          utmPerformance,
+          vslKPIs: vslKpis,
+          vslWatchBrackets,
+          answerDistribution,
+          metaEvents
+        },
+        // Previous period
+        previous: {
+          sessionFunnel: previousSessionFunnel,
+          quizKPIs: previousKpis,
+          vslKPIs: previousVslKpis,
+          metaEvents: previousMetaEvents
+        },
+        // Daily trends
+        trends: dailyTrends,
+        // Pre-calculated comparisons
+        comparisons: {
+          leadsChange: sessionFunnel && previousSessionFunnel 
+            ? ((sessionFunnel.submitted_contact_form - previousSessionFunnel.submitted_contact_form) / previousSessionFunnel.submitted_contact_form) * 100
+            : null,
+          conversionChange: sessionFunnel && previousSessionFunnel
+            ? ((sessionFunnel.overall_conversion_rate - previousSessionFunnel.overall_conversion_rate) / previousSessionFunnel.overall_conversion_rate) * 100
+            : null,
+          vslEngagementChange: vslKpis && previousVslKpis
+            ? ((vslKpis.avg_percentage_watched - previousVslKpis.avg_percentage_watched) / previousVslKpis.avg_percentage_watched) * 100
+            : null
+        }
       };
 
       // Call edge function
@@ -661,6 +738,20 @@ const Analytics = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            <ComparisonSummaryCards 
+              currentData={{
+                kpis,
+                sessionFunnel,
+                vslKpis
+              }}
+              previousData={{
+                kpis: previousKpis,
+                sessionFunnel: previousSessionFunnel,
+                vslKpis: previousVslKpis
+              }}
+              trends={dailyTrends}
+              dateRange={parseFloat(dateRange)}
+            />
             <SessionFunnelChart data={sessionFunnel} loading={!sessionFunnel} />
             <StatsCards kpis={kpis} sessionFunnel={sessionFunnel} loading={!kpis} />
             <InsightsCard kpis={kpis} stepMetrics={stepMetrics} />
