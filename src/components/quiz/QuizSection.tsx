@@ -66,8 +66,8 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q4",
-  question: "El tributo anual al Círculo es de 2.000€ (166€/mes)",
-  description: "Literalmente medio proyecto a tu precio actual. El 78% lo recupera x2 en 60 días.",
+  question: "El tributo anual al Círculo es de 2.000€",
+  description: "Pago único por 1 año completo. Equivale a 0.5-1 proyecto a tu precio actual. El 78% lo recupera x2 en 60 días.",
   type: "radio",
   options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
   badge: "💎 Paso 4/6 - Crucial",
