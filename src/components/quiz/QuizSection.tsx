@@ -229,6 +229,35 @@ const QuizSection = ({
     if (!currentAnswer || Array.isArray(currentAnswer) && currentAnswer.length === 0) {
       return;
     }
+
+    // Track Q1 - Quiz engagement
+    if (currentQuestion.id === 'q1') {
+      quizAnalytics.trackQuizEngagement();
+    }
+
+    // Track Q2 - ICP Match or Disqualification
+    if (currentQuestion.id === 'q2') {
+      const value = currentAnswer as string;
+      
+      if (value === "1.000€ - 2.500€") {
+        quizAnalytics.trackICPMatch(value);
+      } else if (value === "Menos de 500€") {
+        quizAnalytics.trackLowRevenueDisqualified();
+      }
+    }
+
+    // Track Q4 - Budget qualification
+    if (currentQuestion.id === 'q4') {
+      const budgetAnswer = currentAnswer as string;
+      const revenueAnswer = answers.q2 as string;
+      
+      if (budgetAnswer === "Puedo hacer ese tributo ahora") {
+        quizAnalytics.trackBudgetQualified(revenueAnswer);
+      } else {
+        quizAnalytics.trackBudgetDisqualified();
+      }
+    }
+
     if (isLastStep) {
       // Check if qualified before showing contact form
       const score = calculateScore(answers);
@@ -346,11 +375,19 @@ const QuizSection = ({
       }
       quizAnalytics.completeQuiz();
       
-      // Disparar evento Lead de Meta Pixel
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'Lead');
-        console.log('✅ Meta Pixel Lead event fired');
-      }
+      // Enriquecer evento Lead de Meta Pixel con datos ICP
+      const revenueAnswer = answers.q2 as string;
+      const budgetAnswer = answers.q4 as string;
+      const isICP = revenueAnswer === "1.000€ - 2.500€";
+      const hasBudget = budgetAnswer === "Puedo hacer ese tributo ahora";
+
+      let leadValue = 1000;
+      if (isICP && hasBudget) leadValue = 2000;
+      else if (isICP) leadValue = 1500;
+      else if (hasBudget) leadValue = 1200;
+
+      quizAnalytics.enrichLeadEvent(leadValue, isICP, revenueAnswer, hasBudget);
+      console.log('✅ Meta Pixel Lead enriquecido con ICP data');
       
       toast({
         title: "Perfecto",

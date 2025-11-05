@@ -265,6 +265,91 @@ class QuizAnalytics {
     }
   }
 
+  // Meta Pixel Tracking Methods
+  trackMetaPixelEvent(eventName: string, params: any): void {
+    if (typeof window !== 'undefined' && (window as any).fbq) {
+      (window as any).fbq('track', eventName, params);
+      console.log(`🎯 Meta Pixel ${eventName}:`, params);
+    } else {
+      console.warn('⚠️ Meta Pixel no disponible');
+    }
+  }
+
+  trackQuizEngagement(): void {
+    this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'quiz',
+      content_name: 'Quiz Started - First Answer',
+      content_category: 'lead_generation',
+      value: 200,
+      currency: 'EUR'
+    });
+  }
+
+  trackICPMatch(projectValue: string): void {
+    if (projectValue === "1.000€ - 2.500€") {
+      this.trackMetaPixelEvent('ViewContent', {
+        content_type: 'quiz',
+        content_name: 'ICP Sweet Spot Match',
+        content_category: 'high_intent_lead',
+        value: 800,
+        currency: 'EUR',
+        content_ids: ['icp_1k_2.5k']
+      });
+    }
+  }
+
+  trackLowRevenueDisqualified(): void {
+    this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'quiz_disqualified',
+      content_name: 'Disqualified - Low Revenue',
+      content_category: 'negative_signal',
+      value: 0,
+      currency: 'EUR',
+      content_ids: ['disqualified_low_revenue']
+    });
+  }
+
+  trackBudgetDisqualified(): void {
+    this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'quiz_disqualified',
+      content_name: 'Disqualified - No Budget',
+      content_category: 'negative_signal',
+      value: 0,
+      currency: 'EUR',
+      content_ids: ['disqualified_no_budget']
+    });
+  }
+
+  trackBudgetQualified(revenueAnswer: string): void {
+    let cartValue = 1000;
+    if (revenueAnswer === "1.000€ - 2.500€") {
+      cartValue = 2000;
+    } else if (revenueAnswer === "500€ - 1.000€") {
+      cartValue = 1500;
+    } else if (revenueAnswer === "2.500€ - 5.000€") {
+      cartValue = 1800;
+    }
+    
+    this.trackMetaPixelEvent('AddToCart', {
+      value: cartValue,
+      currency: 'EUR',
+      content_name: 'Círculo Membership',
+      content_category: 'Membership',
+      content_ids: ['circulo_annual']
+    });
+  }
+
+  enrichLeadEvent(value: number, icp_match: boolean, revenue_range: string, budget_ready: boolean): void {
+    this.trackMetaPixelEvent('Lead', {
+      value: value,
+      currency: 'EUR',
+      content_name: 'Círculo Membership',
+      content_category: icp_match ? 'qualified_lead' : 'standard_lead',
+      predicted_ltv: value * 3,
+      content_ids: ['circulo_lead']
+    });
+  }
+
   // VSL Tracking Methods
   async trackVSLView(vslType: 'roadmap_hero' | 'booking_iframe'): Promise<void> {
     try {
