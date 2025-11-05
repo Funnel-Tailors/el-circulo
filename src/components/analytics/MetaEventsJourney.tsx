@@ -1,13 +1,13 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye, Play, ShoppingCart, CheckCircle, TrendingUp, ArrowDown } from 'lucide-react';
+import { Eye, Play, ShoppingCart, CheckCircle, TrendingUp, ArrowDown, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface MetaEventData {
   pageviews: number;
-  viewcontent_25: number;
-  viewcontent_50: number;
-  viewcontent_75: number;
-  viewcontent_100: number;
+  quiz_engagement: number;
+  icp_match: number;
+  disqualified_low_revenue: number;
+  disqualified_no_budget: number;
   addtocart: number;
   lead: number;
 }
@@ -52,7 +52,7 @@ const EventStage = ({
               <div className="space-y-1">
                 <h3 className="font-semibold text-lg">{title}</h3>
                 <p className="text-xs text-muted-foreground">{subtitle}</p>
-                <Badge variant="outline" className="mt-2 font-mono">
+                <Badge variant="outline" className="mt-2 font-mono text-xs">
                   {value}
                 </Badge>
               </div>
@@ -105,63 +105,45 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
     {
       icon: <Eye className="h-5 w-5 text-blue-500" />,
       title: "PageView",
-      subtitle: "Usuario entra al sitio",
+      subtitle: "Usuario entra al quiz",
       count: data.pageviews,
-      value: "Entrada",
+      value: "fbq('track', 'PageView')",
       gradient: "border-blue-500/20 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20",
       conversionRate: undefined
     },
     {
       icon: <Play className="h-5 w-5 text-cyan-500" />,
-      title: "ViewContent 25%",
-      subtitle: "VSL visto hasta 25%",
-      count: data.viewcontent_25,
-      value: "500€",
+      title: "ViewContent: Quiz Engagement",
+      subtitle: "Primera respuesta (Q1)",
+      count: data.quiz_engagement,
+      value: "value: 200€",
       gradient: "border-cyan-500/20 bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20",
-      conversionRate: data.pageviews > 0 ? (data.viewcontent_25 / data.pageviews) * 100 : 0
+      conversionRate: data.pageviews > 0 ? (data.quiz_engagement / data.pageviews) * 100 : 0
     },
     {
-      icon: <Play className="h-5 w-5 text-sky-500" />,
-      title: "ViewContent 50%",
-      subtitle: "VSL visto hasta 50%",
-      count: data.viewcontent_50,
-      value: "1,000€",
-      gradient: "border-sky-500/20 bg-gradient-to-br from-sky-50/50 to-transparent dark:from-sky-950/20",
-      conversionRate: data.viewcontent_25 > 0 ? (data.viewcontent_50 / data.viewcontent_25) * 100 : 0
-    },
-    {
-      icon: <Play className="h-5 w-5 text-emerald-500" />,
-      title: "ViewContent 75%",
-      subtitle: "VSL visto hasta 75%",
-      count: data.viewcontent_75,
-      value: "1,500€",
+      icon: <TrendingUp className="h-5 w-5 text-emerald-500" />,
+      title: "ViewContent: ICP Match",
+      subtitle: "Q2 = €1k-2.5k (Sweet Spot)",
+      count: data.icp_match,
+      value: "value: 800€ | content_ids: icp_1k_2.5k",
       gradient: "border-emerald-500/20 bg-gradient-to-br from-emerald-50/50 to-transparent dark:from-emerald-950/20",
-      conversionRate: data.viewcontent_50 > 0 ? (data.viewcontent_75 / data.viewcontent_50) * 100 : 0
-    },
-    {
-      icon: <Play className="h-5 w-5 text-green-500" />,
-      title: "ViewContent 100%",
-      subtitle: "VSL completo",
-      count: data.viewcontent_100,
-      value: "2,000€",
-      gradient: "border-green-500/20 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-950/20",
-      conversionRate: data.viewcontent_75 > 0 ? (data.viewcontent_100 / data.viewcontent_75) * 100 : 0
+      conversionRate: data.quiz_engagement > 0 ? (data.icp_match / data.quiz_engagement) * 100 : 0
     },
     {
       icon: <ShoppingCart className="h-5 w-5 text-amber-500" />,
       title: "AddToCart",
-      subtitle: "Quiz completado (q4=YES)",
+      subtitle: "Q4 = Budget Ready",
       count: data.addtocart,
-      value: "3,000€",
+      value: "value: 1500-2000€ (dinámico según Q2)",
       gradient: "border-amber-500/20 bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20",
-      conversionRate: data.viewcontent_100 > 0 ? (data.addtocart / data.viewcontent_100) * 100 : 0
+      conversionRate: data.icp_match > 0 ? (data.addtocart / data.icp_match) * 100 : 0
     },
     {
       icon: <CheckCircle className="h-5 w-5 text-emerald-600" />,
-      title: "Lead",
-      subtitle: "Formulario completado ✅",
+      title: "Lead (Qualified)",
+      subtitle: "Formulario completado con ICP data",
       count: data.lead,
-      value: "5,000€",
+      value: "value: 1500-2000€ | content_category: qualified_lead",
       gradient: "border-emerald-600/20 bg-gradient-to-br from-emerald-50 to-transparent dark:from-emerald-900/30",
       conversionRate: data.addtocart > 0 ? (data.lead / data.addtocart) * 100 : 0,
       isLast: true
@@ -180,9 +162,9 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
                 <TrendingUp className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">Funnel Meta Pixel Events</h3>
+                <h3 className="text-lg font-semibold">Funnel Meta Pixel ICP-Optimizado</h3>
                 <p className="text-sm text-muted-foreground">
-                  Journey completo desde entrada hasta lead cualificado
+                  Journey desde entrada hasta lead cualificado con datos ICP
                 </p>
               </div>
             </div>
@@ -212,35 +194,88 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
         ))}
       </div>
 
+      {/* Sección de señales negativas */}
+      <Card className="border-red-500/20 bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-950/20">
+        <CardContent className="p-6">
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <XCircle className="h-5 w-5 text-red-500" />
+            Señales de Descalificación
+            <Badge variant="destructive" className="ml-2">Negative Signals</Badge>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-4 bg-background/80 rounded-lg border border-red-200/50 dark:border-red-900/50">
+              <div>
+                <p className="font-semibold">Disqualified - Low Revenue</p>
+                <p className="text-xs text-muted-foreground">Q2 = &lt;€500 (value: 0)</p>
+                <Badge variant="outline" className="mt-2 text-xs font-mono">
+                  content_ids: disqualified_low_revenue
+                </Badge>
+              </div>
+              <p className="text-2xl font-bold text-red-600">{data.disqualified_low_revenue}</p>
+            </div>
+            <div className="flex items-center justify-between p-4 bg-background/80 rounded-lg border border-red-200/50 dark:border-red-900/50">
+              <div>
+                <p className="font-semibold">Disqualified - No Budget</p>
+                <p className="text-xs text-muted-foreground">Q4 = No dispongo (value: 0)</p>
+                <Badge variant="outline" className="mt-2 text-xs font-mono">
+                  content_ids: disqualified_no_budget
+                </Badge>
+              </div>
+              <p className="text-2xl font-bold text-red-600">{data.disqualified_no_budget}</p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 flex items-center gap-2">
+            💡 Estas señales entrenan a Meta para excluir perfiles similares en tus campañas
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Summary cards */}
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total Eventos</p>
-              <p className="text-2xl font-bold">
-                {(data.pageviews + data.viewcontent_25 + data.viewcontent_50 + 
-                  data.viewcontent_75 + data.viewcontent_100 + data.addtocart + 
-                  data.lead).toLocaleString('es-ES')}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Valor Total Rastreado</p>
-              <p className="text-2xl font-bold text-primary">
-                {((data.viewcontent_25 * 500) + (data.viewcontent_50 * 1000) + 
-                  (data.viewcontent_75 * 1500) + (data.viewcontent_100 * 2000) + 
-                  (data.addtocart * 3000) + (data.lead * 5000)).toLocaleString('es-ES')}€
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Engagement VSL</p>
-              <p className="text-2xl font-bold">
-                {data.pageviews > 0 ? ((data.viewcontent_25 / data.pageviews) * 100).toFixed(1) : 0}%
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Tasa Lead Final</p>
+              <p className="text-sm text-muted-foreground">ICP Match Rate</p>
               <p className="text-2xl font-bold text-emerald-600">
-                {data.addtocart > 0 ? ((data.lead / data.addtocart) * 100).toFixed(1) : 0}%
+                {data.quiz_engagement > 0 
+                  ? ((data.icp_match / data.quiz_engagement) * 100).toFixed(1) 
+                  : 0}%
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {data.icp_match} de {data.quiz_engagement} respuestas
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Budget Ready Rate</p>
+              <p className="text-2xl font-bold text-amber-600">
+                {data.icp_match > 0 
+                  ? ((data.addtocart / data.icp_match) * 100).toFixed(1) 
+                  : 0}%
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                ICP con presupuesto confirmado
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Disqualification Rate</p>
+              <p className="text-2xl font-bold text-red-600">
+                {data.quiz_engagement > 0 
+                  ? (((data.disqualified_low_revenue + data.disqualified_no_budget) / data.quiz_engagement) * 100).toFixed(1) 
+                  : 0}%
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Señales negativas enviadas a Meta
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground">Lead Conversion</p>
+              <p className="text-2xl font-bold text-emerald-600">
+                {data.pageviews > 0 
+                  ? ((data.lead / data.pageviews) * 100).toFixed(1) 
+                  : 0}%
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                PageView → Lead final
               </p>
             </div>
           </div>

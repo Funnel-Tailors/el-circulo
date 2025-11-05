@@ -128,10 +128,10 @@ interface StoredInsight {
 
 interface MetaEventData {
   pageviews: number;
-  viewcontent_25: number;
-  viewcontent_50: number;
-  viewcontent_75: number;
-  viewcontent_100: number;
+  quiz_engagement: number;
+  icp_match: number;
+  disqualified_low_revenue: number;
+  disqualified_no_budget: number;
   addtocart: number;
   lead: number;
 }
@@ -434,57 +434,130 @@ const Analytics = () => {
         setTestimonialVideoData(null);
       }
 
-      // Fetch Meta Events data
+      // Fetch Meta Events data (calculado desde quiz_analytics)
       try {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - intervalDays);
 
-        // Count pageviews (estimated from unique sessions)
-        const { count: pageviewCount } = await supabase
+        // 1. PageView = quiz_started
+        const { data: pageviewData } = await supabase
           .from('quiz_analytics')
-          .select('session_id', { count: 'exact', head: true })
-          .gte('created_at', cutoffDate.toISOString())
-          .eq('event_type', 'quiz_started');
-
-        // Count ViewContent events by milestone
-        const { data: vslData } = await supabase
-          .from('vsl_views')
-          .select('video_percentage_watched')
+          .select('session_id')
+          .eq('event_type', 'quiz_started')
           .gte('created_at', cutoffDate.toISOString());
 
-        const viewcontent_25 = vslData?.filter(v => v.video_percentage_watched >= 25).length || 0;
-        const viewcontent_50 = vslData?.filter(v => v.video_percentage_watched >= 50).length || 0;
-        const viewcontent_75 = vslData?.filter(v => v.video_percentage_watched >= 75).length || 0;
-        const viewcontent_100 = vslData?.filter(v => v.video_percentage_watched >= 100).length || 0;
-
-        // Count AddToCart events (q4=YES)
-        const { count: addtocartCount } = await supabase
+        // 2. ViewContent: Quiz Engagement = respuestas a Q1
+        const { data: q1Data } = await supabase
           .from('quiz_analytics')
-          .select('session_id', { count: 'exact', head: true })
-          .gte('created_at', cutoffDate.toISOString())
+          .select('session_id')
+          .eq('event_type', 'question_answered')
+          .eq('step_id', 'q1')
+          .gte('created_at', cutoffDate.toISOString());
+
+        // 3. ViewContent: ICP Match = Q2 con "1.000€ - 2.500€"
+        const { data: icpData } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'question_answered')
+          .eq('step_id', 'q2')
+          .eq('answer_value', '1.000€ - 2.500€')
+          .gte('created_at', cutoffDate.toISOString());
+
+        // 4. ViewContent: Disqualified Low Revenue = Q2 con "Menos de 500€"
+        const { data: lowRevenueData } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'question_answered')
+          .eq('step_id', 'q2')
+          .eq('answer_value', 'Menos de 500€')
+          .gte('created_at', cutoffDate.toISOString());
+
+        // 5. ViewContent: Disqualified No Budget = Q4 con "No dispongo"
+        const { data: noBudgetData } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
           .eq('event_type', 'question_answered')
           .eq('step_id', 'q4')
-          .eq('answer_value', 'yes');
+          .eq('answer_value', 'No dispongo de esa cantidad')
+          .gte('created_at', cutoffDate.toISOString());
 
-        // Count Lead events (contact form submitted)
-        const { count: leadCount } = await supabase
+        // 6. AddToCart = Q4 con "Puedo pagar" (cualquier revenue)
+        const { data: addToCartData } = await supabase
           .from('quiz_analytics')
-          .select('session_id', { count: 'exact', head: true })
-          .gte('created_at', cutoffDate.toISOString())
-          .eq('event_type', 'contact_form_submitted');
+          .select('session_id')
+          .eq('event_type', 'question_answered')
+          .eq('step_id', 'q4')
+          .eq('answer_value', 'Puedo hacer ese tributo ahora')
+          .gte('created_at', cutoffDate.toISOString());
+
+        // 7. Lead = contact_form_submitted
+        const { data: leadData } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'contact_form_submitted')
+          .gte('created_at', cutoffDate.toISOString());
+
+        // Count unique sessions for each event
+        const pageviews = new Set(pageviewData?.map(d => d.session_id) || []).size;
+        const quiz_engagement = new Set(q1Data?.map(d => d.session_id) || []).size;
+        const icp_match = new Set(icpData?.map(d => d.session_id) || []).size;
+        const disqualified_low_revenue = new Set(lowRevenueData?.map(d => d.session_id) || []).size;
+        const disqualified_no_budget = new Set(noBudgetData?.map(d => d.session_id) || []).size;
+        const addtocart = new Set(addToCartData?.map(d => d.session_id) || []).size;
+        const lead = new Set(leadData?.map(d => d.session_id) || []).size;
 
         setMetaEvents({
-          pageviews: pageviewCount || 0,
-          viewcontent_25,
-          viewcontent_50,
-          viewcontent_75,
-          viewcontent_100,
-          addtocart: addtocartCount || 0,
-          lead: leadCount || 0
+          pageviews,
+          quiz_engagement,
+          icp_match,
+          disqualified_low_revenue,
+          disqualified_no_budget,
+          addtocart,
+          lead
         });
+
+        // Fetch previous period Meta Events
+        const prevCutoffDate = new Date();
+        prevCutoffDate.setDate(prevCutoffDate.getDate() - (intervalDays * 2));
+        const prevEndDate = cutoffDate;
+
+        // Repetir queries pero con fechas del período anterior
+        const [prevPageviewData, prevQ1Data, prevIcpData, prevLowRevenueData, 
+               prevNoBudgetData, prevAddToCartData, prevLeadData] = await Promise.all([
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'quiz_started')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'question_answered')
+            .eq('step_id', 'q1').gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'question_answered')
+            .eq('step_id', 'q2').eq('answer_value', '1.000€ - 2.500€')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'question_answered')
+            .eq('step_id', 'q2').eq('answer_value', 'Menos de 500€')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'question_answered')
+            .eq('step_id', 'q4').eq('answer_value', 'No dispongo de esa cantidad')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'question_answered')
+            .eq('step_id', 'q4').eq('answer_value', 'Puedo hacer ese tributo ahora')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'contact_form_submitted')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString())
+        ]);
+
+        setPreviousMetaEvents({
+          pageviews: new Set(prevPageviewData.data?.map(d => d.session_id) || []).size,
+          quiz_engagement: new Set(prevQ1Data.data?.map(d => d.session_id) || []).size,
+          icp_match: new Set(prevIcpData.data?.map(d => d.session_id) || []).size,
+          disqualified_low_revenue: new Set(prevLowRevenueData.data?.map(d => d.session_id) || []).size,
+          disqualified_no_budget: new Set(prevNoBudgetData.data?.map(d => d.session_id) || []).size,
+          addtocart: new Set(prevAddToCartData.data?.map(d => d.session_id) || []).size,
+          lead: new Set(prevLeadData.data?.map(d => d.session_id) || []).size
+        });
+
       } catch (metaError) {
-        console.error('Failed to fetch Meta events data:', metaError);
+        console.error('Failed to fetch Meta events:', metaError);
         setMetaEvents(null);
+        setPreviousMetaEvents(null);
       }
       
       console.log('📊 Analytics data fetched:', {
