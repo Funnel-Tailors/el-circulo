@@ -1071,7 +1071,7 @@ serve(async (req) => {
         timestamp: new Date().toISOString()
       });
       
-      const { error: analyticsError } = await supabaseClient
+      const { error: analyticsError } = await supabase
         .from('quiz_analytics')
         .insert({
           session_id: sessionId,

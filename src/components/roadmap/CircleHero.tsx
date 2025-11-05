@@ -25,7 +25,7 @@ const CircleHero = () => {
     }, 100);
   };
   const [count, setCount] = useState(0);
-  const targetValue = 15800;
+  const targetValue = 16500;
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
