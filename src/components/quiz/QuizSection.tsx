@@ -398,8 +398,8 @@ const QuizSection = ({
     // Q1 - ICP/Profesión (0-25 puntos)
     if (state.q1 === "Diseñador Gráfico / Web") score += 25;else if (state.q1 === "Fotógrafo/Filmmaker") score += 25;else if (state.q1 === "Automatizador") score += 25;else if (state.q1 === "Otro servicio creativo") score += 15;
 
-    // Q2 - Revenue History INVERTIDO (0-20 puntos - quien cobra MENOS puntúa MÁS)
-    if (state.q2 === "Menos de 500€") score += 20;else if (state.q2 === "500€ - 1.000€") score += 18;else if (state.q2 === "1.000€ - 2.500€") score += 12;else if (state.q2 === "2.500€ - 5.000€") score += 6;else if (state.q2 === "Más de 5.000€") score += 0;
+    // Q2 - Revenue History (0-20 puntos - quien cobra MÁS puntúa MÁS)
+    if (state.q2 === "Más de 5.000€") score += 20;else if (state.q2 === "2.500€ - 5.000€") score += 15;else if (state.q2 === "1.000€ - 2.500€") score += 10;else if (state.q2 === "500€ - 1.000€") score += 5;else if (state.q2 === "Menos de 500€") score += 0;
 
     // Q3 - Métodos de adquisición (0-10 puntos)
     if (Array.isArray(state.q3)) {
@@ -433,7 +433,8 @@ const QuizSection = ({
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
-    return state.q4 === "No dispongo de esa cantidad";
+    // Auto-descalificar si no tiene presupuesto O si factura menos de 500€
+    return state.q4 === "No dispongo de esa cantidad" || state.q2 === "Menos de 500€";
   };
   const renderInput = () => {
     switch (currentQuestion.type) {
