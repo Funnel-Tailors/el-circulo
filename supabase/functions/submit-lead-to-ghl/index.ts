@@ -787,6 +787,11 @@ serve(async (req) => {
   try {
     const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId }: LeadSubmission = await req.json();
     
+    // Initialize Supabase client at the top level for use throughout the function
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
+    
     console.log('📥 ===== EDGE FUNCTION INVOKED =====');
     console.log('📋 Submission received:', {
       timestamp: new Date().toISOString(),
@@ -821,13 +826,8 @@ serve(async (req) => {
     
     if (sessionId) {
       console.log('🎥 Consultando datos VSL para session_id:', sessionId);
-      const supabaseUrl = Deno.env.get('SUPABASE_URL');
-      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
       
-      if (supabaseUrl && supabaseServiceKey) {
-        const supabase = createClient(supabaseUrl, supabaseServiceKey);
-        
-        const { data: vslData, error: vslError } = await supabase
+      const { data: vslData, error: vslError } = await supabase
           .from('vsl_views')
           .select('video_percentage_watched, view_duration_seconds')
           .eq('session_id', sessionId)
@@ -843,7 +843,6 @@ serve(async (req) => {
         } else {
           console.log('ℹ️ No se encontraron datos VSL para esta sesión');
         }
-      }
     }
     
     // Validación anti-spam server-side
