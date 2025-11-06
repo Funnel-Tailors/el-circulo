@@ -169,17 +169,15 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   
   // Tags de urgencia con prefijo CÍRCULO
   const urgencyMap: Record<string, string> = {
-    'Ascensión Rápida (7 días, 1-2h/día)': '🚀 CÍRCULO-FAST-7D',
-    'Ascensión Progresiva (30 días, 30-60 min/día)': '📈 CÍRCULO-PROG-30D',
-    'Ahora no puedo': '⏸️ CÍRCULO-NOT-NOW'
+    'Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA': '🚀 CÍRCULO-FAST-7D',
+    'Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas': '📈 CÍRCULO-GRAD-30D'
   };
   if (answers.q5) tags.push(urgencyMap[answers.q5] || '⏸️ CÍRCULO-URGENCY-Unknown');
   
   // Tags de autoridad con prefijo CÍRCULO
   const authorityMap: Record<string, string> = {
-    'Sí, decido yo': '👤 CÍRCULO-AUTH-SOLO',
-    'Decido con otra persona': '👥 CÍRCULO-AUTH-SHARED',
-    'No, no decido yo': '🚫 CÍRCULO-AUTH-NO'
+    'Solo yo': '👤 CÍRCULO-AUTH-SOLO',
+    'Yo con mi pareja/socio (lo invitaré a la llamada)': '👥 CÍRCULO-AUTH-SHARED'
   };
   if (answers.q6) tags.push(authorityMap[answers.q6] || '❓ CÍRCULO-AUTH-Unknown');
   
@@ -232,13 +230,13 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
     insights.push('🎯 DOLOR AGUDO: Cobra poco + tiene budget = ¡CLIENTE IDEAL!');
   }
   
-  if (answers.q4 === 'Puedo hacer ese tributo ahora' && answers.q5 === 'Ascensión Rápida (7 días, 1-2h/día)') {
+  if (answers.q4 === 'Puedo hacer ese tributo ahora' && answers.q5?.includes('Rápido')) {
     insights.push('🔥 Combinación ideal: Budget + Urgencia');
   }
   
-  if (answers.q6 === 'Sí, decido yo') {
+  if (answers.q6 === 'Solo yo') {
     insights.push('✓ Decisor único - Proceso de venta simplificado');
-  } else if (answers.q6 === 'Decido con otra persona') {
+  } else if (answers.q6 === 'Yo con mi pareja/socio (lo invitaré a la llamada)') {
     insights.push('⚠️ Decisión compartida - Considerar segundo contacto');
   }
   
@@ -363,20 +361,20 @@ ${strategy}
 function generatePersonalizedInsight(answers: QuizAnswers, score: number): string {
   const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
   const midRevenue = answers.q2 === '2.000€ - 5.000€' || answers.q2 === 'Más de 5.000€';
-  const hasMoney = answers.q4 === 'Sí, puedo invertir 2.000€';
-  const uncertain = answers.q4 === 'No estoy seguro';
-  const noMoney = answers.q4 === 'No, no puedo permitírmelo ahora';
-  const urgent = answers.q5 === 'Esta semana (tengo un deadline inminente)';
-  const hasReferrals = Array.isArray(answers.q3) && answers.q3.includes('Referidos/boca a boca');
-  const soloDecision = answers.q6 === 'Decido solo/a';
-  const noHurry = answers.q5 === 'No tengo prisa, solo estoy explorando';
+  const hasMoney = answers.q4 === 'Puedo hacer ese tributo ahora';
+  const uncertain = answers.q4 === 'Necesito pensarlo';
+  const noMoney = answers.q4 === 'No dispongo de esa cantidad';
+  const fastTrack = answers.q5?.includes('Rápido');
+  const gradual = answers.q5?.includes('Gradual');
+  const hasReferrals = Array.isArray(answers.q3) && answers.q3.includes('Recomendaciones');
+  const soloDecision = answers.q6 === 'Solo yo';
   
   // HOT Insights
   if (lowRevenue && hasMoney) {
     return 'Cobras poco pero tienes para invertir en ti mismo. El problema no es la pasta. Es que nadie te enseñó a pedir más sin que te tiemble la voz.';
   }
   
-  if (urgent && hasMoney) {
+  if (fastTrack && hasMoney) {
     return 'Tienes urgencia y tienes claro que hay que invertir. Perfecto. Los que actúan rápido siempre comen antes.';
   }
   
@@ -401,8 +399,8 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return 'Necesitas que alguien más dé el visto bueno. Eso está bien. Pero si quien decide no entiende el valor, vas a seguir estancado. O aprendes a vender la idea o traes a esa persona a la llamada.';
   }
   
-  if (noHurry && score > 65) {
-    return 'Tienes todo para crecer pero "no tienes prisa". Suena a miedo disfrazado de calma. En la evaluación vemos qué te está frenando de verdad.';
+  if (gradual && score >= 60) {
+    return 'Eliges el camino gradual. Inteligente. Pero gradual no significa dudar eternamente. En la evaluación veremos si hay alineación real.';
   }
   
   // COLD Insights
@@ -412,10 +410,6 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   
   if (lowRevenue && noMoney) {
     return 'Cobras poco y no tienes para invertir. Eso es un círculo vicioso. Necesitas romperlo. Pero primero necesitas creer que puedes cobrar 10 veces más por lo que ya haces.';
-  }
-  
-  if (noHurry && score < 50) {
-    return 'Sin prisa, sin inversión, sin claridad. Estás a años luz de estar listo para esto. Vuelve cuando sepas lo que quieres.';
   }
   
   // Default por score
@@ -435,15 +429,15 @@ function generateContextualNote(
   isHot: boolean,
   score: number
 ): string {
-  const urgent = answers.q5 === 'Esta semana (tengo un deadline inminente)';
-  const socialMediaDependent = Array.isArray(answers.q3) && answers.q3.includes('Redes sociales (Instagram, LinkedIn, etc.)');
+  const fastTrack = answers.q5?.includes('Rápido');
+  const socialMediaDependent = Array.isArray(answers.q3) && answers.q3.includes('Contenido orgánico');
   const isAutomator = answers.q1 === 'Automatizador';
-  const noSoloDecision = answers.q6 !== 'Decido solo/a';
+  const noSoloDecision = answers.q6 !== 'Solo yo';
   
   // Uso de "malito" con 30% de probabilidad en HOT/WARM
   const shouldUseMalito = (isHot || score >= 60) && Math.random() < 0.3;
   
-  if (isHot && urgent) {
+  if (isHot && fastTrack) {
     return '⚡ Nota: Tu urgencia es real. Reserva en las próximas 8 horas y tendrás análisis preliminar en 24h.';
   }
   
@@ -510,7 +504,7 @@ La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
 ⏳ Solo 3 espacios semanales para candidatos prioritarios
-🎭 Un Guardián del Círculo evaluará tu caso específico (60 min)
+🎭 Un Miembro Honorario evaluará tu caso específico (60 min)
 🗝️ Tienes 48h de acceso preferente antes de liberar tu plaza
 
 ${contextualNote}
@@ -536,7 +530,7 @@ ${identity}
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
 ⏳ 3 espacios semanales para evaluaciones profundas
-🎭 Un Guardián evaluará si hay alineación real (45-60 min)
+🎭 Un Miembro Honorario evaluará si hay alineación real (45-60 min)
 
 ${contextualNote}
 
@@ -714,8 +708,8 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   } else if (answers.q2 && answers.q2 !== 'Más de 5.000€') {
     openingAngles.push(`"Vi que ya cobras ${answers.q2}. Eso es sólido como base. ¿Cómo te sentirías duplicando eso en los próximos 90 días?"`);
   }
-  if (fastTrack) {
-    openingAngles.push(`"El hecho de que busques ascensión rápida me dice que estás 100% ready para el salto. ¿Qué te frena ahora mismo?"`);
+  if (answers.q5?.includes('Rápido')) {
+    openingAngles.push(`"El hecho de que busques ascenso rápido me dice que estás 100% ready para el salto. ¿Qué te frena ahora mismo?"`);
   }
   if (Array.isArray(answers.q3) && answers.q3.length > 0) {
     openingAngles.push(`"Veo que tu adquisición viene de ${answers.q3[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
