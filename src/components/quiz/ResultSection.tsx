@@ -247,43 +247,58 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
           ) : (
             <>
               <div className="text-center space-y-4">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent mb-3">
-                  <span className="text-3xl">📜</span>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/10 border-2 border-red-500/30 mb-3">
+                  <span className="text-3xl">⚔️</span>
                 </div>
                 
                 <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
-                  El momento <span className="glow">llegará</span>
+                  El Consejo ha <span className="text-red-400">decidido</span>
                 </h2>
                 
-                <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                  Tu evaluación indica que aún no es el momento ideal para entrar al Círculo.
-                  <br/><br/>
-                  Accede a recursos y comunidad para prepararte hasta estar listo.
+                <p className="text-base text-muted-foreground max-w-lg mx-auto leading-relaxed">
+                  Tras evaluar tus respuestas, <span className="text-foreground font-semibold">el Consejo determina que aún no eres digno de cruzar el umbral</span>.
                 </p>
+
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-left max-w-lg mx-auto space-y-3">
+                  <p className="text-sm text-foreground font-semibold">
+                    Por qué no puedes entrar ahora:
+                  </p>
+                  <ul className="text-sm text-muted-foreground space-y-2">
+                    {quizState.q2 === "Menos de 500€" && (
+                      <li>• Necesitas experiencia probada facturando antes de escalar</li>
+                    )}
+                    {quizState.q4 === "No dispongo de esa cantidad" && (
+                      <li>• El Círculo requiere inversión inmediata para aprovechar el acceso</li>
+                    )}
+                    <li>• La metodología está diseñada para freelancers dignos</li>
+                  </ul>
+                </div>
+
+                <div className="pt-4 space-y-2">
+                  <p className="text-sm text-muted-foreground italic">
+                    No es un "no" permanente. Es un "todavía no".
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Cuando tu situación cambie, vuelve a recorrer la Senda.
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-3 pt-4">
-                <Button
-                  onClick={() => window.open(BONUS_URL, '_blank')}
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all"
-                  size="lg"
-                >
-                  📚 Acceder a Recursos
-                </Button>
-
+              <div className="space-y-3 pt-6">
                 <Button
                   onClick={onReset}
-                  variant="ghost"
-                  className="w-full"
+                  variant="outline"
+                  className="w-full text-base py-4"
+                  size="lg"
                 >
-                  Volver al inicio
+                  ← Volver al inicio
                 </Button>
               </div>
 
               <div className="text-center text-xs text-muted-foreground pt-4">
                 <p className="flex items-center justify-center gap-2">
                   <span>🔮</span>
-                  Cuando estés listo, vuelve a recorrer la Senda
+                  El umbral estará aquí cuando estés listo
                 </p>
               </div>
             </>
