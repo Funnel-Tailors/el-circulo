@@ -11,7 +11,11 @@ type EventType =
   | 'quiz_completed'
   | 'error_occurred'
   | 'video_testimonial_click'
-  | 'video_testimonial_complete';
+  | 'video_testimonial_complete'
+  | 'vsl_25_percent'
+  | 'vsl_50_percent'
+  | 'vsl_75_percent'
+  | 'vsl_100_percent';
 
 interface TrackEventParams {
   event_type: EventType;
@@ -21,6 +25,7 @@ interface TrackEventParams {
   time_spent_seconds?: number;
   error_type?: string;
   error_message?: string;
+  metadata?: Record<string, any>;
 }
 
 class QuizAnalytics {
@@ -383,22 +388,46 @@ class QuizAnalytics {
     this.vslMilestones.add(currentMilestone);
 
     try {
-      const { error } = await supabase
+      // 1. Buscar el registro más reciente para esta sesión
+      const { data: latestView, error: selectError } = await supabase
+        .from('vsl_views')
+        .select('id')
+        .eq('session_id', this.sessionId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (selectError || !latestView) {
+        console.error('No VSL view found for session:', this.sessionId, selectError);
+        return;
+      }
+
+      // 2. Actualizar SOLO ese registro específico por ID
+      const { error: updateError } = await supabase
         .from('vsl_views')
         .update({
-          video_percentage_watched: percentage,
+          video_percentage_watched: currentMilestone, // Guardar el milestone alcanzado
           view_duration_seconds: duration,
           user_interacted: true,
         })
-        .eq('session_id', this.sessionId)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .eq('id', latestView.id);
 
-      if (error) {
-        console.error('VSL progress tracking error:', error);
+      if (updateError) {
+        console.error('VSL progress tracking error:', updateError);
       } else {
-        console.log(`✅ VSL milestone tracked: ${currentMilestone}%`);
+        console.log(`✅ VSL milestone tracked: ${currentMilestone}% (duration: ${duration}s)`);
       }
+
+      // 3. Registrar evento en quiz_analytics para que aparezca en el tab de analytics
+      await this.trackEvent({
+        event_type: `vsl_${currentMilestone}_percent` as any,
+        metadata: {
+          milestone: currentMilestone,
+          duration: duration,
+          vsl_view_id: latestView.id
+        }
+      });
+
     } catch (err) {
       console.error('VSL progress tracking exception:', err);
     }
