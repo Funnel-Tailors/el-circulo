@@ -127,6 +127,10 @@ interface StoredInsight {
 }
 
 interface MetaEventData {
+  vsl_25_percent: number;
+  vsl_50_percent: number;
+  vsl_75_percent: number;
+  vsl_100_percent: number;
   pageviews: number;
   quiz_engagement: number;
   icp_match: number;
@@ -439,6 +443,31 @@ const Analytics = () => {
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - intervalDays);
 
+        // VSL Events
+        const { data: vsl25Data } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'vsl_25_percent')
+          .gte('created_at', cutoffDate.toISOString());
+
+        const { data: vsl50Data } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'vsl_50_percent')
+          .gte('created_at', cutoffDate.toISOString());
+
+        const { data: vsl75Data } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'vsl_75_percent')
+          .gte('created_at', cutoffDate.toISOString());
+
+        const { data: vsl100Data } = await supabase
+          .from('quiz_analytics')
+          .select('session_id')
+          .eq('event_type', 'vsl_100_percent')
+          .gte('created_at', cutoffDate.toISOString());
+
         // 1. PageView = quiz_started
         const { data: pageviewData } = await supabase
           .from('quiz_analytics')
@@ -498,6 +527,10 @@ const Analytics = () => {
           .gte('created_at', cutoffDate.toISOString());
 
         // Count unique sessions for each event
+        const vsl_25_percent = new Set(vsl25Data?.map(d => d.session_id) || []).size;
+        const vsl_50_percent = new Set(vsl50Data?.map(d => d.session_id) || []).size;
+        const vsl_75_percent = new Set(vsl75Data?.map(d => d.session_id) || []).size;
+        const vsl_100_percent = new Set(vsl100Data?.map(d => d.session_id) || []).size;
         const pageviews = new Set(pageviewData?.map(d => d.session_id) || []).size;
         const quiz_engagement = new Set(q1Data?.map(d => d.session_id) || []).size;
         const icp_match = new Set(icpData?.map(d => d.session_id) || []).size;
@@ -507,6 +540,10 @@ const Analytics = () => {
         const lead = new Set(leadData?.map(d => d.session_id) || []).size;
 
         setMetaEvents({
+          vsl_25_percent,
+          vsl_50_percent,
+          vsl_75_percent,
+          vsl_100_percent,
           pageviews,
           quiz_engagement,
           icp_match,
@@ -522,8 +559,17 @@ const Analytics = () => {
         const prevEndDate = cutoffDate;
 
         // Repetir queries pero con fechas del período anterior
-        const [prevPageviewData, prevQ1Data, prevIcpData, prevLowRevenueData, 
+        const [prevVsl25Data, prevVsl50Data, prevVsl75Data, prevVsl100Data,
+               prevPageviewData, prevQ1Data, prevIcpData, prevLowRevenueData, 
                prevNoBudgetData, prevAddToCartData, prevLeadData] = await Promise.all([
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'vsl_25_percent')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'vsl_50_percent')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'vsl_75_percent')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
+          supabase.from('quiz_analytics').select('session_id').eq('event_type', 'vsl_100_percent')
+            .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
           supabase.from('quiz_analytics').select('session_id').eq('event_type', 'quiz_started')
             .gte('created_at', prevCutoffDate.toISOString()).lt('created_at', prevEndDate.toISOString()),
           supabase.from('quiz_analytics').select('session_id').eq('event_type', 'question_answered')
@@ -545,6 +591,10 @@ const Analytics = () => {
         ]);
 
         setPreviousMetaEvents({
+          vsl_25_percent: new Set(prevVsl25Data.data?.map(d => d.session_id) || []).size,
+          vsl_50_percent: new Set(prevVsl50Data.data?.map(d => d.session_id) || []).size,
+          vsl_75_percent: new Set(prevVsl75Data.data?.map(d => d.session_id) || []).size,
+          vsl_100_percent: new Set(prevVsl100Data.data?.map(d => d.session_id) || []).size,
           pageviews: new Set(prevPageviewData.data?.map(d => d.session_id) || []).size,
           quiz_engagement: new Set(prevQ1Data.data?.map(d => d.session_id) || []).size,
           icp_match: new Set(prevIcpData.data?.map(d => d.session_id) || []).size,

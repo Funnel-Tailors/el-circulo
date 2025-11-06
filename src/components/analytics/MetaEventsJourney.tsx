@@ -3,6 +3,10 @@ import { Eye, Play, ShoppingCart, CheckCircle, TrendingUp, ArrowDown, XCircle } 
 import { Badge } from '@/components/ui/badge';
 
 interface MetaEventData {
+  vsl_25_percent: number;
+  vsl_50_percent: number;
+  vsl_75_percent: number;
+  vsl_100_percent: number;
   pageviews: number;
   quiz_engagement: number;
   icp_match: number;
@@ -103,13 +107,49 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
 
   const stages = [
     {
+      icon: <Play className="h-5 w-5 text-purple-500" />,
+      title: "ViewContent: VSL 25%",
+      subtitle: "Primer cuartil del video",
+      count: data.vsl_25_percent,
+      value: "value: 500€ | content_category: video_sales_letter",
+      gradient: "border-purple-500/20 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20",
+      conversionRate: undefined
+    },
+    {
+      icon: <Play className="h-5 w-5 text-purple-500" />,
+      title: "ViewContent: VSL 50%",
+      subtitle: "Mitad del video",
+      count: data.vsl_50_percent,
+      value: "value: 1000€",
+      gradient: "border-purple-500/20 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20",
+      conversionRate: data.vsl_25_percent > 0 ? (data.vsl_50_percent / data.vsl_25_percent) * 100 : 0
+    },
+    {
+      icon: <Play className="h-5 w-5 text-purple-500" />,
+      title: "ViewContent: VSL 75%",
+      subtitle: "Tercer cuartil del video",
+      count: data.vsl_75_percent,
+      value: "value: 1500€",
+      gradient: "border-purple-500/20 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20",
+      conversionRate: data.vsl_50_percent > 0 ? (data.vsl_75_percent / data.vsl_50_percent) * 100 : 0
+    },
+    {
+      icon: <Play className="h-5 w-5 text-purple-500" />,
+      title: "ViewContent: VSL 100%",
+      subtitle: "Video completo",
+      count: data.vsl_100_percent,
+      value: "value: 2000€",
+      gradient: "border-purple-500/20 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20",
+      conversionRate: data.vsl_75_percent > 0 ? (data.vsl_100_percent / data.vsl_75_percent) * 100 : 0
+    },
+    {
       icon: <Eye className="h-5 w-5 text-blue-500" />,
       title: "PageView",
-      subtitle: "Usuario entra al quiz",
+      subtitle: "Usuario inicia quiz",
       count: data.pageviews,
       value: "fbq('track', 'PageView')",
       gradient: "border-blue-500/20 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20",
-      conversionRate: undefined
+      conversionRate: data.vsl_100_percent > 0 ? (data.pageviews / data.vsl_100_percent) * 100 : 0
     },
     {
       icon: <Play className="h-5 w-5 text-cyan-500" />,
@@ -150,7 +190,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
     }
   ];
 
-  const overallConversion = data.pageviews > 0 ? (data.lead / data.pageviews) * 100 : 0;
+  const overallConversion = data.vsl_25_percent > 0 ? (data.lead / data.vsl_25_percent) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -162,9 +202,9 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
                 <TrendingUp className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">Funnel Meta Pixel ICP-Optimizado</h3>
+                <h3 className="text-lg font-semibold">Funnel Completo Meta Pixel</h3>
                 <p className="text-sm text-muted-foreground">
-                  Journey desde entrada hasta lead cualificado con datos ICP
+                  Journey completo desde VSL hasta lead - Todos los eventos enviados a Meta
                 </p>
               </div>
             </div>
