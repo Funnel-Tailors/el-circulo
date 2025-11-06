@@ -75,7 +75,7 @@ const steps: QuizStep[] = [{
   valueStack: ["✓ 1 año completo de membresía en el Círculo (acceso ilimitado)", "✓ Onboarding personalizado con hoja de ruta adaptada a ti", "✓ Mentorías semanales con miembros élite y facilitadores", "✓ Comunidad privada 24/7 de creativos que cobran 4-5 cifras por proyecto", "✓ Rituales exclusivos de alto impacto cada mes"],
   motivator: {
     icon: "🔥",
-    text: "El miembro medio suma +7.800€ extra en los primeros 90 días (ROI x4)"
+    text: "Dani hizo un ROI 10x en sus primeros 7 días en el Círculo"
   }
 }, {
   id: "q5",
