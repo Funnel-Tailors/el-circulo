@@ -582,23 +582,23 @@ const QuizSection = ({
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - Pain Point/Frustración (0-5 puntos) - Indica motivación y awareness
-    if (state.q1 === "No consigo clientes de forma constante") score += 5;
-    else if (state.q1 === "Cobro poco por mi trabajo (menos de €1.000/proyecto)") score += 5;
-    else if (state.q1 === "Pierdo mucho tiempo con clientes que no pagan lo que vale mi trabajo") score += 4;
-    else if (state.q1 === "Tengo clientes pero no sé cómo escalar sin quemarme") score += 5;
+    // Q1 - Pain Point/Frustración (0-8 puntos) - Indica motivación y awareness
+    if (state.q1 === "No consigo clientes de forma constante") score += 8; // Alta necesidad
+    else if (state.q1 === "Cobro poco por mi trabajo (menos de €1.000/proyecto)") score += 8; // Alta necesidad
+    else if (state.q1 === "Pierdo mucho tiempo con clientes que no pagan lo que vale mi trabajo") score += 7; // Necesidad media-alta
+    else if (state.q1 === "Tengo clientes pero no sé cómo escalar sin quemarme") score += 8; // Alta necesidad + madurez
 
-    // Q2 - ICP/Profesión (0-10 puntos)
+    // Q2 - ICP/Profesión (0-10 puntos) - Todos los creativos son ICP
     if (state.q2 === "Diseñador Gráfico / Web") score += 10;
     else if (state.q2 === "Fotógrafo/Filmmaker") score += 10;
     else if (state.q2 === "Automatizador") score += 10;
-    else if (state.q2 === "Otro servicio creativo") score += 8;
+    else if (state.q2 === "Otro servicio creativo") score += 9;
 
-    // Q3 - Monthly Revenue (0-35 puntos) - NUEVO ICP Sweet Spot
-    if (state.q3 === "€1.500 - €3.000/mes") score += 35; // ← NUEVO ICP SWEET SPOT
-    else if (state.q3 === "€3.000 - €6.000/mes") score += 30; // Buen fit
-    else if (state.q3 === "€500 - €1.500/mes") score += 20; // Potencial
-    else if (state.q3 === "Más de €6.000/mes") score += 15; // Alto LTV
+    // Q3 - Monthly Revenue (0-30 puntos) - ICP Sweet Spot sin penalizar alto revenue
+    if (state.q3 === "€1.500 - €3.000/mes") score += 30; // ← ICP SWEET SPOT
+    else if (state.q3 === "€3.000 - €6.000/mes") score += 28; // Buen fit, alto LTV
+    else if (state.q3 === "Más de €6.000/mes") score += 25; // Alto LTV, no penalizar
+    else if (state.q3 === "€500 - €1.500/mes") score += 22; // Potencial ascenso
     else if (state.q3 === "Menos de €500/mes") score += 0; // Solo disqualify si Q5 también bajo
 
     // Q4 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
@@ -607,31 +607,31 @@ const QuizSection = ({
       const methodCount = state.q4.filter(m => m !== "Aún no tengo un sistema").length;
 
       if (hasNoSystem) {
-        score += 0; // Sin sistema = 0 puntos
-      } else if (methodCount === 2 || methodCount === 3) {
-        score += 15; // 2-3 métodos = necesita sistematizar (IDEAL)
-      } else if (methodCount === 1) {
-        score += 10; // 1 método = necesita diversificar
+        score += 15; // ← CAMBIO: Sin sistema = MÁXIMA necesidad del Círculo
+      } else if (methodCount === 1 || methodCount === 2) {
+        score += 12; // 1-2 métodos = necesita escalar y sistematizar
+      } else if (methodCount === 3) {
+        score += 10; // 3 métodos = disperso, necesita optimizar
       } else if (methodCount >= 4) {
-        score += 5; // 4+ métodos = disperso
+        score += 8; // 4+ métodos = muy disperso
       }
     }
 
-    // Q5 - Investment Capacity (0-30 puntos) - Scoring graduado
-    if (state.q5 === "€2.000 - €5.000 - Iría all-in sin miedo") score += 30;
-    else if (state.q5 === "Más de €5.000 - Sin límites si el sistema funciona") score += 25;
-    else if (state.q5 === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") score += 30; // ← ICP Sweet Spot
-    else if (state.q5 === "€500 - €1.000 - Invertiría si veo potencial claro") score += 15;
-    else if (state.q5 === "Hasta €500 - Probaría con poco riesgo primero") score += 5;
-    else score += 0; // "Ahora mismo no puedo"
+    // Q5 - Investment Capacity (0-37 puntos) - CRÍTICO: NO penalizar presupuestos altos
+    if (state.q5 === "Más de €5.000 - Sin límites si el sistema funciona") score += 37; // ← MÁXIMO: Venta fácil, cero fricción
+    else if (state.q5 === "€2.000 - €5.000 - Iría all-in sin miedo") score += 37; // ← También máximo: Ticket alto sin fricción
+    else if (state.q5 === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") score += 35; // ← ICP Sweet Spot (precio Círculo)
+    else if (state.q5 === "€500 - €1.000 - Invertiría si veo potencial claro") score += 18; // Potencial pero con fricción
+    else if (state.q5 === "Hasta €500 - Probaría con poco riesgo primero") score += 8; // Baja capacidad
+    else score += 0; // "Ahora mismo no puedo" → Auto-disqualify
 
     // Q6 - Urgencia/Compromiso (0-5 puntos)
-    if (state.q6?.includes("Rápido")) score += 5;
-    else if (state.q6?.includes("Gradual")) score += 4;
+    if (state.q6?.includes("Rápido")) score += 5; // Conversión rápida
+    else if (state.q6?.includes("Gradual")) score += 4; // Buena conversión
 
     // Q7 - Autoridad de decisión (0-5 puntos)
-    if (state.q7 === "Solo yo") score += 5;
-    else if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3;
+    if (state.q7 === "Solo yo") score += 5; // Cero fricción en cierre
+    else if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3; // Posible fricción
     
     return Math.min(score, 100); // Cap at 100
   };
