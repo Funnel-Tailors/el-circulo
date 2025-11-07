@@ -40,9 +40,9 @@ const steps: QuizStep[] = [{
   options: [
     "Mis clientes no tienen presupuesto (cobro poco y me regatean)",
     "Trabajo muchas horas y encima estoy tieso",
-    "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)",
     "No tengo clientes suficientes (no sé ni por donde empezar)",
-    "No sé cómo vender lo que hago sin que regateen"
+    "No sé cómo vender lo que hago sin que regateen",
+    "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)"
   ],
   badge: "💥 Paso 1/7 - Tu Punto de Dolor",
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
@@ -251,24 +251,117 @@ const QuizSection = ({
     if (currentQuestion.id === 'q1') {
       const value = currentAnswer as string;
       quizAnalytics.trackPainPoint(value);
+      
+      // Meta Pixel - ViewContent con valor según pain point
+      let painValue = 150;
+      if (value === "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)") {
+        painValue = 250; // Máxima frustración = mayor intención
+      } else if (value === "Trabajo muchas horas y encima estoy tieso") {
+        painValue = 200; // Alta urgencia económica
+      } else if (value === "Mis clientes no tienen presupuesto (cobro poco y me regatean)") {
+        painValue = 180; // Problema de pricing
+      }
+      
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'ViewContent', {
+          content_type: 'quiz',
+          content_name: 'Pain Point Identified',
+          content_category: 'lead_qualification',
+          value: painValue,
+          currency: 'EUR',
+          custom_data: {
+            pain_point: value
+          }
+        });
+        console.log(`✅ Meta Pixel ViewContent (Q1) - Pain: ${value}, Value: ${painValue}€`);
+      }
     }
 
-    // Track Q2 - Quiz engagement
+    // Track Q2 - Quiz engagement (Profesión)
     if (currentQuestion.id === 'q2') {
       quizAnalytics.trackQuizEngagement();
+      
+      // Meta Pixel - ViewContent para engagement inicial
+      if (typeof window !== 'undefined' && (window as any).fbq) {
+        (window as any).fbq('track', 'ViewContent', {
+          content_type: 'quiz',
+          content_name: 'Profession Identified',
+          content_category: 'lead_generation',
+          value: 200,
+          currency: 'EUR'
+        });
+        console.log('✅ Meta Pixel ViewContent (Q2) - Profession identified');
+      }
     }
 
-    // Track Q3 - ICP Match or Disqualification (NUEVO: basado en facturación mensual)
+    // Track Q3 - ICP Match or Disqualification (Facturación mensual)
     if (currentQuestion.id === 'q3') {
       const value = currentAnswer as string;
       
       // Track ICP match for high-value monthly revenue brackets
       if (value === "€1.500 - €3.000/mes") {
         quizAnalytics.trackICPMatch(value);
+        
+        // Meta Pixel - ViewContent para ICP Sweet Spot
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'ViewContent', {
+            content_type: 'quiz',
+            content_name: 'ICP Sweet Spot Match',
+            content_category: 'high_intent_lead',
+            value: 800,
+            currency: 'EUR',
+            custom_data: {
+              revenue_bracket: value,
+              icp_match: true
+            }
+          });
+          console.log(`✅ Meta Pixel ViewContent (Q3) - ICP Sweet Spot: ${value}`);
+        }
       } else if (value === "€3.000 - €6.000/mes") {
         quizAnalytics.trackICPMatch(value);
+        
+        // Meta Pixel - ViewContent para ICP alto valor
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'ViewContent', {
+            content_type: 'quiz',
+            content_name: 'High Value ICP Match',
+            content_category: 'high_intent_lead',
+            value: 700,
+            currency: 'EUR',
+            custom_data: {
+              revenue_bracket: value,
+              icp_match: true
+            }
+          });
+          console.log(`✅ Meta Pixel ViewContent (Q3) - High Value ICP: ${value}`);
+        }
+      } else if (value === "Más de €6.000/mes") {
+        // Meta Pixel - ViewContent para alto LTV
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'ViewContent', {
+            content_type: 'quiz',
+            content_name: 'High LTV Lead',
+            content_category: 'premium_lead',
+            value: 600,
+            currency: 'EUR',
+            custom_data: {
+              revenue_bracket: value,
+              high_ltv: true
+            }
+          });
+          console.log(`✅ Meta Pixel ViewContent (Q3) - High LTV: ${value}`);
+        }
       } else if (value === "Menos de €500/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
+        
+        // Meta Pixel - Custom event para low revenue (negativo para exclusión)
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('trackCustom', 'LowRevenueLead', {
+            revenue_bracket: value,
+            qualified: false
+          });
+          console.log('🚫 Meta Pixel LowRevenueLead tracked for exclusion');
+        }
       }
     }
 
@@ -277,16 +370,16 @@ const QuizSection = ({
       const value = currentAnswer as string;
       let cartValue = 0;
       
-      if (value === "€2.000 - €5.000 - Iría all-in sin miedo") {
-        cartValue = 2500;
-      } else if (value === "Más de €5.000 - Sin límites si el sistema funciona") {
-        cartValue = 3000;
+      if (value === "Más de €5.000 - Sin límites si el sistema funciona") {
+        cartValue = 3500; // Máximo valor - cero fricción
+      } else if (value === "€2.000 - €5.000 - Iría all-in sin miedo") {
+        cartValue = 3000; // Alto valor - baja fricción
       } else if (value === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") {
         cartValue = 2000; // ← ICP Sweet Spot (precio real del Círculo)
       } else if (value === "€500 - €1.000 - Invertiría si veo potencial claro") {
-        cartValue = 1000;
+        cartValue = 1000; // Potencial con fricción
       } else if (value === "Hasta €500 - Probaría con poco riesgo primero") {
-        cartValue = 500;
+        cartValue = 500; // Baja capacidad
       }
       
       if (cartValue > 0) {
@@ -297,13 +390,23 @@ const QuizSection = ({
             content_name: 'Círculo Membership',
             content_category: 'Membership',
             content_ids: ['circulo_annual'],
-            predicted_ltv: cartValue * 3 // Para optimización de audiencias Meta
+            predicted_ltv: cartValue * 3, // Para optimización de audiencias Meta
+            custom_data: {
+              investment_capacity: value,
+              qualified: true
+            }
           });
-          console.log(`✅ Meta Pixel AddToCart fired - Value: ${cartValue}€`);
+          console.log(`✅ Meta Pixel AddToCart (Q5) - Value: ${cartValue}€, Capacity: ${value}`);
         }
         quizAnalytics.trackBudgetQualified(value);
       } else {
         // Track disqualification para audiencias de exclusión
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('trackCustom', 'LowBudgetLead', {
+            investment_capacity: value,
+            qualified: false
+          });
+        }
         console.log('🚫 Budget disqualified - tracking negative signal');
         quizAnalytics.trackBudgetDisqualified();
       }
