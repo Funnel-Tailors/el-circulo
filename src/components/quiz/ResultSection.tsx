@@ -235,10 +235,10 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
                     Por qué no puedes entrar ahora:
                   </p>
                   <ul className="text-sm text-muted-foreground space-y-2">
-                    {quizState.q2 === "Menos de 500€" && (
+                    {quizState.q3 === "Menos de €500/mes" && (
                       <li>• Necesitas experiencia probada facturando antes de escalar</li>
                     )}
-                    {quizState.q4 === "No dispongo de esa cantidad" && (
+                    {quizState.q5 === "Ahora mismo no puedo (menos de €500 disponibles)" && (
                       <li>• El Círculo requiere inversión inmediata para aprovechar el acceso</li>
                     )}
                     <li>• La metodología está diseñada para freelancers dignos</li>

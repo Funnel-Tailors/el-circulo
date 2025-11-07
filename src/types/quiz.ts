@@ -1,11 +1,11 @@
 export type QuizState = {
-  q1?: string;
-  q2?: string;
-  q3?: string[];
-  q4?: string;
-  q5?: string;
-  q6?: string;
-  q7?: number;
+  q1?: string; // Frustración/Pain Point
+  q2?: string; // Profesión
+  q3?: string; // Facturación mensual
+  q4?: string[]; // Métodos de adquisición
+  q5?: string; // Presupuesto de inversión
+  q6?: string; // Urgencia/Compromiso
+  q7?: string; // Autoridad de decisión
   name?: string;
   email?: string;
   whatsapp?: string;

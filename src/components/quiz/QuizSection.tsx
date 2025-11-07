@@ -35,42 +35,58 @@ interface QuizStep {
 }
 const steps: QuizStep[] = [{
   id: "q1",
+  question: "¿Cuál es tu MAYOR FRUSTRACIÓN ahora mismo?",
+  type: "radio",
+  options: [
+    "No consigo clientes de forma constante",
+    "Cobro poco por mi trabajo (menos de €1.000/proyecto)",
+    "Pierdo mucho tiempo con clientes que no pagan lo que vale mi trabajo",
+    "Tengo clientes pero no sé cómo escalar sin quemarme"
+  ],
+  badge: "💥 Paso 1/7 - Tu Punto de Dolor",
+  subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
+  motivator: {
+    icon: "🎯",
+    text: "El 94% de miembros resuelve su mayor frustración en los primeros 30 días"
+  }
+}, {
+  id: "q2",
   question: "¿A qué te dedicas hoy?",
   type: "radio",
   options: ["Diseñador Gráfico / Web", "Fotógrafo/Filmmaker", "Automatizador", "Otro servicio creativo"],
-  badge: "🎯 Paso 1/6",
+  badge: "🎯 Paso 2/7 - Tu Especialidad",
   subtext: "Tu especialidad dicta tu camino de ascenso",
   motivator: null
 }, {
-  id: "q2",
+  id: "q3",
   question: "¿Cuánta pasta entra al mes de media? (últimos 3 meses)",
   type: "radio",
   options: ["Menos de €500/mes", "€500 - €1.500/mes", "€1.500 - €3.000/mes", "€3.000 - €6.000/mes", "Más de €6.000/mes"],
-  badge: "💰 Paso 2/6 - Tu Punto de Partida",
+  badge: "💰 Paso 3/7 - Tu Punto de Partida",
   subtext: "Tu facturación actual revela dónde estás en La Senda",
   motivator: {
     icon: "🚀",
     text: "Miembros que facturan €1.5K-3K/mes multiplican x3 en 90 días. Ahora cobran €5K+ de media sin portfolio."
   }
 }, {
-  id: "q3",
+  id: "q4",
   question: "¿Cómo consigues clientes ahora mismo?",
   description: "Puedes marcar varias",
   type: "checkbox",
   options: ["Recomendaciones", "Contenido orgánico", "Anuncios pagados", "Cold outreach", "Aún no tengo un sistema"],
-  badge: "🔍 Paso 3/6",
+  badge: "🔍 Paso 4/7 - Tu Sistema Actual",
   subtext: "Vamos a petar ese canal x3",
   motivator: {
     icon: "⚡",
     text: "El 89% pasa de 'a ver si suena el teléfono' a 4-6 leads/semana"
   }
 }, {
-  id: "q4",
+  id: "q5",
   question: "Si hoy tuvieras el sistema exacto que usan creativos que cobran €5K+, ¿cuánto invertirías en tu ascenso?",
   description: "No hay respuesta correcta. Solo necesitamos saber tu capacidad actual para diseñar tu ruta personalizada.",
   type: "radio",
   options: ["Hasta €500 - Probaría con poco riesgo primero", "€500 - €1.000 - Invertiría si veo potencial claro", "€1.000 - €2.000 - Apostaría fuerte por mi transformación", "€2.000 - €5.000 - Iría all-in sin miedo", "Más de €5.000 - Sin límites si el sistema funciona", "Ahora mismo no puedo (menos de €500 disponibles)"],
-  badge: "💎 Paso 4/6 - Tu Capacidad",
+  badge: "💎 Paso 5/7 - Tu Capacidad",
   subtext: "El tributo al Círculo se adapta según tu ruta. Responde con sinceridad.",
   valueStack: null,
   motivator: {
@@ -78,22 +94,22 @@ const steps: QuizStep[] = [{
     text: "El 78% recupera su inversión x2 en 60 días. Dani hizo ROI x10 en su primera semana."
   }
 }, {
-  id: "q5",
+  id: "q6",
   question: "¿Cómo quieres ascender al Círculo?",
   type: "radio",
   options: ["Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA", "Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas"],
-  badge: "⏱️ Paso 5/6",
+  badge: "⏱️ Paso 6/7 - Tu Ritmo",
   subtext: "Ambas rutas llevan al mismo destino. Elige tu ritmo.",
   motivator: {
     icon: "🔥",
     text: "Rápida: Ideal para transformación inmediata | Progresiva: Para integrar sin prisa"
   }
 }, {
-  id: "q6",
+  id: "q7",
   question: "¿Quién toma la decisión final sobre esta inversión?",
   type: "radio",
   options: ["Solo yo", "Yo con mi pareja/socio (lo invitaré a la llamada)"],
-  badge: "🔐 Paso 6/6 - Final",
+  badge: "🔐 Paso 7/7 - Final",
   subtext: "Si decides con alguien más, ambos deben estar en la llamada",
   motivator: null
 }];
@@ -230,13 +246,19 @@ const QuizSection = ({
       return;
     }
 
-    // Track Q1 - Quiz engagement
+    // Track Q1 - Pain Point (nueva pregunta de frustración)
     if (currentQuestion.id === 'q1') {
+      const value = currentAnswer as string;
+      quizAnalytics.trackPainPoint(value);
+    }
+
+    // Track Q2 - Quiz engagement
+    if (currentQuestion.id === 'q2') {
       quizAnalytics.trackQuizEngagement();
     }
 
-    // Track Q2 - ICP Match or Disqualification (NUEVO: basado en facturación mensual)
-    if (currentQuestion.id === 'q2') {
+    // Track Q3 - ICP Match or Disqualification (NUEVO: basado en facturación mensual)
+    if (currentQuestion.id === 'q3') {
       const value = currentAnswer as string;
       
       // Track ICP match for high-value monthly revenue brackets
@@ -249,8 +271,8 @@ const QuizSection = ({
       }
     }
 
-    // Track Q4 - Investment capacity (graduado por rango)
-    if (currentQuestion.id === 'q4') {
+    // Track Q5 - Investment capacity (graduado por rango)
+    if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       let cartValue = 0;
       
@@ -482,8 +504,8 @@ const QuizSection = ({
       console.log('✅ [ANALYTICS] Quiz completion tracked');
       
       // Enriquecer evento Lead de Meta Pixel con datos ICP
-      const revenueAnswer = answers.q2 as string;
-      const budgetAnswer = answers.q4 as string;
+      const revenueAnswer = answers.q3 as string;
+      const budgetAnswer = answers.q5 as string;
     const isICP = revenueAnswer === "€1.500 - €3.000/mes" 
       || revenueAnswer === "€3.000 - €6.000/mes";
       const hasBudget = budgetAnswer === "€1.000 - €2.000 - Apostaría fuerte por mi transformación" 
@@ -560,23 +582,29 @@ const QuizSection = ({
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - ICP/Profesión (0-10 puntos)
-    if (state.q1 === "Diseñador Gráfico / Web") score += 10;
-    else if (state.q1 === "Fotógrafo/Filmmaker") score += 10;
-    else if (state.q1 === "Automatizador") score += 10;
-    else if (state.q1 === "Otro servicio creativo") score += 8;
+    // Q1 - Pain Point/Frustración (0-5 puntos) - Indica motivación y awareness
+    if (state.q1 === "No consigo clientes de forma constante") score += 5;
+    else if (state.q1 === "Cobro poco por mi trabajo (menos de €1.000/proyecto)") score += 5;
+    else if (state.q1 === "Pierdo mucho tiempo con clientes que no pagan lo que vale mi trabajo") score += 4;
+    else if (state.q1 === "Tengo clientes pero no sé cómo escalar sin quemarme") score += 5;
 
-    // Q2 - Monthly Revenue (0-35 puntos) - NUEVO ICP Sweet Spot
-    if (state.q2 === "€1.500 - €3.000/mes") score += 35; // ← NUEVO ICP SWEET SPOT
-    else if (state.q2 === "€3.000 - €6.000/mes") score += 30; // Buen fit
-    else if (state.q2 === "€500 - €1.500/mes") score += 20; // Potencial
-    else if (state.q2 === "Más de €6.000/mes") score += 15; // Alto LTV
-    else if (state.q2 === "Menos de €500/mes") score += 0; // Solo disqualify si Q4 también bajo
+    // Q2 - ICP/Profesión (0-10 puntos)
+    if (state.q2 === "Diseñador Gráfico / Web") score += 10;
+    else if (state.q2 === "Fotógrafo/Filmmaker") score += 10;
+    else if (state.q2 === "Automatizador") score += 10;
+    else if (state.q2 === "Otro servicio creativo") score += 8;
 
-    // Q3 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
-    if (Array.isArray(state.q3)) {
-      const hasNoSystem = state.q3.includes("Aún no tengo un sistema");
-      const methodCount = state.q3.filter(m => m !== "Aún no tengo un sistema").length;
+    // Q3 - Monthly Revenue (0-35 puntos) - NUEVO ICP Sweet Spot
+    if (state.q3 === "€1.500 - €3.000/mes") score += 35; // ← NUEVO ICP SWEET SPOT
+    else if (state.q3 === "€3.000 - €6.000/mes") score += 30; // Buen fit
+    else if (state.q3 === "€500 - €1.500/mes") score += 20; // Potencial
+    else if (state.q3 === "Más de €6.000/mes") score += 15; // Alto LTV
+    else if (state.q3 === "Menos de €500/mes") score += 0; // Solo disqualify si Q5 también bajo
+
+    // Q4 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
+    if (Array.isArray(state.q4)) {
+      const hasNoSystem = state.q4.includes("Aún no tengo un sistema");
+      const methodCount = state.q4.filter(m => m !== "Aún no tengo un sistema").length;
 
       if (hasNoSystem) {
         score += 0; // Sin sistema = 0 puntos
@@ -589,28 +617,28 @@ const QuizSection = ({
       }
     }
 
-    // Q4 - Investment Capacity (0-35 puntos) - Scoring graduado
-    if (state.q4 === "€2.000 - €5.000 - Iría all-in sin miedo") score += 35;
-    else if (state.q4 === "Más de €5.000 - Sin límites si el sistema funciona") score += 30;
-    else if (state.q4 === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") score += 30; // ← ICP Sweet Spot
-    else if (state.q4 === "€500 - €1.000 - Invertiría si veo potencial claro") score += 15;
-    else if (state.q4 === "Hasta €500 - Probaría con poco riesgo primero") score += 5;
+    // Q5 - Investment Capacity (0-30 puntos) - Scoring graduado
+    if (state.q5 === "€2.000 - €5.000 - Iría all-in sin miedo") score += 30;
+    else if (state.q5 === "Más de €5.000 - Sin límites si el sistema funciona") score += 25;
+    else if (state.q5 === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") score += 30; // ← ICP Sweet Spot
+    else if (state.q5 === "€500 - €1.000 - Invertiría si veo potencial claro") score += 15;
+    else if (state.q5 === "Hasta €500 - Probaría con poco riesgo primero") score += 5;
     else score += 0; // "Ahora mismo no puedo"
 
-    // Q5 - Urgencia/Compromiso (0-5 puntos)
-    if (state.q5?.includes("Rápido")) score += 5;
-    else if (state.q5?.includes("Gradual")) score += 4;
+    // Q6 - Urgencia/Compromiso (0-5 puntos)
+    if (state.q6?.includes("Rápido")) score += 5;
+    else if (state.q6?.includes("Gradual")) score += 4;
 
-    // Q6 - Autoridad de decisión (0-5 puntos)
-    if (state.q6 === "Solo yo") score += 5;
-    else if (state.q6 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3;
+    // Q7 - Autoridad de decisión (0-5 puntos)
+    if (state.q7 === "Solo yo") score += 5;
+    else if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3;
     
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
     // Solo auto-disqualify si AMBAS condiciones (muy bajo revenue Y sin inversión)
-    const noInvestmentCapacity = state.q4 === "Ahora mismo no puedo (menos de €500 disponibles)";
-    const lowRevenue = state.q2 === "Menos de €500/mes";
+    const noInvestmentCapacity = state.q5 === "Ahora mismo no puedo (menos de €500 disponibles)";
+    const lowRevenue = state.q3 === "Menos de €500/mes";
     
     return noInvestmentCapacity && lowRevenue;
   };
@@ -653,12 +681,12 @@ const QuizSection = ({
       case "checkbox":
         return <div className="space-y-3">
             {currentQuestion.options?.map(option => <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                <Checkbox id={option} checked={(answers.q3 as string[] || []).includes(option)} onCheckedChange={checked => {
-              const current = answers.q3 as string[] || [];
+                <Checkbox id={option} checked={(answers.q4 as string[] || []).includes(option)} onCheckedChange={checked => {
+              const current = answers.q4 as string[] || [];
               const updated = checked ? [...current, option] : current.filter(v => v !== option);
               setAnswers({
                 ...answers,
-                q3: updated
+                q4: updated
               });
               quizAnalytics.answerStep(currentQuestion.id, currentStep, updated.join(', '));
             }} className="border-2" />

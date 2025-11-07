@@ -290,6 +290,19 @@ class QuizAnalytics {
     });
   }
 
+  trackPainPoint(painPoint: string): void {
+    this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'quiz',
+      content_name: 'Pain Point Identified',
+      content_category: 'lead_qualification',
+      value: 150,
+      currency: 'EUR',
+      custom_data: {
+        pain_point: painPoint
+      }
+    });
+  }
+
   trackICPMatch(projectValue: string): void {
     if (projectValue === "1.000€ - 2.500€") {
       this.trackMetaPixelEvent('ViewContent', {
