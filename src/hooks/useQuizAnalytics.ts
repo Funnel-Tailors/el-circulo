@@ -22,6 +22,7 @@ export const useQuizAnalytics = ({
     if (!enabled) return;
 
     console.log('✅ Quiz analytics initialized - tracking completion', {
+      quizVersion: 'v2',
       sessionId: quizAnalytics.getSessionId(),
       isQualified,
       hasEmail: !!quizState.email,

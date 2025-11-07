@@ -39,6 +39,7 @@ class QuizAnalytics {
   private startTime: number;
   private stepStartTimes: Map<string, number>;
   private vslMilestones: Set<number>;
+  private quizVersion: string = 'v2'; // Nueva versión del quiz con Q1 de pain point
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -128,6 +129,7 @@ class QuizAnalytics {
         utm_term: this.utmParams.utm_term,
         utm_content: this.utmParams.utm_content,
         referrer: this.referrer,
+        quiz_version: this.quizVersion, // Diferenciar versiones v1 vs v2
       };
 
       console.log('📤 Sending analytics event:', {
@@ -375,6 +377,7 @@ class QuizAnalytics {
         utm_campaign: this.utmParams.utm_campaign,
         device_type: this.deviceType,
         referrer: this.referrer,
+        quiz_version: this.quizVersion, // Diferenciar versiones v1 vs v2
       });
 
       if (error) {

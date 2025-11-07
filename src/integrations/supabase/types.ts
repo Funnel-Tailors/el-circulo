@@ -57,6 +57,7 @@ export type Database = {
           event_type: string
           id: string
           language: string | null
+          quiz_version: string | null
           referrer: string | null
           session_id: string
           step_id: string | null
@@ -78,6 +79,7 @@ export type Database = {
           event_type: string
           id?: string
           language?: string | null
+          quiz_version?: string | null
           referrer?: string | null
           session_id: string
           step_id?: string | null
@@ -99,6 +101,7 @@ export type Database = {
           event_type?: string
           id?: string
           language?: string | null
+          quiz_version?: string | null
           referrer?: string | null
           session_id?: string
           step_id?: string | null
@@ -140,6 +143,7 @@ export type Database = {
           device_type: string | null
           ghl_contact_id: string | null
           id: string
+          quiz_version: string | null
           referrer: string | null
           session_id: string
           user_interacted: boolean | null
@@ -157,6 +161,7 @@ export type Database = {
           device_type?: string | null
           ghl_contact_id?: string | null
           id?: string
+          quiz_version?: string | null
           referrer?: string | null
           session_id: string
           user_interacted?: boolean | null
@@ -174,6 +179,7 @@ export type Database = {
           device_type?: string | null
           ghl_contact_id?: string | null
           id?: string
+          quiz_version?: string | null
           referrer?: string | null
           session_id?: string
           user_interacted?: boolean | null
@@ -207,6 +213,17 @@ export type Database = {
           sessions_reached: number | null
           step_id: string | null
           step_index: number | null
+        }
+        Relationships: []
+      }
+      quiz_funnel_by_version: {
+        Row: {
+          quiz_version: string | null
+          reached_q3: number | null
+          reached_q5: number | null
+          saw_form: number | null
+          started: number | null
+          submitted: number | null
         }
         Relationships: []
       }
@@ -250,6 +267,18 @@ export type Database = {
           utm_campaign: string | null
           utm_medium: string | null
           utm_source: string | null
+        }
+        Relationships: []
+      }
+      quiz_version_comparison: {
+        Row: {
+          completion_rate: number | null
+          completions: number | null
+          conversion_rate: number | null
+          date: string | null
+          leads: number | null
+          quiz_version: string | null
+          total_sessions: number | null
         }
         Relationships: []
       }
