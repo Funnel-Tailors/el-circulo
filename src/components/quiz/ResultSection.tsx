@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { QuizState } from "@/types/quiz";
 import { useEffect, useState } from "react";
-import { quizAnalytics } from "@/lib/analytics";
+import { useGHLBooking } from "@/hooks/useGHLBooking";
+import { useQuizAnalytics } from "@/hooks/useQuizAnalytics";
+import { toast } from "@/hooks/use-toast";
 
 interface ResultSectionProps {
   isQualified: boolean;
@@ -10,86 +12,37 @@ interface ResultSectionProps {
 }
 
 const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) => {
-  const BONUS_URL = "https://vendenautomatico.com/la-senda-extended";
   const [bookingStarted, setBookingStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(15 * 60); // 15 min countdown
 
-  // ✅ Helper para validar contactId
-  const isValidContactId = (id: string | undefined | null): id is string => {
-    const isValid = typeof id === 'string' && 
-                    id.length > 0 && 
-                    id !== 'undefined' && 
-                    id !== 'null';
-    
-    console.log('🔍 Validating contactId:', { 
-      id, 
-      type: typeof id, 
-      length: typeof id === 'string' ? id.length : 'N/A',
-      isValid 
-    });
-    
-    return isValid;
-  };
-
-  useEffect(() => {
-    if (isQualified) {
-      const script = document.createElement('script');
-      script.src = 'https://link.msgsndr.com/js/form_embed.js';
-      script.type = 'text/javascript';
-      script.async = true;
-      
-      script.onload = () => {
-        // Esperar a que GHL esté disponible y cargar el widget con datos pre-rellenados
-        if (window.GHL && window.GHL.loadBookingWidget) {
-          console.log('🔮 Loading GHL booking widget with pre-filled data:', {
-            name: quizState.name,
-            email: quizState.email,
-            phone: quizState.whatsapp
-          });
-
-          const [firstName = '', ...lastNameParts] = (quizState.name || '').split(' ');
-          const lastName = lastNameParts.join(' ');
-
-          window.GHL.loadBookingWidget({
-            elementId: 'ghl-calendar-container',
-            calendarId: 'xkfGe4Gjr8REwK34dZke',
-            // Pre-rellenar datos del quiz - GHL asociará automáticamente al contacto existente
-            firstName: firstName,
-            lastName: lastName,
-            email: quizState.email || '',
-            phone: quizState.whatsapp || '',
-          });
-        }
-      };
-      
-      document.body.appendChild(script);
-      
-      return () => {
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-      };
+  // ✅ Hook para cargar widget de GHL (encapsula toda la lógica)
+  const { isLoading: isLoadingCalendar, error: calendarError } = useGHLBooking({
+    calendarId: 'xkfGe4Gjr8REwK34dZke',
+    contactData: {
+      name: quizState.name,
+      email: quizState.email,
+      whatsapp: quizState.whatsapp
+    },
+    enabled: isQualified,
+    onLoad: () => {
+      console.log('✅ [CALENDAR] GHL booking widget loaded successfully');
+    },
+    onError: (error) => {
+      console.error('❌ [CALENDAR] Failed to load GHL booking widget:', error);
+      toast({
+        title: "Error al cargar el calendario",
+        description: "Por favor recarga la página o contacta con soporte",
+        variant: "destructive"
+      });
     }
-  }, [isQualified, quizState.name, quizState.email, quizState.whatsapp]);
+  });
 
-  // Track quiz completion when ResultSection mounts
-  useEffect(() => {
-    console.log('✅ ResultSection mounted - tracking quiz completion', {
-      sessionId: quizAnalytics.getSessionId(),
-      isQualified,
-      hasEmail: !!quizState.email,
-      hasWhatsapp: !!quizState.whatsapp
-    });
-    quizAnalytics.completeQuiz();
-  }, []); // Solo una vez al montar
-
-  // Link VSL views to GHL contact when available
-  useEffect(() => {
-    if (quizState.ghlContactId) {
-      console.log('🔗 Linking VSL views to GHL contact:', quizState.ghlContactId);
-      quizAnalytics.linkVSLtoContact(quizState.ghlContactId);
-    }
-  }, [quizState.ghlContactId]);
+  // ✅ Hook para tracking de analytics (encapsula toda la lógica)
+  useQuizAnalytics({
+    quizState,
+    isQualified,
+    enabled: true
+  });
 
   // Countdown timer
   useEffect(() => {
@@ -191,9 +144,27 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
               </div>
 
               {/* ✅ Widget de GHL cargado dinámicamente con datos pre-rellenados */}
+              {isLoadingCalendar && (
+                <div className="rounded-xl border border-border bg-background/50 mt-6 min-h-[500px] flex items-center justify-center">
+                  <div className="text-center space-y-3">
+                    <div className="animate-spin text-4xl">⏳</div>
+                    <p className="text-sm text-muted-foreground">Cargando calendario...</p>
+                  </div>
+                </div>
+              )}
+              
+              {calendarError && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 mt-6 p-6 text-center">
+                  <p className="text-sm text-red-200">
+                    ⚠️ Error al cargar el calendario. Por favor recarga la página.
+                  </p>
+                </div>
+              )}
+              
               <div 
                 id="ghl-calendar-container" 
                 className="rounded-xl overflow-hidden border border-border bg-background/50 mt-6 min-h-[500px]"
+                style={{ display: isLoadingCalendar ? 'none' : 'block' }}
               />
 
               {/* Footer sticky con empuje psicológico */}

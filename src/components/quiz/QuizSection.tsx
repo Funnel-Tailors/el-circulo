@@ -277,9 +277,17 @@ const QuizSection = ({
     }
   };
   const handleContactSubmit = async (data: ContactFormData) => {
+    console.log('📋 [FORM SUBMIT] Starting submission process...', {
+      timestamp: new Date().toISOString(),
+      hasName: !!data.name,
+      hasEmail: !!data.email,
+      hasPhone: !!data.phone,
+      hasWebsite: !!data.website
+    });
+
     // Honeypot check - rechazar silenciosamente si el campo está lleno
     if (data.website && data.website.length > 0) {
-      console.log('Bot detectado por honeypot');
+      console.log('🤖 [HONEYPOT] Bot detected by honeypot field:', data.website);
       toast({
         title: "Error",
         description: "Hubo un problema. Por favor intenta de nuevo más tarde.",
@@ -287,15 +295,30 @@ const QuizSection = ({
       });
       return;
     }
+    console.log('✅ [HONEYPOT] Honeypot check passed');
 
-    // Rate limiting check
+    // Rate limiting check - MEJORADO: 5 intentos en 30 minutos
     const lastSubmit = localStorage.getItem('lastSubmitTime');
     const submitCount = parseInt(localStorage.getItem('submitCount') || '0');
     const now = Date.now();
+    
+    console.log('🚦 [RATE LIMIT] Checking rate limit...', {
+      lastSubmit,
+      submitCount,
+      now
+    });
+    
     if (lastSubmit) {
       const timeDiff = now - parseInt(lastSubmit);
-      const tenMinutes = 10 * 60 * 1000;
-      if (timeDiff < tenMinutes && submitCount >= 3) {
+      const thirtyMinutes = 30 * 60 * 1000; // ✅ CAMBIO: 30 minutos
+      
+      if (timeDiff < thirtyMinutes && submitCount >= 5) { // ✅ CAMBIO: 5 intentos
+        console.log('❌ [RATE LIMIT] Too many attempts detected:', {
+          attempts: submitCount,
+          timeSinceLastSubmit: Math.floor(timeDiff / 1000) + 's',
+          remainingTime: Math.floor((thirtyMinutes - timeDiff) / 1000) + 's'
+        });
+        
         toast({
           title: "Demasiados intentos",
           description: "Por favor espera unos minutos antes de intentar de nuevo",
@@ -303,15 +326,21 @@ const QuizSection = ({
         });
         return;
       }
-      if (timeDiff > tenMinutes) {
+      
+      if (timeDiff > thirtyMinutes) {
         localStorage.setItem('submitCount', '1');
+        console.log('♻️ [RATE LIMIT] Rate limit reset (30 min passed)');
       } else {
-        localStorage.setItem('submitCount', (submitCount + 1).toString());
+        const newCount = submitCount + 1;
+        localStorage.setItem('submitCount', newCount.toString());
+        console.log('📊 [RATE LIMIT] Incrementing counter:', newCount + '/5');
       }
     } else {
       localStorage.setItem('submitCount', '1');
+      console.log('🆕 [RATE LIMIT] First submission detected');
     }
     localStorage.setItem('lastSubmitTime', now.toString());
+    console.log('✅ [RATE LIMIT] Rate limit check passed');
     setIsSubmitting(true);
 
     // Combinar countryCode + phone para el campo whatsapp
@@ -321,36 +350,78 @@ const QuizSection = ({
       email: data.email,
       whatsapp: fullPhone
     };
+    
+    console.log('📞 [PHONE FORMAT] Formatted phone number:', {
+      countryCode: data.countryCode,
+      rawPhone: data.phone,
+      fullPhone
+    });
+
     const score = calculateScore(answers);
     const qualified = score >= 60 && !hasAutoDisqualify(answers);
+    
+    console.log('📊 [SCORING] Quiz scoring results:', {
+      score,
+      qualified,
+      threshold: 60
+    });
+    
+    const edgeFunctionPayload = {
+      ...contactData,
+      answers,
+      score,
+      qualified,
+      fbclid: quizAnalytics.getFbclid(),
+      isPartialSubmission: false,
+      ghlContactId: ghlContactId || undefined,
+      sessionId: quizAnalytics.getSessionId()
+    };
+    
+    console.log('🚀 [EDGE FUNCTION] Invoking submit-lead-to-ghl...', {
+      hasGhlContactId: !!ghlContactId,
+      sessionId: edgeFunctionPayload.sessionId,
+      isPartialSubmission: false
+    });
+
     try {
       const {
         data: responseData,
         error
       } = await supabase.functions.invoke('submit-lead-to-ghl', {
-        body: {
-          ...contactData,
-          answers,
-          score,
-          qualified,
-          fbclid: quizAnalytics.getFbclid(),
-          isPartialSubmission: false,
-          ghlContactId: ghlContactId || undefined,
-          // Pasar el contactId si existe
-          sessionId: quizAnalytics.getSessionId()
-        }
+        body: edgeFunctionPayload
+      });
+      
+      console.log('📦 [EDGE FUNCTION] Response received:', {
+        hasError: !!error,
+        hasData: !!responseData,
+        dataKeys: responseData ? Object.keys(responseData) : []
       });
       
       if (error) {
-        console.error('❌ Edge function error:', error);
+        console.error('❌ [EDGE FUNCTION] Error returned:', {
+          error,
+          message: error.message,
+          details: error
+        });
         throw error;
       }
       
-      // ✅ LOGGING EXHAUSTIVO del contactId
-      console.log('📦 Full response from edge function:', responseData);
+      console.log('✅ [EDGE FUNCTION] Success response received');
+      console.log('📦 [CONTACT ID] Validating contactId...', {
+        hasContactId: !!responseData?.contactId,
+        contactId: responseData?.contactId,
+        contactIdType: typeof responseData?.contactId,
+        contactIdLength: responseData?.contactId ? responseData.contactId.length : 0,
+        fullResponse: responseData
+      });
       
       if (!responseData?.contactId) {
-        console.warn('⚠️ No contactId in response. Response data:', responseData);
+        console.warn('⚠️ [CONTACT ID] Missing contactId in response!', {
+          response: responseData,
+          responseKeys: responseData ? Object.keys(responseData) : [],
+          success: responseData?.success,
+          message: responseData?.message
+        });
         
         // Track error en analytics
         quizAnalytics.trackValidationError(
@@ -359,21 +430,28 @@ const QuizSection = ({
           'Edge function did not return contactId'
         );
       } else {
-        console.log('✅ ContactId received successfully:', responseData.contactId);
-        console.log('📋 ContactId type:', typeof responseData.contactId);
-        console.log('📏 ContactId length:', responseData.contactId.length);
+        console.log('✅ [CONTACT ID] ContactId validated successfully:', {
+          contactId: responseData.contactId,
+          isString: typeof responseData.contactId === 'string',
+          length: responseData.contactId.length
+        });
       }
-      
-      console.log('Lead enviado a GHL:', responseData);
       
       // Track contact form submission before completing quiz
-      console.log('🚀 About to track contact form submission with sessionId:', quizAnalytics.getSessionId());
+      console.log('📊 [ANALYTICS] Tracking contact form submission...', {
+        sessionId: quizAnalytics.getSessionId(),
+        timestamp: new Date().toISOString()
+      });
+      
       try {
         await quizAnalytics.submitContactForm();
+        console.log('✅ [ANALYTICS] Contact form submission tracked');
       } catch (error) {
-        console.error('⚠️ Failed to track form submission, but continuing...', error);
+        console.error('⚠️ [ANALYTICS] Failed to track form submission (non-blocking):', error);
       }
+      
       quizAnalytics.completeQuiz();
+      console.log('✅ [ANALYTICS] Quiz completion tracked');
       
       // Enriquecer evento Lead de Meta Pixel con datos ICP
       const revenueAnswer = answers.q2 as string;
@@ -386,33 +464,49 @@ const QuizSection = ({
       else if (isICP) leadValue = 1500;
       else if (hasBudget) leadValue = 1200;
 
+      console.log('🎯 [META PIXEL] Enriching Lead event...', {
+        revenueAnswer,
+        budgetAnswer,
+        isICP,
+        hasBudget,
+        leadValue
+      });
+
       quizAnalytics.enrichLeadEvent(leadValue, isICP, revenueAnswer, hasBudget);
-      console.log('✅ Meta Pixel Lead enriquecido con ICP data');
+      console.log('✅ [META PIXEL] Lead event enriched with ICP data');
       
       toast({
-        title: "Perfecto",
+        title: "✅ Perfecto",
         description: "Tus datos han sido guardados correctamente"
       });
       
       const finalState = {
         ...answers,
         ...contactData,
-        ghlContactId: responseData?.contactId || null // Explicit null si no existe
+        ghlContactId: responseData?.contactId || null
       };
       
-      console.log('🎯 Final state with contactId:', finalState.ghlContactId);
-      onComplete(finalState, true);
-    } catch (error) {
-      console.error('💥 Failed to submit lead to GHL:', error);
-      console.error('💥 Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        type: typeof error,
-        error
+      console.log('🎯 [FINAL STATE] Completing quiz with state:', {
+        hasContactId: !!finalState.ghlContactId,
+        contactId: finalState.ghlContactId,
+        qualified: true
       });
       
+      onComplete(finalState, true);
+    } catch (error) {
+      console.error('💥 [ERROR] Failed to submit lead to GHL');
+      console.error('💥 [ERROR] Error type:', error instanceof Error ? error.constructor.name : typeof error);
+      console.error('💥 [ERROR] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('💥 [ERROR] Error stack:', error instanceof Error ? error.stack : 'N/A');
+      console.error('💥 [ERROR] Full error object:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      
       toast({
-        title: "Aviso",
-        description: "Hubo un problema al guardar tus datos, pero puedes continuar",
+        title: "⚠️ Error al guardar",
+        description: errorMessage.length > 100 
+          ? "Hubo un problema al guardar tus datos, pero puedes continuar" 
+          : errorMessage,
         variant: "destructive"
       });
       
@@ -423,9 +517,12 @@ const QuizSection = ({
         ghlContactId: null
       };
       
-      console.log('⚠️ Continuing without contactId due to error');
+      console.log('⚠️ [FALLBACK] Continuing without contactId due to error');
+      console.log('🔄 [FALLBACK] User can still access calendar, but without pre-filled data');
+      
       onComplete(finalState, true);
     } finally {
+      console.log('🏁 [SUBMIT] Form submission process completed');
       setIsSubmitting(false);
     }
   };
@@ -657,10 +754,14 @@ const QuizSection = ({
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
-                {isSubmitting ? <span className="flex items-center gap-2">
-                    <span className="animate-spin">⟳</span>
-                    Verificando tu acceso...
-                  </span> : '⚡ Reclamar Mi Acceso →'}
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="animate-spin">⏳</span>
+                    Enviando tus datos...
+                  </span>
+                ) : (
+                  '⚡ Reclamar Mi Acceso →'
+                )}
               </Button>
             </form>
           </Form>
