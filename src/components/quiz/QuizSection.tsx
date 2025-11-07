@@ -45,7 +45,7 @@ const steps: QuizStep[] = [{
   id: "q2",
   question: "¿Cuánta pasta entra al mes de media? (últimos 3 meses)",
   type: "radio",
-  options: ["Menos de €500/mes - Recién empiezo o la cosa está jodida", "€500 - €1.500/mes - Ya tengo algunos clientes, pero quiero más", "€1.500 - €3.000/mes - La cosa va, pero sé que puedo x3", "€3.000 - €6.000/mes - Facturo decente, quiero el siguiente nivel", "Más de €6.000/mes - Ya cobro bien, pero quiero dominar el juego"],
+  options: ["Menos de €500/mes", "€500 - €1.500/mes", "€1.500 - €3.000/mes", "€3.000 - €6.000/mes", "Más de €6.000/mes"],
   badge: "💰 Paso 2/6 - Tu Punto de Partida",
   subtext: "Tu facturación actual revela dónde estás en La Senda",
   motivator: {
@@ -240,11 +240,11 @@ const QuizSection = ({
       const value = currentAnswer as string;
       
       // Track ICP match for high-value monthly revenue brackets
-      if (value === "€1.500 - €3.000/mes - La cosa va, pero sé que puedo x3") {
+      if (value === "€1.500 - €3.000/mes") {
         quizAnalytics.trackICPMatch(value);
-      } else if (value === "€3.000 - €6.000/mes - Facturo decente, quiero el siguiente nivel") {
+      } else if (value === "€3.000 - €6.000/mes") {
         quizAnalytics.trackICPMatch(value);
-      } else if (value === "Menos de €500/mes - Recién empiezo o la cosa está jodida") {
+      } else if (value === "Menos de €500/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
       }
     }
@@ -484,8 +484,8 @@ const QuizSection = ({
       // Enriquecer evento Lead de Meta Pixel con datos ICP
       const revenueAnswer = answers.q2 as string;
       const budgetAnswer = answers.q4 as string;
-    const isICP = revenueAnswer === "€1.500 - €3.000/mes - La cosa va, pero sé que puedo x3" 
-      || revenueAnswer === "€3.000 - €6.000/mes - Facturo decente, quiero el siguiente nivel";
+    const isICP = revenueAnswer === "€1.500 - €3.000/mes" 
+      || revenueAnswer === "€3.000 - €6.000/mes";
       const hasBudget = budgetAnswer === "€1.000 - €2.000 - Apostaría fuerte por mi transformación" 
         || budgetAnswer === "€2.000 - €5.000 - Iría all-in sin miedo"
         || budgetAnswer === "Más de €5.000 - Sin límites si el sistema funciona";
@@ -567,11 +567,11 @@ const QuizSection = ({
     else if (state.q1 === "Otro servicio creativo") score += 8;
 
     // Q2 - Monthly Revenue (0-35 puntos) - NUEVO ICP Sweet Spot
-    if (state.q2 === "€1.500 - €3.000/mes - La cosa va, pero sé que puedo x3") score += 35; // ← NUEVO ICP SWEET SPOT
-    else if (state.q2 === "€3.000 - €6.000/mes - Facturo decente, quiero el siguiente nivel") score += 30; // Buen fit
-    else if (state.q2 === "€500 - €1.500/mes - Ya tengo algunos clientes, pero quiero más") score += 20; // Potencial
-    else if (state.q2 === "Más de €6.000/mes - Ya cobro bien, pero quiero dominar el juego") score += 15; // Alto LTV
-    else if (state.q2 === "Menos de €500/mes - Recién empiezo o la cosa está jodida") score += 0; // Solo disqualify si Q4 también bajo
+    if (state.q2 === "€1.500 - €3.000/mes") score += 35; // ← NUEVO ICP SWEET SPOT
+    else if (state.q2 === "€3.000 - €6.000/mes") score += 30; // Buen fit
+    else if (state.q2 === "€500 - €1.500/mes") score += 20; // Potencial
+    else if (state.q2 === "Más de €6.000/mes") score += 15; // Alto LTV
+    else if (state.q2 === "Menos de €500/mes") score += 0; // Solo disqualify si Q4 también bajo
 
     // Q3 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
     if (Array.isArray(state.q3)) {
@@ -610,7 +610,7 @@ const QuizSection = ({
   const hasAutoDisqualify = (state: QuizState): boolean => {
     // Solo auto-disqualify si AMBAS condiciones (muy bajo revenue Y sin inversión)
     const noInvestmentCapacity = state.q4 === "Ahora mismo no puedo (menos de €500 disponibles)";
-    const lowRevenue = state.q2 === "Menos de €500/mes - Recién empiezo o la cosa está jodida";
+    const lowRevenue = state.q2 === "Menos de €500/mes";
     
     return noInvestmentCapacity && lowRevenue;
   };
