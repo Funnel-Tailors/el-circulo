@@ -84,9 +84,8 @@ const steps: QuizStep[] = [{
 }, {
   id: "q5",
   question: "Si hoy tuvieras el sistema exacto que usan creativos que cobran €5K+, ¿cuánto invertirías en tu ascenso?",
-  description: "No hay respuesta correcta. Solo necesitamos saber tu capacidad actual para diseñar tu ruta personalizada.",
   type: "radio",
-  options: ["Hasta €500 - Probaría con poco riesgo primero", "€500 - €1.000 - Invertiría si veo potencial claro", "€1.000 - €2.000 - Apostaría fuerte por mi transformación", "€2.000 - €5.000 - Iría all-in sin miedo", "Más de €5.000 - Sin límites si el sistema funciona", "Ahora mismo no puedo (menos de €500 disponibles)"],
+  options: ["Menos de €1.500", "€1.500 - €3.000", "€3.000 - €5.000", "Más de €5.000"],
   badge: "💎 Paso 5/7 - Tu Capacidad",
   subtext: "El tributo al Círculo se adapta según tu ruta. Responde con sinceridad.",
   valueStack: null,
@@ -369,20 +368,30 @@ const QuizSection = ({
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       let cartValue = 0;
+      let customEvent = '';
       
-      if (value === "Más de €5.000 - Sin límites si el sistema funciona") {
-        cartValue = 3500; // Máximo valor - cero fricción
-      } else if (value === "€2.000 - €5.000 - Iría all-in sin miedo") {
-        cartValue = 3000; // Alto valor - baja fricción
-      } else if (value === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") {
-        cartValue = 2000; // ← ICP Sweet Spot (precio real del Círculo)
-      } else if (value === "€500 - €1.000 - Invertiría si veo potencial claro") {
-        cartValue = 1000; // Potencial con fricción
-      } else if (value === "Hasta €500 - Probaría con poco riesgo primero") {
-        cartValue = 500; // Baja capacidad
+      if (value === "Más de €5.000") {
+        cartValue = 5000;
+      } else if (value === "€3.000 - €5.000") {
+        cartValue = 4000;
+      } else if (value === "€1.500 - €3.000") {
+        cartValue = 2000;
+      } else if (value === "Menos de €1.500") {
+        customEvent = 'LowBudget';
+        cartValue = 1000;
       }
       
-      if (cartValue > 0) {
+      if (customEvent) {
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('trackCustom', customEvent, {
+            content_name: `Q5: ${value}`,
+            value: cartValue,
+            currency: 'EUR'
+          });
+        }
+        console.log('🚫 Budget disqualified - tracking negative signal');
+        quizAnalytics.trackBudgetDisqualified();
+      } else {
         if (typeof window !== 'undefined' && (window as any).fbq) {
           (window as any).fbq('track', 'AddToCart', {
             value: cartValue,
@@ -390,7 +399,7 @@ const QuizSection = ({
             content_name: 'Círculo Membership',
             content_category: 'Membership',
             content_ids: ['circulo_annual'],
-            predicted_ltv: cartValue * 3, // Para optimización de audiencias Meta
+            predicted_ltv: cartValue * 3,
             custom_data: {
               investment_capacity: value,
               qualified: true
@@ -399,16 +408,6 @@ const QuizSection = ({
           console.log(`✅ Meta Pixel AddToCart (Q5) - Value: ${cartValue}€, Capacity: ${value}`);
         }
         quizAnalytics.trackBudgetQualified(value);
-      } else {
-        // Track disqualification para audiencias de exclusión
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('trackCustom', 'LowBudgetLead', {
-            investment_capacity: value,
-            qualified: false
-          });
-        }
-        console.log('🚫 Budget disqualified - tracking negative signal');
-        quizAnalytics.trackBudgetDisqualified();
       }
     }
 
@@ -612,9 +611,9 @@ const QuizSection = ({
       const budgetAnswer = answers.q5 as string;
     const isICP = revenueAnswer === "€1.500 - €3.000/mes" 
       || revenueAnswer === "€3.000 - €6.000/mes";
-      const hasBudget = budgetAnswer === "€1.000 - €2.000 - Apostaría fuerte por mi transformación" 
-        || budgetAnswer === "€2.000 - €5.000 - Iría all-in sin miedo"
-        || budgetAnswer === "Más de €5.000 - Sin límites si el sistema funciona";
+      const hasBudget = budgetAnswer === "€1.500 - €3.000" 
+        || budgetAnswer === "€3.000 - €5.000"
+        || budgetAnswer === "Más de €5.000";
 
       let leadValue = 1000;
       if (isICP && hasBudget) leadValue = 2000;
@@ -723,12 +722,10 @@ const QuizSection = ({
     }
 
     // Q5 - Investment Capacity (0-37 puntos) - CRÍTICO: NO penalizar presupuestos altos
-    if (state.q5 === "Más de €5.000 - Sin límites si el sistema funciona") score += 37; // ← MÁXIMO: Venta fácil, cero fricción
-    else if (state.q5 === "€2.000 - €5.000 - Iría all-in sin miedo") score += 37; // ← También máximo: Ticket alto sin fricción
-    else if (state.q5 === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") score += 35; // ← ICP Sweet Spot (precio Círculo)
-    else if (state.q5 === "€500 - €1.000 - Invertiría si veo potencial claro") score += 18; // Potencial pero con fricción
-    else if (state.q5 === "Hasta €500 - Probaría con poco riesgo primero") score += 8; // Baja capacidad
-    else score += 0; // "Ahora mismo no puedo" → Auto-disqualify
+    if (state.q5 === "Más de €5.000") score += 37;
+    else if (state.q5 === "€3.000 - €5.000") score += 37;
+    else if (state.q5 === "€1.500 - €3.000") score += 20;
+    else if (state.q5 === "Menos de €1.500") score += 0; // Disqualifies
 
     // Q6 - Urgencia/Compromiso (0-5 puntos)
     if (state.q6?.includes("Rápido")) score += 5; // Conversión rápida
@@ -742,7 +739,7 @@ const QuizSection = ({
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
     // Solo auto-disqualify si AMBAS condiciones (muy bajo revenue Y sin inversión)
-    const noInvestmentCapacity = state.q5 === "Ahora mismo no puedo (menos de €500 disponibles)";
+    const noInvestmentCapacity = state.q5 === "Menos de €1.500";
     const lowRevenue = state.q3 === "Menos de €500/mes";
     
     return noInvestmentCapacity && lowRevenue;
