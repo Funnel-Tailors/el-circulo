@@ -66,16 +66,16 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q4",
-  question: "El tributo anual al Círculo es de 2.000€",
-  description: "Pago único por 1 año completo. Equivale a 0.5-1 proyecto a tu precio actual. El 78% lo recupera x2 en 60 días.",
+  question: "Si hoy tuvieras el sistema exacto que usan creativos que cobran €5K+, ¿cuánto invertirías en tu ascenso?",
+  description: "No hay respuesta correcta. Solo necesitamos saber tu capacidad actual para diseñar tu ruta personalizada.",
   type: "radio",
-  options: ["Puedo hacer ese tributo ahora", "No dispongo de esa cantidad"],
-  badge: "💎 Paso 4/6 - Crucial",
-  subtext: null,
-  valueStack: ["✓ 1 año completo de membresía en el Círculo (acceso ilimitado)", "✓ Onboarding personalizado con hoja de ruta adaptada a ti", "✓ Mentorías semanales con miembros élite y facilitadores", "✓ Comunidad privada 24/7 de creativos que cobran 4-5 cifras por proyecto", "✓ Rituales exclusivos de alto impacto cada mes"],
+  options: ["Hasta €500 - Probaría con poco riesgo primero", "€500 - €1.000 - Invertiría si veo potencial claro", "€1.000 - €2.000 - Apostaría fuerte por mi transformación", "€2.000 - €5.000 - Iría all-in sin miedo", "Más de €5.000 - Sin límites si el sistema funciona", "Ahora mismo no puedo (menos de €500 disponibles)"],
+  badge: "💎 Paso 4/6 - Tu Capacidad",
+  subtext: "El tributo al Círculo se adapta según tu ruta. Responde con sinceridad.",
+  valueStack: null,
   motivator: {
     icon: "🔥",
-    text: "Dani hizo un ROI 10x en sus primeros 7 días en el Círculo"
+    text: "El 78% recupera su inversión x2 en 60 días. Dani hizo ROI x10 en su primera semana."
   }
 }, {
   id: "q5",
@@ -246,14 +246,39 @@ const QuizSection = ({
       }
     }
 
-    // Track Q4 - Budget qualification
+    // Track Q4 - Investment capacity (graduado por rango)
     if (currentQuestion.id === 'q4') {
-      const budgetAnswer = currentAnswer as string;
-      const revenueAnswer = answers.q2 as string;
+      const value = currentAnswer as string;
+      let cartValue = 0;
       
-      if (budgetAnswer === "Puedo hacer ese tributo ahora") {
-        quizAnalytics.trackBudgetQualified(revenueAnswer);
+      if (value === "€2.000 - €5.000 - Iría all-in sin miedo") {
+        cartValue = 2500;
+      } else if (value === "Más de €5.000 - Sin límites si el sistema funciona") {
+        cartValue = 3000;
+      } else if (value === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") {
+        cartValue = 2000; // ← ICP Sweet Spot (precio real del Círculo)
+      } else if (value === "€500 - €1.000 - Invertiría si veo potencial claro") {
+        cartValue = 1000;
+      } else if (value === "Hasta €500 - Probaría con poco riesgo primero") {
+        cartValue = 500;
+      }
+      
+      if (cartValue > 0) {
+        if (typeof window !== 'undefined' && (window as any).fbq) {
+          (window as any).fbq('track', 'AddToCart', {
+            value: cartValue,
+            currency: 'EUR',
+            content_name: 'Círculo Membership',
+            content_category: 'Membership',
+            content_ids: ['circulo_annual'],
+            predicted_ltv: cartValue * 3 // Para optimización de audiencias Meta
+          });
+          console.log(`✅ Meta Pixel AddToCart fired - Value: ${cartValue}€`);
+        }
+        quizAnalytics.trackBudgetQualified(value);
       } else {
+        // Track disqualification para audiencias de exclusión
+        console.log('🚫 Budget disqualified - tracking negative signal');
         quizAnalytics.trackBudgetDisqualified();
       }
     }
@@ -457,7 +482,9 @@ const QuizSection = ({
       const revenueAnswer = answers.q2 as string;
       const budgetAnswer = answers.q4 as string;
       const isICP = revenueAnswer === "1.000€ - 2.500€";
-      const hasBudget = budgetAnswer === "Puedo hacer ese tributo ahora";
+      const hasBudget = budgetAnswer === "€1.000 - €2.000 - Apostaría fuerte por mi transformación" 
+        || budgetAnswer === "€2.000 - €5.000 - Iría all-in sin miedo"
+        || budgetAnswer === "Más de €5.000 - Sin límites si el sistema funciona";
 
       let leadValue = 1000;
       if (isICP && hasBudget) leadValue = 2000;
@@ -558,9 +585,13 @@ const QuizSection = ({
       }
     }
 
-    // Q4 - Budget (0-30 puntos) - CRÍTICO
-    if (state.q4 === "Puedo hacer ese tributo ahora") score += 30;
-    else score += 0;
+    // Q4 - Investment Capacity (0-35 puntos) - Scoring graduado
+    if (state.q4 === "€2.000 - €5.000 - Iría all-in sin miedo") score += 35;
+    else if (state.q4 === "Más de €5.000 - Sin límites si el sistema funciona") score += 30;
+    else if (state.q4 === "€1.000 - €2.000 - Apostaría fuerte por mi transformación") score += 30; // ← ICP Sweet Spot
+    else if (state.q4 === "€500 - €1.000 - Invertiría si veo potencial claro") score += 15;
+    else if (state.q4 === "Hasta €500 - Probaría con poco riesgo primero") score += 5;
+    else score += 0; // "Ahora mismo no puedo"
 
     // Q5 - Urgencia/Compromiso (0-5 puntos)
     if (state.q5?.includes("Rápido")) score += 5;
@@ -573,8 +604,11 @@ const QuizSection = ({
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState): boolean => {
-    // Auto-descalificar si no tiene presupuesto O si factura menos de 500€
-    return state.q4 === "No dispongo de esa cantidad" || state.q2 === "Menos de 500€";
+    // Solo auto-disqualify si AMBAS condiciones (muy bajo revenue Y sin inversión)
+    const noInvestmentCapacity = state.q4 === "Ahora mismo no puedo (menos de €500 disponibles)";
+    const lowRevenue = state.q2 === "Menos de 500€";
+    
+    return noInvestmentCapacity && lowRevenue;
   };
   const renderInput = () => {
     switch (currentQuestion.type) {
@@ -587,18 +621,8 @@ const QuizSection = ({
           setAnswers(updatedAnswers);
           quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
 
-          // Disparar AddToCart si responde "Puedo hacer ese tributo ahora" en q4
-          if (currentQuestion.id === 'q4' && value === 'Puedo hacer ese tributo ahora') {
-            if (typeof window !== 'undefined' && (window as any).fbq) {
-              (window as any).fbq('track', 'AddToCart', {
-                value: 2000,
-                currency: 'EUR',
-                content_name: 'Círculo Membership',
-                content_category: 'Membership'
-              });
-              console.log('✅ Meta Pixel AddToCart event fired with value: 2000 EUR');
-            }
-          }
+          // Meta Pixel AddToCart ya se dispara en handleNext con valores graduados
+          // No duplicar aquí para evitar double-tracking
 
           // Auto-avance después de 300ms para dar feedback visual
           setTimeout(() => {

@@ -325,22 +325,17 @@ class QuizAnalytics {
     });
   }
 
-  trackBudgetQualified(revenueAnswer: string): void {
-    let cartValue = 1000;
-    if (revenueAnswer === "1.000€ - 2.500€") {
-      cartValue = 2000;
-    } else if (revenueAnswer === "500€ - 1.000€") {
-      cartValue = 1500;
-    } else if (revenueAnswer === "2.500€ - 5.000€") {
-      cartValue = 1800;
-    }
-    
-    this.trackMetaPixelEvent('AddToCart', {
-      value: cartValue,
-      currency: 'EUR',
-      content_name: 'Círculo Membership',
-      content_category: 'Membership',
-      content_ids: ['circulo_annual']
+  trackBudgetQualified(investmentCapacity: string): void {
+    // Meta Pixel AddToCart ya se dispara en handleNext con valores graduados
+    // Solo registramos en quiz_analytics para tracking interno
+    this.trackEvent({
+      event_type: 'question_answered',
+      step_id: 'q4_budget_qualified',
+      answer_value: investmentCapacity,
+      metadata: {
+        meta_event: 'AddToCart',
+        investment_capacity: investmentCapacity
+      }
     });
   }
 
