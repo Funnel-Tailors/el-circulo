@@ -209,7 +209,7 @@ const QuizSection = ({
     hasSubmittedPartial.current = true; // Marcar como enviado inmediatamente
 
     const score = calculateScore(answers);
-    const qualified = score >= 60 && !hasAutoDisqualify(answers);
+    const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
     try {
       const {
         data,
@@ -414,7 +414,7 @@ const QuizSection = ({
     if (isLastStep) {
       // Check if qualified before showing contact form
       const score = calculateScore(answers);
-      const qualified = score >= 60 && !hasAutoDisqualify(answers);
+      const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
       if (qualified) {
         setShowContactForm(true);
       } else {
@@ -511,12 +511,12 @@ const QuizSection = ({
     });
 
     const score = calculateScore(answers);
-    const qualified = score >= 60 && !hasAutoDisqualify(answers);
+    const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
     
     console.log('📊 [SCORING] Quiz scoring results:', {
       score,
       qualified,
-      threshold: 60
+      threshold: 75
     });
     
     const edgeFunctionPayload = {
@@ -737,12 +737,21 @@ const QuizSection = ({
     
     return Math.min(score, 100); // Cap at 100
   };
-  const hasAutoDisqualify = (state: QuizState): boolean => {
-    // Solo auto-disqualify si AMBAS condiciones (muy bajo revenue Y sin inversión)
-    const noInvestmentCapacity = state.q5 === "Menos de €1.500";
-    const lowRevenue = state.q3 === "Menos de €500/mes";
+  const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
+    // HARDSTOP #1: Sin capacidad de inversión mínima
+    if (state.q5 === "Menos de €1.500") return true;
     
-    return noInvestmentCapacity && lowRevenue;
+    // HARDSTOP #2: Revenue muy bajo + inversión baja
+    if (state.q3 === "Menos de €500/mes" && state.q5 === "€1.500 - €3.000") {
+      return true;
+    }
+    
+    // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
+    if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {
+      return true;
+    }
+    
+    return false;
   };
   const renderInput = () => {
     switch (currentQuestion.type) {
@@ -762,7 +771,7 @@ const QuizSection = ({
           setTimeout(() => {
             if (isLastStep) {
               const score = calculateScore(updatedAnswers);
-              const qualified = score >= 60 && !hasAutoDisqualify(updatedAnswers);
+              const qualified = score >= 75 && !hasAutoDisqualify(updatedAnswers, score);
               if (qualified) {
                 setShowContactForm(true);
               } else {
