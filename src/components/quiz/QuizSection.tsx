@@ -38,10 +38,11 @@ const steps: QuizStep[] = [{
   question: "¿Cuál es tu MAYOR FRUSTRACIÓN ahora mismo?",
   type: "radio",
   options: [
-    "No consigo clientes de forma constante",
-    "Cobro poco por mi trabajo (menos de €1.000/proyecto)",
-    "Pierdo mucho tiempo con clientes que no pagan lo que vale mi trabajo",
-    "Tengo clientes pero no sé cómo escalar sin quemarme"
+    "Mis clientes no tienen presupuesto (cobro poco y me regatean)",
+    "Trabajo muchas horas y encima estoy tieso",
+    "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)",
+    "No tengo clientes suficientes (no sé ni por donde empezar)",
+    "No sé cómo vender lo que hago sin que regateen"
   ],
   badge: "💥 Paso 1/7 - Tu Punto de Dolor",
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
@@ -583,10 +584,11 @@ const QuizSection = ({
     let score = 0;
 
     // Q1 - Pain Point/Frustración (0-8 puntos) - Indica motivación y awareness
-    if (state.q1 === "No consigo clientes de forma constante") score += 8; // Alta necesidad
-    else if (state.q1 === "Cobro poco por mi trabajo (menos de €1.000/proyecto)") score += 8; // Alta necesidad
-    else if (state.q1 === "Pierdo mucho tiempo con clientes que no pagan lo que vale mi trabajo") score += 7; // Necesidad media-alta
-    else if (state.q1 === "Tengo clientes pero no sé cómo escalar sin quemarme") score += 8; // Alta necesidad + madurez
+    if (state.q1 === "Mis clientes no tienen presupuesto (cobro poco y me regatean)") score += 8; // Alta necesidad pricing
+    else if (state.q1 === "Trabajo muchas horas y encima estoy tieso") score += 8; // Alta necesidad eficiencia + revenue
+    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)") score += 8; // Máxima frustración + escepticismo
+    else if (state.q1 === "No tengo clientes suficientes (no sé ni por donde empezar)") score += 7; // Necesidad adquisición
+    else if (state.q1 === "No sé cómo vender lo que hago sin que regateen") score += 8; // Alta necesidad positioning
 
     // Q2 - ICP/Profesión (0-10 puntos) - Todos los creativos son ICP
     if (state.q2 === "Diseñador Gráfico / Web") score += 10;
