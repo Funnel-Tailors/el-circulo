@@ -321,6 +321,14 @@ export type Database = {
       }
     }
     Functions: {
+      get_analytics_overview: {
+        Args: {
+          filter_quiz_version?: string
+          interval_days: number
+          offset_days?: number
+        }
+        Returns: Json
+      }
       get_answer_distribution_filtered: {
         Args: { interval_days: number }
         Returns: {
