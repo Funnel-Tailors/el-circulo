@@ -67,7 +67,7 @@ export const GHLCalendarIframe = ({
         </p>
       </div>
 
-      <Card className="bg-card/50 border-border p-2 md:p-4 relative overflow-hidden">
+      <Card className="bg-card/50 border-border p-0 relative overflow-hidden">
         {isLoading && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
             <div className="text-center">
