@@ -41,7 +41,7 @@ const steps: QuizStep[] = [{
     "Mis clientes no tienen presupuesto (cobro poco y me regatean)",
     "Trabajo muchas horas y encima estoy tieso",
     "No tengo clientes suficientes (no sé ni por donde empezar)",
-    "No sé cómo vender lo que hago sin que regateen",
+    "No sé vender lo que hago a gente que pague 5 cifras por ello",
     "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)"
   ],
   badge: "💥 Paso 1/7 - Tu Punto de Dolor",
@@ -597,7 +597,7 @@ const QuizSection = ({
     else if (state.q1 === "Trabajo muchas horas y encima estoy tieso") score += 8; // Alta necesidad eficiencia + revenue
     else if (state.q1 === "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)") score += 8; // Máxima frustración + escepticismo
     else if (state.q1 === "No tengo clientes suficientes (no sé ni por donde empezar)") score += 7; // Necesidad adquisición
-    else if (state.q1 === "No sé cómo vender lo que hago sin que regateen") score += 8; // Alta necesidad positioning
+    else if (state.q1 === "No sé vender lo que hago a gente que pague 5 cifras por ello") score += 8; // Alta necesidad positioning
 
     // Q2 - ICP/Profesión (0-10 puntos) - Todos los creativos son ICP
     if (state.q2 === "Diseñador Gráfico / Web") score += 10;
