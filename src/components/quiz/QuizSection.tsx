@@ -14,7 +14,7 @@ import { QuizState } from "@/types/quiz";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { contactFormSchema, partialContactSchema, type ContactFormData, COUNTRY_CODES } from "@/lib/validations/contact";
+import { contactFormSchema, type ContactFormData, COUNTRY_CODES } from "@/lib/validations/contact";
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
@@ -123,12 +123,6 @@ const QuizSection = ({
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Estado para captura progresiva
-  const hasSubmittedPartial = useRef(false);
-  const [ghlContactId, setGhlContactId] = useState<string | null>(null);
-  
-  // Timer de urgencia - 15 minutos
-  const [timeLeft, setTimeLeft] = useState(15 * 60); // 900 segundos
 
   // Initialize form at component level (hooks must be called unconditionally)
   const form = useForm<ContactFormData>({
@@ -155,91 +149,6 @@ const QuizSection = ({
     }
   }, [showContactForm]);
 
-  // Validación y captura progresiva de nombre y email
-  useEffect(() => {
-    const subscription = form.watch((value, {
-      name: fieldName
-    }) => {
-      // Solo procesar si cambian name o email
-      if (fieldName === 'name' || fieldName === 'email') {
-        // Validar solo name y email con schema parcial
-        const result = partialContactSchema.safeParse({
-          name: value.name,
-          email: value.email
-        });
-
-        // Si ambos son válidos y no hemos enviado el parcial
-        if (result.success && !hasSubmittedPartial.current && showContactForm) {
-          submitPartialLead(value.name!, value.email!);
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form.watch, showContactForm]);
-  
-  // Countdown timer - se ejecuta solo cuando el formulario está visible
-  useEffect(() => {
-    if (!showContactForm || timeLeft <= 0) return;
-    
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [showContactForm, timeLeft]);
-  
-  // Formatear tiempo en mm:ss
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-  
-  const submitPartialLead = async (name: string, email: string) => {
-    console.log('📤 Enviando lead parcial:', {
-      name,
-      email
-    });
-    hasSubmittedPartial.current = true; // Marcar como enviado inmediatamente
-
-    const score = calculateScore(answers);
-    const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
-    try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('submit-lead-to-ghl', {
-        body: {
-          name,
-          email,
-          whatsapp: '',
-          // Vacío por ahora
-          answers,
-          score,
-          qualified,
-          fbclid: quizAnalytics.getFbclid(),
-          isPartialSubmission: true,
-          sessionId: quizAnalytics.getSessionId()
-        }
-      });
-      if (error) {
-        console.error('Error al capturar lead parcial:', error);
-        return;
-      }
-      if (data?.contactId) {
-        setGhlContactId(data.contactId);
-        console.log('✅ Lead parcial capturado. ContactId:', data.contactId);
-      }
-    } catch (error) {
-      console.error('Error al capturar lead parcial:', error);
-    }
-  };
   const handleNext = () => {
     const currentAnswer = answers[currentQuestion.id as keyof QuizState];
     if (!currentAnswer || Array.isArray(currentAnswer) && currentAnswer.length === 0) {
@@ -526,12 +435,10 @@ const QuizSection = ({
       qualified,
       fbclid: quizAnalytics.getFbclid(),
       isPartialSubmission: false,
-      ghlContactId: ghlContactId || undefined,
       sessionId: quizAnalytics.getSessionId()
     };
     
     console.log('🚀 [EDGE FUNCTION] Invoking submit-lead-to-ghl...', {
-      hasGhlContactId: !!ghlContactId,
       sessionId: edgeFunctionPayload.sessionId,
       isPartialSubmission: false
     });
