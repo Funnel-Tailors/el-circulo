@@ -15,19 +15,10 @@ export const QualifiedResult = ({ isLoading, error, onReset }: QualifiedResultPr
 
   return (
     <div className="space-y-4">
-      <div className="text-center space-y-2">
-        <div className="inline-block px-3 py-1 bg-accent/20 border border-accent/30 rounded-full mb-2">
-          <span className="text-xs font-semibold text-accent">✨ Felicitaciones</span>
-        </div>
-        <h2 className="text-xl font-bold text-foreground mb-2">
-          {RESULT_MESSAGES.qualified.title}
+      <div className="text-center space-y-4 mb-6">
+        <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
+          Reserva tu <span className="glow">ritual</span> de iniciación
         </h2>
-      </div>
-
-      <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 text-center">
-        <p className="text-xs text-muted-foreground">
-          {RESULT_MESSAGES.qualified.progressMessage}
-        </p>
       </div>
 
       {bookingStarted && (

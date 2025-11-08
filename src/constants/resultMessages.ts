@@ -1,13 +1,12 @@
 export const RESULT_MESSAGES = {
   qualified: {
-    title: "Selecciona tu horario para la consulta estratégica",
-    progressMessage: "✨ Estás a un paso de diseñar tu oferta premium personalizada",
-    dataPreloaded: "✨ Tus datos ya están pre-cargados. Solo confirma tu horario y recibirás la clase al instante.",
+    title: "Reserva tu ritual de iniciación",
+    dataPreloaded: "✨ Tus datos ya están pre-cargados en el calendario",
     lastStep: "Último paso: Confirma tu horario",
     bonusClass: {
-      title: "🎁 Bono especial al agendar:",
+      title: "🎁 Bono al agendar:",
       subtitle: "Crea Tu Oferta: Cómo cobrar 3 veces más haciendo lo mismo",
-      description: "Te la enviaremos por WhatsApp en menos de 60 segundos tras confirmar tu cita"
+      description: "Te la enviaremos por WhatsApp tras confirmar tu cita"
     },
     instructions: "📚 Ve la clase ANTES de la consulta para que podamos diseñar tu oferta premium personalizada en vivo",
     benefits: [
