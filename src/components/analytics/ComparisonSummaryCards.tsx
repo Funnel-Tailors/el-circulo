@@ -58,18 +58,16 @@ const ComparisonSummaryCards = ({
   const { kpis, sessionFunnel, vslKpis } = currentData;
   const { kpis: prevKpis, sessionFunnel: prevSessionFunnel, vslKpis: prevVslKpis } = previousData;
 
-  if (!kpis || !sessionFunnel || !vslKpis) {
-    return (
-      <div className="p-6 text-center text-muted-foreground">
-        Cargando datos comparativos...
-      </div>
-    );
-  }
+  // Helper para extraer trends de forma segura
+  const safeExtractTrend = (trends: DailyTrend[], key: keyof DailyTrend): number[] => {
+    if (!trends || trends.length === 0) return [];
+    return extractTrendData(trends, key);
+  };
 
-  const leadsTrend = extractTrendData(trends, 'leads_count');
-  const conversionTrend = extractTrendData(trends, 'conversion_rate');
-  const vslEngagementTrend = extractTrendData(trends, 'avg_vsl_engagement');
-  const quizCompletionTrend = extractTrendData(trends, 'quiz_completion_rate');
+  const leadsTrend = safeExtractTrend(trends, 'leads_count');
+  const conversionTrend = safeExtractTrend(trends, 'conversion_rate');
+  const vslEngagementTrend = safeExtractTrend(trends, 'avg_vsl_engagement');
+  const quizCompletionTrend = safeExtractTrend(trends, 'quiz_completion_rate');
 
   return (
     <div className="space-y-4">
@@ -83,7 +81,7 @@ const ComparisonSummaryCards = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <ComparisonCard
           title="Leads Generados"
-          currentValue={sessionFunnel.submitted_contact_form}
+          currentValue={sessionFunnel?.submitted_contact_form || 0}
           previousValue={prevSessionFunnel?.submitted_contact_form || 0}
           trend={leadsTrend}
           format="number"
@@ -91,7 +89,7 @@ const ComparisonSummaryCards = ({
         
         <ComparisonCard
           title="Tasa de Conversión Global"
-          currentValue={sessionFunnel.overall_conversion_rate}
+          currentValue={sessionFunnel?.overall_conversion_rate || 0}
           previousValue={prevSessionFunnel?.overall_conversion_rate || 0}
           trend={conversionTrend}
           format="percentage"
@@ -99,7 +97,7 @@ const ComparisonSummaryCards = ({
         
         <ComparisonCard
           title="Engagement VSL"
-          currentValue={vslKpis.avg_percentage_watched}
+          currentValue={vslKpis?.avg_percentage_watched || 0}
           previousValue={prevVslKpis?.avg_percentage_watched || 0}
           trend={vslEngagementTrend}
           format="percentage"
@@ -107,7 +105,7 @@ const ComparisonSummaryCards = ({
         
         <ComparisonCard
           title="Quiz Completion Rate"
-          currentValue={sessionFunnel.quiz_completion_rate}
+          currentValue={sessionFunnel?.quiz_completion_rate || 0}
           previousValue={prevSessionFunnel?.quiz_completion_rate || 0}
           trend={quizCompletionTrend}
           format="percentage"
@@ -115,7 +113,7 @@ const ComparisonSummaryCards = ({
         
         <ComparisonCard
           title="ROI Estimado"
-          currentValue={sessionFunnel.submitted_contact_form * 500}
+          currentValue={(sessionFunnel?.submitted_contact_form || 0) * 500}
           previousValue={(prevSessionFunnel?.submitted_contact_form || 0) * 500}
           trend={leadsTrend.map(v => v * 500)}
           format="currency"
@@ -123,7 +121,7 @@ const ComparisonSummaryCards = ({
         
         <ComparisonCard
           title="Velocidad de Conversión"
-          currentValue={kpis.avg_time_to_complete}
+          currentValue={kpis?.avg_time_to_complete || 0}
           previousValue={prevKpis?.avg_time_to_complete || 0}
           trend={[]}
           format="time"

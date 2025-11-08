@@ -23,13 +23,13 @@ const Analytics = () => {
   const [dateRange, setDateRange] = useState('30');
   const [quizVersion, setQuizVersion] = useState<'all' | 'v1' | 'v2'>('all');
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Usar hook custom para manejar datos con timeout
   const {
     overviewData,
     loading,
     lastUpdate,
-    setLoading,
     fetchOverview
   } = useAnalyticsData();
 
@@ -70,23 +70,15 @@ const Analytics = () => {
   // Fetch data cuando cambia dateRange o quizVersion
   useEffect(() => {
     if (isAdmin) {
-      const loadData = async () => {
-        setLoading(true);
-        try {
-          await fetchOverview({
-            intervalDays: parseFloat(dateRange),
-            quizVersion
-          });
-        } catch (error) {
-          console.error('Error loading data:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadData();
+      setError(null);
+      fetchOverview({
+        intervalDays: parseFloat(dateRange),
+        quizVersion
+      }).catch((err) => {
+        setError(err instanceof Error ? err.message : 'Error desconocido');
+      });
     }
-  }, [isAdmin, dateRange, quizVersion, fetchOverview, setLoading]);
+  }, [isAdmin, dateRange, quizVersion]);
 
   // Auto refresh
   useEffect(() => {
@@ -106,7 +98,7 @@ const Analytics = () => {
   }, [autoRefresh, isAdmin, dateRange, quizVersion, fetchOverview]);
 
   const handleRefresh = async () => {
-    setLoading(true);
+    setError(null);
     try {
       await fetchOverview({
         intervalDays: parseFloat(dateRange),
@@ -116,10 +108,8 @@ const Analytics = () => {
         title: 'Datos actualizados',
         description: 'Analytics recargados exitosamente',
       });
-    } catch (error) {
-      // Error handling done in hook
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al actualizar');
     }
   };
 
@@ -220,6 +210,17 @@ const Analytics = () => {
           </div>
         </div>
 
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-lg">
+            <p className="font-semibold">Error al cargar datos</p>
+            <p className="text-sm">{error}</p>
+            <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
+              Reintentar
+            </Button>
+          </div>
+        )}
+
         {/* Main Content */}
         {loading && !overviewData.current ? (
           <div className="flex items-center justify-center py-20">
@@ -227,7 +228,7 @@ const Analytics = () => {
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
               <p className="text-muted-foreground">Cargando datos...</p>
               <p className="text-sm text-muted-foreground">
-                Si tarda mucho, intenta reducir el rango de fechas
+                Máximo 15 segundos...
               </p>
             </div>
           </div>
