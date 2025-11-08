@@ -55,12 +55,13 @@ function isSpamSubmission(data: ContactData): { isSpam: boolean; reason?: string
 }
 
 interface QuizAnswers {
-  q1?: string;
-  q2?: string;
-  q3?: string[];
-  q4?: string;
-  q5?: string;
-  q6?: string;
+  q1?: string;  // Pain Point
+  q2?: string;  // Profesión
+  q3?: string;  // Facturación mensual
+  q4?: string[]; // Métodos de adquisición (array)
+  q5?: string;  // Presupuesto de inversión
+  q6?: string;  // Urgencia/Compromiso
+  q7?: string;  // Autoridad de decisión
 }
 
 interface ContactData {
@@ -82,6 +83,56 @@ interface LeadSubmission {
   sessionId?: string;
 }
 
+// Helper: Detectar razón específica de hardstop
+function getHardstopReason(answers: QuizAnswers, score: number): string | null {
+  // HARDSTOP #1: Sin capacidad de inversión mínima
+  if (answers.q5 === "Menos de €1.500") {
+    return "Sin capacidad de inversión mínima";
+  }
+  
+  // HARDSTOP #2: Revenue muy bajo + inversión baja
+  if (answers.q3 === "Menos de €500/mes" && answers.q5 === "€1.500 - €3.000") {
+    return "Revenue muy bajo + inversión insuficiente";
+  }
+  
+  // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
+  if (answers.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {
+    return "Falta autoridad de decisión + score bajo";
+  }
+  
+  return null;
+}
+
+// Helper: Categorizar leads (A+/A/B/C/DQ)
+function getLeadCategory(score: number, answers: QuizAnswers): string {
+  const hardstop = getHardstopReason(answers, score);
+  
+  // DQ: Disqualified por hardstop
+  if (hardstop) return 'DQ';
+  
+  // A+: Score 95-110, budget OK, autoridad solo
+  if (score >= 95 && 
+      answers.q5 !== "Menos de €1.500" && 
+      answers.q5 !== "€1.500 - €3.000" &&
+      answers.q7 === "Solo yo") {
+    return 'A+';
+  }
+  
+  // A: Score 85-94, budget OK o autoridad solo
+  if (score >= 85 && 
+      (answers.q5 !== "Menos de €1.500" || answers.q7 === "Solo yo")) {
+    return 'A';
+  }
+  
+  // B: Score 75-84, cualificado pero con fricciones
+  if (score >= 75) {
+    return 'B';
+  }
+  
+  // C: Score < 75, bajo threshold
+  return 'C';
+}
+
 function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false): string[] {
   const tags: string[] = [];
   
@@ -93,11 +144,22 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   }
   
   // Tag de origen con prefijo CÍRCULO
-  tags.push('🎯 CÍRCULO-SOURCE-Quiz2025');
+  tags.push('🎯 CÍRCULO-SOURCE-Quiz2025-v2');
   
-  // Tags de cualificación con sistema 0-100
+  // Tag de categoría de lead
+  const category = getLeadCategory(score, answers);
+  const categoryTags: Record<string, string> = {
+    'A+': '⭐ CÍRCULO-CATEGORY-A+',
+    'A': '🔥 CÍRCULO-CATEGORY-A',
+    'B': '💎 CÍRCULO-CATEGORY-B',
+    'C': '🟡 CÍRCULO-CATEGORY-C',
+    'DQ': '❌ CÍRCULO-CATEGORY-DQ'
+  };
+  tags.push(categoryTags[category]);
+  
+  // Tags de cualificación con threshold 75
   if (score >= 85) {
-    // HOT (85-100 pts)
+    // HOT (85-110 pts)
     tags.push('🔥 CÍRCULO-HOT');
     tags.push('✅ CÍRCULO-CUALIFICADO');
     if (score >= 95) {
@@ -106,80 +168,93 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
       tags.push('💎 CÍRCULO-ICP-STRONG');
     }
   } else if (score >= 75) {
-    // WARM-HIGH (75-84 pts)
+    // WARM (75-84 pts)
     tags.push('⭐ CÍRCULO-WARM');
     tags.push('✅ CÍRCULO-CUALIFICADO');
     tags.push('💎 CÍRCULO-ICP-STRONG');
-  } else if (score >= 65) {
-    // WARM-MID (65-74 pts)
-    tags.push('⭐ CÍRCULO-WARM');
-    tags.push('✅ CÍRCULO-CUALIFICADO');
-    tags.push('🟢 CÍRCULO-ICP-GOOD');
   } else if (score >= 60) {
-    // WARM-LOW (60-64 pts)
-    tags.push('⭐ CÍRCULO-WARM');
-    tags.push('✅ CÍRCULO-CUALIFICADO');
+    // COLD-MID (60-74 pts)
+    tags.push('❄️ CÍRCULO-COLD');
+    tags.push('⚠️ CÍRCULO-BAJO-THRESHOLD');
     tags.push('🟡 CÍRCULO-ICP-FAIR');
   } else {
-    // COLD (0-59 pts)
+    // COLD-LOW (0-59 pts)
     tags.push('❄️ CÍRCULO-COLD');
     tags.push('❌ CÍRCULO-NO-CUALIFICADO');
     tags.push('🔴 CÍRCULO-ICP-POOR');
   }
   
-  // Tags de profesión con prefijo CÍRCULO
+  // Tags de Pain Point (Q1) con prefijo CÍRCULO
+  const painMap: Record<string, string> = {
+    'Mis clientes no tienen presupuesto': '💸 CÍRCULO-PAIN-NoBudget',
+    'Trabajo muchas horas y encima estoy tieso': '🔥 CÍRCULO-PAIN-Burnout',
+    'No tengo clientes suficientes (no sé ni por donde empezar)': '🎯 CÍRCULO-PAIN-NoLeads',
+    'No sé cómo vender lo que hago sin que me regateen': '🗣️ CÍRCULO-PAIN-CantSell',
+    'Todo lo anterior': '💥 CÍRCULO-PAIN-All'
+  };
+  if (answers.q1) tags.push(painMap[answers.q1] || '❓ CÍRCULO-PAIN-Other');
+  
+  // Tags de profesión (Q2) con prefijo CÍRCULO
   const professionMap: Record<string, string> = {
     'Diseñador Gráfico / Web': '🎨 CÍRCULO-PRO-Designer',
     'Fotógrafo/Filmmaker': '🎬 CÍRCULO-PRO-Visual',
     'Automatizador': '🤖 CÍRCULO-PRO-Automation',
     'Otro servicio creativo': '✨ CÍRCULO-PRO-Creative'
   };
-  if (answers.q1) tags.push(professionMap[answers.q1] || '🔹 CÍRCULO-PRO-Other');
+  if (answers.q2) tags.push(professionMap[answers.q2] || '🔹 CÍRCULO-PRO-Other');
   
-  // Tags de capacidad económica con prefijo CÍRCULO
+  // Tags de facturación mensual (Q3) con prefijo CÍRCULO
   const revenueMap: Record<string, string> = {
-    'Más de 5.000€': '💎 CÍRCULO-REV-5K+',
-    '2.500€ - 5.000€': '💰 CÍRCULO-REV-2.5K-5K',
-    '1.000€ - 2.500€': '💵 CÍRCULO-REV-1K-2.5K',
-    '500€ - 1.000€': '💸 CÍRCULO-REV-500-1K',
-    'Menos de 500€': '🪙 CÍRCULO-REV-<500'
+    'Más de €5.000/mes': '💎 CÍRCULO-REV-5K+',
+    '€2.500 - €5.000/mes': '💰 CÍRCULO-REV-2.5K-5K',
+    '€1.500 - €2.500/mes': '💵 CÍRCULO-REV-1.5K-2.5K',
+    '€500 - €1.500/mes': '💸 CÍRCULO-REV-500-1.5K',
+    'Menos de €500/mes': '🪙 CÍRCULO-REV-<500'
   };
-  if (answers.q2) tags.push(revenueMap[answers.q2] || '💰 CÍRCULO-REV-Unknown');
+  if (answers.q3) tags.push(revenueMap[answers.q3] || '💰 CÍRCULO-REV-Unknown');
   
-  // Tags de adquisición con prefijo CÍRCULO
+  // Tags de adquisición (Q4) con prefijo CÍRCULO
   const acquisitionMap: Record<string, string> = {
     'Recomendaciones': '🤝 CÍRCULO-ACQ-Referrals',
-    'Contenido orgánico': '📱 CÍRCULO-ACQ-Organic',
+    'Contenido orgánico (redes/web)': '📱 CÍRCULO-ACQ-Organic',
     'Anuncios pagados': '💳 CÍRCULO-ACQ-Paid',
     'Cold outreach': '📧 CÍRCULO-ACQ-Outreach',
     'Aún no tengo un sistema': '❓ CÍRCULO-ACQ-NoSystem'
   };
-  if (Array.isArray(answers.q3)) {
-    answers.q3.forEach(method => {
+  if (Array.isArray(answers.q4)) {
+    answers.q4.forEach(method => {
       if (acquisitionMap[method]) tags.push(acquisitionMap[method]);
     });
   }
   
-  // Tags de presupuesto con prefijo CÍRCULO
-  if (answers.q4 === 'Puedo hacer ese tributo ahora') {
-    tags.push('✅ CÍRCULO-BUDGET-OK');
-  } else {
-    tags.push('⚠️ CÍRCULO-BUDGET-NO');
-  }
+  // Tags de presupuesto de inversión (Q5) con prefijo CÍRCULO
+  const investmentMap: Record<string, string> = {
+    'Más de €5.000': '💎 CÍRCULO-INV-5K+',
+    '€3.000 - €5.000': '💰 CÍRCULO-INV-3K-5K',
+    '€1.500 - €3.000': '💵 CÍRCULO-INV-1.5K-3K',
+    'Menos de €1.500': '❌ CÍRCULO-INV-<1.5K'
+  };
+  if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-INV-Unknown');
   
-  // Tags de urgencia con prefijo CÍRCULO
+  // Tags de urgencia/compromiso (Q6) con prefijo CÍRCULO
   const urgencyMap: Record<string, string> = {
     'Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA': '🚀 CÍRCULO-FAST-7D',
     'Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas': '📈 CÍRCULO-GRAD-30D'
   };
-  if (answers.q5) tags.push(urgencyMap[answers.q5] || '⏸️ CÍRCULO-URGENCY-Unknown');
+  if (answers.q6) tags.push(urgencyMap[answers.q6] || '⏸️ CÍRCULO-URGENCY-Unknown');
   
-  // Tags de autoridad con prefijo CÍRCULO
+  // Tags de autoridad de decisión (Q7) con prefijo CÍRCULO
   const authorityMap: Record<string, string> = {
     'Solo yo': '👤 CÍRCULO-AUTH-SOLO',
     'Yo con mi pareja/socio (lo invitaré a la llamada)': '👥 CÍRCULO-AUTH-SHARED'
   };
-  if (answers.q6) tags.push(authorityMap[answers.q6] || '❓ CÍRCULO-AUTH-Unknown');
+  if (answers.q7) tags.push(authorityMap[answers.q7] || '❓ CÍRCULO-AUTH-Unknown');
+  
+  // Tag de hardstop si aplica
+  const hardstop = getHardstopReason(answers, score);
+  if (hardstop) {
+    tags.push(`🚫 CÍRCULO-HARDSTOP: ${hardstop}`);
+  }
   
   return tags;
 }
@@ -911,13 +986,17 @@ serve(async (req) => {
       locationId: GHL_LOCATION_ID,
       tags: tags,
       customFields: [
-        { key: 'quiz_profession', field_value: answers.q1 || '' },
-        { key: 'quiz_max_project', field_value: answers.q2 || '' },
-        { key: 'quiz_acquisition', field_value: Array.isArray(answers.q3) ? answers.q3.join(', ') : '' },
-        { key: 'quiz_budget', field_value: answers.q4 || '' },
-        { key: 'quiz_ascension', field_value: answers.q5 || '' },
-        { key: 'quiz_authority', field_value: answers.q6 || '' },
+        { key: 'quiz_version', field_value: 'v2' },
+        { key: 'quiz_pain_point', field_value: answers.q1 || '' },
+        { key: 'quiz_profession', field_value: answers.q2 || '' },
+        { key: 'quiz_revenue', field_value: answers.q3 || '' },
+        { key: 'quiz_acquisition', field_value: Array.isArray(answers.q4) ? answers.q4.join(', ') : '' },
+        { key: 'quiz_investment', field_value: answers.q5 || '' },
+        { key: 'quiz_urgency', field_value: answers.q6 || '' },
+        { key: 'quiz_authority', field_value: answers.q7 || '' },
         { key: 'quiz_score', field_value: score.toString() },
+        { key: 'lead_category', field_value: getLeadCategory(score, answers) },
+        { key: 'hardstop_triggered', field_value: getHardstopReason(answers, score) || 'none' },
         { key: 'quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
         { key: 'circulo_score', field_value: score.toString() },
         { key: 'notification_closer', field_value: generateCloserNotification(contactData, answers, score, tags) },
