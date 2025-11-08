@@ -1,17 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { CalendarWidget } from "./CalendarWidget";
+import { GHLCalendarIframe } from "./GHLCalendarIframe";
 import { ValuePropsCard } from "./ValuePropsCard";
 import { useBookingInteraction } from "@/hooks/useBookingInteraction";
 import { RESULT_MESSAGES } from "@/constants/resultMessages";
+import type { QuizState } from "@/types/quiz";
 
 interface QualifiedResultProps {
-  isLoading: boolean;
-  error: Error | null;
+  quizState: QuizState;
   onReset: () => void;
 }
 
-export const QualifiedResult = ({ isLoading, error, onReset }: QualifiedResultProps) => {
+export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) => {
   const { bookingStarted } = useBookingInteraction();
+  
+  // Parsear nombre en firstName y lastName
+  const [firstName = '', ...lastNameParts] = (quizState.name || '').split(' ');
+  const lastName = lastNameParts.join(' ');
 
   return (
     <div className="space-y-4">
@@ -32,7 +36,13 @@ export const QualifiedResult = ({ isLoading, error, onReset }: QualifiedResultPr
 
       <ValuePropsCard />
 
-      <CalendarWidget isLoading={isLoading} error={error} />
+      <GHLCalendarIframe
+        calendarId="xkfGe4Gjr8REwK34dZke"
+        firstName={firstName}
+        lastName={lastName}
+        email={quizState.email || ''}
+        phone={quizState.whatsapp || ''}
+      />
 
       <div className="text-center pt-4">
         <Button

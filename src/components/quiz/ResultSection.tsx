@@ -1,4 +1,3 @@
-import { useGHLBooking } from "@/hooks/useGHLBooking";
 import { useQuizAnalytics } from "@/hooks/useQuizAnalytics";
 import { QualifiedResult } from "./result/QualifiedResult";
 import { NotQualifiedResult } from "./result/NotQualifiedResult";
@@ -11,16 +10,6 @@ interface ResultSectionProps {
 }
 
 const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) => {
-  const { isLoading, error } = useGHLBooking({
-    calendarId: 'xkfGe4Gjr8REwK34dZke',
-    contactData: {
-      name: quizState.name,
-      email: quizState.email,
-      whatsapp: quizState.whatsapp
-    },
-    enabled: isQualified
-  });
-
   useQuizAnalytics({
     quizState,
     isQualified,
@@ -31,8 +20,7 @@ const ResultSection = ({ isQualified, quizState, onReset }: ResultSectionProps) 
     <div className="w-full space-y-4 animate-fade-in">
       {isQualified ? (
         <QualifiedResult 
-          isLoading={isLoading}
-          error={error}
+          quizState={quizState}
           onReset={onReset}
         />
       ) : (
