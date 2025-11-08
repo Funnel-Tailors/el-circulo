@@ -287,6 +287,9 @@ ${grouped.qualification.join('\n')}
 
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const hasInvestment = answers.q5 !== 'Menos de €1.500';
+  const fastTrack = answers.q6?.includes('Rápido');
   
   if (score >= 85) {
     insights.push('🔥 LEAD HOT (85-110 pts) - Contactar URGENTE');
@@ -298,15 +301,30 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
     insights.push('❄️ Lead COLD (<60 pts) - Considerar nurturing');
   }
   
+  // Pain-specific insights (NUEVOS - priorizar Q1)
+  if (answers.q1?.includes('Todo lo anterior') && hasInvestment) {
+    insights.push('🚨 CRISIS TOTAL: Todas las fricciones + budget = máximo potencial');
+  }
+  
+  if (answers.q1?.includes('No tengo clientes') && fastTrack) {
+    insights.push('🎯 SIN LEADS + URGENCIA: Necesita sistema inmediato');
+  }
+  
+  if (answers.q1?.includes('Trabajo muchas horas') && lowRevenue) {
+    insights.push('🔥 BURNOUT: Sobretrabajado + mal pagado = explosivo si arreglamos');
+  }
+  
+  if (answers.q1?.includes('Mis clientes no tienen presupuesto') && lowRevenue) {
+    insights.push('💡 ICP EQUIVOCADO: Cobra poco porque vende a quien no debe');
+  }
+  
   // 🎯 DOLOR AGUDO: Low revenue + investment OK = CLIENTE IDEAL
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
-  const hasInvestment = answers.q5 !== 'Menos de €1.500';
   
   if (lowRevenue && hasInvestment) {
     insights.push('🎯 DOLOR AGUDO: Cobra poco + tiene inversión = ¡CLIENTE IDEAL!');
   }
   
-  if (hasInvestment && answers.q6?.includes('Rápido')) {
+  if (hasInvestment && fastTrack) {
     insights.push('🔥 Combinación ideal: Inversión + Urgencia');
   }
   
@@ -318,6 +336,168 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   
   return insights.join('\n');
 }
+
+// Pain-specific content objects
+const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
+  'Mis clientes no tienen presupuesto': {
+    hot: 'El problema no son tus clientes. Es que apuntas a quién no debe. Los miembros del Círculo dejan de perseguir mierdecillas que regatean €100 y empiezan a hablar con quien sabe lo que vale su tiempo.',
+    warm: 'Tus clientes sí tienen presupuesto. Pero no para ti. Eso se arregla reposicionando. No es magia. Es saber a quién dirigirte y qué decir.',
+    cold: 'Si tus clientes no tienen pasta, es porque buscas en el lugar equivocado. Antes de invertir en ti, necesitas saber a quién vender.'
+  },
+  'Trabajo muchas horas y encima estoy tieso': {
+    hot: 'Ese tren de trabajar hasta las 23:47 por cuatro duros tiene una parada. Los miembros del Círculo cobran €5K+ trabajando la mitad que tú. No es magia. Es saber cobrar por transformación, no por horas.',
+    warm: 'Trabajar más no te va a sacar de ahí. Necesitas cobrar más por las mismas horas. Eso requiere cambiar lo que vendes y cómo lo vendes.',
+    cold: 'Ese burnout de trabajar sin parar por poco no se arregla trabajando más. Necesitas primero creer que puedes cobrar 5x más por lo que ya haces.'
+  },
+  'No tengo clientes suficientes (no sé ni por donde empezar)': {
+    hot: 'Ese "no sé por dónde empezar" es tu mayor fricción. Los miembros del Círculo tienen 4-6 leads semanales sin mendigar en redes. Sistema claro. Sin regateos. Sin rogar.',
+    warm: 'Sin clientes = sin sistema. El 89% de creativos no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
+    cold: 'Sin clientes suficientes porque persigues leads como todos. Necesitas primero un sistema antes de invertir en cualquier otra cosa.'
+  },
+  'No sé cómo vender lo que hago sin que regateen': {
+    hot: 'Te regatean porque estás vendiendo píxeles bonitos en lugar de transformación. Los miembros del Círculo dicen su precio sin tartamudear y el cliente aún piensa que es una ganga.',
+    warm: 'El regateo pasa cuando vendes servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
+    cold: 'Te regatean porque no sabes defender tu valor. Antes de cobrar más, necesitas aprender a vender diferente.'
+  },
+  'Todo lo anterior': {
+    hot: 'Todas las fricciones a la vez y aún así tienes para invertir en ti. Eso dice mucho. Los que deciden salir de ahí, salen. Los que exploran eternamente, se quedan.',
+    warm: 'Llevas tanto tiempo así que ya te has convencido de que es normal. Los miembros del Círculo hace tiempo que trascendieron esa mierda. Y tú estás a un ritual de distancia.',
+    cold: 'Todas las fricciones a la vez. O te hundes o cruzas el umbral. No hay punto medio. Pero primero necesitas decidir si estás listo.'
+  }
+};
+
+const painContextualNotes: Record<string, string> = {
+  'Mis clientes no tienen presupuesto': 
+    '💡 Nota: El día que apuntes a quien debe, tus precios parecerán una ganga.',
+  'Trabajo muchas horas y encima estoy tieso':
+    '🔥 Nota: Ese burnout de trabajar hasta tarde por poco tiene fecha de caducidad. Decide cuándo.',
+  'No tengo clientes suficientes (no sé ni por donde empezar)':
+    '💡 Nota: Sin clientes = sin sistema. Eso tiene solución exacta. Los miembros del Círculo tienen 4-6 leads semanales sin mendigar.',
+  'No sé cómo vender lo que hago sin que regateen':
+    '🎯 Nota: Te regatean porque vendes píxeles, no transformación. Eso se arregla cambiando 3 frases en tu pitch.',
+  'Todo lo anterior':
+    '⚡ Nota: Todas las fricciones a la vez. O te hundes o cruzas el umbral. No hay punto medio.'
+};
+
+const painOpeningAngles: Record<string, string[]> = {
+  'Mis clientes no tienen presupuesto': [
+    '"Vi que tus clientes no tienen presupuesto. Eso no es verdad. Sí tienen. Pero no para ti. ¿Sabes por qué?"',
+    '"¿A qué tipo de clientes apuntas actualmente? Porque apostaría a que estás persiguiendo al ICP equivocado."',
+    '"El problema no es que no haya dinero en tu mercado. Es que hablas con quien no lo tiene. ¿Listo para cambiar de conversación?"'
+  ],
+  'Trabajo muchas horas y encima estoy tieso': [
+    '"Vi que trabajas muchas horas y cobras poco. Típico de quien cobra por tiempo en lugar de por transformación. ¿Quieres ver cómo lo cambiamos?"',
+    '"¿Cuántas horas trabajas por semana? Porque te garantizo que puedes cobrar 3x más trabajando la mitad. ¿Listo?"',
+    '"Ese burnout de trabajar hasta tarde por cuatro duros tiene solución. Pero primero: ¿cuánto cobras por proyecto actualmente?"'
+  ],
+  'No tengo clientes suficientes (no sé ni por donde empezar)': [
+    '"Vi que no tienes leads suficientes. Normal. El 89% de creativos no tiene sistema de adquisición. ¿Quieres ver cómo tener 4-6 leads semanales sin mendigar?"',
+    '"Ese \'no sé por dónde empezar\' es lo primero que arreglamos. ¿Listo para tener un sistema claro de captación?"',
+    '"Sin clientes = sin sistema. Eso tiene solución exacta. ¿Cuántos leads necesitas por semana para sentirte cómodo?"'
+  ],
+  'No sé cómo vender lo que hago sin que regateen': [
+    '"Vi que te regatean siempre. Eso pasa cuando vendes servicio en lugar de resultado. ¿Quieres aprender a decir tu precio sin que te tiemble la voz?"',
+    '"¿Cuánto cobras actualmente? Porque apostaría a que estás 5x por debajo de lo que deberías. Y no es por skill. Es por cómo lo vendes."',
+    '"El regateo se acaba cuando cambias la conversación. No el precio. ¿Listo para ver cómo?"'
+  ],
+  'Todo lo anterior': [
+    '"Vi que todas las fricciones te tocan. Llevas tiempo así, ¿verdad? Los miembros del Círculo estaban igual. ¿Quieres ver por dónde empezamos?"',
+    '"Todas las fricciones a la vez. Eso es crisis completa o punto de inflexión. ¿Listo para salir?"',
+    '"Llevas tanto tiempo en el mismo sitio que ya se siente normal. ¿Listo para que deje de serlo?"'
+  ]
+};
+
+function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
+  const levers: string[] = [];
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const hasMoney = answers.q5 !== 'Menos de €1.500';
+  const fastTrack = answers.q6?.includes('Rápido');
+  
+  switch(pain) {
+    case 'Mis clientes no tienen presupuesto':
+      if (lowRevenue && hasMoney) {
+        levers.push('• PERFIL IDEAL: ICP equivocado + tiene budget = reposicionamiento rápido');
+      }
+      if (fastTrack) {
+        levers.push('• URGENCIA: Necesita leads YA = implementación Sprint 7 días');
+      }
+      levers.push('• SOLUCIÓN: Workshop ICP + messaging + outreach básico');
+      break;
+      
+    case 'Trabajo muchas horas y encima estoy tieso':
+      if (lowRevenue && hasMoney) {
+        levers.push('• PERFIL BURNOUT: Sobretrabajado + mal pagado = explosivo si arreglamos pricing');
+      }
+      if (score >= 85) {
+        levers.push('• SCORE ALTO: Ready para cambio radical de modelo de negocio');
+      }
+      levers.push('• SOLUCIÓN: Value-based pricing + productización');
+      break;
+      
+    case 'No tengo clientes suficientes (no sé ni por donde empezar)':
+      if (fastTrack && hasMoney) {
+        levers.push('• FRICCIÓN CRÍTICA: Sin leads + urgencia + budget = necesita sistema YA');
+      }
+      if (Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)')) {
+        levers.push('• DEPENDENCIA REDES: Solo orgánico = inestable, necesita sistema predecible');
+      }
+      levers.push('• SOLUCIÓN: Sistema de adquisición 4-6 leads/semana');
+      break;
+      
+    case 'No sé cómo vender lo que hago sin que regateen':
+      if (lowRevenue) {
+        levers.push('• PRICING ROTO: Cobra poco porque vende servicio, no transformación');
+      }
+      if (hasMoney) {
+        levers.push('• INVERSIÓN OK: Tiene budget = listo para aprender a vender valor');
+      }
+      levers.push('• SOLUCIÓN: Sales framework + positioning + storytelling');
+      break;
+      
+    case 'Todo lo anterior':
+      if (hasMoney) {
+        levers.push('• CRISIS TOTAL: Todas las fricciones + tiene budget = transformación completa posible');
+      }
+      if (lowRevenue && hasMoney) {
+        levers.push('• PERFIL IDEAL: Dolor máximo + inversión = máximo potencial');
+      }
+      if (score >= 85) {
+        levers.push('• SCORE ALTO: A pesar de crisis, tiene mentalidad de crecimiento');
+      }
+      levers.push('• SOLUCIÓN: Sprint intensivo 90 días - todo el sistema');
+      break;
+  }
+  
+  return levers;
+}
+
+const painPrepQuestions: Record<string, string[]> = {
+  'Mis clientes no tienen presupuesto': [
+    '¿Qué tipo de clientes persigues actualmente?',
+    '¿Cuánto cobras de media por proyecto?',
+    '¿Por qué crees que te regatean?'
+  ],
+  'Trabajo muchas horas y encima estoy tieso': [
+    '¿Cuántas horas trabajas por semana?',
+    '¿Qué cobras por proyecto actualmente?',
+    '¿Dónde se va tu tiempo sin generar pasta?'
+  ],
+  'No tengo clientes suficientes (no sé ni por donde empezar)': [
+    '¿Cuántos leads tienes al mes actualmente?',
+    '¿Qué has probado para conseguir clientes?',
+    '¿Qué te frena ahora mismo?'
+  ],
+  'No sé cómo vender lo que hago sin que regateen': [
+    '¿Cómo presentas actualmente tus servicios?',
+    '¿Cuál es la objeción más común que recibes?',
+    '¿Cuánto cobras actualmente vs. cuánto quieres cobrar?'
+  ],
+  'Todo lo anterior': [
+    '¿Cuál de todas las fricciones te afecta más?',
+    '¿Cuánto tiempo llevas en esta situación?',
+    '¿Qué esperas lograr en los próximos 90 días?'
+  ]
+};
 
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
@@ -334,10 +514,17 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  // Determinar urgencia de contacto
+  // Determinar urgencia de contacto según pain + otros factores
   let contactWindow = '⏰ CONTACTAR: En las próximas 48h';
-  if (isIdealClient && fastTrack) {
+  
+  if (isIdealClient && answers.q1?.includes('Todo lo anterior')) {
+    contactWindow = '🚨 CRISIS TOTAL + BUDGET - CONTACTAR INMEDIATO';
+  } else if (isIdealClient && fastTrack) {
     contactWindow = '🚨 CLIENTE IDEAL - CONTACTAR URGENTE: En las próximas 2 horas';
+  } else if (answers.q1?.includes('No tengo clientes') && hasInvestment) {
+    contactWindow = '🎯 DOLOR AGUDO (sin leads) + BUDGET - CONTACTAR HOY';
+  } else if (answers.q1?.includes('Trabajo muchas horas') && score >= 85) {
+    contactWindow = '🔥 BURNOUT + SCORE ALTO - PRIORIDAD ALTA';
   } else if (isIdealClient) {
     contactWindow = '🎯 CLIENTE IDEAL - CONTACTAR HOY: Antes de las 20:00';
   } else if (isHot && hasInvestment && fastTrack) {
@@ -392,12 +579,20 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   if (!hasInvestment) realObjections.push('⚠️ Inversión insuficiente');
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
   
-  // Solo oportunidades CRÍTICAS
-  const criticalOpportunities: string[] = [];
-  if (lowRevenue && hasInvestment) criticalOpportunities.push('• PERFIL IDEAL: Dolor agudo (cobra poco) + tiene inversión');
-  if (score >= 85) criticalOpportunities.push('• HOT Lead - Prioridad máxima');
-  if (fastTrack && hasInvestment) criticalOpportunities.push('• Inversión + Urgencia = Cierre inmediato');
-  if (authSolo) criticalOpportunities.push('• Decisor único');
+  // Palancas críticas específicas por pain
+  const painLevers = getPainCriticalLevers(answers.q1 || '', answers, score);
+  const criticalOpportunities: string[] = [...painLevers];
+  
+  // Añadir oportunidades genéricas solo si no están ya en painLevers
+  if (score >= 85 && !painLevers.some(l => l.includes('SCORE ALTO'))) {
+    criticalOpportunities.push('• HOT Lead - Prioridad máxima');
+  }
+  if (fastTrack && hasInvestment && !painLevers.some(l => l.includes('URGENCIA'))) {
+    criticalOpportunities.push('• Inversión + Urgencia = Cierre inmediato');
+  }
+  if (authSolo) {
+    criticalOpportunities.push('• Decisor único');
+  }
   
   // Estrategia en 1 línea
   let strategy = '';
@@ -435,8 +630,9 @@ ${strategy}
   `.trim();
 }
 
-// Helper: Generar insights personalizados según respuestas del quiz
+// Helper: Generar insights personalizados según respuestas del quiz (PAIN-FIRST)
 function generatePersonalizedInsight(answers: QuizAnswers, score: number): string {
+  const pain = answers.q1 || '';
   const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   const midRevenue = answers.q3 === '€2.500 - €5.000/mes' || answers.q3 === 'Más de €5.000/mes';
   const hasMoney = answers.q5 !== 'Menos de €1.500';
@@ -446,7 +642,15 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
   const soloDecision = answers.q7 === 'Solo yo';
   
-  // HOT Insights
+  // Pain-first approach: priorizar insights específicos por Q1
+  const painInsight = painInsights[pain];
+  if (painInsight) {
+    if (score >= 85) return painInsight.hot;
+    if (score >= 75) return painInsight.warm;
+    return painInsight.cold;
+  }
+  
+  // Fallback: HOT Insights por situación específica
   if (lowRevenue && hasMoney) {
     return 'Cobras poco pero tienes para invertir en ti mismo. El problema no es la pasta. Es que nadie te enseñó a pedir más sin que te tiemble la voz.';
   }
@@ -457,10 +661,6 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   
   if (hasReferrals && midRevenue) {
     return 'Ya cobras bien y tus clientes te recomiendan. Ahora imagina tener una fila de leads persiguiéndote en lugar de esperar a que alguien se acuerde de ti.';
-  }
-  
-  if (lowRevenue && answers.q2 === 'Diseñador Gráfico / Web') {
-    return 'Estás diseñando por 500€ lo que otros cobran 5.000€. El problema no es tu skill. Es que nadie te enseñó a vender transformación en lugar de píxeles bonitos.';
   }
   
   if (score >= 80) {
@@ -499,13 +699,14 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
 }
 
-// Helper: Generar notas contextuales según perfil del lead
+// Helper: Generar notas contextuales según perfil del lead (PAIN-FIRST)
 function generateContextualNote(
   answers: QuizAnswers, 
   tags: string[], 
   isHot: boolean,
   score: number
 ): string {
+  const pain = answers.q1 || '';
   const fastTrack = answers.q6?.includes('Rápido');
   const socialMediaDependent = Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)');
   const isAutomator = answers.q2 === 'Automatizador';
@@ -514,6 +715,21 @@ function generateContextualNote(
   // Uso de "malito" con 30% de probabilidad en HOT/WARM
   const shouldUseMalito = (isHot || score >= 60) && Math.random() < 0.3;
   
+  // Pain-first notes (70% probabilidad)
+  if (painContextualNotes[pain] && Math.random() < 0.7) {
+    return painContextualNotes[pain];
+  }
+  
+  // Malito override (30% en HOT/WARM)
+  if (shouldUseMalito) {
+    if (score < 75) {
+      return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial de miembro honorario si das el paso.';
+    } else {
+      return '🧙‍♂️ Nota: Ya no eres un malito. Estás a un ritual de distancia de ser Miembro Honorario.';
+    }
+  }
+  
+  // Fallback: notas contextuales por situación
   if (isHot && fastTrack) {
     return '⚡ Nota: Tu urgencia es real. Reserva en las próximas 8 horas y tendrás análisis preliminar en 24h.';
   }
@@ -528,10 +744,6 @@ function generateContextualNote(
   
   if (noSoloDecision && score < 70) {
     return '👥 Nota: Si quien decide no entiende por qué esto importa, trae a esa persona a la llamada. O aprende a explicárselo tú.';
-  }
-  
-  if (shouldUseMalito) {
-    return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial de miembro honorario si das el paso.';
   }
   
   return '';
@@ -645,6 +857,7 @@ El Círculo
 function generateClientPostBookingNotification(name: string, answers: QuizAnswers, tags: string[]): string {
   const firstName = name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
+  const pain = answers.q1 || '';
   
   // Objetivos específicos por profesión
   const professionGoals: Record<string, { goal: string; prep: string[] }> = {
@@ -690,6 +903,8 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
   };
   
   if (isHot) {
+    const painQuestions = painPrepQuestions[pain] || [];
+    
     return `
 ${firstName}.
 
@@ -698,6 +913,9 @@ Tu espacio está asegurado.
 ⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes del ritual.
 
 📜 PREPARA ESTO:
+
+Contexto pain-specific:
+${painQuestions.map(q => `• ${q}`).join('\n')}
 
 Información específica:
 ${professionData.prep.map(item => `• ${item}`).join('\n')}
@@ -778,18 +996,17 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD';
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
   
-  // Ángulos de apertura
-  const openingAngles: string[] = [];
-  if (lowRevenue) {
-    openingAngles.push(`"Vi que facturas ${answers.q3}. Aquí hay una oportunidad ENORME de crecimiento. ¿Cuánto crees que deberías estar facturando?"`);
-  } else if (answers.q3 && answers.q3 !== 'Más de €5.000/mes') {
-    openingAngles.push(`"Vi que ya facturas ${answers.q3}. Eso es sólido como base. ¿Cómo te sentirías duplicando eso en los próximos 90 días?"`);
-  }
+  // Ángulos de apertura específicos por pain
+  const painAngles = painOpeningAngles[answers.q1 || ''] || [];
+  const openingAngles: string[] = [...painAngles];
+  
+  // Añadir ángulos contextuales adicionales
   if (answers.q6?.includes('Rápido')) {
-    openingAngles.push(`"El hecho de que busques ascenso rápido me dice que estás 100% ready para el salto. ¿Qué te frena ahora mismo?"`);
+    openingAngles.push(`"El hecho de que busques ascenso rápido me dice que estás 100% ready. ¿Qué te frena ahora mismo?"`);
   }
-  if (Array.isArray(answers.q4) && answers.q4.length > 0) {
-    openingAngles.push(`"Veo que tu adquisición viene de ${answers.q4[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
+  
+  if (lowRevenue && hasInvestment) {
+    openingAngles.push(`"Ya facturas ${answers.q3}. Eso es base sólida. Con el sistema correcto, eso se multiplica x3 en 90 días. ¿Listo?"`);
   }
   
   // Objeciones reales
