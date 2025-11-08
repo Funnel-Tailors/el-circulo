@@ -88,5 +88,18 @@ export const successCases = [
       "De lanzamientos fallidos a tiburona de ventas",
       "Transformó su confianza en el cierre"
     ]
+  },
+  {
+    name: "Felipe",
+    role: "Diseñador Gráfico",
+    offer: "Funnel Boost & Brand Elevation",
+    highlight: "7 DÍAS",
+    videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/690f8c3c3dca2f738043a62a.mov",
+    results: [
+      "Consiguió sus primeras dos llamadas de venta en 7 días para proyectos de 2.000 y 5.000€",
+      "Pasó de cero estrategia a tener sistema de captación",
+      "Transformó su posicionamiento hacia clientes premium",
+      "Domina el proceso de generación de leads cualificados"
+    ]
   }
 ];
