@@ -914,13 +914,13 @@ Tu espacio está asegurado.
 
 📜 PREPARA ESTO:
 
-Contexto pain-specific:
+Sobre tu situación específica:
 ${painQuestions.map(q => `• ${q}`).join('\n')}
 
 Información específica:
 ${professionData.prep.map(item => `• ${item}`).join('\n')}
 
-Contexto general:
+Tu situación actual:
 • Tu calendario próximos 90 días
 • 2-3 desafíos que necesitas resolver
 • Dónde quieres estar en 3 meses
@@ -958,7 +958,7 @@ Tu sesión está confirmada.
 Información específica:
 ${professionData.prep.map(item => `• ${item}`).join('\n')}
 
-Contexto general:
+Tu situación actual:
 • Tu calendario próximos 90 días
 • 2-3 desafíos principales
 • Dónde quieres estar en 3 meses
