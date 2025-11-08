@@ -289,29 +289,30 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   
   if (score >= 85) {
-    insights.push('🔥 LEAD HOT (85-100 pts) - Contactar URGENTE');
+    insights.push('🔥 LEAD HOT (85-110 pts) - Contactar URGENTE');
   } else if (score >= 75) {
-    insights.push('⭐ Lead WARM-HIGH (75-84 pts) - Alta prioridad');
-  } else if (score >= 65) {
-    insights.push('✅ Lead WARM-MID (65-74 pts) - Contactar en 24h');
+    insights.push('⭐ Lead WARM (75-84 pts) - Alta prioridad');
   } else if (score >= 60) {
-    insights.push('🟡 Lead WARM-LOW (60-64 pts) - Cualificado pero observar');
+    insights.push('🟡 Lead bajo threshold (60-74 pts) - Observar');
   } else {
     insights.push('❄️ Lead COLD (<60 pts) - Considerar nurturing');
   }
   
-  // 🎯 DOLOR AGUDO: Low revenue + budget = CLIENTE IDEAL
-  if ((answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€') && answers.q4 === 'Puedo hacer ese tributo ahora') {
-    insights.push('🎯 DOLOR AGUDO: Cobra poco + tiene budget = ¡CLIENTE IDEAL!');
+  // 🎯 DOLOR AGUDO: Low revenue + investment OK = CLIENTE IDEAL
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const hasInvestment = answers.q5 !== 'Menos de €1.500';
+  
+  if (lowRevenue && hasInvestment) {
+    insights.push('🎯 DOLOR AGUDO: Cobra poco + tiene inversión = ¡CLIENTE IDEAL!');
   }
   
-  if (answers.q4 === 'Puedo hacer ese tributo ahora' && answers.q5?.includes('Rápido')) {
-    insights.push('🔥 Combinación ideal: Budget + Urgencia');
+  if (hasInvestment && answers.q6?.includes('Rápido')) {
+    insights.push('🔥 Combinación ideal: Inversión + Urgencia');
   }
   
-  if (answers.q6 === 'Solo yo') {
+  if (answers.q7 === 'Solo yo') {
     insights.push('✓ Decisor único - Proceso de venta simplificado');
-  } else if (answers.q6 === 'Yo con mi pareja/socio (lo invitaré a la llamada)') {
+  } else if (answers.q7 === 'Yo con mi pareja/socio (lo invitaré a la llamada)') {
     insights.push('⚠️ Decisión compartida - Considerar segundo contacto');
   }
   
@@ -322,15 +323,15 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
-  const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
+  const hasInvestment = answers.q5 !== 'Menos de €1.500';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
-  const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   
-  // 🎯 CLIENTE IDEAL = Low revenue + budget
-  const isIdealClient = lowRevenue && budgetOK;
+  // 🎯 CLIENTE IDEAL = Low revenue + investment OK
+  const isIdealClient = lowRevenue && hasInvestment;
   
   // Emoji de temperatura e ICP tag para escaneo visual
-  const tempEmoji = score >= 85 ? '🔥' : score >= 60 ? '⭐' : '❄️';
+  const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
   // Determinar urgencia de contacto
@@ -339,29 +340,30 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
     contactWindow = '🚨 CLIENTE IDEAL - CONTACTAR URGENTE: En las próximas 2 horas';
   } else if (isIdealClient) {
     contactWindow = '🎯 CLIENTE IDEAL - CONTACTAR HOY: Antes de las 20:00';
-  } else if (isHot && budgetOK && fastTrack) {
+  } else if (isHot && hasInvestment && fastTrack) {
     contactWindow = '🚨 CONTACTAR URGENTE: En las próximas 2 horas';
   } else if (isHot) {
     contactWindow = '🔥 CONTACTAR HOY: Antes de las 20:00';
   }
   
-  // Score visual actualizado (máximo 100)
-  const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
+  // Score visual actualizado (máximo 110)
+  const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
   
   return `
 ${tempEmoji} NUEVO LEAD: ${firstName}${icpTag ? ` | ${icpTag}` : ''}
 
 ${contactWindow}
-${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Cobra poco + tiene budget = Alto potencial de crecimiento\n' : ''}
+${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Cobra poco + tiene inversión = Alto potencial de crecimiento\n' : ''}
 
-📊 SCORE: ${score}/100 ${scoreBar}
+📊 SCORE: ${score}/110 ${scoreBar}
 ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD'))}
 
 💼 PERFIL:
-• ${answers.q1}
-• Max. cobrado: ${answers.q2}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Budget 2K: ${budgetOK ? '✅ SÍ' : '❌ NO'}
-• Decide: ${answers.q6}
+• Pain: ${answers.q1}
+• Profesión: ${answers.q2}
+• Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'}
+• Decide: ${answers.q7}
 
 📞 CONTACTO:
 • WhatsApp: ${contact.whatsapp || 'No proporcionado'}
@@ -371,37 +373,37 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agendar segunda sesión si hay potencial'}
 
 🔗 ACCIÓN INMEDIATA:
-${budgetOK ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar para explorar situación'}
+${hasInvestment ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar para explorar situación'}
   `.trim();
 }
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
-  const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
+  const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
+  const hasInvestment = answers.q5 !== 'Menos de €1.500';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
-  const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   
   // Solo objeciones REALES
   const realObjections: string[] = [];
-  if (!budgetOK) realObjections.push('⚠️ Budget no confirmado');
+  if (!hasInvestment) realObjections.push('⚠️ Inversión insuficiente');
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
   
   // Solo oportunidades CRÍTICAS
   const criticalOpportunities: string[] = [];
-  if (lowRevenue && budgetOK) criticalOpportunities.push('• PERFIL IDEAL: Dolor agudo (cobra poco) + tiene budget');
+  if (lowRevenue && hasInvestment) criticalOpportunities.push('• PERFIL IDEAL: Dolor agudo (cobra poco) + tiene inversión');
   if (score >= 85) criticalOpportunities.push('• HOT Lead - Prioridad máxima');
-  if (fastTrack && budgetOK) criticalOpportunities.push('• Budget + Urgencia = Cierre inmediato');
+  if (fastTrack && hasInvestment) criticalOpportunities.push('• Inversión + Urgencia = Cierre inmediato');
   if (authSolo) criticalOpportunities.push('• Decisor único');
   
   // Estrategia en 1 línea
   let strategy = '';
-  if (lowRevenue && budgetOK && fastTrack) {
+  if (lowRevenue && hasInvestment && fastTrack) {
     strategy = 'CLIENTE IDEAL → Admisión directa si fit mínimo en primeros 15min (máximo potencial de crecimiento)';
-  } else if (score >= 85 && budgetOK && fastTrack) {
+  } else if (score >= 85 && hasInvestment && fastTrack) {
     strategy = 'ADMISIÓN DIRECTA si fit en primeros 15min';
   } else if (score >= 75) {
     strategy = 'EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
@@ -415,15 +417,16 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
 🔮 PERFIL INICIÁTICO: ${contact.name.split(' ')[0]}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-VEREDICTO: ${classification} ${icpTag} | ${score}/100 ${scoreBar}
+VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 📞 ${contact.name} | ${contact.email}
 💬 ${contact.whatsapp || 'Sin WhatsApp'} | 🗓️ ${new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' })}
 
 ⚡ RESUMEN INICIÁTICO:
-• ${answers.q1} | Max: ${answers.q2}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Budget 2K: ${budgetOK ? '✅' : '❌'} | Decide: ${authSolo ? '✅ Solo' : answers.q6}
-• Adquisición: ${Array.isArray(answers.q3) ? answers.q3.join(', ') : answers.q3}
-• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q5}
+• Pain: ${answers.q1}
+• Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
+• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
 ${realObjections.length > 0 ? `\n⚠️ FRICCIONES:\n${realObjections.map(o => `• ${o.replace('⚠️ ', '')}`).join('\n')}` : ''}
 
@@ -434,15 +437,14 @@ ${strategy}
 
 // Helper: Generar insights personalizados según respuestas del quiz
 function generatePersonalizedInsight(answers: QuizAnswers, score: number): string {
-  const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
-  const midRevenue = answers.q2 === '2.000€ - 5.000€' || answers.q2 === 'Más de 5.000€';
-  const hasMoney = answers.q4 === 'Puedo hacer ese tributo ahora';
-  const uncertain = answers.q4 === 'Necesito pensarlo';
-  const noMoney = answers.q4 === 'No dispongo de esa cantidad';
-  const fastTrack = answers.q5?.includes('Rápido');
-  const gradual = answers.q5?.includes('Gradual');
-  const hasReferrals = Array.isArray(answers.q3) && answers.q3.includes('Recomendaciones');
-  const soloDecision = answers.q6 === 'Solo yo';
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const midRevenue = answers.q3 === '€2.500 - €5.000/mes' || answers.q3 === 'Más de €5.000/mes';
+  const hasMoney = answers.q5 !== 'Menos de €1.500';
+  const lowInvestment = answers.q5 === 'Menos de €1.500' || answers.q5 === '€1.500 - €3.000';
+  const fastTrack = answers.q6?.includes('Rápido');
+  const gradual = answers.q6?.includes('Gradual');
+  const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
+  const soloDecision = answers.q7 === 'Solo yo';
   
   // HOT Insights
   if (lowRevenue && hasMoney) {
@@ -457,7 +459,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return 'Ya cobras bien y tus clientes te recomiendan. Ahora imagina tener una fila de leads persiguiéndote en lugar de esperar a que alguien se acuerde de ti.';
   }
   
-  if (lowRevenue && answers.q1 === 'Diseñador Gráfico / Web') {
+  if (lowRevenue && answers.q2 === 'Diseñador Gráfico / Web') {
     return 'Estás diseñando por 500€ lo que otros cobran 5.000€. El problema no es tu skill. Es que nadie te enseñó a vender transformación en lugar de píxeles bonitos.';
   }
   
@@ -466,7 +468,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   // WARM Insights
-  if (uncertain && score >= 60) {
+  if (lowInvestment && score >= 60) {
     return 'No estás seguro de si puedes permitirte invertir. Normal. Cuando ves algo como "gasto", dudas. Cuando lo ves como lo que es, decides. En la evaluación descubrimos si tiene sentido para ti.';
   }
   
@@ -479,11 +481,11 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   // COLD Insights
-  if (noMoney && score < 60) {
+  if (!hasMoney && score < 60) {
     return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. El Círculo no es para quien no puede. Es para quien decide que tiene que hacerlo.';
   }
   
-  if (lowRevenue && noMoney) {
+  if (lowRevenue && !hasMoney) {
     return 'Cobras poco y no tienes para invertir. Eso es un círculo vicioso. Necesitas romperlo. Pero primero necesitas creer que puedes cobrar 10 veces más por lo que ya haces.';
   }
   
@@ -504,10 +506,10 @@ function generateContextualNote(
   isHot: boolean,
   score: number
 ): string {
-  const fastTrack = answers.q5?.includes('Rápido');
-  const socialMediaDependent = Array.isArray(answers.q3) && answers.q3.includes('Contenido orgánico');
-  const isAutomator = answers.q1 === 'Automatizador';
-  const noSoloDecision = answers.q6 !== 'Solo yo';
+  const fastTrack = answers.q6?.includes('Rápido');
+  const socialMediaDependent = Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)');
+  const isAutomator = answers.q2 === 'Automatizador';
+  const noSoloDecision = answers.q7 !== 'Solo yo';
   
   // Uso de "malito" con 30% de probabilidad en HOT/WARM
   const shouldUseMalito = (isHot || score >= 60) && Math.random() < 0.3;
@@ -555,7 +557,7 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
       'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale tu tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
   };
   
-  const identity = professionIdentity[answers.q1 || ''] || professionIdentity['Otro servicio creativo'];
+  const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro servicio creativo'];
   
   // Generar insight personalizado
   const personalizedInsight = generatePersonalizedInsight(answers, score);
@@ -682,7 +684,7 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
     }
   };
   
-  const professionData = professionGoals[answers.q1 || ''] || {
+  const professionData = professionGoals[answers.q2 || ''] || {
     goal: 'alcanzar tus objetivos profesionales',
     prep: ['Tu situación actual', 'Tus objetivos principales', 'Tus mayores desafíos']
   };
@@ -768,62 +770,63 @@ El Círculo
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const budgetOK = tags.some(t => t.includes('BUDGET-OK'));
+  const hasInvestment = answers.q5 !== 'Menos de €1.500';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
-  const lowRevenue = answers.q2 === 'Menos de 500€' || answers.q2 === '500€ - 1.000€';
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   
-  const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 60 ? '⭐ WARM' : '❄️ COLD';
-  const scoreBar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
+  const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD';
+  const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
   
   // Ángulos de apertura
   const openingAngles: string[] = [];
   if (lowRevenue) {
-    openingAngles.push(`"Vi que cobras ${answers.q2} por proyecto. Aquí hay una oportunidad ENORME de crecimiento. ¿Cuánto crees que deberías estar cobrando?"`);
-  } else if (answers.q2 && answers.q2 !== 'Más de 5.000€') {
-    openingAngles.push(`"Vi que ya cobras ${answers.q2}. Eso es sólido como base. ¿Cómo te sentirías duplicando eso en los próximos 90 días?"`);
+    openingAngles.push(`"Vi que facturas ${answers.q3}. Aquí hay una oportunidad ENORME de crecimiento. ¿Cuánto crees que deberías estar facturando?"`);
+  } else if (answers.q3 && answers.q3 !== 'Más de €5.000/mes') {
+    openingAngles.push(`"Vi que ya facturas ${answers.q3}. Eso es sólido como base. ¿Cómo te sentirías duplicando eso en los próximos 90 días?"`);
   }
-  if (answers.q5?.includes('Rápido')) {
+  if (answers.q6?.includes('Rápido')) {
     openingAngles.push(`"El hecho de que busques ascenso rápido me dice que estás 100% ready para el salto. ¿Qué te frena ahora mismo?"`);
   }
-  if (Array.isArray(answers.q3) && answers.q3.length > 0) {
-    openingAngles.push(`"Veo que tu adquisición viene de ${answers.q3[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
+  if (Array.isArray(answers.q4) && answers.q4.length > 0) {
+    openingAngles.push(`"Veo que tu adquisición viene de ${answers.q4[0]}. ¿Sientes que dominas ese canal o hay fricción?"`);
   }
   
   // Objeciones reales
   const potentialObjections: string[] = [];
-  if (!budgetOK) potentialObjections.push('PRECIO: "¿Opciones de pago?" → ROI + casos rápidos');
+  if (!hasInvestment) potentialObjections.push('INVERSIÓN: "No puedo ahora" → ROI + casos rápidos');
   if (!authSolo) potentialObjections.push('DECISIÓN: "Debo consultarlo" → Incluir a esa persona');
   if (!fastTrack) potentialObjections.push('TIMING: "Ahora no puedo" → ¿Qué debe pasar para estar listo/a?');
   
   // Estrategia
   let closingStrategy = '';
-  if (lowRevenue && budgetOK && fastTrack) {
-    closingStrategy = 'CLIENTE IDEAL - Dolor agudo + budget + urgencia = MÁXIMA PRIORIDAD. Admite si hay fit mínimo.';
-  } else if (isHot && budgetOK && fastTrack) {
+  if (lowRevenue && hasInvestment && fastTrack) {
+    closingStrategy = 'CLIENTE IDEAL - Dolor agudo + inversión + urgencia = MÁXIMA PRIORIDAD. Admite si hay fit mínimo.';
+  } else if (isHot && hasInvestment && fastTrack) {
     closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
-  } else if (score >= 7) {
+  } else if (score >= 75) {
     closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
     closingStrategy = 'EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
   }
   
   return `
-🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/100 ${scoreBar} | ${scoreEmoji}
+🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/110 ${scoreBar} | ${scoreEmoji}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
 Evalúa si este candidato debe cruzar el umbral.
 Esto no es una venta. Es un ritual de evaluación.
-${lowRevenue && budgetOK ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + budget confirmado = MÁXIMA PRIORIDAD' : ''}
+${lowRevenue && hasInvestment ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + inversión confirmada = MÁXIMA PRIORIDAD' : ''}
 
 ⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
 
 📋 PERFIL DEL CANDIDATO:
-• ${answers.q1} | Cobra: ${answers.q2}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Budget 2K: ${budgetOK ? '✅' : '❌'} | Decide: ${authSolo ? '✅ Solo' : answers.q6}
-• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q5}
-• Adquisición: ${Array.isArray(answers.q3) ? answers.q3[0] : answers.q3}${lowRevenue && budgetOK ? '\n🚨 PERFIL IDEAL: Cobra poco + tiene budget' : ''}
+• Pain: ${answers.q1}
+• ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
+• Adquisición: ${Array.isArray(answers.q4) ? answers.q4[0] : answers.q4}${lowRevenue && hasInvestment ? '\n🚨 PERFIL IDEAL: Cobra poco + tiene inversión' : ''}
 
 🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
