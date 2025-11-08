@@ -34,8 +34,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
         </div>
       )}
 
-      <ValuePropsCard />
-
       <GHLCalendarIframe
         calendarId="xkfGe4Gjr8REwK34dZke"
         firstName={firstName}
@@ -43,6 +41,8 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
         email={quizState.email || ''}
         phone={quizState.whatsapp || ''}
       />
+
+      <ValuePropsCard />
 
       <div className="text-center pt-4">
         <Button
