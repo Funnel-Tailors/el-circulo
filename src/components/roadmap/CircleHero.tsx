@@ -170,8 +170,15 @@ const CircleHero = () => {
       }} />}
       </div>
 
+      {/* CTA Button - justo debajo del VSL */}
+      <div className="pt-4">
+        <Button onClick={handleScrollToQuiz} size="lg" className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold">
+          Quiero entrar
+        </Button>
+      </div>
+
       {/* Logo EL CÍRCULO */}
-      <div className="space-y-4">
+      <div className="space-y-4 mt-12">
         <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow whitespace-nowrap">
           EL CÍRCULO
         </h1>
@@ -180,13 +187,6 @@ const CircleHero = () => {
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
           Consigue tu próximo cliente que no regatea <span className="text-foreground font-bold">en menos de 30 días</span> (o en 7 si aguantas el ritmo)
         </p>
-      </div>
-
-      {/* CTA Button */}
-      <div className="pt-6">
-        <Button onClick={handleScrollToQuiz} size="lg" className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold">
-          Quiero entrar al Círculo
-        </Button>
       </div>
     </div>;
 };
