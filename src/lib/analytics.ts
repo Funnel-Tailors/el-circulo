@@ -274,12 +274,31 @@ class QuizAnalytics {
 
   // Meta Pixel Tracking Methods
   trackMetaPixelEvent(eventName: string, params: any): void {
+    // 1. Disparar a Meta Pixel (browser-side)
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', eventName, params);
       console.log(`🎯 Meta Pixel ${eventName}:`, params);
     } else {
       console.warn('⚠️ Meta Pixel no disponible');
     }
+    
+    // 2. Guardar en Supabase para analytics
+    supabase.from('meta_pixel_events').insert({
+      session_id: this.sessionId,
+      user_journey_id: this.userJourneyId,
+      event_name: eventName,
+      event_value: params.value || null,
+      content_category: params.content_category || null,
+      content_ids: params.content_ids || null,
+      custom_data: params.custom_data || params,
+      quiz_version: this.quizVersion
+    }).then(({ error }) => {
+      if (error) {
+        console.error('❌ Error guardando Meta event en DB:', error);
+      } else {
+        console.log('✅ Meta event guardado en DB:', eventName);
+      }
+    });
   }
 
   trackQuizEngagement(): void {

@@ -15,7 +15,9 @@ import StatsCards from '@/components/analytics/StatsCards';
 import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
 import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import ComparisonSummaryCards from '@/components/analytics/ComparisonSummaryCards';
+import MetaEventsJourney from '@/components/analytics/MetaEventsJourney';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
+import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -33,6 +35,15 @@ const Analytics = () => {
     lastUpdate,
     fetchOverview
   } = useAnalyticsData();
+
+  // Meta Events journey data
+  const { 
+    data: metaEventsData, 
+    loading: metaLoading 
+  } = useMetaEventsJourney({ 
+    intervalDays: parseFloat(dateRange), 
+    quizVersion 
+  });
 
   // Auth check
   useEffect(() => {
@@ -237,6 +248,7 @@ const Analytics = () => {
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="vsl">VSL</TabsTrigger>
               <TabsTrigger value="funnel">Embudo</TabsTrigger>
+              <TabsTrigger value="meta">Meta Events</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -276,6 +288,13 @@ const Analytics = () => {
               <SessionFunnelChart 
                 data={overviewData.current?.sessionFunnel} 
                 loading={loading}
+              />
+            </TabsContent>
+
+            <TabsContent value="meta" className="space-y-6">
+              <MetaEventsJourney 
+                data={metaEventsData} 
+                loading={metaLoading} 
               />
             </TabsContent>
           </Tabs>

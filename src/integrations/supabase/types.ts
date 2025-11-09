@@ -47,6 +47,45 @@ export type Database = {
         }
         Relationships: []
       }
+      meta_pixel_events: {
+        Row: {
+          content_category: string | null
+          content_ids: string[] | null
+          created_at: string | null
+          custom_data: Json | null
+          event_name: string
+          event_value: number | null
+          id: string
+          quiz_version: string | null
+          session_id: string
+          user_journey_id: string | null
+        }
+        Insert: {
+          content_category?: string | null
+          content_ids?: string[] | null
+          created_at?: string | null
+          custom_data?: Json | null
+          event_name: string
+          event_value?: number | null
+          id?: string
+          quiz_version?: string | null
+          session_id: string
+          user_journey_id?: string | null
+        }
+        Update: {
+          content_category?: string | null
+          content_ids?: string[] | null
+          created_at?: string | null
+          custom_data?: Json | null
+          event_name?: string
+          event_value?: number | null
+          id?: string
+          quiz_version?: string | null
+          session_id?: string
+          user_journey_id?: string | null
+        }
+        Relationships: []
+      }
       quiz_analytics: {
         Row: {
           answer_value: string | null
@@ -348,6 +387,14 @@ export type Database = {
           leads_count: number
           quiz_completion_rate: number
         }[]
+      }
+      get_meta_events_journey: {
+        Args: {
+          filter_quiz_version?: string
+          interval_days: number
+          offset_days?: number
+        }
+        Returns: Json
       }
       get_quiz_conversion_by_step_filtered: {
         Args: { interval_days: number }
