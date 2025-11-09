@@ -96,18 +96,16 @@ const CircleHero = () => {
       }) => {
         if (percentage >= threshold && !milestonesFired.has(threshold)) {
           milestonesFired.add(threshold);
-          if (typeof window !== 'undefined' && (window as any).fbq) {
-            (window as any).fbq('track', 'ViewContent', {
-              content_type: 'video',
-              content_name: 'Roadmap VSL',
-              content_category: 'video_sales_letter',
-              video_title: 'Roadmap VSL',
-              video_type: 'sales_video',
-              value: value,
-              currency: 'EUR'
-            });
-            console.log(`✅ Meta Pixel ViewContent fired at ${threshold}% with value: ${value} EUR`);
-          }
+          quizAnalytics.trackMetaPixelEvent('ViewContent', {
+            content_type: 'video',
+            content_name: 'Roadmap VSL',
+            content_category: 'video_sales_letter',
+            video_title: 'Roadmap VSL',
+            video_type: 'sales_video',
+            video_status: `viewed_${threshold}%`,
+            value: value,
+            currency: 'EUR'
+          });
         }
       });
     };

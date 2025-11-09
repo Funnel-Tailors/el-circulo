@@ -170,36 +170,21 @@ const QuizSection = ({
         painValue = 180; // Problema de pricing
       }
       
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'ViewContent', {
-          content_type: 'quiz',
-          content_name: 'Pain Point Identified',
-          content_category: 'lead_qualification',
-          value: painValue,
-          currency: 'EUR',
-          custom_data: {
-            pain_point: value
-          }
-        });
-        console.log(`✅ Meta Pixel ViewContent (Q1) - Pain: ${value}, Value: ${painValue}€`);
-      }
+      quizAnalytics.trackMetaPixelEvent('ViewContent', {
+        content_type: 'quiz',
+        content_name: 'Pain Point Identified',
+        content_category: 'lead_qualification',
+        value: painValue,
+        currency: 'EUR',
+        custom_data: {
+          pain_point: value
+        }
+      });
     }
 
     // Track Q2 - Quiz engagement (Profesión)
     if (currentQuestion.id === 'q2') {
       quizAnalytics.trackQuizEngagement();
-      
-      // Meta Pixel - ViewContent para engagement inicial
-      if (typeof window !== 'undefined' && (window as any).fbq) {
-        (window as any).fbq('track', 'ViewContent', {
-          content_type: 'quiz',
-          content_name: 'Profession Identified',
-          content_category: 'lead_generation',
-          value: 200,
-          currency: 'EUR'
-        });
-        console.log('✅ Meta Pixel ViewContent (Q2) - Profession identified');
-      }
     }
 
     // Track Q3 - ICP Match or Disqualification (Facturación mensual)
@@ -209,67 +194,22 @@ const QuizSection = ({
       // Track ICP match for high-value monthly revenue brackets
       if (value === "€1.500 - €3.000/mes") {
         quizAnalytics.trackICPMatch(value);
-        
-        // Meta Pixel - ViewContent para ICP Sweet Spot
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'ViewContent', {
-            content_type: 'quiz',
-            content_name: 'ICP Sweet Spot Match',
-            content_category: 'high_intent_lead',
-            value: 800,
-            currency: 'EUR',
-            custom_data: {
-              revenue_bracket: value,
-              icp_match: true
-            }
-          });
-          console.log(`✅ Meta Pixel ViewContent (Q3) - ICP Sweet Spot: ${value}`);
-        }
       } else if (value === "€3.000 - €6.000/mes") {
         quizAnalytics.trackICPMatch(value);
-        
-        // Meta Pixel - ViewContent para ICP alto valor
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'ViewContent', {
-            content_type: 'quiz',
-            content_name: 'High Value ICP Match',
-            content_category: 'high_intent_lead',
-            value: 700,
-            currency: 'EUR',
-            custom_data: {
-              revenue_bracket: value,
-              icp_match: true
-            }
-          });
-          console.log(`✅ Meta Pixel ViewContent (Q3) - High Value ICP: ${value}`);
-        }
       } else if (value === "Más de €6.000/mes") {
-        // Meta Pixel - ViewContent para alto LTV
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'ViewContent', {
-            content_type: 'quiz',
-            content_name: 'High LTV Lead',
-            content_category: 'premium_lead',
-            value: 600,
-            currency: 'EUR',
-            custom_data: {
-              revenue_bracket: value,
-              high_ltv: true
-            }
-          });
-          console.log(`✅ Meta Pixel ViewContent (Q3) - High LTV: ${value}`);
-        }
+        quizAnalytics.trackMetaPixelEvent('ViewContent', {
+          content_type: 'quiz',
+          content_name: 'High LTV Lead',
+          content_category: 'premium_lead',
+          value: 600,
+          currency: 'EUR',
+          custom_data: {
+            revenue_bracket: value,
+            high_ltv: true
+          }
+        });
       } else if (value === "Menos de €500/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
-        
-        // Meta Pixel - Custom event para low revenue (negativo para exclusión)
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('trackCustom', 'LowRevenueLead', {
-            revenue_bracket: value,
-            qualified: false
-          });
-          console.log('🚫 Meta Pixel LowRevenueLead tracked for exclusion');
-        }
       }
     }
 
@@ -291,31 +231,8 @@ const QuizSection = ({
       }
       
       if (customEvent) {
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('trackCustom', customEvent, {
-            content_name: `Q5: ${value}`,
-            value: cartValue,
-            currency: 'EUR'
-          });
-        }
-        console.log('🚫 Budget disqualified - tracking negative signal');
         quizAnalytics.trackBudgetDisqualified();
       } else {
-        if (typeof window !== 'undefined' && (window as any).fbq) {
-          (window as any).fbq('track', 'AddToCart', {
-            value: cartValue,
-            currency: 'EUR',
-            content_name: 'Círculo Membership',
-            content_category: 'Membership',
-            content_ids: ['circulo_annual'],
-            predicted_ltv: cartValue * 3,
-            custom_data: {
-              investment_capacity: value,
-              qualified: true
-            }
-          });
-          console.log(`✅ Meta Pixel AddToCart (Q5) - Value: ${cartValue}€, Capacity: ${value}`);
-        }
         quizAnalytics.trackBudgetQualified(value);
       }
     }
