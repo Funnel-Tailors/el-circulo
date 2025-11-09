@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { RefreshCw, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import SessionFunnelChart from '@/components/analytics/SessionFunnelChart';
 import StatsCards from '@/components/analytics/StatsCards';
 import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
@@ -212,13 +213,11 @@ const Analytics = () => {
 
         {/* Error Banner */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-lg">
-            <p className="font-semibold">Error al cargar datos</p>
-            <p className="text-sm">{error}</p>
-            <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-2">
-              Reintentar
-            </Button>
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>
+              <strong>Error al cargar datos:</strong> {error}
+            </AlertDescription>
+          </Alert>
         )}
 
         {/* Main Content */}

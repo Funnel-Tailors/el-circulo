@@ -91,6 +91,15 @@ export const useAnalyticsData = () => {
         dailyTrends: (current.data as any).daily_trends || []
       } : getEmptyData();
 
+      // Debug log
+      console.log('✅ Data fetched successfully:', {
+        hasFunnel: !!currentData.sessionFunnel,
+        hasQuizKpis: !!currentData.quizKpis,
+        hasVslKpis: !!currentData.vslKpis,
+        trendsCount: currentData.dailyTrends.length,
+        sampleFunnel: currentData.sessionFunnel
+      });
+
       const previousData = previous.data ? {
         sessionFunnel: (previous.data as any).session_funnel,
         quizKpis: (previous.data as any).quiz_kpis,
@@ -113,8 +122,8 @@ export const useAnalyticsData = () => {
       
       toast({
         variant: 'destructive',
-        title: 'Error cargando datos',
-        description: error instanceof Error ? error.message : 'No se pudieron cargar las métricas',
+        title: '❌ Error al actualizar',
+        description: `${error instanceof Error ? error.message : 'Error desconocido'} - Verifica que los datos existan en el rango seleccionado`,
       });
       
       throw error;
