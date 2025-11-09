@@ -16,8 +16,10 @@ import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
 import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import ComparisonSummaryCards from '@/components/analytics/ComparisonSummaryCards';
 import MetaEventsJourney from '@/components/analytics/MetaEventsJourney';
+import QuestionMetrics from '@/components/analytics/QuestionMetrics';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
+import { useQuestionMetrics } from '@/hooks/useQuestionMetrics';
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -43,6 +45,15 @@ const Analytics = () => {
   } = useMetaEventsJourney({ 
     intervalDays: parseFloat(dateRange), 
     quizVersion 
+  });
+
+  // Question Metrics data
+  const {
+    data: questionMetricsData,
+    loading: questionMetricsLoading
+  } = useQuestionMetrics({
+    intervalDays: parseFloat(dateRange),
+    quizVersion
   });
 
   // Auth check
@@ -244,11 +255,12 @@ const Analytics = () => {
           </div>
         ) : (
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="vsl">VSL</TabsTrigger>
               <TabsTrigger value="funnel">Embudo</TabsTrigger>
               <TabsTrigger value="meta">Meta Events</TabsTrigger>
+              <TabsTrigger value="preguntas">Por Pregunta</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -295,6 +307,13 @@ const Analytics = () => {
               <MetaEventsJourney 
                 data={metaEventsData} 
                 loading={metaLoading} 
+              />
+            </TabsContent>
+
+            <TabsContent value="preguntas" className="space-y-6">
+              <QuestionMetrics 
+                data={questionMetricsData}
+                loading={questionMetricsLoading}
               />
             </TabsContent>
           </Tabs>
