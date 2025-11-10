@@ -18,19 +18,17 @@ export const HeroSection = ({ quizState }: HeroSectionProps) => {
         <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
 
-      <div className="glass-card-dark p-8 md:p-12 max-w-3xl mx-auto">
-        <h1 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight glow leading-[0.9em] mb-6">
-          {firstName ? `${firstName.toUpperCase()}, LA SENDA COMIENZA` : 'LA SENDA COMIENZA'}
-        </h1>
+      <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em]">
+        {firstName ? `${firstName.toUpperCase()}, LA SENDA COMIENZA` : 'LA SENDA COMIENZA'}
+      </h1>
 
-        <p className="text-xl md:text-2xl text-foreground font-semibold mb-4">
-          {personalization.heroHeadline}
-        </p>
+      <p className="text-xl md:text-2xl text-foreground font-semibold max-w-3xl mx-auto">
+        {personalization.heroHeadline}
+      </p>
 
-        <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-          {personalization.heroSubtext}
-        </p>
-      </div>
+      <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
+        {personalization.heroSubtext}
+      </p>
 
       {/* Bottom divider */}
       <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">

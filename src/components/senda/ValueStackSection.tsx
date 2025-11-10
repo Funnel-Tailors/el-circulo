@@ -1,33 +1,23 @@
 const deliverables = [
   {
-    icon: "🎯",
-    title: "OFERTA DISEÑADA EN VIVO",
-    description: "Tu posicionamiento + pricing premium (€2K-5K por proyecto)"
-  },
-  {
-    icon: "🔥",
-    title: "CANAL ACTIVADO",
-    description: "Sistema para leads en 48-72h"
-  },
-  {
-    icon: "⚔️",
-    title: "SCRIPT DE CIERRE",
-    description: "Qué preguntar, cuándo, cómo cerrar"
-  },
-  {
-    icon: "🎬",
-    title: "AUDITORÍA EN VIVO",
-    description: "Si corres ads, los diseccionamos"
-  },
-  {
-    icon: "📊",
-    title: "PLAN DE 7 DÍAS",
-    description: "Qué hacer día a día"
+    icon: "🎁",
+    title: "CLASE COMPLETA",
+    description: 'Acceso a "Crea Tu Oferta: Cómo cobrar 3 veces más haciendo lo mismo"'
   },
   {
     icon: "🔮",
-    title: "ACCESO AL CÍRCULO",
-    description: "Si calificas, lo sabrás en la llamada"
+    title: "APLICACIÓN PERSONALIZADA",
+    description: "Diseño de tu oferta adaptada a TU negocio en la consulta"
+  },
+  {
+    icon: "⚔️",
+    title: "AUDITORÍA EN VIVO",
+    description: "Revisión y optimización de tu oferta personalizada en tiempo real"
+  },
+  {
+    icon: "🎯",
+    title: "ESTRATEGIA PREMIUM",
+    description: "Posicionamiento diseñado para que cobres lo que vales"
   }
 ];
 
@@ -48,17 +38,14 @@ export const ValueStackSection = () => {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl mx-auto px-6">
         {deliverables.map((item, index) => (
-          <div
-            key={index}
-            className="glass-card-dark p-6 space-y-3 text-center hover:scale-105 transition-transform"
-          >
-            <div className="text-4xl">{item.icon}</div>
+          <div key={index} className="text-center space-y-3">
+            <div className="text-5xl">{item.icon}</div>
             <h3 className="text-lg font-bold text-foreground uppercase tracking-tight">
               {item.title}
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               {item.description}
             </p>
           </div>

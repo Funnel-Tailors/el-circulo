@@ -9,24 +9,24 @@ export const PersonalizedPainSection = ({ quizState }: PersonalizedPainSectionPr
   const personalization = generateSendaPersonalization(quizState);
 
   return (
-    <div className="space-y-8 mb-16">
-      <div className="flex items-center justify-center gap-4" aria-hidden="true">
-        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-        <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
-        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-      </div>
+    <section className="relative py-8 mb-16">
+      <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
+        <div className="flex items-center justify-center gap-4" aria-hidden="true">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+          <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+        </div>
 
-      <div className="glass-card-dark p-8 md:p-12 max-w-3xl mx-auto space-y-6">
-        <h2 className="text-2xl md:text-4xl font-display font-black uppercase tracking-tight text-foreground">
+        <h2 className="text-5xl md:text-6xl font-display font-black uppercase tracking-tight glow text-foreground">
           {personalization.painHeadline}
         </h2>
 
-        <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto whitespace-pre-line">
           {personalization.painBody}
         </p>
 
-        <div className="space-y-3 pt-4">
-          <p className="text-foreground font-semibold">
+        <div className="space-y-3 pt-4 max-w-2xl mx-auto text-left">
+          <p className="text-xl font-semibold text-foreground mb-4">
             Esto es lo que vamos a diseñar en la consulta:
           </p>
           {personalization.painBullets.map((bullet, index) => (
@@ -36,13 +36,13 @@ export const PersonalizedPainSection = ({ quizState }: PersonalizedPainSectionPr
             </div>
           ))}
         </div>
-      </div>
 
-      <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">
-        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-        <div className="text-muted-foreground text-xs">✦</div>
-        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+        <div className="flex items-center justify-center gap-4 pt-8" aria-hidden="true">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+          <div className="text-muted-foreground text-xs">✦</div>
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
