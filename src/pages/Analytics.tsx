@@ -17,9 +17,11 @@ import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import ComparisonSummaryCards from '@/components/analytics/ComparisonSummaryCards';
 import MetaEventsJourney from '@/components/analytics/MetaEventsJourney';
 import QuestionMetrics from '@/components/analytics/QuestionMetrics';
+import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
 import { useQuestionMetrics } from '@/hooks/useQuestionMetrics';
+import { useAnswerDistribution } from '@/hooks/useAnswerDistribution';
 
 const Analytics = () => {
   const navigate = useNavigate();
@@ -52,6 +54,15 @@ const Analytics = () => {
     data: questionMetricsData,
     loading: questionMetricsLoading
   } = useQuestionMetrics({
+    intervalDays: parseFloat(dateRange),
+    quizVersion
+  });
+
+  // Answer Distribution data
+  const {
+    data: answerDistributionData,
+    loading: answerDistLoading
+  } = useAnswerDistribution({
     intervalDays: parseFloat(dateRange),
     quizVersion
   });
@@ -314,6 +325,11 @@ const Analytics = () => {
               <QuestionMetrics 
                 data={questionMetricsData}
                 loading={questionMetricsLoading}
+              />
+              
+              <AnswerDistribution 
+                data={answerDistributionData}
+                loading={answerDistLoading}
               />
             </TabsContent>
           </Tabs>

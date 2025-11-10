@@ -50,15 +50,25 @@ const AnswerDistribution = ({ data, loading }: AnswerDistributionProps) => {
     return acc;
   }, {} as Record<string, typeof data>);
 
-  // Mapeo de IDs a nombres legibles
+  // Mapeo de IDs a nombres legibles con emojis
   const questionNames: Record<string, string> = {
-    q1: 'Profesión',
-    q2: 'Facturación por proyecto',
-    q3: 'Sistema de adquisición',
-    q4: 'Capacidad de inversión',
-    q5: 'Disponibilidad horaria',
-    q6: 'Poder de decisión',
+    q1: '💼 Profesión',
+    q2: '💰 Facturación por Proyecto',
+    q3: '📢 Sistema de Captación Actual',
+    q4: '💵 Presupuesto Disponible',
+    q5: '⏰ Compromiso de Tiempo',
+    q6: '👥 Poder de Decisión',
   };
+
+  // Función para colorear barras según popularidad
+  const getBarColor = (percentage: number) => {
+    if (percentage >= 40) return 'bg-emerald-500'; // Opción dominante
+    if (percentage >= 20) return 'bg-blue-500'; // Opción popular
+    return 'bg-muted-foreground/40'; // Opción poco elegida
+  };
+
+  // Función para determinar si destacar una respuesta
+  const isPopularAnswer = (percentage: number) => percentage >= 40;
 
   return (
     <div className="space-y-6">
@@ -75,20 +85,38 @@ const AnswerDistribution = ({ data, loading }: AnswerDistributionProps) => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {answers.map((answer) => (
-                <div key={answer.answer_value} className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{answer.answer_value}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground">
-                        {answer.response_count} {answer.response_count === 1 ? 'respuesta' : 'respuestas'}
+              {answers.map((answer) => {
+                const popular = isPopularAnswer(answer.percentage);
+                return (
+                  <div 
+                    key={answer.answer_value} 
+                    className={`space-y-2 p-3 rounded-lg transition-all ${
+                      popular ? 'bg-emerald-500/10 border border-emerald-500/20' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-sm">
+                      <span className={`font-medium ${popular ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
+                        {answer.answer_value}
+                        {popular && ' ⭐'}
                       </span>
-                      <span className="font-bold">{answer.percentage}%</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">
+                          {answer.response_count} {answer.response_count === 1 ? 'respuesta' : 'respuestas'}
+                        </span>
+                        <span className={`font-bold ${popular ? 'text-emerald-600 dark:text-emerald-400' : ''}`}>
+                          {answer.percentage}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="relative w-full bg-muted rounded-full h-2 overflow-hidden">
+                      <div 
+                        className={`h-full transition-all duration-500 ${getBarColor(answer.percentage)}`}
+                        style={{ width: `${answer.percentage}%` }}
+                      />
                     </div>
                   </div>
-                  <Progress value={answer.percentage} className="h-2" />
-                </div>
-              ))}
+                );
+              })}
             </CardContent>
           </Card>
         ))}
