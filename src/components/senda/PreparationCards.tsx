@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PreparationCardsProps {
@@ -69,12 +68,6 @@ export const PreparationCards = ({ token }: PreparationCardsProps) => {
     };
   }, [token]);
 
-  const handlePDFDownload = () => {
-    trackEvent('senda_pdf_download');
-    // TODO: Implementar descarga del PDF cuando esté listo
-    console.log('📜 PDF download tracked');
-  };
-
   const handleAIAssistantOpen = () => {
     trackEvent('senda_ai_assistant_open');
   };
@@ -96,13 +89,13 @@ export const PreparationCards = ({ token }: PreparationCardsProps) => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-        {/* Card 1: Video */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+        {/* Video Card */}
         <div className="glass-card-dark p-6 space-y-4">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <div className="text-4xl">🎬</div>
-            <h3 className="text-xl font-bold text-foreground">CLASE COMPLETA</h3>
-            <p className="text-sm text-muted-foreground">"Crea Tu Oferta Premium"</p>
+            <h3 className="text-xl font-bold text-foreground">Clase Completa</h3>
+            <p className="text-sm text-muted-foreground">"Crea Tu Oferta Premium" • 40 minutos</p>
           </div>
 
           <div className="aspect-video bg-black rounded-lg overflow-hidden video-glow">
@@ -121,19 +114,21 @@ export const PreparationCards = ({ token }: PreparationCardsProps) => {
             </div>
           )}
 
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>✓ Framework de €5K+</li>
-            <li>✓ Por qué cobras poco</li>
-            <li>✓ Casos reales</li>
+          <ul className="text-sm text-muted-foreground space-y-2">
+            <li>✓ Framework de ofertas €2K-5K</li>
+            <li>✓ Por qué cobras poco (y cómo arreglarlo)</li>
+            <li>✓ Casos reales de miembros del Círculo</li>
           </ul>
         </div>
 
-        {/* Card 2: IA */}
+        {/* AI Assistant Card */}
         <div className="glass-card-dark p-6 space-y-4">
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
             <div className="text-4xl">🤖</div>
-            <h3 className="text-xl font-bold text-foreground">ASISTENTE IA</h3>
-            <p className="text-sm text-muted-foreground">"El Oráculo del Círculo"</p>
+            <h3 className="text-xl font-bold text-foreground">Asistente IA Exclusivo</h3>
+            <p className="text-sm text-muted-foreground">
+              GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso
+            </p>
           </div>
 
           <div className="aspect-video bg-accent/30 rounded-lg flex items-center justify-center border border-border">
@@ -142,51 +137,21 @@ export const PreparationCards = ({ token }: PreparationCardsProps) => {
             </p>
           </div>
 
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Analiza tu negocio</li>
-            <li>• Diseña tu oferta</li>
-            <li>• Prepara preguntas</li>
+          <ul className="text-sm text-muted-foreground space-y-2">
+            <li>• Analiza tu modelo actual</li>
+            <li>• Diseña tu oferta premium</li>
+            <li>• Prepara tus preguntas clave</li>
           </ul>
 
-          <Button
+          <a
+            href="https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleAIAssistantOpen}
-            className="w-full dark-button-primary"
-            asChild
+            className="block w-full dark-button-primary px-6 py-3 rounded-lg font-medium text-center transition-all"
           >
-            <a
-              href="https://chatgpt.com/g/g-YOUR_GPT_ID"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Acceder al Oráculo →
-            </a>
-          </Button>
-        </div>
-
-        {/* Card 3: PDF */}
-        <div className="glass-card-dark p-6 space-y-4">
-          <div className="text-center space-y-2">
-            <div className="text-4xl">📜</div>
-            <h3 className="text-xl font-bold text-foreground">GUÍA RÁPIDA</h3>
-            <p className="text-sm text-muted-foreground">"Resumen de la Clase"</p>
-          </div>
-
-          <div className="aspect-video bg-accent/30 rounded-lg flex items-center justify-center border border-border">
-            <div className="text-6xl opacity-50">📄</div>
-          </div>
-
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Puntos clave</li>
-            <li>• Framework visual</li>
-            <li>• Checklists</li>
-          </ul>
-
-          <Button
-            onClick={handlePDFDownload}
-            className="w-full dark-button-primary"
-          >
-            Descargar PDF →
-          </Button>
+            Abrir Asistente →
+          </a>
         </div>
       </div>
 

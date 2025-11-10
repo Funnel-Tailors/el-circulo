@@ -7,6 +7,7 @@ import { FilteredSuccessCases } from "@/components/senda/FilteredSuccessCases";
 import { SendaFooter } from "@/components/senda/SendaFooter";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
+import type { QuizState } from "@/types/quiz";
 
 const Senda = () => {
   const { loading, quizState, token } = useSendaAccess();
@@ -23,10 +24,6 @@ const Senda = () => {
     );
   }
 
-  if (!quizState || !token) {
-    return null; // useSendaAccess already redirects
-  }
-
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background effects */}
@@ -41,11 +38,11 @@ const Senda = () => {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
-        <HeroSection quizState={quizState} />
+        <HeroSection quizState={quizState || {} as QuizState} />
         <PreparationCards token={token} />
-        <PersonalizedPainSection quizState={quizState} />
+        <PersonalizedPainSection quizState={quizState || {} as QuizState} />
         <ValueStackSection />
-        <FilteredSuccessCases quizState={quizState} />
+        <FilteredSuccessCases quizState={quizState || {} as QuizState} />
         <SendaFooter />
       </div>
     </div>

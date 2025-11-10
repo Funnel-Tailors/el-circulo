@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { QuizState } from '@/types/quiz';
 
 export const useSendaAccess = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -15,8 +14,10 @@ export const useSendaAccess = () => {
       const tokenParam = searchParams.get('token');
       
       if (!tokenParam) {
-        console.error('❌ No token provided');
-        navigate('/');
+        console.log('⚠️ No token provided - loading with default copy');
+        setQuizState(null);
+        setToken(null);
+        setLoading(false);
         return;
       }
 
@@ -24,19 +25,21 @@ export const useSendaAccess = () => {
         const { data, error } = await supabase
           .from('quiz_analytics')
           .select('quiz_state, session_id')
-          .eq('session_id', tokenParam)
+          .eq('ghl_contact_id', tokenParam)
           .eq('event_type', 'contact_form_submitted')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
 
         if (error || !data || !data.quiz_state) {
-          console.error('❌ Invalid token or no quiz data found:', error);
-          navigate('/');
+          console.log('⚠️ Invalid token or no quiz data - loading with default copy');
+          setQuizState(null);
+          setToken(null);
+          setLoading(false);
           return;
         }
 
-        setQuizState(data.quiz_state as QuizState);
+        setQuizState(data.quiz_state as unknown as QuizState);
         setToken(tokenParam);
         
         console.log('✅ Senda access validated:', {
@@ -52,14 +55,14 @@ export const useSendaAccess = () => {
         
       } catch (err) {
         console.error('❌ Error validating token:', err);
-        navigate('/');
-      } finally {
+        setQuizState(null);
+        setToken(null);
         setLoading(false);
       }
     };
 
     validateToken();
-  }, [searchParams, navigate]);
+  }, [searchParams]);
 
   return { loading, quizState, token };
 };

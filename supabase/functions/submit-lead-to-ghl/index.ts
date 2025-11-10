@@ -944,6 +944,18 @@ El Miembro Honorario evaluará tu candidatura. No es una llamada de ventas.
 
 El enlace llegará 1h antes del ritual.
 
+🎓 ACCEDE A TU MATERIAL:
+
+Antes del ritual, completa la clase de preparación (40 mins):
+
+🔗 https://vendenautomatico.com/senda?token={{contact.id}}
+
+Contiene:
+• La clase completa "Crea Tu Oferta Premium"
+• Asistente IA exclusivo para diseñar tu oferta
+
+⚠️ Completa ANTES de la llamada o no podremos avanzar.
+
 —
 El Círculo
     `.trim();
@@ -978,6 +990,18 @@ Cuanto mejor preparado vengas, más claridad obtendrás.
 ⏳ Si no puedes asistir, avisa con 24h.
 
 El enlace llegará 1h antes.
+
+🎓 ACCEDE A TU MATERIAL:
+
+Antes del ritual, completa la clase de preparación (40 mins):
+
+🔗 https://vendenautomatico.com/senda?token={{contact.id}}
+
+Contiene:
+• La clase completa "Crea Tu Oferta Premium"
+• Asistente IA exclusivo para diseñar tu oferta
+
+⚠️ Completa ANTES de la llamada o no podremos avanzar.
 
 —
 El Círculo
@@ -1370,6 +1394,20 @@ serve(async (req) => {
           event_type: 'contact_form_submitted',
           device_type: 'unknown',
           language: 'es-ES',
+          quiz_state: {
+            q1: answers.q1,
+            q2: answers.q2,
+            q3: answers.q3,
+            q4: answers.q4,
+            q5: answers.q5,
+            q6: answers.q6,
+            q7: answers.q7,
+            name: name,
+            email: email,
+            whatsapp: whatsapp,
+            ghlContactId: finalContactId
+          },
+          ghl_contact_id: finalContactId
         });
       
       if (analyticsError) {

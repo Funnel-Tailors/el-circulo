@@ -94,6 +94,7 @@ export type Database = {
           error_message: string | null
           error_type: string | null
           event_type: string
+          ghl_contact_id: string | null
           id: string
           language: string | null
           quiz_state: Json | null
@@ -117,6 +118,7 @@ export type Database = {
           error_message?: string | null
           error_type?: string | null
           event_type: string
+          ghl_contact_id?: string | null
           id?: string
           language?: string | null
           quiz_state?: Json | null
@@ -140,6 +142,7 @@ export type Database = {
           error_message?: string | null
           error_type?: string | null
           event_type?: string
+          ghl_contact_id?: string | null
           id?: string
           language?: string | null
           quiz_state?: Json | null

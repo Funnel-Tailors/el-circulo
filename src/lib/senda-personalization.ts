@@ -107,7 +107,32 @@ export const generateSendaPersonalization = (quizState: QuizState): Personalizat
   }
 
   // ========================================
-  // FALLBACK: General
+  // FALLBACK: Cuando no hay quiz_state (sin token o token inválido)
+  // ========================================
+  if (!q1 && !q2 && !q3) {
+    return {
+      heroHeadline: 'Has cualificado para tu ritual de iniciación',
+      heroSubtext: `Antes de recorrer la Senda, necesitas prepararte. En 60 minutos diseñaremos tu sistema exacto para escalar tu negocio creativo.`,
+      painHeadline: 'Lo que vamos a resolver en el ritual',
+      painBody: `Has demostrado que tienes potencial. Ahora toca diseñar tu modelo para dejar de cobrar poco y trabajar demasiado.
+
+En la consulta diseñaremos juntos:
+
+✓ Tu sistema exacto de captación para tener leads consistentes
+✓ Tu oferta premium posicionada para cobrar lo que vales  
+✓ El proceso de cierre que convierte sin rogar
+
+Prepárate para el ritual completando el material de esta página.`,
+      painBullets: [
+        `Sistema de captación para 4-6 leads/semana`,
+        `Oferta premium de €2K-5K por proyecto`,
+        `Framework de cierre sin objeciones`
+      ]
+    };
+  }
+
+  // ========================================
+  // FALLBACK: General (cuando hay algo de quiz_state pero no match)
   // ========================================
   return {
     heroHeadline: 'El ritual comienza',

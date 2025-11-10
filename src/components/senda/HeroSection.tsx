@@ -7,6 +7,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ quizState }: HeroSectionProps) => {
   const personalization = generateSendaPersonalization(quizState);
+  const firstName = quizState.name?.split(' ')[0] || '';
 
   return (
     <div className="text-center space-y-6 mb-16 animate-fade-in">
@@ -19,7 +20,7 @@ export const HeroSection = ({ quizState }: HeroSectionProps) => {
 
       <div className="glass-card-dark p-8 md:p-12 max-w-3xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-display font-black uppercase tracking-tight glow leading-[0.9em] mb-6">
-          LA SENDA COMIENZA
+          {firstName ? `${firstName.toUpperCase()}, LA SENDA COMIENZA` : 'LA SENDA COMIENZA'}
         </h1>
 
         <p className="text-xl md:text-2xl text-foreground font-semibold mb-4">
