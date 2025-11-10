@@ -273,7 +273,7 @@ class QuizAnalytics {
   }
 
   // Meta Pixel Tracking Methods
-  trackMetaPixelEvent(eventName: string, params: any): void {
+  async trackMetaPixelEvent(eventName: string, params: any): Promise<void> {
     // 1. Disparar a Meta Pixel (browser-side)
     if (typeof window !== 'undefined' && (window as any).fbq) {
       (window as any).fbq('track', eventName, params);
@@ -283,26 +283,37 @@ class QuizAnalytics {
     }
     
     // 2. Guardar en Supabase para analytics
-    supabase.from('meta_pixel_events').insert({
-      session_id: this.sessionId,
-      user_journey_id: this.userJourneyId,
-      event_name: eventName,
-      event_value: params.value || null,
-      content_category: params.content_category || null,
-      content_ids: params.content_ids || null,
-      custom_data: params.custom_data || params,
-      quiz_version: this.quizVersion
-    }).then(({ error }) => {
+    try {
+      // Convertir content_ids a array si no lo es
+      const contentIds = params.content_ids 
+        ? (Array.isArray(params.content_ids) ? params.content_ids : [params.content_ids])
+        : null;
+
+      const { data, error } = await supabase.from('meta_pixel_events').insert({
+        session_id: this.sessionId,
+        user_journey_id: this.userJourneyId,
+        event_name: eventName,
+        event_value: params.value || null,
+        content_category: params.content_category || null,
+        content_ids: contentIds,
+        custom_data: params.custom_data || params,
+        quiz_version: this.quizVersion
+      });
+
       if (error) {
         console.error('❌ Error guardando Meta event en DB:', error);
-      } else {
-        console.log('✅ Meta event guardado en DB:', eventName);
+        throw error;
       }
-    });
+      
+      console.log('✅ Meta event guardado en DB:', eventName);
+    } catch (err) {
+      console.error('❌ Exception guardando Meta event:', err);
+      throw err;
+    }
   }
 
-  trackQuizEngagement(): void {
-    this.trackMetaPixelEvent('ViewContent', {
+  async trackQuizEngagement(): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
       content_type: 'quiz',
       content_name: 'Quiz Started - First Answer',
       content_category: 'lead_generation',
@@ -311,8 +322,8 @@ class QuizAnalytics {
     });
   }
 
-  trackPainPoint(painPoint: string): void {
-    this.trackMetaPixelEvent('ViewContent', {
+  async trackPainPoint(painPoint: string): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
       content_type: 'quiz',
       content_name: 'Pain Point Identified',
       content_category: 'lead_qualification',
@@ -324,9 +335,9 @@ class QuizAnalytics {
     });
   }
 
-  trackICPMatch(projectValue: string): void {
+  async trackICPMatch(projectValue: string): Promise<void> {
     if (projectValue === "1.000€ - 2.500€") {
-      this.trackMetaPixelEvent('ViewContent', {
+      await this.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'ICP Sweet Spot Match',
         content_category: 'high_intent_lead',
@@ -337,8 +348,8 @@ class QuizAnalytics {
     }
   }
 
-  trackLowRevenueDisqualified(): void {
-    this.trackMetaPixelEvent('ViewContent', {
+  async trackLowRevenueDisqualified(): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
       content_type: 'quiz_disqualified',
       content_name: 'Disqualified - Low Revenue',
       content_category: 'negative_signal',
@@ -348,8 +359,8 @@ class QuizAnalytics {
     });
   }
 
-  trackBudgetDisqualified(): void {
-    this.trackMetaPixelEvent('ViewContent', {
+  async trackBudgetDisqualified(): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
       content_type: 'quiz_disqualified',
       content_name: 'Disqualified - No Budget',
       content_category: 'negative_signal',
@@ -373,8 +384,8 @@ class QuizAnalytics {
     });
   }
 
-  enrichLeadEvent(value: number, icp_match: boolean, revenue_range: string, budget_ready: boolean): void {
-    this.trackMetaPixelEvent('Lead', {
+  async enrichLeadEvent(value: number, icp_match: boolean, revenue_range: string, budget_ready: boolean): Promise<void> {
+    await this.trackMetaPixelEvent('Lead', {
       value: value,
       currency: 'EUR',
       content_name: 'Círculo Membership',
