@@ -29,7 +29,8 @@ export const useAnswerDistribution = ({ intervalDays, quizVersion }: UseAnswerDi
         
         const { data: result, error: rpcError } = await supabase
           .rpc('get_answer_distribution_filtered', {
-            interval_days: intervalDays
+            interval_days: intervalDays,
+            quiz_version_filter: quizVersion
           });
 
         if (rpcError) {

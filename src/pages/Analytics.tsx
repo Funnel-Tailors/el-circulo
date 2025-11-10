@@ -330,6 +330,7 @@ const Analytics = () => {
               <AnswerDistribution 
                 data={answerDistributionData}
                 loading={answerDistLoading}
+                quizVersion={quizVersion}
               />
             </TabsContent>
           </Tabs>

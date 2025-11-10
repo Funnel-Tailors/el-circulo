@@ -11,9 +11,10 @@ interface AnswerDistributionProps {
     percentage: number;
   }>;
   loading: boolean;
+  quizVersion: 'all' | 'v1' | 'v2';
 }
 
-const AnswerDistribution = ({ data, loading }: AnswerDistributionProps) => {
+const AnswerDistribution = ({ data, loading, quizVersion }: AnswerDistributionProps) => {
   if (loading) {
     return (
       <div className="space-y-6">
@@ -50,8 +51,8 @@ const AnswerDistribution = ({ data, loading }: AnswerDistributionProps) => {
     return acc;
   }, {} as Record<string, typeof data>);
 
-  // Mapeo de IDs a nombres legibles con emojis
-  const questionNames: Record<string, string> = {
+  // Mapeo de IDs a nombres legibles por versión
+  const questionNamesV1: Record<string, string> = {
     q1: '💼 Profesión',
     q2: '💰 Facturación por Proyecto',
     q3: '📢 Sistema de Captación Actual',
@@ -59,6 +60,19 @@ const AnswerDistribution = ({ data, loading }: AnswerDistributionProps) => {
     q5: '⏰ Compromiso de Tiempo',
     q6: '👥 Poder de Decisión',
   };
+
+  const questionNamesV2: Record<string, string> = {
+    q1: '💥 Punto de Dolor Principal',
+    q2: '💼 Profesión',
+    q3: '💰 Facturación por Proyecto',
+    q4: '📢 Sistema de Captación Actual',
+    q5: '💵 Presupuesto Disponible',
+    q6: '⏰ Compromiso de Tiempo',
+    q7: '👥 Decisor de Compra',
+  };
+
+  // Usar mapeo según versión seleccionada
+  const questionNames = quizVersion === 'v1' ? questionNamesV1 : questionNamesV2;
 
   // Función para colorear barras según popularidad
   const getBarColor = (percentage: number) => {

@@ -368,16 +368,27 @@ export type Database = {
         }
         Returns: Json
       }
-      get_answer_distribution_filtered: {
-        Args: { interval_days: number }
-        Returns: {
-          answer_value: string
-          percentage: number
-          response_count: number
-          step_id: string
-          step_index: number
-        }[]
-      }
+      get_answer_distribution_filtered:
+        | {
+            Args: { interval_days: number }
+            Returns: {
+              answer_value: string
+              percentage: number
+              response_count: number
+              step_id: string
+              step_index: number
+            }[]
+          }
+        | {
+            Args: { interval_days: number; quiz_version_filter?: string }
+            Returns: {
+              answer_value: string
+              percentage: number
+              response_count: number
+              step_id: string
+              step_index: number
+            }[]
+          }
       get_daily_trends: {
         Args: { interval_days: number }
         Returns: {
