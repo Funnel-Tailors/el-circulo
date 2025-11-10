@@ -15,7 +15,15 @@ type EventType =
   | 'vsl_25_percent'
   | 'vsl_50_percent'
   | 'vsl_75_percent'
-  | 'vsl_100_percent';
+  | 'vsl_100_percent'
+  | 'senda_page_view'
+  | 'senda_video_start'
+  | 'senda_video_progress_25'
+  | 'senda_video_progress_50'
+  | 'senda_video_progress_75'
+  | 'senda_video_complete'
+  | 'senda_pdf_download'
+  | 'senda_ai_assistant_open';
 
 interface TrackEventParams {
   event_type: EventType;

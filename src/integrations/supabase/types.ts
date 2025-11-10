@@ -96,6 +96,7 @@ export type Database = {
           event_type: string
           id: string
           language: string | null
+          quiz_state: Json | null
           quiz_version: string | null
           referrer: string | null
           session_id: string
@@ -118,6 +119,7 @@ export type Database = {
           event_type: string
           id?: string
           language?: string | null
+          quiz_state?: Json | null
           quiz_version?: string | null
           referrer?: string | null
           session_id: string
@@ -140,6 +142,7 @@ export type Database = {
           event_type?: string
           id?: string
           language?: string | null
+          quiz_state?: Json | null
           quiz_version?: string | null
           referrer?: string | null
           session_id?: string
