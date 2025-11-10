@@ -593,17 +593,7 @@ const QuizSection = ({
 
           // Auto-avance después de 300ms para dar feedback visual
           setTimeout(() => {
-            if (isLastStep) {
-              const score = calculateScore(updatedAnswers);
-              const qualified = score >= 75 && !hasAutoDisqualify(updatedAnswers, score);
-              if (qualified) {
-                setShowContactForm(true);
-              } else {
-                onComplete(updatedAnswers, false);
-              }
-            } else {
-              setCurrentStep(prev => prev + 1);
-            }
+            handleNext();
           }, 300);
         }} className="space-y-3">
             {currentQuestion.options?.map(option => <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
