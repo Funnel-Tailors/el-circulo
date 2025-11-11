@@ -15,7 +15,21 @@ const SPAM_PATTERNS = {
   phone: /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/
 };
 
-// Lista de países con códigos telefónicos más comunes
+// Lista de países TOP (ordenados por audiencia esperada)
+export const TOP_COUNTRY_CODES = [
+  { code: "+34", country: "España", flag: "🇪🇸" },
+  { code: "+52", country: "México", flag: "🇲🇽" },
+  { code: "+54", country: "Argentina", flag: "🇦🇷" },
+  { code: "+57", country: "Colombia", flag: "🇨🇴" },
+  { code: "+56", country: "Chile", flag: "🇨🇱" },
+  { code: "+51", country: "Perú", flag: "🇵🇪" },
+  { code: "+1", country: "Estados Unidos", flag: "🇺🇸" },
+  { code: "+593", country: "Ecuador", flag: "🇪🇨" },
+  { code: "+55", country: "Brasil", flag: "🇧🇷" },
+  { code: "+506", country: "Costa Rica", flag: "🇨🇷" },
+];
+
+// Lista completa de países con códigos telefónicos
 export const COUNTRY_CODES = [
   { code: "+34", country: "España", flag: "🇪🇸" },
   { code: "+1", country: "Estados Unidos", flag: "🇺🇸" },
@@ -134,12 +148,12 @@ export const contactFormSchema = z.object({
   
   email: z
     .string()
-    .min(1, "El email es obligatorio")
-    .max(255, "El email es demasiado largo")
-    .email("Ingresa un email válido")
+    .optional()
     .refine(
       (value) => {
-        // Validación extra: debe tener al menos un punto después del @
+        // Si está vacío, es válido (campo opcional)
+        if (!value || value.trim() === '') return true;
+        // Si tiene valor, debe ser email válido con punto después del @
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(value);
       },
@@ -148,13 +162,17 @@ export const contactFormSchema = z.object({
       }
     )
     .refine(
-      (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
+      (value) => {
+        if (!value || value.trim() === '') return true;
+        return !SPAM_PATTERNS.email.test(value.toLowerCase());
+      },
       {
         message: "Por favor ingresa un email válido",
       }
     )
     .refine(
       (value) => {
+        if (!value || value.trim() === '') return true;
         const domain = value.split('@')[1]?.toLowerCase();
         return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
       },

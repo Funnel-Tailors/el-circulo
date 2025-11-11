@@ -26,15 +26,17 @@ function isSpamSubmission(data: ContactData): { isSpam: boolean; reason?: string
     return { isSpam: true, reason: 'Spam pattern in name' };
   }
   
-  // Verificar email temporal/spam
-  const emailLower = data.email.toLowerCase();
-  if (SPAM_PATTERNS.email.test(emailLower)) {
-    return { isSpam: true, reason: 'Spam pattern in email' };
-  }
-  
-  const emailDomain = emailLower.split('@')[1];
-  if (DISPOSABLE_EMAIL_DOMAINS.includes(emailDomain)) {
-    return { isSpam: true, reason: 'Disposable email domain' };
+  // Verificar email temporal/spam SOLO si email existe
+  if (data.email) {
+    const emailLower = data.email.toLowerCase();
+    if (SPAM_PATTERNS.email.test(emailLower)) {
+      return { isSpam: true, reason: 'Spam pattern in email' };
+    }
+    
+    const emailDomain = emailLower.split('@')[1];
+    if (DISPOSABLE_EMAIL_DOMAINS.includes(emailDomain)) {
+      return { isSpam: true, reason: 'Disposable email domain' };
+    }
   }
   
   // Verificar teléfono con patrón spam
@@ -66,13 +68,13 @@ interface QuizAnswers {
 
 interface ContactData {
   name: string;
-  email: string;
+  email?: string; // Email ahora opcional
   whatsapp?: string;
 }
 
 interface LeadSubmission {
   name: string;
-  email: string;
+  email?: string; // Email ahora opcional
   whatsapp?: string;
   answers: QuizAnswers;
   score: number;

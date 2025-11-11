@@ -14,7 +14,7 @@ import { QuizState } from "@/types/quiz";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { contactFormSchema, type ContactFormData, COUNTRY_CODES } from "@/lib/validations/contact";
+import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
@@ -135,6 +135,55 @@ const QuizSection = ({
       website: "" // Honeypot field
     }
   });
+
+  // State for selected country code to generate dynamic placeholder
+  const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
+
+  // Auto-detect country based on timezone
+  useEffect(() => {
+    const detectCountry = () => {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      // Map common timezones to country codes
+      const timezoneMap: Record<string, string> = {
+        'Europe/Madrid': '+34',
+        'America/Mexico_City': '+52',
+        'America/Argentina/Buenos_Aires': '+54',
+        'America/Bogota': '+57',
+        'America/Santiago': '+56',
+        'America/Lima': '+51',
+        'America/New_York': '+1',
+        'America/Los_Angeles': '+1',
+        'America/Chicago': '+1',
+        'America/Guayaquil': '+593',
+        'America/Sao_Paulo': '+55',
+        'America/Costa_Rica': '+506',
+      };
+
+      const detectedCode = timezoneMap[timezone] || '+34'; // Default to Spain
+      form.setValue('countryCode', detectedCode);
+      setSelectedCountryCode(detectedCode);
+    };
+
+    detectCountry();
+  }, [form]);
+
+  // Generate dynamic placeholder based on selected country
+  const getPhonePlaceholder = (code: string): string => {
+    const placeholders: Record<string, string> = {
+      '+34': '612 34 56 78',
+      '+52': '55 1234 5678',
+      '+54': '11 1234 5678',
+      '+57': '300 123 4567',
+      '+56': '9 1234 5678',
+      '+51': '987 654 321',
+      '+1': '202 555 0123',
+      '+593': '98 123 4567',
+      '+55': '11 98765 4321',
+      '+506': '8888 8888',
+    };
+    return placeholders[code] || '600 000 000';
+  };
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   useEffect(() => {
@@ -326,7 +375,7 @@ const QuizSection = ({
     const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
     const contactData = {
       name: data.name,
-      email: data.email,
+      email: data.email && data.email.trim() !== '' ? data.email : undefined, // Solo incluir email si tiene valor
       whatsapp: fullPhone
     };
     
@@ -670,33 +719,41 @@ const QuizSection = ({
                     <FormMessage />
                   </FormItem>} />
 
-              {/* Campo Email */}
+              {/* Campo Email - OPCIONAL */}
               <FormField control={form.control} name="email" render={({
               field
             }) => <FormItem>
-                    <FormLabel className="text-sm">Email</FormLabel>
+                    <FormLabel className="text-sm">
+                      📧 Por si no usas WhatsApp <span className="text-muted-foreground text-xs">(Opcional)</span>
+                    </FormLabel>
                     <FormControl>
                       <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
                     </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">También sirve para recordatorios críticos</p>
                     <FormMessage />
                   </FormItem>} />
 
-              {/* Campo Teléfono con Selector de País */}
+              {/* Campo Teléfono con Selector de País - BOOSTED */}
               <div className="space-y-2">
-                <Label className="text-sm">WhatsApp</Label>
+                <Label className="text-sm font-semibold">
+                  💬 Clase al instante + recordatorio 24h antes de tu ritual
+                </Label>
                 <div className="grid grid-cols-[140px_1fr] gap-2">
                   {/* Selector de País */}
                   <FormField control={form.control} name="countryCode" render={({
                   field
                 }) => <FormItem>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={(value) => {
+                          field.onChange(value);
+                          setSelectedCountryCode(value);
+                        }} value={field.value}>
                           <FormControl>
                             <SelectTrigger className="dark-button text-base">
                               <SelectValue placeholder="País" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="bg-popover max-h-[300px]">
-                            {COUNTRY_CODES.map(country => <SelectItem key={country.code} value={country.code} className="cursor-pointer">
+                            {TOP_COUNTRY_CODES.map(country => <SelectItem key={country.code} value={country.code} className="cursor-pointer">
                                 {country.flag} {country.code}
                               </SelectItem>)}
                           </SelectContent>
@@ -709,7 +766,7 @@ const QuizSection = ({
                   field
                 }) => <FormItem>
                         <FormControl>
-                          <Input {...field} type="tel" placeholder="600 000 000" autoComplete="tel" className="dark-button text-base" />
+                          <Input {...field} type="tel" placeholder={getPhonePlaceholder(selectedCountryCode)} autoComplete="tel" className="dark-button text-base" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>} />
