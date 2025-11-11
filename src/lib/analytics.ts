@@ -39,10 +39,10 @@ interface TrackEventParams {
 class QuizAnalytics {
   private sessionId: string;
   private userJourneyId: string;
-  private utmParams: Record<string, string>;
+  public utmParams: Record<string, string>; // Make public for access in QuizSection
   private fbclid: string | null;
   private referrer: string;
-  private deviceType: string;
+  public deviceType: string; // Make public for access in QuizSection
   private language: string;
   private startTime: number;
   private stepStartTimes: Map<string, number>;
@@ -304,7 +304,13 @@ class QuizAnalytics {
         event_value: params.value || null,
         content_category: params.content_category || null,
         content_ids: contentIds,
-        custom_data: params.custom_data || params,
+        custom_data: {
+          ...params.custom_data,
+          // Incluir métricas predictivas en el custom_data guardado en DB
+          predicted_ltv: params.predicted_ltv || null,
+          conversion_probability: params.custom_data?.conversion_probability || null,
+          show_up_probability: params.custom_data?.show_up_probability || null,
+        },
         quiz_version: this.quizVersion
       });
 

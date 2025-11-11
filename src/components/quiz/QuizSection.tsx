@@ -122,6 +122,7 @@ const QuizSection = ({
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quizStartTime] = useState(Date.now()); // Track quiz start time for completion metrics
 
 
   // Initialize form at component level (hooks must be called unconditionally)
@@ -262,27 +263,118 @@ const QuizSection = ({
       }
     }
 
-    // Track Q5 - Investment capacity (graduado por rango)
+    // Track Q5 - Investment capacity con AddToCart ENRIQUECIDO
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
-      let cartValue = 0;
-      let customEvent = '';
       
-      if (value === "Más de €5.000") {
-        cartValue = 5000;
-      } else if (value === "€3.000 - €5.000") {
-        cartValue = 4000;
-      } else if (value === "€1.500 - €3.000") {
-        cartValue = 2000;
-      } else if (value === "Menos de €1.500") {
-        customEvent = 'LowBudget';
-        cartValue = 1000;
-      }
+      // Calcular score COMPLETO para graduar AddToCart
+      const tempAnswers = { ...answers, q5: value };
+      const finalScore = calculateScore(tempAnswers);
+      const isDisqualified = hasAutoDisqualify(tempAnswers, finalScore);
       
-      if (customEvent) {
-        quizAnalytics.trackBudgetDisqualified();
-      } else {
+      // Extraer datos del quiz para enrichment
+      const painPoint = tempAnswers.q1 as string;
+      const profession = tempAnswers.q2 as string;
+      const revenueBracket = tempAnswers.q3 as string;
+      const acquisitionMethods = tempAnswers.q4 as string[];
+      
+      // Determinar ICP flags
+      const isHighRevenue = ['€1.500 - €3.000/mes', '€3.000 - €6.000/mes', 'Más de €6.000/mes'].includes(revenueBracket);
+      const isHighBudget = ['€3.000 - €5.000', 'Más de €5.000'].includes(value);
+      const isICPMatch = isHighRevenue && isHighBudget;
+      
+      if (value !== "Menos de €1.500" && !isDisqualified) {
+        // CASO 1: Usuario Cualificado - DISPARAR AddToCart
+        
+        // Graduar valores según score
+        let cartValue = 0;
+        let qualificationLevel = '';
+        let predictedLTV = 0;
+        let conversionProb = 0;
+        
+        if (finalScore >= 90) {
+          cartValue = 5000;
+          qualificationLevel = 'premium_qualified';
+          predictedLTV = 15000;
+          conversionProb = 0.85;
+        } else if (finalScore >= 80) {
+          cartValue = 4000;
+          qualificationLevel = 'qualified';
+          predictedLTV = 12000;
+          conversionProb = 0.70;
+        } else if (finalScore >= 75) {
+          cartValue = 3000;
+          qualificationLevel = 'marginal';
+          predictedLTV = 9000;
+          conversionProb = 0.50;
+        }
+        
+        // Calcular tiempo de completado del quiz
+        const quizCompletionTimeSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
+        
+        // DISPARAR AddToCart con máxima riqueza
+        quizAnalytics.trackMetaPixelEvent('AddToCart', {
+          content_type: 'product',
+          content_name: 'Círculo Membership',
+          content_category: qualificationLevel,
+          content_ids: ['circulo_membership'],
+          num_items: 1,
+          value: cartValue,
+          currency: 'EUR',
+          predicted_ltv: predictedLTV,
+          custom_data: {
+            // Quiz Score & Qualification
+            quiz_score: finalScore,
+            qualification_level: qualificationLevel,
+            conversion_probability: conversionProb,
+            
+            // User Profile Data
+            pain_point: painPoint,
+            profession: profession,
+            revenue_bracket: revenueBracket,
+            acquisition_methods: acquisitionMethods?.join(', ') || '',
+            investment_capacity: value,
+            
+            // ICP Matching Flags
+            is_icp_match: isICPMatch,
+            is_high_revenue: isHighRevenue,
+            is_high_budget: isHighBudget,
+            has_acquisition_system: acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema'),
+            
+            // Behavioral Signals
+            quiz_completion_time_seconds: quizCompletionTimeSeconds,
+            
+            // Traffic Source Context
+            utm_source: quizAnalytics.utmParams.utm_source || 'direct',
+            utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
+            utm_campaign: quizAnalytics.utmParams.utm_campaign || 'none',
+            device_type: quizAnalytics.deviceType,
+            
+            // Metadata
+            quiz_version: 'v2',
+            event_timestamp: new Date().toISOString(),
+          }
+        });
+        
+        console.log('✅ AddToCart disparado:', {
+          score: finalScore,
+          value: cartValue,
+          level: qualificationLevel,
+          conversionProb
+        });
+        
+        // Track interno también
         quizAnalytics.trackBudgetQualified(value);
+        
+      } else {
+        // CASO 2: Usuario Descalificado - Señal Negativa
+        quizAnalytics.trackBudgetDisqualified();
+        
+        console.log('⚠️ AddToCart NO disparado - Usuario descalificado:', {
+          score: finalScore,
+          budget: value,
+          reason: isDisqualified ? 'auto_disqualify' : 'low_budget'
+        });
       }
     }
 
@@ -290,7 +382,99 @@ const QuizSection = ({
       // Check if qualified before showing contact form
       const score = calculateScore(answers);
       const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
+      
       if (qualified) {
+        // DISPARAR InitiateCheckout ANTES de mostrar el form
+        
+        // Extraer datos del quiz
+        const painPoint = answers.q1 as string;
+        const profession = answers.q2 as string;
+        const revenueBracket = answers.q3 as string;
+        const investmentCapacity = answers.q5 as string;
+        
+        // Determinar ICP flags
+        const isHighRevenue = ['€1.500 - €3.000/mes', '€3.000 - €6.000/mes', 'Más de €6.000/mes'].includes(revenueBracket);
+        const isHighBudget = ['€3.000 - €5.000', 'Más de €5.000'].includes(investmentCapacity);
+        const isICPMatch = isHighRevenue && isHighBudget;
+        
+        // Determinar qualification level según score
+        let qualificationLevel = '';
+        let conversionProb = 0;
+        let showUpProb = 0;
+        
+        if (score >= 90) {
+          qualificationLevel = 'premium_qualified';
+          conversionProb = 0.85;
+          showUpProb = 0.90;
+        } else if (score >= 80) {
+          qualificationLevel = 'qualified';
+          conversionProb = 0.70;
+          showUpProb = 0.80;
+        } else {
+          qualificationLevel = 'marginal';
+          conversionProb = 0.50;
+          showUpProb = 0.65;
+        }
+        
+        // Calcular tiempo desde inicio del quiz
+        const timeToFormSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
+        
+        // DISPARAR InitiateCheckout
+        quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
+          content_type: 'product',
+          content_name: 'Círculo Membership - Form Viewed',
+          content_category: 'high_intent_lead',
+          content_ids: ['circulo_membership'],
+          num_items: 1,
+          value: 3000,
+          currency: 'EUR',
+          predicted_ltv: 9000,
+          custom_data: {
+            // Qualification Context
+            quiz_score: score,
+            qualification_level: qualificationLevel,
+            conversion_probability: conversionProb,
+            show_up_probability: showUpProb,
+            
+            // User Profile
+            pain_point: painPoint,
+            profession: profession,
+            revenue_bracket: revenueBracket,
+            investment_capacity: investmentCapacity,
+            
+            // ICP Flags
+            is_icp_match: isICPMatch,
+            is_high_revenue: isHighRevenue,
+            is_high_budget: isHighBudget,
+            
+            // Funnel Position
+            funnel_step: 'contact_form',
+            funnel_stage: 'high_intent',
+            time_to_form_seconds: timeToFormSeconds,
+            
+            // Behavioral Signals
+            quiz_completion_time_seconds: timeToFormSeconds,
+            form_view_count: 1,
+            
+            // Traffic Source
+            utm_source: quizAnalytics.utmParams.utm_source || 'direct',
+            utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
+            utm_campaign: quizAnalytics.utmParams.utm_campaign || 'none',
+            device_type: quizAnalytics.deviceType,
+            
+            // Metadata
+            quiz_version: 'v2',
+            event_timestamp: new Date().toISOString(),
+          }
+        });
+        
+        console.log('✅ InitiateCheckout disparado:', {
+          score,
+          level: qualificationLevel,
+          showUpProb
+        });
+        
+        // Ahora sí mostrar el formulario
         setShowContactForm(true);
       } else {
         onComplete(answers, false);
