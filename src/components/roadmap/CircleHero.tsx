@@ -24,28 +24,10 @@ const CircleHero = () => {
       }
     }, 100);
   };
-  const [count, setCount] = useState(0);
-  const targetValue = 16500;
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
-  useEffect(() => {
-    const duration = 2000; // 2 segundos
-    const steps = 60;
-    const increment = targetValue / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= targetValue) {
-        setCount(targetValue);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, duration / steps);
-    return () => clearInterval(timer);
-  }, []);
 
   // Track VSL view on component mount
   useEffect(() => {
@@ -135,9 +117,9 @@ const CircleHero = () => {
           </svg>)}
       </div>
 
-      {/* Social proof text con contador integrado */}
-      <p className="text-sm md:text-base text-muted-foreground italic">
-        Los <span className="text-foreground font-bold glow">freelancers y profesionales creativos</span> del círculo han facturado <span className="text-foreground font-semibold glow">{count.toLocaleString('es-ES')},00€</span> (en los últimos 30 días)
+      {/* Pre-qualificación ICP */}
+      <p className="text-sm md:text-base text-muted-foreground">
+        Solo para <span className="text-foreground font-bold glow">emprendedores creativos</span> que ya estén facturando y quieran <span className="text-foreground font-bold glow">cerrar proyectos de 3.000€ cada semana</span> sin depender del algoritmo
       </p>
 
       {/* Subtítulo */}
