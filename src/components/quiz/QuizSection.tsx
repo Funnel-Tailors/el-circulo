@@ -263,30 +263,44 @@ const QuizSection = ({
       }
     }
 
-    // Track Q5 - Investment capacity con AddToCart ENRIQUECIDO
+    // Track Q5 - Investment capacity (internal tracking only)
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       
-      // Calcular score COMPLETO para graduar AddToCart
-      const tempAnswers = { ...answers, q5: value };
+      if (value !== "Menos de €1.500") {
+        quizAnalytics.trackBudgetQualified(value);
+      } else {
+        quizAnalytics.trackBudgetDisqualified();
+      }
+    }
+
+    // Track Q7 - AddToCart con SCORE COMPLETO (Q1-Q7)
+    if (currentQuestion.id === 'q7') {
+      const value = currentAnswer as string;
+      
+      // AHORA sí tenemos TODAS las respuestas (Q1-Q7) para score completo
+      const tempAnswers = { ...answers, q7: value };
       const finalScore = calculateScore(tempAnswers);
       const isDisqualified = hasAutoDisqualify(tempAnswers, finalScore);
       
-      // Extraer datos del quiz para enrichment
-      const painPoint = tempAnswers.q1 as string;
-      const profession = tempAnswers.q2 as string;
-      const revenueBracket = tempAnswers.q3 as string;
-      const acquisitionMethods = tempAnswers.q4 as string[];
-      
-      // Determinar ICP flags
-      const isHighRevenue = ['€1.500 - €3.000/mes', '€3.000 - €6.000/mes', 'Más de €6.000/mes'].includes(revenueBracket);
-      const isHighBudget = ['€3.000 - €5.000', 'Más de €5.000'].includes(value);
-      const isICPMatch = isHighRevenue && isHighBudget;
-      
-      if (value !== "Menos de €1.500" && !isDisqualified) {
-        // CASO 1: Usuario Cualificado - DISPARAR AddToCart
+      // Solo disparar AddToCart si usuario está cualificado
+      if (finalScore >= 75 && !isDisqualified) {
+        // Extraer datos del quiz para enrichment
+        const painPoint = tempAnswers.q1 as string;
+        const profession = tempAnswers.q2 as string;
+        const revenueBracket = tempAnswers.q3 as string;
+        const acquisitionMethods = tempAnswers.q4 as string[];
+        const investmentCapacity = tempAnswers.q5 as string;
+        const urgency = tempAnswers.q6 as string;
+        const decisionMaker = value; // Q7
         
-        // Graduar valores según score
+        // Determinar ICP flags
+        const isHighRevenue = ['€1.500 - €3.000/mes', '€3.000 - €6.000/mes', 'Más de €6.000/mes'].includes(revenueBracket);
+        const isHighBudget = ['€3.000 - €5.000', 'Más de €5.000'].includes(investmentCapacity);
+        const isICPMatch = isHighRevenue && isHighBudget;
+        const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
+        
+        // Graduar valores según score COMPLETO
         let cartValue = 0;
         let qualificationLevel = '';
         let predictedLTV = 0;
@@ -302,7 +316,7 @@ const QuizSection = ({
           qualificationLevel = 'qualified';
           predictedLTV = 12000;
           conversionProb = 0.70;
-        } else if (finalScore >= 75) {
+        } else {
           cartValue = 3000;
           qualificationLevel = 'marginal';
           predictedLTV = 9000;
@@ -312,7 +326,7 @@ const QuizSection = ({
         // Calcular tiempo de completado del quiz
         const quizCompletionTimeSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
         
-        // DISPARAR AddToCart con máxima riqueza
+        // DISPARAR AddToCart con máximo enrichment
         quizAnalytics.trackMetaPixelEvent('AddToCart', {
           content_type: 'product',
           content_name: 'Círculo Membership',
@@ -323,23 +337,25 @@ const QuizSection = ({
           currency: 'EUR',
           predicted_ltv: predictedLTV,
           custom_data: {
-            // Quiz Score & Qualification
+            // Quiz Score & Qualification (SCORE COMPLETO Q1-Q7)
             quiz_score: finalScore,
             qualification_level: qualificationLevel,
             conversion_probability: conversionProb,
             
-            // User Profile Data
+            // User Profile Data (COMPLETO)
             pain_point: painPoint,
             profession: profession,
             revenue_bracket: revenueBracket,
             acquisition_methods: acquisitionMethods?.join(', ') || '',
-            investment_capacity: value,
+            investment_capacity: investmentCapacity,
+            urgency: urgency,
+            decision_maker: decisionMaker,
             
             // ICP Matching Flags
             is_icp_match: isICPMatch,
             is_high_revenue: isHighRevenue,
             is_high_budget: isHighBudget,
-            has_acquisition_system: acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema'),
+            has_acquisition_system: hasAcquisitionSystem,
             
             // Behavioral Signals
             quiz_completion_time_seconds: quizCompletionTimeSeconds,
@@ -356,24 +372,19 @@ const QuizSection = ({
           }
         });
         
-        console.log('✅ AddToCart disparado:', {
+        console.log('✅ AddToCart disparado (Q7 - Score Completo):', {
           score: finalScore,
           value: cartValue,
           level: qualificationLevel,
-          conversionProb
+          conversionProb,
+          allAnswersIncluded: 'Q1-Q7'
         });
-        
-        // Track interno también
-        quizAnalytics.trackBudgetQualified(value);
-        
       } else {
-        // CASO 2: Usuario Descalificado - Señal Negativa
-        quizAnalytics.trackBudgetDisqualified();
-        
         console.log('⚠️ AddToCart NO disparado - Usuario descalificado:', {
           score: finalScore,
-          budget: value,
-          reason: isDisqualified ? 'auto_disqualify' : 'low_budget'
+          threshold: 75,
+          isDisqualified,
+          reason: isDisqualified ? 'auto_disqualify' : 'low_score'
         });
       }
     }
