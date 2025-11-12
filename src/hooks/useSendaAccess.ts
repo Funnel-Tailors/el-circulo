@@ -47,6 +47,8 @@ export const useSendaAccess = () => {
           quizState: data.quiz_state
         });
 
+        setLoading(false);
+
         await supabase.from('quiz_analytics').insert({
           session_id: tokenParam,
           event_type: 'senda_page_view',
