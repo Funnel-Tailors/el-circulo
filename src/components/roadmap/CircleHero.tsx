@@ -118,7 +118,7 @@ const CircleHero = () => {
       </div>
 
       {/* Pre-qualificación ICP */}
-      <p className="text-sm md:text-base text-muted-foreground">
+      <p className="text-sm md:text-base text-muted-foreground leading-[1em] italic">
         Solo para <span className="text-foreground font-bold glow">emprendedores creativos</span> que ya estén facturando y quieran <span className="text-foreground font-bold glow">cerrar proyectos de 3.000€ cada semana</span> sin depender del algoritmo
       </p>
 
