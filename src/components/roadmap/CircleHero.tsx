@@ -71,17 +71,18 @@ const CircleHero = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Control de hitos disparados para evitar duplicados
-    const milestonesFired = new Set<number>();
+    // Control de hitos disparados para evitar duplicados (separados por tipo de evento)
+    const vslProgressMilestones = new Set<number>();
+    const metaPixelMilestones = new Set<number>();
     const handleTimeUpdate = () => {
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
 
       // Track analytics interno SOLO en hitos clave (no bloqueante)
       const vslMilestones = [25, 50, 75, 100];
-      const currentMilestone = vslMilestones.find(m => percentage >= m && !milestonesFired.has(m));
+      const currentMilestone = vslMilestones.find(m => percentage >= m && !vslProgressMilestones.has(m));
       if (currentMilestone) {
-        milestonesFired.add(currentMilestone);
+        vslProgressMilestones.add(currentMilestone);
         // Ejecutar tracking en background sin bloquear el video
         setTimeout(() => {
           quizAnalytics.trackVSLProgress(percentage, duration).catch(() => {
@@ -108,8 +109,8 @@ const CircleHero = () => {
         threshold,
         value
       }) => {
-        if (percentage >= threshold && !milestonesFired.has(threshold)) {
-          milestonesFired.add(threshold);
+        if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
+          metaPixelMilestones.add(threshold);
           quizAnalytics.trackMetaPixelEvent('ViewContent', {
             content_type: 'video',
             content_name: 'Roadmap VSL',
