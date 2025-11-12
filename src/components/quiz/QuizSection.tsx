@@ -227,7 +227,8 @@ const QuizSection = ({
         value: painValue,
         currency: 'EUR',
         custom_data: {
-          pain_point: value
+          pain_point: value,
+          time_to_answer_seconds: Math.floor((Date.now() - quizStartTime) / 1000)
         }
       });
     }

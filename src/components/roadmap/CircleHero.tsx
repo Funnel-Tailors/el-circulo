@@ -4,6 +4,20 @@ import { quizAnalytics } from "@/lib/analytics";
 import { X } from "lucide-react";
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
+    // Track CTA click ANTES de trackQuizStart
+    quizAnalytics.trackMetaPixelEvent('ViewContent', {
+      content_type: 'cta',
+      content_name: 'CTA Clicked - Quiz Intent',
+      content_category: 'high_intent_signal',
+      value: 300,
+      currency: 'EUR',
+      custom_data: {
+        cta_text: 'Quiero entrar',
+        cta_location: 'hero_section',
+        time_to_click_seconds: Math.floor((Date.now() - performance.timing.navigationStart) / 1000)
+      }
+    });
+    
     // Track quiz start when CTA is clicked
     quizAnalytics.trackQuizStart();
     setTimeout(() => {
@@ -29,8 +43,26 @@ const CircleHero = () => {
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
 
-  // Track VSL view on component mount
+  // Track PageView + VSL view on component mount
   useEffect(() => {
+    // Disparar PageView primero
+    quizAnalytics.trackMetaPixelEvent('PageView', {
+      content_type: 'landing_page',
+      content_name: 'Círculo Landing Page',
+      content_category: 'funnel_entry',
+      value: 50,
+      currency: 'EUR',
+      custom_data: {
+        page_title: 'El Círculo',
+        page_path: window.location.pathname,
+        funnel_step: 'landing',
+        utm_source: quizAnalytics.utmParams.utm_source || 'direct',
+        utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
+        device_type: quizAnalytics.deviceType
+      }
+    });
+    
+    // Luego track VSL view
     quizAnalytics.trackVSLView('roadmap_hero');
   }, []);
 
@@ -95,6 +127,40 @@ const CircleHero = () => {
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
     };
+  }, []);
+
+  // Track scroll depth para capturar engaged visitors
+  useEffect(() => {
+    let hasTrackedScroll = false;
+    
+    const handleScroll = () => {
+      if (hasTrackedScroll) return;
+      
+      const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      
+      // Disparar cuando usuario scrollea >50%
+      if (scrollPercentage > 50) {
+        hasTrackedScroll = true;
+        
+        quizAnalytics.trackMetaPixelEvent('ViewContent', {
+          content_type: 'landing_page',
+          content_name: 'Engaged Visitor - Scrolled >50%',
+          content_category: 'engagement_signal',
+          value: 100,
+          currency: 'EUR',
+          custom_data: {
+            scroll_percentage: Math.round(scrollPercentage),
+            engagement_level: 'medium',
+            time_on_page_seconds: Math.floor((Date.now() - performance.timing.navigationStart) / 1000)
+          }
+        });
+        
+        console.log('✅ Scroll depth tracked: >50%');
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Sticky video logic
