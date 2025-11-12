@@ -915,6 +915,20 @@ const QuizSection = ({
                     <FormMessage />
                   </FormItem>} />
 
+              {/* Campo Email */}
+              <FormField control={form.control} name="email" render={({
+              field
+            }) => <FormItem>
+                    <FormLabel className="text-sm">
+                      📧 Por si no usas WhatsApp
+                    </FormLabel>
+                    <FormControl>
+                      <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground mt-1">También sirve para recordatorios críticos</p>
+                    <FormMessage />
+                  </FormItem>} />
+
               {/* Campo Teléfono con Selector de País - BOOSTED */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">
@@ -954,20 +968,6 @@ const QuizSection = ({
                       </FormItem>} />
                 </div>
               </div>
-
-              {/* Campo Email - OPCIONAL */}
-              <FormField control={form.control} name="email" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel className="text-sm">
-                      📧 Por si no usas WhatsApp <span className="text-muted-foreground text-xs">(Opcional)</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
-                    </FormControl>
-                    <p className="text-xs text-muted-foreground mt-1">También sirve para recordatorios críticos</p>
-                    <FormMessage />
-                  </FormItem>} />
 
               {/* 3 bullets poderosos */}
               <div className="text-left space-y-2 pt-2">

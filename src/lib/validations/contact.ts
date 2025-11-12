@@ -148,12 +148,11 @@ export const contactFormSchema = z.object({
   
   email: z
     .string()
-    .optional()
+    .min(1, "El email es obligatorio")
+    .max(255, "El email es demasiado largo")
+    .email("Ingresa un email válido")
     .refine(
       (value) => {
-        // Si está vacío, es válido (campo opcional)
-        if (!value || value.trim() === '') return true;
-        // Si tiene valor, debe ser email válido con punto después del @
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(value);
       },
@@ -162,17 +161,13 @@ export const contactFormSchema = z.object({
       }
     )
     .refine(
-      (value) => {
-        if (!value || value.trim() === '') return true;
-        return !SPAM_PATTERNS.email.test(value.toLowerCase());
-      },
+      (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
       {
         message: "Por favor ingresa un email válido",
       }
     )
     .refine(
       (value) => {
-        if (!value || value.trim() === '') return true;
         const domain = value.split('@')[1]?.toLowerCase();
         return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
       },
