@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MetaEventData {
+  // NUEVOS - Eventos Tempranos
+  pageview_landing: number;
+  scroll_engaged: number;
+  cta_clicked: number;
+  
+  // EXISTENTES
   vsl_25_percent: number;
   vsl_50_percent: number;
   vsl_75_percent: number;

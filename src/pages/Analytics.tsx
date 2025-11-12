@@ -16,10 +16,14 @@ import VSLPerformanceCards from '@/components/analytics/VSLPerformanceCards';
 import VSLFunnelChart from '@/components/analytics/VSLFunnelChart';
 import ComparisonSummaryCards from '@/components/analytics/ComparisonSummaryCards';
 import MetaEventsJourney from '@/components/analytics/MetaEventsJourney';
+import MetaPixelHealthCard from '@/components/analytics/MetaPixelHealthCard';
+import RecentSessionsTable from '@/components/analytics/RecentSessionsTable';
+import EventDistributionChart from '@/components/analytics/EventDistributionChart';
 import QuestionMetrics from '@/components/analytics/QuestionMetrics';
 import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
+import { useMetaPixelHealth } from '@/hooks/useMetaPixelHealth';
 import { useQuestionMetrics } from '@/hooks/useQuestionMetrics';
 import { useAnswerDistribution } from '@/hooks/useAnswerDistribution';
 
@@ -47,6 +51,15 @@ const Analytics = () => {
   } = useMetaEventsJourney({ 
     intervalDays: parseFloat(dateRange), 
     quizVersion 
+  });
+
+  // Meta Pixel Health data
+  const {
+    data: metaHealthData,
+    loading: metaHealthLoading
+  } = useMetaPixelHealth({
+    intervalDays: parseFloat(dateRange),
+    quizVersion
   });
 
   // Question Metrics data
@@ -315,9 +328,28 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="meta" className="space-y-6">
+              {/* Health Metrics Card */}
+              <MetaPixelHealthCard 
+                data={metaHealthData} 
+                loading={metaHealthLoading} 
+              />
+              
+              {/* Funnel Completo */}
               <MetaEventsJourney 
                 data={metaEventsData} 
                 loading={metaLoading} 
+              />
+              
+              {/* Event Distribution */}
+              <EventDistributionChart 
+                data={metaHealthData}
+                loading={metaHealthLoading}
+              />
+              
+              {/* Recent Sessions Real-time */}
+              <RecentSessionsTable 
+                data={metaHealthData}
+                loading={metaHealthLoading}
               />
             </TabsContent>
 

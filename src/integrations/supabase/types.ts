@@ -413,6 +413,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_meta_pixel_coverage: {
+        Args: { interval_days: number; quiz_version_filter?: string }
+        Returns: Json
+      }
       get_quiz_conversion_by_step_filtered: {
         Args: { interval_days: number }
         Returns: {

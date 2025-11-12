@@ -3,6 +3,12 @@ import { Eye, Play, ShoppingCart, CheckCircle, TrendingUp, ArrowDown, XCircle } 
 import { Badge } from '@/components/ui/badge';
 
 interface MetaEventData {
+  // NUEVOS - Eventos Tempranos
+  pageview_landing: number;
+  scroll_engaged: number;
+  cta_clicked: number;
+  
+  // EXISTENTES
   vsl_25_percent: number;
   vsl_50_percent: number;
   vsl_75_percent: number;
@@ -106,6 +112,37 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
   }
 
   const stages = [
+    // NUEVO - PageView Landing
+    {
+      icon: <Eye className="h-5 w-5 text-blue-400" />,
+      title: "PageView: Landing",
+      subtitle: "Usuario carga la página",
+      count: data.pageview_landing,
+      value: "value: 50€ | content_category: funnel_entry",
+      gradient: "border-blue-400/20 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-950/20",
+      conversionRate: undefined
+    },
+    // NUEVO - Scroll Engaged
+    {
+      icon: <Eye className="h-5 w-5 text-cyan-400" />,
+      title: "ViewContent: Scroll >50%",
+      subtitle: "Usuario scrollea y se engage",
+      count: data.scroll_engaged,
+      value: "value: 100€ | content_category: engagement_signal",
+      gradient: "border-cyan-400/20 bg-gradient-to-br from-cyan-50/50 to-transparent dark:from-cyan-950/20",
+      conversionRate: data.pageview_landing > 0 ? (data.scroll_engaged / data.pageview_landing) * 100 : 0
+    },
+    // NUEVO - CTA Clicked
+    {
+      icon: <Play className="h-5 w-5 text-indigo-400" />,
+      title: "ViewContent: CTA Click",
+      subtitle: "Click en 'Quiero entrar'",
+      count: data.cta_clicked,
+      value: "value: 300€ | content_category: high_intent_signal",
+      gradient: "border-indigo-400/20 bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-950/20",
+      conversionRate: data.scroll_engaged > 0 ? (data.cta_clicked / data.scroll_engaged) * 100 : 0
+    },
+    // EXISTENTES - VSL Progress
     {
       icon: <Play className="h-5 w-5 text-purple-500" />,
       title: "ViewContent: VSL 25%",
@@ -113,7 +150,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       count: data.vsl_25_percent,
       value: "value: 500€ | content_category: video_sales_letter",
       gradient: "border-purple-500/20 bg-gradient-to-br from-purple-50/50 to-transparent dark:from-purple-950/20",
-      conversionRate: undefined
+      conversionRate: data.cta_clicked > 0 ? (data.vsl_25_percent / data.cta_clicked) * 100 : 0
     },
     {
       icon: <Play className="h-5 w-5 text-purple-500" />,
@@ -190,7 +227,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
     }
   ];
 
-  const overallConversion = data.vsl_25_percent > 0 ? (data.lead / data.vsl_25_percent) * 100 : 0;
+  const overallConversion = data.pageview_landing > 0 ? (data.lead / data.pageview_landing) * 100 : 0;
 
   return (
     <div className="space-y-6">
