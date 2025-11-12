@@ -222,6 +222,7 @@ const Analytics = () => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="0.333">Últimas 8 horas</SelectItem>
                 <SelectItem value="1">Últimas 24 horas</SelectItem>
                 <SelectItem value="3">Últimos 3 días</SelectItem>
                 <SelectItem value="7">Últimos 7 días</SelectItem>
