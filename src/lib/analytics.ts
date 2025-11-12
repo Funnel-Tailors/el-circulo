@@ -256,6 +256,15 @@ class QuizAnalytics {
     return this.fbclid;
   }
 
+  /**
+   * Obtiene la cookie _fbp generada automáticamente por Meta Pixel
+   * Formato típico: fb.1.1554763741205.1234567890
+   */
+  private getFBPCookie(): string | null {
+    const match = document.cookie.match(/_fbp=([^;]+)/);
+    return match ? match[1] : null;
+  }
+
   getSessionId(): string {
     return this.sessionId;
   }
@@ -282,10 +291,35 @@ class QuizAnalytics {
 
   // Meta Pixel Tracking Methods
   async trackMetaPixelEvent(eventName: string, params: any): Promise<void> {
-    // 1. Disparar a Meta Pixel (browser-side)
+    // 1. Disparar a Meta Pixel (browser-side) con Advanced Matching
     if (typeof window !== 'undefined' && (window as any).fbq) {
-      (window as any).fbq('track', eventName, params);
-      console.log(`🎯 Meta Pixel ${eventName}:`, params);
+      // Construir objeto de advanced matching con parámetros técnicos
+      const advancedMatching: any = {};
+
+      // 1. External ID (session_id) - siempre disponible
+      advancedMatching.external_id = this.sessionId;
+
+      // 2. Facebook Click cookie (fbc) - si tenemos fbclid
+      if (this.fbclid) {
+        // Formato: fb.1.{timestamp}.{fbclid}
+        const timestamp = Date.now();
+        advancedMatching.fbc = `fb.1.${timestamp}.${this.fbclid}`;
+      }
+
+      // 3. Facebook Browser Pixel cookie (fbp) - leer de cookies
+      const fbpCookie = this.getFBPCookie();
+      if (fbpCookie) {
+        advancedMatching.fbp = fbpCookie;
+      }
+
+      // Enviar evento con advanced matching como tercer parámetro
+      (window as any).fbq('track', eventName, params, advancedMatching);
+      
+      console.log(`🎯 Meta Pixel ${eventName} con advanced matching:`, {
+        eventName,
+        params,
+        matching: advancedMatching
+      });
     } else {
       console.warn('⚠️ Meta Pixel no disponible');
     }
