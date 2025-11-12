@@ -36,15 +36,15 @@ const QuestionMetrics = ({ data, loading }: QuestionMetricsProps) => {
           <CardTitle>Métricas por Pregunta</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[400px]">
-          <p className="text-muted-foreground">No hay datos disponibles</p>
+          <p className="text-foreground/80">No hay datos disponibles</p>
         </CardContent>
       </Card>
     );
   }
 
   const getAnswerRateBadge = (rate: number) => {
-    if (rate >= 80) return <Badge className="bg-green-500">Excelente</Badge>;
-    if (rate >= 60) return <Badge className="bg-yellow-500">Bien</Badge>;
+    if (rate >= 80) return <Badge className="bg-emerald-600 text-white">Excelente</Badge>;
+    if (rate >= 60) return <Badge className="bg-amber-600 text-white">Bien</Badge>;
     return <Badge variant="destructive">Mejorar</Badge>;
   };
 
@@ -52,7 +52,7 @@ const QuestionMetrics = ({ data, loading }: QuestionMetricsProps) => {
     <Card>
       <CardHeader>
         <CardTitle>Métricas por Pregunta (Q2-Q6)</CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-foreground/80 mt-1">
           Q1 se excluye porque su tiempo está afectado por el VSL. Usa "Quiz Iniciados" como métrica de engagement inicial.
         </p>
       </CardHeader>

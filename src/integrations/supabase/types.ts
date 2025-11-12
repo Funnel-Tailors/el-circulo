@@ -417,6 +417,10 @@ export type Database = {
         Args: { interval_days: number; quiz_version_filter?: string }
         Returns: Json
       }
+      get_meta_pixel_evolution: {
+        Args: { days_back?: number; quiz_version_filter?: string }
+        Returns: Json
+      }
       get_quiz_conversion_by_step_filtered: {
         Args: { interval_days: number }
         Returns: {

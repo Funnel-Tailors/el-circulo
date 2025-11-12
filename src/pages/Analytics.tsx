@@ -24,6 +24,7 @@ import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
 import { useMetaPixelHealth } from '@/hooks/useMetaPixelHealth';
+import { useMetaPixelEvolution } from '@/hooks/useMetaPixelEvolution';
 import { useQuestionMetrics } from '@/hooks/useQuestionMetrics';
 import { useAnswerDistribution } from '@/hooks/useAnswerDistribution';
 
@@ -59,6 +60,15 @@ const Analytics = () => {
     loading: metaHealthLoading
   } = useMetaPixelHealth({
     intervalDays: parseFloat(dateRange),
+    quizVersion
+  });
+
+  // Meta Pixel Evolution data (últimos 7 días)
+  const {
+    data: metaEvolutionData,
+    loading: metaEvolutionLoading
+  } = useMetaPixelEvolution({
+    daysBack: 7,
     quizVersion
   });
 
@@ -271,8 +281,8 @@ const Analytics = () => {
           <div className="flex items-center justify-center py-20">
             <div className="text-center space-y-4">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
-              <p className="text-muted-foreground">Cargando datos...</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-foreground/80">Cargando datos...</p>
+              <p className="text-sm text-foreground/70">
                 Máximo 15 segundos...
               </p>
             </div>
@@ -328,10 +338,11 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="meta" className="space-y-6">
-              {/* Health Metrics Card */}
+              {/* Health Metrics Card with Evolution Chart Integrated */}
               <MetaPixelHealthCard 
-                data={metaHealthData} 
-                loading={metaHealthLoading} 
+                data={metaHealthData}
+                evolutionData={metaEvolutionData}
+                loading={metaHealthLoading || metaEvolutionLoading} 
               />
               
               {/* Funnel Completo */}

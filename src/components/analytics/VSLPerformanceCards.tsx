@@ -46,11 +46,11 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Vistas VSL</CardTitle>
-          <Eye className="h-4 w-4 text-muted-foreground" />
+          <Eye className="h-4 w-4 text-foreground/70" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{data.total_vsl_views}</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/70">
             Visitantes únicos
           </p>
         </CardContent>
@@ -59,11 +59,11 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-          <Play className="h-4 w-4 text-muted-foreground" />
+          <Play className="h-4 w-4 text-foreground/70" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{(data.engagement_rate || 0).toFixed(1)}%</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/70">
             Vieron +10% del video
           </p>
         </CardContent>
@@ -72,11 +72,11 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">VSL → Quiz</CardTitle>
-          <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          <TrendingUp className="h-4 w-4 text-foreground/70" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{(data.vsl_to_quiz_rate || 0).toFixed(1)}%</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/70">
             {data.quiz_started || 0} iniciaron el quiz
           </p>
         </CardContent>
@@ -85,11 +85,11 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">VSL → Conversión</CardTitle>
-          <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          <CheckCircle className="h-4 w-4 text-foreground/70" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{(data.vsl_to_conversion_rate || 0).toFixed(1)}%</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/70">
             {data.quiz_completed || 0} completaron
           </p>
         </CardContent>
@@ -98,11 +98,11 @@ const VSLPerformanceCards = ({ data }: VSLPerformanceCardsProps) => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Tiempo Promedio</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
+          <Clock className="h-4 w-4 text-foreground/70" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{formatDuration(data.avg_duration_seconds || 0)}</div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-foreground/70">
             {(data.avg_percentage_watched || 0).toFixed(0)}% visto
           </p>
         </CardContent>

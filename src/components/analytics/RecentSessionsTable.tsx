@@ -73,7 +73,7 @@ const RecentSessionsTable = ({ data, loading }: RecentSessionsTableProps) => {
                       ))}
                     </div>
                   </td>
-                  <td className="p-3 text-sm text-muted-foreground">
+                  <td className="p-3 text-sm text-foreground/80">
                     {formatDistanceToNow(new Date(session.last_event), {
                       addSuffix: true,
                       locale: es
@@ -84,7 +84,7 @@ const RecentSessionsTable = ({ data, loading }: RecentSessionsTableProps) => {
             </tbody>
           </table>
         </div>
-        <div className="mt-4 text-xs text-muted-foreground flex items-center gap-2">
+        <div className="mt-4 text-xs text-foreground/80 flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           Actualiza automáticamente con auto-refresh activado (60s)
         </div>

@@ -32,7 +32,7 @@ const ComparisonCard = ({
   return (
     <Card className="relative overflow-hidden dark-card border-border/50 hover:border-border transition-all">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-sm font-medium text-foreground/80">
           {title}
         </CardTitle>
       </CardHeader>
@@ -44,7 +44,7 @@ const ComparisonCard = ({
         <div className={`flex items-center gap-2 text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
           {isPositive ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
           <span className="font-semibold">{Math.abs(percentChange).toFixed(1)}%</span>
-          <span className="text-muted-foreground">vs período anterior</span>
+          <span className="text-foreground/70">vs período anterior</span>
         </div>
         
         {trend.length > 0 && (
