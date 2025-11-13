@@ -94,27 +94,32 @@ const CircleHero = () => {
       // Disparar ViewContent en hitos clave con valor progresivo
       const metaMilestones = [{
         threshold: 25,
-        value: 500
+        value: 500,
+        category: 'vsl_25_percent'
       }, {
         threshold: 50,
-        value: 1000
+        value: 1000,
+        category: 'vsl_50_percent'
       }, {
         threshold: 75,
-        value: 1500
+        value: 1500,
+        category: 'vsl_75_percent'
       }, {
         threshold: 100,
-        value: 2000
+        value: 2000,
+        category: 'vsl_100_percent'
       }];
       metaMilestones.forEach(({
         threshold,
-        value
+        value,
+        category
       }) => {
         if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
           metaPixelMilestones.add(threshold);
           quizAnalytics.trackMetaPixelEvent('ViewContent', {
             content_type: 'video',
             content_name: 'Roadmap VSL',
-            content_category: 'video_sales_letter',
+            content_category: category,
             video_title: 'Roadmap VSL',
             video_type: 'sales_video',
             video_status: `viewed_${threshold}%`,
