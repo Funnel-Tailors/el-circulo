@@ -48,6 +48,15 @@ class QuizAnalytics {
   private stepStartTimes: Map<string, number>;
   private vslMilestones: Set<number>;
   private quizVersion: string = 'v2'; // Nueva versión del quiz con Q1 de pain point
+  
+  // Geolocalización para mejorar EMQ
+  private geoData: {
+    city?: string;
+    state?: string;
+    zip?: string;
+    country?: string;
+  } | null = null;
+  private geoLoading: boolean = true;
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -59,6 +68,9 @@ class QuizAnalytics {
     this.startTime = Date.now();
     this.stepStartTimes = new Map();
     this.vslMilestones = new Set();
+    
+    // Iniciar geo fetch en background (NO BLOQUEA)
+    this.fetchGeolocation();
   }
 
   private getOrCreateSessionId(): string {
@@ -115,6 +127,65 @@ class QuizAnalytics {
       return 'mobile';
     }
     return 'desktop';
+  }
+
+  /**
+   * Fetch geolocation data de forma NO BLOQUEANTE
+   * Usa sessionStorage para cachear (solo 1 request por sesión)
+   * Fallback silencioso si falla (no rompe nada)
+   */
+  private async fetchGeolocation(): Promise<void> {
+    try {
+      // 1. Verificar si ya tenemos geo en cache (sessionStorage)
+      const cachedGeo = sessionStorage.getItem('user_geo_data');
+      if (cachedGeo) {
+        this.geoData = JSON.parse(cachedGeo);
+        this.geoLoading = false;
+        console.log('✅ Geo data cargada desde cache:', this.geoData);
+        return;
+      }
+
+      // 2. Hacer request a ipapi.co (gratis, 30k/mes, ~50-80ms)
+      const geoStartTime = Date.now();
+      const response = await fetch('https://ipapi.co/json/', {
+        method: 'GET',
+        signal: AbortSignal.timeout(2000) // Timeout 2s (por si hay issues de red)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Geo API error: ${response.status}`);
+      }
+
+      const geoApiData = await response.json();
+      const geoLatency = Date.now() - geoStartTime;
+
+      // 3. Mapear a formato Meta (solo lo que necesitamos)
+      this.geoData = {
+        city: geoApiData.city || undefined,
+        state: geoApiData.region || undefined, // Meta usa 'state' pero ipapi devuelve 'region'
+        zip: geoApiData.postal || undefined,
+        country: geoApiData.country_code?.toLowerCase() || 'es' // Fallback a 'es'
+      };
+
+      // 4. Guardar en sessionStorage (cache para toda la sesión)
+      sessionStorage.setItem('user_geo_data', JSON.stringify(this.geoData));
+      this.geoLoading = false;
+
+      console.log(`✅ Geo data obtenida en ${geoLatency}ms:`, this.geoData);
+
+    } catch (error) {
+      // Fallback silencioso - NO rompe el flujo, eventos se envían sin geo
+      console.warn('⚠️ Geo fetch failed (eventos se enviarán sin geo):', error);
+      this.geoData = { country: 'es' }; // Mínimo: hardcodear país
+      this.geoLoading = false;
+    }
+  }
+
+  /**
+   * Getter público para geo data (útil para debugging)
+   */
+  public getGeoData(): typeof this.geoData {
+    return this.geoData;
   }
 
   async trackEvent(params: TrackEventParams): Promise<void> {
@@ -312,13 +383,32 @@ class QuizAnalytics {
         advancedMatching.fbp = fbpCookie;
       }
 
+      // 4. Datos de geolocalización (si están disponibles)
+      if (this.geoData && !this.geoLoading) {
+        if (this.geoData.city) {
+          advancedMatching.ct = this.geoData.city.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+        if (this.geoData.state) {
+          advancedMatching.st = this.geoData.state.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+        if (this.geoData.zip) {
+          advancedMatching.zp = this.geoData.zip.replace(/[^a-z0-9]/g, '');
+        }
+        if (this.geoData.country) {
+          advancedMatching.country = this.geoData.country;
+        }
+      }
+
       // Enviar evento con advanced matching como tercer parámetro
       (window as any).fbq('track', eventName, params, advancedMatching);
       
       console.log(`🎯 Meta Pixel ${eventName} con advanced matching:`, {
         eventName,
         params,
-        matching: advancedMatching
+        matching: {
+          ...advancedMatching,
+          geo_included: !!this.geoData && !this.geoLoading ? '✅' : '❌ (aún cargando o falló)'
+        }
       });
     } else {
       console.warn('⚠️ Meta Pixel no disponible');
