@@ -1201,8 +1201,8 @@ serve(async (req) => {
     let contactId: string | null = ghlContactId || null;
     
     // Si no tenemos ghlContactId, buscar por email
-    if (!contactId && email) {
-      const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID!}&email=${encodeURIComponent(email)}`;
+    if (!contactId) {
+      const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&email=${encodeURIComponent(email)}`;
       console.log('Searching for existing contact by email...');
       
       const searchResponse = await fetch(searchUrl, {
