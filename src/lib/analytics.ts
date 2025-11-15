@@ -447,7 +447,41 @@ class QuizAnalytics {
     });
   }
 
+  // Power User Tracking - Usuarios que ven múltiples testimonials
+  private getTestimonialsViewed(): Set<string> {
+    const stored = sessionStorage.getItem('testimonials_viewed');
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  }
+
+  private saveTestimonialsViewed(testimonials: Set<string>): void {
+    sessionStorage.setItem('testimonials_viewed', JSON.stringify([...testimonials]));
+  }
+
+  private hasFiredPowerUserEvent(): boolean {
+    return sessionStorage.getItem('power_user_event_fired') === 'true';
+  }
+
+  private markPowerUserEventFired(): void {
+    sessionStorage.setItem('power_user_event_fired', 'true');
+  }
+
+  async trackPowerUserTestimonialEngagement(count: number): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'power_user_testimonials',
+      content_name: 'Power User - Multiple Testimonials',
+      content_category: 'ultra_high_intent',
+      value: 800, // Igual a ICP Sweet Spot Match
+      currency: 'EUR',
+      content_ids: ['power_user_2_testimonials'],
+      custom_data: {
+        testimonials_count: count,
+        engagement_level: 'power_user'
+      }
+    });
+  }
+
   async trackTestimonialComplete(testimonialName: string, watchDuration: number): Promise<void> {
+    // 1. Enviar evento normal de testimonial complete
     await this.trackMetaPixelEvent('ViewContent', {
       content_type: 'video_testimonial_complete',
       content_name: `Testimonial Complete - ${testimonialName}`,
@@ -460,6 +494,23 @@ class QuizAnalytics {
         engagement_level: 'complete'
       }
     });
+
+    // 2. Actualizar contador de testimonials vistos
+    const testimonialsViewed = this.getTestimonialsViewed();
+    testimonialsViewed.add(testimonialName.toLowerCase());
+    this.saveTestimonialsViewed(testimonialsViewed);
+
+    // 3. Verificar si alcanzó 2 testimonials (power user threshold)
+    if (testimonialsViewed.size === 2 && !this.hasFiredPowerUserEvent()) {
+      console.log('🔥 POWER USER DETECTED: Usuario vio 2 testimonials completos');
+      await this.trackPowerUserTestimonialEngagement(2);
+      this.markPowerUserEventFired();
+    }
+
+    // 4. Si alcanzó 3 o más, loggear pero NO enviar evento adicional
+    if (testimonialsViewed.size >= 3) {
+      console.log(`💎 ULTRA POWER USER: Usuario vio ${testimonialsViewed.size} testimonials`);
+    }
   }
 
   async enrichLeadEvent(value: number, icp_match: boolean, revenue_range: string, budget_ready: boolean): Promise<void> {
