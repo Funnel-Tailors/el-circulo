@@ -79,7 +79,7 @@ const EventStage = ({
               </div>
             </div>
             <div className="text-right">
-              <p className="text-3xl font-bold">{count.toLocaleString('es-ES')}</p>
+              <p className="text-3xl font-bold">{(count ?? 0).toLocaleString('es-ES')}</p>
               {conversionRate !== undefined && (
                 <p className="text-xs text-foreground/80 mt-1">
                   {conversionRate.toFixed(1)}% del anterior
@@ -128,7 +128,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Eye className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
       title: "PageView: Landing",
       subtitle: "Usuario carga la página",
-      count: data.pageview_landing,
+      count: data.pageview_landing ?? 0,
       value: "value: 50€ | content_category: funnel_entry",
       gradient: "border-blue-500/40 bg-gradient-to-br from-blue-100/80 to-transparent dark:from-blue-900/30 dark:border-blue-400/40",
       conversionRate: undefined
@@ -138,7 +138,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Eye className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />,
       title: "ViewContent: Scroll 50%",
       subtitle: "Usuario scrollea landing",
-      count: data.scroll_engagement_50,
+      count: data.scroll_engagement_50 ?? 0,
       value: "value: 75€ | content_category: scroll_engagement_50",
       gradient: "border-cyan-500/40 bg-gradient-to-br from-cyan-100/80 to-transparent dark:from-cyan-900/30 dark:border-cyan-400/40",
       conversionRate: data.pageview_landing > 0 ? (data.scroll_engagement_50 / data.pageview_landing) * 100 : 0
@@ -148,7 +148,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <TrendingUp className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />,
       title: "ViewContent: Scroll 75%",
       subtitle: "Alto engagement en landing",
-      count: data.scroll_engagement_75,
+      count: data.scroll_engagement_75 ?? 0,
       value: "value: 100€ | content_category: scroll_engagement_75",
       gradient: "border-cyan-500/40 bg-gradient-to-br from-cyan-100/80 to-transparent dark:from-cyan-900/30 dark:border-cyan-400/40",
       conversionRate: data.scroll_engagement_50 > 0 ? (data.scroll_engagement_75 / data.scroll_engagement_50) * 100 : 0
@@ -158,7 +158,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
       title: "ViewContent: CTA Click",
       subtitle: "Click en 'Quiero entrar'",
-      count: data.cta_clicked,
+      count: data.cta_clicked ?? 0,
       value: "value: 300€ | content_category: high_intent_signal",
       gradient: "border-indigo-500/40 bg-gradient-to-br from-indigo-100/80 to-transparent dark:from-indigo-900/30 dark:border-indigo-400/40",
       conversionRate: data.scroll_engagement_75 > 0 ? (data.cta_clicked / data.scroll_engagement_75) * 100 : 0
@@ -168,7 +168,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
       title: "ViewContent: VSL 25%",
       subtitle: "Primer cuartil del video",
-      count: data.vsl_25_percent,
+      count: data.vsl_25_percent ?? 0,
       value: "value: 500€ | content_category: video_sales_letter",
       gradient: "border-purple-500/40 bg-gradient-to-br from-purple-100/80 to-transparent dark:from-purple-900/30 dark:border-purple-400/40",
       conversionRate: data.cta_clicked > 0 ? (data.vsl_25_percent / data.cta_clicked) * 100 : 0
@@ -177,7 +177,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
       title: "ViewContent: VSL 50%",
       subtitle: "Mitad del video",
-      count: data.vsl_50_percent,
+      count: data.vsl_50_percent ?? 0,
       value: "value: 1000€",
       gradient: "border-purple-500/40 bg-gradient-to-br from-purple-100/80 to-transparent dark:from-purple-900/30 dark:border-purple-400/40",
       conversionRate: data.vsl_25_percent > 0 ? (data.vsl_50_percent / data.vsl_25_percent) * 100 : 0
@@ -186,7 +186,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
       title: "ViewContent: VSL 75%",
       subtitle: "Tercer cuartil del video",
-      count: data.vsl_75_percent,
+      count: data.vsl_75_percent ?? 0,
       value: "value: 1500€",
       gradient: "border-purple-500/40 bg-gradient-to-br from-purple-100/80 to-transparent dark:from-purple-900/30 dark:border-purple-400/40",
       conversionRate: data.vsl_50_percent > 0 ? (data.vsl_75_percent / data.vsl_50_percent) * 100 : 0
@@ -195,7 +195,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-purple-600 dark:text-purple-400" />,
       title: "ViewContent: VSL 100%",
       subtitle: "Video completo",
-      count: data.vsl_100_percent,
+      count: data.vsl_100_percent ?? 0,
       value: "value: 2000€",
       gradient: "border-purple-500/40 bg-gradient-to-br from-purple-100/80 to-transparent dark:from-purple-900/30 dark:border-purple-400/40",
       conversionRate: data.vsl_75_percent > 0 ? (data.vsl_100_percent / data.vsl_75_percent) * 100 : 0
@@ -204,7 +204,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Eye className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
       title: "PageView",
       subtitle: "Usuario inicia quiz",
-      count: data.pageviews,
+      count: data.pageviews ?? 0,
       value: "fbq('track', 'PageView')",
       gradient: "border-blue-500/40 bg-gradient-to-br from-blue-100/80 to-transparent dark:from-blue-900/30 dark:border-blue-400/40",
       conversionRate: data.vsl_100_percent > 0 ? (data.pageviews / data.vsl_100_percent) * 100 : 0
@@ -213,7 +213,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />,
       title: "ViewContent: Quiz Engagement",
       subtitle: "Primera respuesta (Q1)",
-      count: data.quiz_engagement,
+      count: data.quiz_engagement ?? 0,
       value: "value: 200€",
       gradient: "border-cyan-500/40 bg-gradient-to-br from-cyan-100/80 to-transparent dark:from-cyan-900/30 dark:border-cyan-400/40",
       conversionRate: data.pageviews > 0 ? (data.quiz_engagement / data.pageviews) * 100 : 0
@@ -222,7 +222,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
       title: "ViewContent: ICP Match",
       subtitle: "Q3 = €1.5k-6k (Sweet Spot)",
-      count: data.icp_match,
+      count: data.icp_match ?? 0,
       value: "value: 600€ | content_category: premium_lead",
       gradient: "border-emerald-500/40 bg-gradient-to-br from-emerald-100/80 to-transparent dark:from-emerald-900/30 dark:border-emerald-400/40",
       conversionRate: data.quiz_engagement > 0 ? (data.icp_match / data.quiz_engagement) * 100 : 0
@@ -231,7 +231,7 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
       title: "ViewContent: Q4 Acquisition",
       subtitle: "Métodos de captación",
-      count: data.quiz_q4_acquisition,
+      count: data.quiz_q4_acquisition ?? 0,
       value: "value: 250€ | content_category: quiz_q4_acquisition",
       gradient: "border-blue-500/40 bg-gradient-to-br from-blue-100/80 to-transparent dark:from-blue-900/30 dark:border-blue-400/40",
       conversionRate: data.icp_match > 0 ? (data.quiz_q4_acquisition / data.icp_match) * 100 : 0
@@ -240,43 +240,43 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       icon: <Play className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
       title: "ViewContent: Q5 Budget Qualified",
       subtitle: "Capacidad de inversión confirmada",
-      count: data.quiz_q5_budget_qualified,
+      count: data.quiz_q5_budget_qualified ?? 0,
       value: "value: 400€ | content_category: quiz_q5_budget_qualified",
       gradient: "border-violet-500/40 bg-gradient-to-br from-violet-100/80 to-transparent dark:from-violet-900/30 dark:border-violet-400/40",
       conversionRate: data.quiz_q4_acquisition > 0 ? (data.quiz_q5_budget_qualified / data.quiz_q4_acquisition) * 100 : 0
     },
     {
-      icon: <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />,
+      icon: <Play className="h-5 w-5 text-fuchsia-600 dark:text-fuchsia-400" />,
       title: "ViewContent: Q6 Urgency",
       subtitle: "Nivel de urgencia identificado",
-      count: data.quiz_q6_urgency,
+      count: data.quiz_q6_urgency ?? 0,
       value: "value: 350-500€ | content_category: quiz_q6_urgency",
-      gradient: "border-orange-500/40 bg-gradient-to-br from-orange-100/80 to-transparent dark:from-orange-900/30 dark:border-orange-400/40",
+      gradient: "border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-100/80 to-transparent dark:from-fuchsia-900/30 dark:border-fuchsia-400/40",
       conversionRate: data.quiz_q5_budget_qualified > 0 ? (data.quiz_q6_urgency / data.quiz_q5_budget_qualified) * 100 : 0
     },
     {
-      icon: <CheckCircle className="h-5 w-5 text-teal-600 dark:text-teal-400" />,
+      icon: <CheckCircle className="h-5 w-5 text-pink-600 dark:text-pink-400" />,
       title: "ViewContent: Q7 Decision Maker",
       subtitle: "Tomador de decisión confirmado",
-      count: data.quiz_q7_decision_maker,
+      count: data.quiz_q7_decision_maker ?? 0,
       value: "value: 600€ | content_category: quiz_q7_decision_maker",
-      gradient: "border-teal-500/40 bg-gradient-to-br from-teal-100/80 to-transparent dark:from-teal-900/30 dark:border-teal-400/40",
+      gradient: "border-pink-500/40 bg-gradient-to-br from-pink-100/80 to-transparent dark:from-pink-900/30 dark:border-pink-400/40",
       conversionRate: data.quiz_q6_urgency > 0 ? (data.quiz_q7_decision_maker / data.quiz_q6_urgency) * 100 : 0
     },
     {
-      icon: <ShoppingCart className="h-5 w-5 text-amber-600 dark:text-amber-400" />,
+      icon: <ShoppingCart className="h-5 w-5 text-orange-600 dark:text-orange-400" />,
       title: "AddToCart",
       subtitle: "Usuario cualificado - Listo para form",
-      count: data.addtocart,
+      count: data.addtocart ?? 0,
       value: "value: 4000€ | content_category: qualified_checkout",
-      gradient: "border-amber-500/40 bg-gradient-to-br from-amber-100/80 to-transparent dark:from-amber-900/30 dark:border-amber-400/40",
+      gradient: "border-orange-500/40 bg-gradient-to-br from-orange-100/80 to-transparent dark:from-orange-900/30 dark:border-orange-400/40",
       conversionRate: data.quiz_q7_decision_maker > 0 ? (data.addtocart / data.quiz_q7_decision_maker) * 100 : 0
     },
     {
-      icon: <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
-      title: "Lead (Qualified)",
+      icon: <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />,
+      title: "Lead",
       subtitle: "Formulario completado con ICP data",
-      count: data.lead,
+      count: data.lead ?? 0,
       value: "value: 1500-2000€ | content_category: qualified_lead",
       gradient: "border-emerald-600/40 bg-gradient-to-br from-emerald-100/80 to-transparent dark:from-emerald-900/30 dark:border-emerald-600/40",
       conversionRate: data.addtocart > 0 ? (data.lead / data.addtocart) * 100 : 0,

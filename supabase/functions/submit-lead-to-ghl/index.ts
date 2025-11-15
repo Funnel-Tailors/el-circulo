@@ -1187,8 +1187,12 @@ serve(async (req) => {
       throw new Error('Missing GHL credentials');
     }
     
+    // Type-safe constants after validation
+    const ghlApiToken: string = GHL_API_TOKEN;
+    const ghlLocationId: string = GHL_LOCATION_ID;
+    
     const ghlHeaders = {
-      'Authorization': `Bearer ${GHL_API_TOKEN}`,
+      'Authorization': `Bearer ${ghlApiToken}`,
       'Version': '2021-07-28',
       'Content-Type': 'application/json'
     };
@@ -1201,8 +1205,8 @@ serve(async (req) => {
     let contactId: string | null = ghlContactId || null;
     
     // Si no tenemos ghlContactId, buscar por email
-    if (!contactId) {
-      const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${GHL_LOCATION_ID}&email=${encodeURIComponent(email)}`;
+    if (!contactId && email) {
+      const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${ghlLocationId}&email=${encodeURIComponent(email)}`;
       console.log('Searching for existing contact by email...');
       
       const searchResponse = await fetch(searchUrl, {
@@ -1229,7 +1233,7 @@ serve(async (req) => {
       lastName: name.split(' ').slice(1).join(' ') || '',
       email: email,
       phone: whatsapp || '',
-      locationId: GHL_LOCATION_ID,
+      locationId: ghlLocationId,
       tags: tags,
       customFields: [
         { key: 'quiz_version', field_value: 'v2' },
@@ -1299,7 +1303,7 @@ serve(async (req) => {
       
       console.log('🆕 ===== CREATING NEW CONTACT =====');
       console.log('📍 Create URL:', createUrl);
-      console.log('📦 Payload includes locationId:', GHL_LOCATION_ID);
+      console.log('📦 Payload includes locationId:', ghlLocationId);
       console.log('📦 Payload keys:', Object.keys(contactPayload));
       
       console.log('📤 Sending POST request to GHL...');
