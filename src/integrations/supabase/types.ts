@@ -53,6 +53,7 @@ export type Database = {
           content_ids: string[] | null
           created_at: string | null
           custom_data: Json | null
+          event_id: string | null
           event_name: string
           event_value: number | null
           id: string
@@ -65,6 +66,7 @@ export type Database = {
           content_ids?: string[] | null
           created_at?: string | null
           custom_data?: Json | null
+          event_id?: string | null
           event_name: string
           event_value?: number | null
           id?: string
@@ -77,6 +79,7 @@ export type Database = {
           content_ids?: string[] | null
           created_at?: string | null
           custom_data?: Json | null
+          event_id?: string | null
           event_name?: string
           event_value?: number | null
           id?: string

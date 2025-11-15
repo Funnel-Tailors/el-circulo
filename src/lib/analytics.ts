@@ -291,7 +291,10 @@ class QuizAnalytics {
 
   // Meta Pixel Tracking Methods
   async trackMetaPixelEvent(eventName: string, params: any): Promise<void> {
-    // 1. Disparar a Meta Pixel (browser-side) con Advanced Matching
+    // Generar event_id único para deduplicación
+    const eventId = `${this.sessionId}_${eventName}_${Date.now()}`;
+    
+    // 1. Disparar a Meta Pixel (browser-side) con Advanced Matching y event_id
     if (typeof window !== 'undefined' && (window as any).fbq) {
       // Construir objeto de advanced matching con parámetros técnicos
       const advancedMatching: any = {};
@@ -312,12 +315,19 @@ class QuizAnalytics {
         advancedMatching.fbp = fbpCookie;
       }
 
+      // Agregar event_id a parámetros para deduplicación
+      const enrichedParams = {
+        ...params,
+        eventID: eventId
+      };
+
       // Enviar evento con advanced matching como tercer parámetro
-      (window as any).fbq('track', eventName, params, advancedMatching);
+      (window as any).fbq('track', eventName, enrichedParams, advancedMatching);
       
-      console.log(`🎯 Meta Pixel ${eventName} con advanced matching:`, {
+      console.log(`🎯 Meta Pixel ${eventName} con advanced matching + event_id:`, {
         eventName,
-        params,
+        eventId,
+        params: enrichedParams,
         matching: advancedMatching
       });
     } else {
@@ -331,10 +341,13 @@ class QuizAnalytics {
         ? (Array.isArray(params.content_ids) ? params.content_ids : [params.content_ids])
         : null;
 
+      const eventId = `${this.sessionId}_${eventName}_${Date.now()}`;
+      
       const { data, error } = await supabase.from('meta_pixel_events').insert({
         session_id: this.sessionId,
         user_journey_id: this.userJourneyId,
         event_name: eventName,
+        event_id: eventId,
         event_value: params.value || null,
         content_category: params.content_category || null,
         content_ids: contentIds,
