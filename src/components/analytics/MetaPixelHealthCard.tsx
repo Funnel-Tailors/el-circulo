@@ -35,7 +35,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
     );
   }
 
-  // Defensive check: si evolutionData falla, mostrar solo métricas básicas
+  // Si no hay evolutionData, mostrar solo métricas básicas
   if (!evolutionData || evolutionData.length === 0) {
     const healthStatus = getHealthStatus(data.coverage_percentage);
     
@@ -84,47 +84,28 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
 
   const healthStatus = getHealthStatus(data.coverage_percentage);
 
-  // Calculate comparison vs previous period if we have evolution data - with defensive checks
+  // Calculate comparison vs previous period
   let coverageChangePercent = 0;
   let eventsChangePercent = 0;
   
-  try {
-    if (evolutionData && evolutionData.length >= 6) {
-      const recentPeriod = evolutionData.slice(-3);
-      const previousPeriod = evolutionData.slice(0, 3);
-      
-      // Defensive: ensure values are numbers and default to 0 if null/undefined
-      const recentCoverage = recentPeriod.reduce((sum, d) => sum + (d.coverage_percentage || 0), 0) / 3;
-      const previousCoverage = previousPeriod.reduce((sum, d) => sum + (d.coverage_percentage || 0), 0) / 3;
-      coverageChangePercent = previousCoverage > 0 ? ((recentCoverage - previousCoverage) / previousCoverage) * 100 : 0;
-      
-      const recentEvents = recentPeriod.reduce((sum, d) => sum + (d.avg_events_per_session || 0), 0) / 3;
-      const previousEvents = previousPeriod.reduce((sum, d) => sum + (d.avg_events_per_session || 0), 0) / 3;
-      eventsChangePercent = previousEvents > 0 ? ((recentEvents - previousEvents) / previousEvents) * 100 : 0;
-    }
-  } catch (err) {
-    console.error('⚠️ Error calculating period comparison:', err);
-    // Mantener valores en 0 si hay error
+  if (evolutionData.length >= 6) {
+    const recentPeriod = evolutionData.slice(-3);
+    const previousPeriod = evolutionData.slice(0, 3);
+    
+    const recentCoverage = recentPeriod.reduce((sum, d) => sum + d.coverage_percentage, 0) / 3;
+    const previousCoverage = previousPeriod.reduce((sum, d) => sum + d.coverage_percentage, 0) / 3;
+    coverageChangePercent = previousCoverage > 0 ? ((recentCoverage - previousCoverage) / previousCoverage) * 100 : 0;
+    
+    const recentEvents = recentPeriod.reduce((sum, d) => sum + d.avg_events_per_session, 0) / 3;
+    const previousEvents = previousPeriod.reduce((sum, d) => sum + d.avg_events_per_session, 0) / 3;
+    eventsChangePercent = previousEvents > 0 ? ((recentEvents - previousEvents) / previousEvents) * 100 : 0;
   }
 
-  // Format evolution data for chart - with defensive date parsing
-  const chartData = evolutionData?.map(d => {
-    try {
-      const parsedDate = new Date(d.date);
-      // Verificar que la fecha es válida
-      if (isNaN(parsedDate.getTime())) {
-        console.error('⚠️ Invalid date format:', d.date);
-        return { ...d, date: d.date }; // Fallback: usar el string original
-      }
-      return {
-        ...d,
-        date: parsedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-      };
-    } catch (err) {
-      console.error('⚠️ Error parsing date:', d.date, err);
-      return { ...d, date: d.date }; // Fallback: usar el string original
-    }
-  }) || [];
+  // Format evolution data for chart
+  const chartData = evolutionData?.map(d => ({
+    ...d,
+    date: new Date(d.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+  })) || [];
 
   return (
     <div className="glass-card-dark p-6 space-y-6 relative overflow-hidden">
@@ -156,7 +137,8 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
           </Badge>
         </div>
       </div>
-      {/* KPI Cards con glass-card-dark */}
+
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass-card-dark p-4 group hover:scale-105 transition-transform">
           <div className="flex items-center gap-2 mb-2">
@@ -222,10 +204,9 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
         </div>
       </div>
 
-      {/* Gráfico Animado con Áreas de Gradiente */}
+      {/* Gráfico */}
       {chartData.length > 0 && (
         <div className="glass-card-dark p-5">
-          {/* Header con separadores ⟡ */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-semibold flex items-center gap-2">
               <span className="text-foreground/40">⟡</span>
@@ -233,7 +214,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
               <span className="text-foreground/40">⟡</span>
             </p>
             
-            {/* Leyenda inline */}
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 bg-primary" />
@@ -249,7 +229,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
           <ResponsiveContainer width="100%" height={140}>
             <LineChart data={chartData}>
               <defs>
-                {/* Gradientes para áreas bajo las curvas */}
                 <linearGradient id="coverageGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
@@ -309,7 +288,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 }}
               />
               
-              {/* Área bajo Coverage */}
               <Area
                 yAxisId="left"
                 type="monotone"
@@ -318,7 +296,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 stroke="transparent"
               />
               
-              {/* Línea Coverage con animación */}
               <Line 
                 yAxisId="left"
                 type="monotone" 
@@ -331,7 +308,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 animationEasing="ease-in-out"
               />
               
-              {/* Área bajo Eventos */}
               <Area
                 yAxisId="right"
                 type="monotone"
@@ -340,7 +316,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 stroke="transparent"
               />
               
-              {/* Línea Eventos con animación */}
               <Line 
                 yAxisId="right"
                 type="monotone" 
@@ -355,7 +330,6 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
             </LineChart>
           </ResponsiveContainer>
           
-          {/* Insight automático con separadores ✦ */}
           <div className="mt-4 pt-3 border-t border-foreground/10">
             <div className="text-xs text-foreground/80">
               {coverageChangePercent > 5 ? (
@@ -425,15 +399,13 @@ const HealthIndicator = ({ status, label, value, target }: HealthIndicatorProps)
   };
 
   return (
-    <div className={`p-3 rounded-lg border transition-all duration-300 hover:scale-105 ${backgrounds[status]}`}>
+    <div className={`p-3 rounded-lg border ${backgrounds[status]} backdrop-blur-sm`}>
       <div className="flex items-start gap-2">
-        <div className="p-1.5 rounded-full bg-background/40">
-          {icons[status]}
-        </div>
+        {icons[status]}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground">{label}</p>
-          <p className="text-xs text-foreground/80">{value}</p>
-          <p className="text-xs text-foreground/60 mt-1">Target: {target}</p>
+          <p className="text-xs font-semibold text-foreground/90">{label}</p>
+          <p className="text-sm text-foreground/80 mt-0.5">{value}</p>
+          <p className="text-xs text-foreground/60 mt-1">{target}</p>
         </div>
       </div>
     </div>
