@@ -48,15 +48,6 @@ class QuizAnalytics {
   private stepStartTimes: Map<string, number>;
   private vslMilestones: Set<number>;
   private quizVersion: string = 'v2'; // Nueva versión del quiz con Q1 de pain point
-  
-  // Geolocalización para mejorar EMQ
-  private geoData: {
-    city?: string;
-    state?: string;
-    zip?: string;
-    country?: string;
-  } | null = null;
-  private geoLoading: boolean = true;
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -68,9 +59,6 @@ class QuizAnalytics {
     this.startTime = Date.now();
     this.stepStartTimes = new Map();
     this.vslMilestones = new Set();
-    
-    // Iniciar geo fetch en background (NO BLOQUEA)
-    this.fetchGeolocation();
   }
 
   private getOrCreateSessionId(): string {
@@ -127,65 +115,6 @@ class QuizAnalytics {
       return 'mobile';
     }
     return 'desktop';
-  }
-
-  /**
-   * Fetch geolocation data de forma NO BLOQUEANTE
-   * Usa sessionStorage para cachear (solo 1 request por sesión)
-   * Fallback silencioso si falla (no rompe nada)
-   */
-  private async fetchGeolocation(): Promise<void> {
-    try {
-      // 1. Verificar si ya tenemos geo en cache (sessionStorage)
-      const cachedGeo = sessionStorage.getItem('user_geo_data');
-      if (cachedGeo) {
-        this.geoData = JSON.parse(cachedGeo);
-        this.geoLoading = false;
-        console.log('✅ Geo data cargada desde cache:', this.geoData);
-        return;
-      }
-
-      // 2. Hacer request a ipapi.co (gratis, 30k/mes, ~50-80ms)
-      const geoStartTime = Date.now();
-      const response = await fetch('https://ipapi.co/json/', {
-        method: 'GET',
-        signal: AbortSignal.timeout(2000) // Timeout 2s (por si hay issues de red)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Geo API error: ${response.status}`);
-      }
-
-      const geoApiData = await response.json();
-      const geoLatency = Date.now() - geoStartTime;
-
-      // 3. Mapear a formato Meta (solo lo que necesitamos)
-      this.geoData = {
-        city: geoApiData.city || undefined,
-        state: geoApiData.region || undefined, // Meta usa 'state' pero ipapi devuelve 'region'
-        zip: geoApiData.postal || undefined,
-        country: geoApiData.country_code?.toLowerCase() || 'es' // Fallback a 'es'
-      };
-
-      // 4. Guardar en sessionStorage (cache para toda la sesión)
-      sessionStorage.setItem('user_geo_data', JSON.stringify(this.geoData));
-      this.geoLoading = false;
-
-      console.log(`✅ Geo data obtenida en ${geoLatency}ms:`, this.geoData);
-
-    } catch (error) {
-      // Fallback silencioso - NO rompe el flujo, eventos se envían sin geo
-      console.warn('⚠️ Geo fetch failed (eventos se enviarán sin geo):', error);
-      this.geoData = { country: 'es' }; // Mínimo: hardcodear país
-      this.geoLoading = false;
-    }
-  }
-
-  /**
-   * Getter público para geo data (útil para debugging)
-   */
-  public getGeoData(): typeof this.geoData {
-    return this.geoData;
   }
 
   async trackEvent(params: TrackEventParams): Promise<void> {
@@ -383,32 +312,13 @@ class QuizAnalytics {
         advancedMatching.fbp = fbpCookie;
       }
 
-      // 4. Datos de geolocalización (si están disponibles)
-      if (this.geoData && !this.geoLoading) {
-        if (this.geoData.city) {
-          advancedMatching.ct = this.geoData.city.toLowerCase().replace(/[^a-z0-9]/g, '');
-        }
-        if (this.geoData.state) {
-          advancedMatching.st = this.geoData.state.toLowerCase().replace(/[^a-z0-9]/g, '');
-        }
-        if (this.geoData.zip) {
-          advancedMatching.zp = this.geoData.zip.replace(/[^a-z0-9]/g, '');
-        }
-        if (this.geoData.country) {
-          advancedMatching.country = this.geoData.country;
-        }
-      }
-
       // Enviar evento con advanced matching como tercer parámetro
       (window as any).fbq('track', eventName, params, advancedMatching);
       
       console.log(`🎯 Meta Pixel ${eventName} con advanced matching:`, {
         eventName,
         params,
-        matching: {
-          ...advancedMatching,
-          geo_included: !!this.geoData && !this.geoLoading ? '✅' : '❌ (aún cargando o falló)'
-        }
+        matching: advancedMatching
       });
     } else {
       console.warn('⚠️ Meta Pixel no disponible');
@@ -520,87 +430,6 @@ class QuizAnalytics {
         investment_capacity: investmentCapacity
       }
     });
-  }
-
-  // Testimonial Tracking Methods
-  async trackTestimonialPlay(testimonialName: string): Promise<void> {
-    await this.trackMetaPixelEvent('ViewContent', {
-      content_type: 'video_testimonial',
-      content_name: `Testimonial - ${testimonialName}`,
-      content_category: 'social_proof',
-      value: 150,
-      currency: 'EUR',
-      custom_data: {
-        testimonial_id: testimonialName.toLowerCase(),
-        engagement_level: 'play'
-      }
-    });
-  }
-
-  // Power User Tracking - Usuarios que ven múltiples testimonials
-  private getTestimonialsViewed(): Set<string> {
-    const stored = sessionStorage.getItem('testimonials_viewed');
-    return stored ? new Set(JSON.parse(stored)) : new Set();
-  }
-
-  private saveTestimonialsViewed(testimonials: Set<string>): void {
-    sessionStorage.setItem('testimonials_viewed', JSON.stringify([...testimonials]));
-  }
-
-  private hasFiredPowerUserEvent(): boolean {
-    return sessionStorage.getItem('power_user_event_fired') === 'true';
-  }
-
-  private markPowerUserEventFired(): void {
-    sessionStorage.setItem('power_user_event_fired', 'true');
-  }
-
-  async trackPowerUserTestimonialEngagement(count: number): Promise<void> {
-    await this.trackMetaPixelEvent('ViewContent', {
-      content_type: 'power_user_testimonials',
-      content_name: 'Power User - Multiple Testimonials',
-      content_category: 'ultra_high_intent',
-      value: 800, // Igual a ICP Sweet Spot Match
-      currency: 'EUR',
-      content_ids: ['power_user_2_testimonials'],
-      custom_data: {
-        testimonials_count: count,
-        engagement_level: 'power_user'
-      }
-    });
-  }
-
-  async trackTestimonialComplete(testimonialName: string, watchDuration: number): Promise<void> {
-    // 1. Enviar evento normal de testimonial complete
-    await this.trackMetaPixelEvent('ViewContent', {
-      content_type: 'video_testimonial_complete',
-      content_name: `Testimonial Complete - ${testimonialName}`,
-      content_category: 'high_intent_social_proof',
-      value: 500,
-      currency: 'EUR',
-      custom_data: {
-        testimonial_id: testimonialName.toLowerCase(),
-        watch_duration: watchDuration,
-        engagement_level: 'complete'
-      }
-    });
-
-    // 2. Actualizar contador de testimonials vistos
-    const testimonialsViewed = this.getTestimonialsViewed();
-    testimonialsViewed.add(testimonialName.toLowerCase());
-    this.saveTestimonialsViewed(testimonialsViewed);
-
-    // 3. Verificar si alcanzó 2 testimonials (power user threshold)
-    if (testimonialsViewed.size === 2 && !this.hasFiredPowerUserEvent()) {
-      console.log('🔥 POWER USER DETECTED: Usuario vio 2 testimonials completos');
-      await this.trackPowerUserTestimonialEngagement(2);
-      this.markPowerUserEventFired();
-    }
-
-    // 4. Si alcanzó 3 o más, loggear pero NO enviar evento adicional
-    if (testimonialsViewed.size >= 3) {
-      console.log(`💎 ULTRA POWER USER: Usuario vio ${testimonialsViewed.size} testimonials`);
-    }
   }
 
   async enrichLeadEvent(value: number, icp_match: boolean, revenue_range: string, budget_ready: boolean): Promise<void> {

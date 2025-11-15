@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { RefreshCw, LogOut, AlertCircle } from 'lucide-react';
+import { RefreshCw, LogOut } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -339,20 +339,12 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="meta" className="space-y-6">
+              {/* Health Metrics Card with Evolution Chart Integrated */}
               <MetaPixelHealthCard 
                 data={metaHealthData}
                 evolutionData={metaEvolutionData}
                 loading={metaHealthLoading || metaEvolutionLoading} 
               />
-
-              {!metaHealthLoading && !metaHealthData && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    No hay datos de Meta Pixel disponibles para el período seleccionado.
-                  </AlertDescription>
-                </Alert>
-              )}
               
               {/* Funnel Completo */}
               <MetaEventsJourney 

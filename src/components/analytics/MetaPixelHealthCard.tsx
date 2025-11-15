@@ -1,5 +1,4 @@
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Activity, TrendingUp, Zap, AlertCircle, TrendingDown } from 'lucide-react';
 import { MetaPixelHealthMetrics } from '@/hooks/useMetaPixelHealth';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area } from 'recharts';
@@ -18,12 +17,6 @@ interface MetaPixelHealthCardProps {
   loading?: boolean;
 }
 
-const getHealthStatus = (coverage: number) => {
-  if (coverage >= 80) return { label: 'Excelente', color: 'bg-emerald-500', variant: 'default' as const };
-  if (coverage >= 50) return { label: 'Bueno', color: 'bg-amber-500', variant: 'secondary' as const };
-  return { label: 'Mejorable', color: 'bg-red-500', variant: 'destructive' as const };
-};
-
 const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCardProps) => {
   if (loading || !data) {
     return (
@@ -35,60 +28,19 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
     );
   }
 
-  // Si no hay evolutionData, mostrar solo métricas básicas
-  if (!evolutionData || evolutionData.length === 0) {
-    const healthStatus = getHealthStatus(data.coverage_percentage);
-    
-    return (
-      <div className="glass-card-dark p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-display font-bold flex items-center gap-3">
-            <Activity className="h-5 w-5 text-foreground/80" />
-            <span className="glow">Salud del Tracking Meta Pixel</span>
-          </h3>
-          <Badge className={`${
-            healthStatus.label === 'Excelente' 
-              ? 'bg-emerald-600 text-white' 
-              : healthStatus.label === 'Bueno' 
-                ? 'bg-amber-600 text-white' 
-                : 'bg-red-600 text-white'
-          }`}>
-            {healthStatus.label}
-          </Badge>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="glass-card-dark p-4">
-            <p className="text-sm text-muted-foreground mb-1">Cobertura</p>
-            <p className="text-3xl font-bold">{data.coverage_percentage.toFixed(1)}%</p>
-          </div>
-          <div className="glass-card-dark p-4">
-            <p className="text-sm text-muted-foreground mb-1">Eventos/Sesión</p>
-            <p className="text-3xl font-bold">{data.avg_events_per_session.toFixed(1)}</p>
-          </div>
-          <div className="glass-card-dark p-4">
-            <p className="text-sm text-muted-foreground mb-1">Max Eventos</p>
-            <p className="text-3xl font-bold">{data.max_events_in_session}</p>
-          </div>
-        </div>
-
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            No se pudo cargar la evolución temporal. Las métricas principales están disponibles.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  const getHealthStatus = (coverage: number) => {
+    if (coverage >= 80) return { label: 'Excelente', color: 'bg-emerald-500', variant: 'default' as const };
+    if (coverage >= 50) return { label: 'Bueno', color: 'bg-amber-500', variant: 'secondary' as const };
+    return { label: 'Mejorable', color: 'bg-red-500', variant: 'destructive' as const };
+  };
 
   const healthStatus = getHealthStatus(data.coverage_percentage);
 
-  // Calculate comparison vs previous period
+  // Calculate comparison vs previous period if we have evolution data
   let coverageChangePercent = 0;
   let eventsChangePercent = 0;
   
-  if (evolutionData.length >= 6) {
+  if (evolutionData && evolutionData.length >= 6) {
     const recentPeriod = evolutionData.slice(-3);
     const previousPeriod = evolutionData.slice(0, 3);
     
@@ -137,8 +89,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
           </Badge>
         </div>
       </div>
-
-      {/* KPI Cards */}
+      {/* KPI Cards con glass-card-dark */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass-card-dark p-4 group hover:scale-105 transition-transform">
           <div className="flex items-center gap-2 mb-2">
@@ -204,9 +155,10 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
         </div>
       </div>
 
-      {/* Gráfico */}
+      {/* Gráfico Animado con Áreas de Gradiente */}
       {chartData.length > 0 && (
         <div className="glass-card-dark p-5">
+          {/* Header con separadores ⟡ */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm font-semibold flex items-center gap-2">
               <span className="text-foreground/40">⟡</span>
@@ -214,6 +166,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
               <span className="text-foreground/40">⟡</span>
             </p>
             
+            {/* Leyenda inline */}
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-0.5 bg-primary" />
@@ -229,6 +182,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
           <ResponsiveContainer width="100%" height={140}>
             <LineChart data={chartData}>
               <defs>
+                {/* Gradientes para áreas bajo las curvas */}
                 <linearGradient id="coverageGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
@@ -288,6 +242,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 }}
               />
               
+              {/* Área bajo Coverage */}
               <Area
                 yAxisId="left"
                 type="monotone"
@@ -296,6 +251,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 stroke="transparent"
               />
               
+              {/* Línea Coverage con animación */}
               <Line 
                 yAxisId="left"
                 type="monotone" 
@@ -308,6 +264,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 animationEasing="ease-in-out"
               />
               
+              {/* Área bajo Eventos */}
               <Area
                 yAxisId="right"
                 type="monotone"
@@ -316,6 +273,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
                 stroke="transparent"
               />
               
+              {/* Línea Eventos con animación */}
               <Line 
                 yAxisId="right"
                 type="monotone" 
@@ -330,6 +288,7 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
             </LineChart>
           </ResponsiveContainer>
           
+          {/* Insight automático con separadores ✦ */}
           <div className="mt-4 pt-3 border-t border-foreground/10">
             <div className="text-xs text-foreground/80">
               {coverageChangePercent > 5 ? (
@@ -399,13 +358,15 @@ const HealthIndicator = ({ status, label, value, target }: HealthIndicatorProps)
   };
 
   return (
-    <div className={`p-3 rounded-lg border ${backgrounds[status]} backdrop-blur-sm`}>
+    <div className={`p-3 rounded-lg border transition-all duration-300 hover:scale-105 ${backgrounds[status]}`}>
       <div className="flex items-start gap-2">
-        {icons[status]}
+        <div className="p-1.5 rounded-full bg-background/40">
+          {icons[status]}
+        </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-foreground/90">{label}</p>
-          <p className="text-sm text-foreground/80 mt-0.5">{value}</p>
-          <p className="text-xs text-foreground/60 mt-1">{target}</p>
+          <p className="text-sm font-semibold text-foreground">{label}</p>
+          <p className="text-xs text-foreground/80">{value}</p>
+          <p className="text-xs text-foreground/60 mt-1">Target: {target}</p>
         </div>
       </div>
     </div>
