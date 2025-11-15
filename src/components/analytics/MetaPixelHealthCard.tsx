@@ -84,28 +84,47 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
 
   const healthStatus = getHealthStatus(data.coverage_percentage);
 
-  // Calculate comparison vs previous period if we have evolution data
+  // Calculate comparison vs previous period if we have evolution data - with defensive checks
   let coverageChangePercent = 0;
   let eventsChangePercent = 0;
   
-  if (evolutionData && evolutionData.length >= 6) {
-    const recentPeriod = evolutionData.slice(-3);
-    const previousPeriod = evolutionData.slice(0, 3);
-    
-    const recentCoverage = recentPeriod.reduce((sum, d) => sum + d.coverage_percentage, 0) / 3;
-    const previousCoverage = previousPeriod.reduce((sum, d) => sum + d.coverage_percentage, 0) / 3;
-    coverageChangePercent = previousCoverage > 0 ? ((recentCoverage - previousCoverage) / previousCoverage) * 100 : 0;
-    
-    const recentEvents = recentPeriod.reduce((sum, d) => sum + d.avg_events_per_session, 0) / 3;
-    const previousEvents = previousPeriod.reduce((sum, d) => sum + d.avg_events_per_session, 0) / 3;
-    eventsChangePercent = previousEvents > 0 ? ((recentEvents - previousEvents) / previousEvents) * 100 : 0;
+  try {
+    if (evolutionData && evolutionData.length >= 6) {
+      const recentPeriod = evolutionData.slice(-3);
+      const previousPeriod = evolutionData.slice(0, 3);
+      
+      // Defensive: ensure values are numbers and default to 0 if null/undefined
+      const recentCoverage = recentPeriod.reduce((sum, d) => sum + (d.coverage_percentage || 0), 0) / 3;
+      const previousCoverage = previousPeriod.reduce((sum, d) => sum + (d.coverage_percentage || 0), 0) / 3;
+      coverageChangePercent = previousCoverage > 0 ? ((recentCoverage - previousCoverage) / previousCoverage) * 100 : 0;
+      
+      const recentEvents = recentPeriod.reduce((sum, d) => sum + (d.avg_events_per_session || 0), 0) / 3;
+      const previousEvents = previousPeriod.reduce((sum, d) => sum + (d.avg_events_per_session || 0), 0) / 3;
+      eventsChangePercent = previousEvents > 0 ? ((recentEvents - previousEvents) / previousEvents) * 100 : 0;
+    }
+  } catch (err) {
+    console.error('⚠️ Error calculating period comparison:', err);
+    // Mantener valores en 0 si hay error
   }
 
-  // Format evolution data for chart
-  const chartData = evolutionData?.map(d => ({
-    ...d,
-    date: new Date(d.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-  })) || [];
+  // Format evolution data for chart - with defensive date parsing
+  const chartData = evolutionData?.map(d => {
+    try {
+      const parsedDate = new Date(d.date);
+      // Verificar que la fecha es válida
+      if (isNaN(parsedDate.getTime())) {
+        console.error('⚠️ Invalid date format:', d.date);
+        return { ...d, date: d.date }; // Fallback: usar el string original
+      }
+      return {
+        ...d,
+        date: parsedDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+      };
+    } catch (err) {
+      console.error('⚠️ Error parsing date:', d.date, err);
+      return { ...d, date: d.date }; // Fallback: usar el string original
+    }
+  }) || [];
 
   return (
     <div className="glass-card-dark p-6 space-y-6 relative overflow-hidden">
