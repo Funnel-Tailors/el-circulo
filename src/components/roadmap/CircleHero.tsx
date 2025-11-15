@@ -66,6 +66,53 @@ const CircleHero = () => {
     quizAnalytics.trackVSLView('roadmap_hero');
   }, []);
 
+  // Track scroll depth engagement
+  useEffect(() => {
+    const scrollMilestones = new Set<number>();
+    const pageLoadTime = Date.now();
+    
+    const handleScroll = () => {
+      const scrollPercent = Math.round(
+        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100
+      );
+      
+      // 50% scroll
+      if (scrollPercent >= 50 && !scrollMilestones.has(50)) {
+        scrollMilestones.add(50);
+        quizAnalytics.trackMetaPixelEvent('ViewContent', {
+          content_type: 'landing_page',
+          content_name: 'Landing Scroll 50%',
+          content_category: 'scroll_engagement_50',
+          value: 75,
+          currency: 'EUR',
+          custom_data: {
+            scroll_percentage: 50,
+            time_on_page: Math.floor((Date.now() - pageLoadTime) / 1000)
+          }
+        });
+      }
+      
+      // 75% scroll
+      if (scrollPercent >= 75 && !scrollMilestones.has(75)) {
+        scrollMilestones.add(75);
+        quizAnalytics.trackMetaPixelEvent('ViewContent', {
+          content_type: 'landing_page',
+          content_name: 'Landing Scroll 75%',
+          content_category: 'scroll_engagement_75',
+          value: 100,
+          currency: 'EUR',
+          custom_data: {
+            scroll_percentage: 75,
+            time_on_page: Math.floor((Date.now() - pageLoadTime) / 1000)
+          }
+        });
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Track VSL video progress + Meta Pixel ViewContent con valor progresivo
   useEffect(() => {
     const video = videoRef.current;
