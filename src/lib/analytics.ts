@@ -432,6 +432,36 @@ class QuizAnalytics {
     });
   }
 
+  // Testimonial Tracking Methods
+  async trackTestimonialPlay(testimonialName: string): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'video_testimonial',
+      content_name: `Testimonial - ${testimonialName}`,
+      content_category: 'social_proof',
+      value: 150,
+      currency: 'EUR',
+      custom_data: {
+        testimonial_id: testimonialName.toLowerCase(),
+        engagement_level: 'play'
+      }
+    });
+  }
+
+  async trackTestimonialComplete(testimonialName: string, watchDuration: number): Promise<void> {
+    await this.trackMetaPixelEvent('ViewContent', {
+      content_type: 'video_testimonial_complete',
+      content_name: `Testimonial Complete - ${testimonialName}`,
+      content_category: 'high_intent_social_proof',
+      value: 500,
+      currency: 'EUR',
+      custom_data: {
+        testimonial_id: testimonialName.toLowerCase(),
+        watch_duration: watchDuration,
+        engagement_level: 'complete'
+      }
+    });
+  }
+
   async enrichLeadEvent(value: number, icp_match: boolean, revenue_range: string, budget_ready: boolean): Promise<void> {
     await this.trackMetaPixelEvent('Lead', {
       value: value,
