@@ -2,21 +2,32 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface MetaEventData {
-  // NUEVOS - Eventos Tempranos
+  // Landing Engagement
   pageview_landing: number;
-  scroll_engaged: number;
+  scroll_engagement_50: number;
+  scroll_engagement_75: number;
   cta_clicked: number;
   
-  // EXISTENTES
+  // VSL Progress
   vsl_25_percent: number;
   vsl_50_percent: number;
   vsl_75_percent: number;
   vsl_100_percent: number;
+  
+  // Quiz Journey (Q1-Q7)
   pageviews: number;
   quiz_engagement: number;
   icp_match: number;
+  quiz_q4_acquisition: number;
+  quiz_q5_budget_qualified: number;
+  quiz_q6_urgency: number;
+  quiz_q7_decision_maker: number;
+  
+  // Disqualifications
   disqualified_low_revenue: number;
   disqualified_no_budget: number;
+  
+  // Conversions
   addtocart: number;
   lead: number;
 }

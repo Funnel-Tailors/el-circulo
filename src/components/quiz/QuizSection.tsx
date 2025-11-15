@@ -264,20 +264,82 @@ const QuizSection = ({
       }
     }
 
-    // Track Q5 - Investment capacity (internal tracking only)
+    // Track Q4 - Acquisition Methods
+    if (currentQuestion.id === 'q4') {
+      const value = currentAnswer as string[];
+      quizAnalytics.trackMetaPixelEvent('ViewContent', {
+        content_type: 'quiz',
+        content_name: 'Acquisition Methods Answered',
+        content_category: 'quiz_q4_acquisition',
+        value: 250,
+        currency: 'EUR',
+        custom_data: {
+          acquisition_methods: value,
+          has_system: !value.includes('Aún no tengo un sistema'),
+          question_number: 4
+        }
+      });
+    }
+
+    // Track Q5 - Investment capacity
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       
       if (value !== "Menos de €1.500") {
         quizAnalytics.trackBudgetQualified(value);
+        // Meta Pixel - Budget Qualified
+        quizAnalytics.trackMetaPixelEvent('ViewContent', {
+          content_type: 'quiz',
+          content_name: 'Budget Capacity Qualified',
+          content_category: 'quiz_q5_budget_qualified',
+          value: 400,
+          currency: 'EUR',
+          custom_data: {
+            investment_capacity: value,
+            budget_ready: true,
+            question_number: 5
+          }
+        });
       } else {
         quizAnalytics.trackBudgetDisqualified();
       }
     }
 
-    // Track Q7 - AddToCart con SCORE COMPLETO (Q1-Q7)
+    // Track Q6 - Urgency
+    if (currentQuestion.id === 'q6') {
+      const value = currentAnswer as string;
+      quizAnalytics.trackMetaPixelEvent('ViewContent', {
+        content_type: 'quiz',
+        content_name: 'Urgency Level Identified',
+        content_category: 'quiz_q6_urgency',
+        value: value === 'Mañana mismo' ? 500 : 350,
+        currency: 'EUR',
+        custom_data: {
+          urgency_level: value,
+          high_urgency: value === 'Mañana mismo',
+          question_number: 6
+        }
+      });
+    }
+
+    // Track Q7 - Decision Maker + AddToCart con SCORE COMPLETO (Q1-Q7)
     if (currentQuestion.id === 'q7') {
       const value = currentAnswer as string;
+      
+      // Meta Pixel - Decision Maker
+      quizAnalytics.trackMetaPixelEvent('ViewContent', {
+        content_type: 'quiz',
+        content_name: 'Decision Maker Confirmed',
+        content_category: 'quiz_q7_decision_maker',
+        value: 600,
+        currency: 'EUR',
+        custom_data: {
+          is_decision_maker: value === 'Yo decido',
+          decision_maker_type: value,
+          question_number: 7,
+          ready_for_form: true
+        }
+      });
       
       // AHORA sí tenemos TODAS las respuestas (Q1-Q7) para score completo
       const tempAnswers = { ...answers, q7: value };
