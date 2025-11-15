@@ -24,6 +24,10 @@ const SuccessCase = ({ name, role, offer, highlight, videoUrl, results, index }:
       videoRef.current.play();
       setIsPlaying(true);
       
+      // Meta Pixel ViewContent nativo
+      quizAnalytics.trackTestimonialPlay(name);
+      
+      // Internal tracking para analytics
       quizAnalytics.trackEvent({
         event_type: 'video_testimonial_click',
         step_id: `testimonial_${name.toLowerCase()}`
@@ -40,7 +44,12 @@ const SuccessCase = ({ name, role, offer, highlight, videoUrl, results, index }:
 
   const handleVideoEnd = () => {
     setIsPlaying(false);
+    const duration = videoRef.current?.currentTime || 0;
     
+    // Meta Pixel ViewContent nativo
+    quizAnalytics.trackTestimonialComplete(name, duration);
+    
+    // Internal tracking para analytics
     quizAnalytics.trackEvent({
       event_type: 'video_testimonial_complete',
       step_id: `testimonial_${name.toLowerCase()}`
