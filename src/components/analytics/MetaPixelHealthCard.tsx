@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Activity, TrendingUp, Zap, AlertCircle, TrendingDown } from 'lucide-react';
 import { MetaPixelHealthMetrics } from '@/hooks/useMetaPixelHealth';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area } from 'recharts';
@@ -17,6 +18,12 @@ interface MetaPixelHealthCardProps {
   loading?: boolean;
 }
 
+const getHealthStatus = (coverage: number) => {
+  if (coverage >= 80) return { label: 'Excelente', color: 'bg-emerald-500', variant: 'default' as const };
+  if (coverage >= 50) return { label: 'Bueno', color: 'bg-amber-500', variant: 'secondary' as const };
+  return { label: 'Mejorable', color: 'bg-red-500', variant: 'destructive' as const };
+};
+
 const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCardProps) => {
   if (loading || !data) {
     return (
@@ -28,11 +35,52 @@ const MetaPixelHealthCard = ({ data, evolutionData, loading }: MetaPixelHealthCa
     );
   }
 
-  const getHealthStatus = (coverage: number) => {
-    if (coverage >= 80) return { label: 'Excelente', color: 'bg-emerald-500', variant: 'default' as const };
-    if (coverage >= 50) return { label: 'Bueno', color: 'bg-amber-500', variant: 'secondary' as const };
-    return { label: 'Mejorable', color: 'bg-red-500', variant: 'destructive' as const };
-  };
+  // Defensive check: si evolutionData falla, mostrar solo métricas básicas
+  if (!evolutionData || evolutionData.length === 0) {
+    const healthStatus = getHealthStatus(data.coverage_percentage);
+    
+    return (
+      <div className="glass-card-dark p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xl font-display font-bold flex items-center gap-3">
+            <Activity className="h-5 w-5 text-foreground/80" />
+            <span className="glow">Salud del Tracking Meta Pixel</span>
+          </h3>
+          <Badge className={`${
+            healthStatus.label === 'Excelente' 
+              ? 'bg-emerald-600 text-white' 
+              : healthStatus.label === 'Bueno' 
+                ? 'bg-amber-600 text-white' 
+                : 'bg-red-600 text-white'
+          }`}>
+            {healthStatus.label}
+          </Badge>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="glass-card-dark p-4">
+            <p className="text-sm text-muted-foreground mb-1">Cobertura</p>
+            <p className="text-3xl font-bold">{data.coverage_percentage.toFixed(1)}%</p>
+          </div>
+          <div className="glass-card-dark p-4">
+            <p className="text-sm text-muted-foreground mb-1">Eventos/Sesión</p>
+            <p className="text-3xl font-bold">{data.avg_events_per_session.toFixed(1)}</p>
+          </div>
+          <div className="glass-card-dark p-4">
+            <p className="text-sm text-muted-foreground mb-1">Max Eventos</p>
+            <p className="text-3xl font-bold">{data.max_events_in_session}</p>
+          </div>
+        </div>
+
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No se pudo cargar la evolución temporal. Las métricas principales están disponibles.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   const healthStatus = getHealthStatus(data.coverage_percentage);
 
