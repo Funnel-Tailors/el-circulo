@@ -339,14 +339,42 @@ const Analytics = () => {
             </TabsContent>
 
             <TabsContent value="meta" className="space-y-6">
-              {/* Health Metrics Card with Evolution Chart Integrated */}
-              {metaHealthData ? (
-                <MetaPixelHealthCard 
-                  data={metaHealthData}
-                  evolutionData={metaEvolutionData}
-                  loading={metaHealthLoading || metaEvolutionLoading} 
-                />
-              ) : !metaHealthLoading && (
+              {/* Health Metrics Card with Evolution Chart Integrated - Error Boundary */}
+              {(() => {
+                try {
+                  if (metaHealthData) {
+                    return (
+                      <MetaPixelHealthCard 
+                        data={metaHealthData}
+                        evolutionData={metaEvolutionData}
+                        loading={metaHealthLoading || metaEvolutionLoading} 
+                      />
+                    );
+                  } else if (!metaHealthLoading) {
+                    return (
+                      <Alert>
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          No hay datos de Meta Pixel disponibles para el período seleccionado.
+                        </AlertDescription>
+                      </Alert>
+                    );
+                  }
+                  return null;
+                } catch (err) {
+                  console.error('❌ Error rendering MetaPixelHealthCard:', err);
+                  return (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Error al cargar las métricas de Meta Pixel. Por favor, intenta refrescar la página o contacta soporte si el problema persiste.
+                      </AlertDescription>
+                    </Alert>
+                  );
+                }
+              })()}
+              
+              {!metaHealthLoading && metaHealthData && (
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
