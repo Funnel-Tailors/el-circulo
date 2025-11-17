@@ -241,8 +241,16 @@ const CircleHero = () => {
         Solo para <span className="text-foreground font-bold glow">emprendedores creativos</span> que ya estén facturando y quieran <span className="text-foreground font-bold glow">cerrar proyectos de 3.000€ cada semana</span> sin depender del algoritmo
       </p>
 
-      {/* Subtítulo */}
-      <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow max-w-2xl mx-auto px-4">Descubre - en menos de 5 minutos - el secreto para vender proyectos a 5 cifras a gente que puede pagarlas (y no te da la chapa)</p>
+      {/* Hero Title + Subheadline */}
+      <div className="space-y-4 max-w-3xl mx-auto px-4">
+        <h1 className="text-3xl md:text-5xl font-display font-black leading-tight text-foreground">
+          El problema no es que no tengas clientes,<br />
+          es que tienes clientes <em className="not-italic glow">de mierda</em>
+        </h1>
+        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
+          Descubre en 5 minutos el secreto para cerrar proyectos de 5.000€ con clientes que pagan sin cuestionarte
+        </p>
+      </div>
 
       {/* VSL Container con glow pulsante */}
       <div ref={videoContainerRef} className="relative mx-auto my-12">
