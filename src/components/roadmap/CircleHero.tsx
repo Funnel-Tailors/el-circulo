@@ -240,7 +240,7 @@ const CircleHero = () => {
           El problema no es que <span className="glow">no tengas clientes</span>,<br />
           es que tienes clientes <em className="not-italic glow">de mierda</em>
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">Descubre en 5 minutos el secreto para cerrar proyectos con clientes que pagan sin cuestionarte</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">Descubre en 5 minutos el secreto para cerrar proyectos cada semana con clientes que pagan sin cuestionarte</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
