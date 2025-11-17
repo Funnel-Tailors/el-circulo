@@ -243,8 +243,8 @@ const CircleHero = () => {
 
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
-        <h1 className="text-3xl md:text-5xl font-display font-black leading-tight text-foreground">
-          El problema no es que no tengas clientes,<br />
+        <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
+          El problema no es que <span className="glow">no tengas clientes</span>,<br />
           es que tienes clientes <em className="not-italic glow">de mierda</em>
         </h1>
         <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
