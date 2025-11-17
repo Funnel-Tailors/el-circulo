@@ -17,7 +17,7 @@ const CircleHero = () => {
         time_to_click_seconds: Math.floor((Date.now() - performance.timing.navigationStart) / 1000)
       }
     });
-    
+
     // Track quiz start when CTA is clicked
     quizAnalytics.trackQuizStart();
     setTimeout(() => {
@@ -61,7 +61,7 @@ const CircleHero = () => {
         device_type: quizAnalytics.deviceType
       }
     });
-    
+
     // Luego track VSL view
     quizAnalytics.trackVSLView('roadmap_hero');
   }, []);
@@ -70,12 +70,9 @@ const CircleHero = () => {
   useEffect(() => {
     const scrollMilestones = new Set<number>();
     const pageLoadTime = Date.now();
-    
     const handleScroll = () => {
-      const scrollPercent = Math.round(
-        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100
-      );
-      
+      const scrollPercent = Math.round(window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100);
+
       // 50% scroll
       if (scrollPercent >= 50 && !scrollMilestones.has(50)) {
         scrollMilestones.add(50);
@@ -91,7 +88,7 @@ const CircleHero = () => {
           }
         });
       }
-      
+
       // 75% scroll
       if (scrollPercent >= 75 && !scrollMilestones.has(75)) {
         scrollMilestones.add(75);
@@ -108,7 +105,6 @@ const CircleHero = () => {
         });
       }
     };
-    
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -185,16 +181,13 @@ const CircleHero = () => {
   // Track scroll depth para capturar engaged visitors
   useEffect(() => {
     let hasTrackedScroll = false;
-    
     const handleScroll = () => {
       if (hasTrackedScroll) return;
-      
-      const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-      
+      const scrollPercentage = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+
       // Disparar cuando usuario scrollea >50%
       if (scrollPercentage > 50) {
         hasTrackedScroll = true;
-        
         quizAnalytics.trackMetaPixelEvent('ViewContent', {
           content_type: 'landing_page',
           content_name: 'Engaged Visitor - Scrolled >50%',
@@ -207,12 +200,12 @@ const CircleHero = () => {
             time_on_page_seconds: Math.floor((Date.now() - performance.timing.navigationStart) / 1000)
           }
         });
-        
         console.log('✅ Scroll depth tracked: >50%');
       }
     };
-    
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('scroll', handleScroll, {
+      passive: true
+    });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -247,9 +240,7 @@ const CircleHero = () => {
           El problema no es que <span className="glow">no tengas clientes</span>,<br />
           es que tienes clientes <em className="not-italic glow">de mierda</em>
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
-          Descubre en 5 minutos el secreto para cerrar proyectos de 5.000€ con clientes que pagan sin cuestionarte
-        </p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">Descubre en 5 minutos el secreto para cerrar proyectos con clientes que pagan sin cuestionarte</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
