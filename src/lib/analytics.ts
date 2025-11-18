@@ -48,6 +48,12 @@ class QuizAnalytics {
   private stepStartTimes: Map<string, number>;
   private vslMilestones: Set<number>;
   private quizVersion: string = 'v2'; // Nueva versión del quiz con Q1 de pain point
+  private geoData: {
+    city?: string;
+    region?: string;
+    postal?: string;
+    country_code?: string;
+  } | null = null;
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -59,6 +65,9 @@ class QuizAnalytics {
     this.startTime = Date.now();
     this.stepStartTimes = new Map();
     this.vslMilestones = new Set();
+    
+    // Inicializar geolocalización (async, non-blocking)
+    this.initGeoData();
   }
 
   private getOrCreateSessionId(): string {
@@ -115,6 +124,56 @@ class QuizAnalytics {
       return 'mobile';
     }
     return 'desktop';
+  }
+
+  /**
+   * Inicializa la geolocalización usando ipapi.co
+   * - Intenta cargar desde sessionStorage (caché)
+   * - Si no existe, fetch a ipapi.co con timeout de 2s
+   * - Si falla, continúa sin geo data (no rompe nada)
+   */
+  private async initGeoData(): Promise<void> {
+    try {
+      // 1. Intentar cargar desde sessionStorage (caché)
+      const cached = sessionStorage.getItem('user_geo_data');
+      if (cached) {
+        this.geoData = JSON.parse(cached);
+        console.log('📍 Geo data cargada desde caché:', this.geoData);
+        return;
+      }
+
+      // 2. Fetch con timeout de 2 segundos
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+      const response = await fetch('https://ipapi.co/json/', {
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+
+      if (!response.ok) throw new Error('Geo API failed');
+
+      const data = await response.json();
+      
+      // 3. Mapear a formato compatible con Meta Pixel
+      this.geoData = {
+        city: data.city?.toLowerCase(),
+        region: data.region_code?.toLowerCase(), 
+        postal: data.postal,
+        country_code: data.country_code?.toLowerCase()
+      };
+
+      // 4. Guardar en sessionStorage para toda la sesión
+      sessionStorage.setItem('user_geo_data', JSON.stringify(this.geoData));
+      
+      console.log('📍 Geo data obtenida de API:', this.geoData);
+
+    } catch (error) {
+      // Si falla, no pasa nada - continuamos sin geo data
+      console.log('⚠️ Geo data no disponible (continuando sin ella):', error);
+      this.geoData = null;
+    }
   }
 
   async trackEvent(params: TrackEventParams): Promise<void> {
@@ -315,6 +374,14 @@ class QuizAnalytics {
         advancedMatching.fbp = fbpCookie;
       }
 
+      // 4. Geo data (ciudad, región, postal, país) - si disponible
+      if (this.geoData) {
+        if (this.geoData.city) advancedMatching.ct = this.geoData.city;
+        if (this.geoData.region) advancedMatching.st = this.geoData.region;
+        if (this.geoData.postal) advancedMatching.zp = this.geoData.postal;
+        if (this.geoData.country_code) advancedMatching.country = this.geoData.country_code;
+      }
+
       // Agregar event_id a parámetros para deduplicación
       const enrichedParams = {
         ...params,
@@ -328,7 +395,10 @@ class QuizAnalytics {
         eventName,
         eventId,
         params: enrichedParams,
-        matching: advancedMatching
+        matching: {
+          ...advancedMatching,
+          geo_available: !!this.geoData // Flag para debugging
+        }
       });
     } else {
       console.warn('⚠️ Meta Pixel no disponible');
