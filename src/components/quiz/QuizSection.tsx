@@ -955,7 +955,17 @@ const QuizSection = ({
           </div>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleContactSubmit)} className="space-y-4">
+            <form 
+              onSubmit={form.handleSubmit(handleContactSubmit)} 
+              onKeyDown={(e) => {
+                // Permitir submit con Enter desde cualquier campo
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  form.handleSubmit(handleContactSubmit)();
+                }
+              }}
+              className="space-y-4"
+            >
               {/* Campo Honeypot - invisible para usuarios reales */}
               <FormField control={form.control} name="website" render={({
               field
@@ -972,7 +982,13 @@ const QuizSection = ({
             }) => <FormItem>
                     <FormLabel className="text-sm">Nombre completo</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Juan Pérez" autoComplete="name" className="dark-button text-base" />
+                      <Input 
+                        {...field} 
+                        placeholder="Juan Pérez" 
+                        autoComplete="name" 
+                        disabled={isSubmitting}
+                        className="dark-button text-base" 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>} />
@@ -985,7 +1001,14 @@ const QuizSection = ({
                       📧 Por si no usas WhatsApp
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} type="email" placeholder="tu@email.com" autoComplete="email" className="dark-button text-base" />
+                      <Input 
+                        {...field} 
+                        type="email" 
+                        placeholder="tu@email.com" 
+                        autoComplete="email" 
+                        disabled={isSubmitting}
+                        className="dark-button text-base" 
+                      />
                     </FormControl>
                     <p className="text-xs text-muted-foreground mt-1">También sirve para recordatorios críticos</p>
                     <FormMessage />
@@ -1001,12 +1024,16 @@ const QuizSection = ({
                   <FormField control={form.control} name="countryCode" render={({
                   field
                 }) => <FormItem>
-                        <Select onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedCountryCode(value);
-                        }} value={field.value}>
+                        <Select 
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedCountryCode(value);
+                          }} 
+                          value={field.value}
+                          disabled={isSubmitting}
+                        >
                           <FormControl>
-                            <SelectTrigger className="dark-button text-base">
+                            <SelectTrigger className="dark-button text-base" disabled={isSubmitting}>
                               <SelectValue placeholder="País" />
                             </SelectTrigger>
                           </FormControl>
@@ -1024,7 +1051,16 @@ const QuizSection = ({
                   field
                 }) => <FormItem>
                         <FormControl>
-                          <Input {...field} type="tel" placeholder={getPhonePlaceholder(selectedCountryCode)} autoComplete="tel" className="dark-button text-base" />
+                          <Input 
+                            {...field} 
+                            type="tel" 
+                            placeholder={getPhonePlaceholder(selectedCountryCode)} 
+                            autoComplete="tel-national"
+                            inputMode="numeric"
+                            pattern="[0-9\s\-]*"
+                            disabled={isSubmitting}
+                            className="dark-button text-base" 
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>} />
