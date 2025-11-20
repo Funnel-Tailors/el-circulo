@@ -68,6 +68,9 @@ class QuizAnalytics {
     
     // Inicializar geolocalización (async, non-blocking)
     this.initGeoData();
+    
+    // Inicializar Meta Pixel con advanced matching
+    this.initMetaPixel();
   }
 
   private getOrCreateSessionId(): string {
@@ -124,6 +127,54 @@ class QuizAnalytics {
       return 'mobile';
     }
     return 'desktop';
+  }
+
+  /**
+   * Inicializa Meta Pixel con Advanced Matching
+   * Se ejecuta en constructor después de capturar todos los datos técnicos disponibles
+   * - external_id: session_id para tracking cross-device
+   * - fbc: Facebook Click cookie si viene de un ad
+   * - fbp: Facebook Browser Pixel cookie
+   */
+  private initMetaPixel(): void {
+    if (typeof window === 'undefined' || !(window as any).fbq) {
+      console.warn('⚠️ Meta Pixel no disponible en init');
+      return;
+    }
+
+    try {
+      // Construir advanced matching con datos técnicos disponibles en init
+      const advancedMatching: any = {};
+
+      // 1. External ID (session_id) - siempre disponible
+      advancedMatching.external_id = this.sessionId;
+
+      // 2. Facebook Click cookie (fbc) - si tenemos fbclid
+      if (this.fbclid) {
+        const timestamp = Date.now();
+        advancedMatching.fbc = `fb.1.${timestamp}.${this.fbclid}`;
+      }
+
+      // 3. Facebook Browser Pixel cookie (fbp) - leer de cookies
+      const fbpCookie = this.getFBPCookie();
+      if (fbpCookie) {
+        advancedMatching.fbp = fbpCookie;
+      }
+
+      // Inicializar pixel con advanced matching
+      (window as any).fbq('init', '557247343765576', advancedMatching);
+      
+      // Disparar PageView inicial
+      (window as any).fbq('track', 'PageView');
+
+      console.log('🎯 Meta Pixel inicializado con advanced matching:', {
+        pixelId: '557247343765576',
+        matching: advancedMatching,
+        geo_available: this.geoData !== null
+      });
+    } catch (error) {
+      console.error('❌ Error inicializando Meta Pixel:', error);
+    }
   }
 
   /**
