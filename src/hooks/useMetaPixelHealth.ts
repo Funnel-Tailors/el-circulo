@@ -1,6 +1,23 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface UTMPerformanceMetrics {
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  age_days: number;
+  first_seen: string;
+  total_sessions_lifetime: number;
+  sessions_with_events_lifetime: number;
+  avg_events_per_session_lifetime: number;
+  bounce_rate_lifetime: number;
+  addtocart_events_lifetime: number;
+  lead_events_lifetime: number;
+  addtocart_rate_lifetime: number;
+  strategic_status: 'PAUSAR_IMMEDIATE' | 'PAUSAR_POST_LEARNING' | 'PAUSAR_LONG_TERM' | 'WARNING_EARLY' | 'WARNING_MEDIOCRE' | 'TOO_EARLY' | 'HEALTHY';
+  strategic_reason: string;
+}
+
 export interface MetaPixelHealthMetrics {
   // Coverage metrics
   total_sessions_quiz_analytics: number;
@@ -29,6 +46,9 @@ export interface MetaPixelHealthMetrics {
     events_fired: string[];
     total_value: number;
   }>;
+  
+  // UTM Performance con decisión estratégica
+  utm_performance: UTMPerformanceMetrics[];
 }
 
 interface UseMetaPixelHealthOptions {
