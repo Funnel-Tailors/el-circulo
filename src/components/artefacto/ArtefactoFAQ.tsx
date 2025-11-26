@@ -36,31 +36,45 @@ export const ArtefactoFAQ = () => {
   return (
     <section className="container mx-auto px-4 py-20">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-display font-black text-foreground mb-6">
-            Preguntas frecuentes
+        <div className="text-center space-y-6 mb-11 md:mb-5 animate-fade-in">
+          {/* Divider superior */}
+          <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+            <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+          </div>
+
+          <h2 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em]">
+            PREGUNTAS FRECUENTES
           </h2>
-          <div className="flex items-center justify-center gap-3 text-foreground/40">
-            <span className="text-xl">⟡</span>
-            <span className="text-xl">✦</span>
-            <span className="text-xl">⟡</span>
+
+          <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
+            Las dudas más comunes sobre El Artefacto
+          </p>
+
+          {/* Divider inferior */}
+          <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
           </div>
         </div>
 
-        <div className="glass-card-dark p-8">
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left text-foreground hover:text-foreground/80">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-foreground/80">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
+        <Accordion type="single" collapsible className="space-y-4">
+          {faqs.map((faq, index) => (
+            <AccordionItem
+              key={index}
+              value={`item-${index}`}
+              className="glass-card-dark rounded-xl px-6 py-2 border-border/50 transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 data-[state=open]:scale-[1.01]"
+            >
+              <AccordionTrigger className="text-left hover:no-underline py-4">
+                <span className="font-semibold text-foreground">{faq.question}</span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-4 pt-0">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </section>
   );

@@ -19,12 +19,25 @@ export const ArtefactoPricing = () => {
     <section id="pricing" className="container mx-auto px-4 py-20">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-3 text-foreground/60 mb-6">
-            <span className="text-2xl">⟡</span>
-            <p className="text-sm uppercase tracking-wider font-semibold">
-              Earlybird para miembros del Círculo
-            </p>
-            <span className="text-2xl">⟡</span>
+          {/* Divider superior */}
+          <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+            <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+          </div>
+
+          <h2 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em] mb-4">
+            EARLYBIRD
+          </h2>
+
+          <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
+            Precio especial de lanzamiento para miembros del Círculo
+          </p>
+
+          {/* Divider inferior */}
+          <div className="flex items-center justify-center gap-4 pt-4 mb-8" aria-hidden="true">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
           </div>
         </div>
 

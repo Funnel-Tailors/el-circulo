@@ -70,17 +70,26 @@ export const ArtefactoFeatures = () => {
     <section className="container mx-auto px-4 py-20">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-display font-black text-foreground mb-6">
-            Todo lo que necesitas
-          </h2>
-          <div className="flex items-center justify-center gap-3 text-foreground/40 mb-6">
-            <span className="text-xl">⟡</span>
-            <span className="text-xl">✦</span>
-            <span className="text-xl">⟡</span>
+          {/* Divider superior */}
+          <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+            <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
           </div>
-          <p className="text-xl text-foreground/80 max-w-2xl mx-auto">
+
+          <h2 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em] mb-4">
+            TODO LO QUE NECESITAS
+          </h2>
+
+          <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
             El sistema completo que usan los miembros del Círculo para gestionar su negocio
           </p>
+
+          {/* Divider inferior */}
+          <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">
+            <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+            <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
