@@ -16,17 +16,11 @@ export const ArtefactoHero = () => {
           </div>
         </div>
 
-        <h1 className="text-6xl md:text-8xl font-display font-black text-foreground leading-none tracking-tight">
-          <span className="glow">EL ARTEFACTO</span>
+        <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em]">
+          EL ARTEFACTO
         </h1>
 
-        <div className="flex items-center justify-center gap-3 text-foreground/60">
-          <span className="text-2xl">⟡</span>
-          <span className="text-2xl">✦</span>
-          <span className="text-2xl">⟡</span>
-        </div>
-
-        <p className="text-xl md:text-2xl text-foreground/90 max-w-3xl mx-auto leading-relaxed">
+        <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
           El arma secreta de los miembros del Círculo para gestionar leads, automatizar seguimientos y cerrar más proyectos{" "}
           <span className="text-foreground font-semibold">sin perder oportunidades en un excel de mierda</span>
         </p>
