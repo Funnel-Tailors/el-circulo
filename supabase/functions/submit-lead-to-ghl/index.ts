@@ -1045,6 +1045,78 @@ const successStoriesMap: Record<string, string> = {
     'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
 };
 
+// Realidades cotidianas incómodas (sin anglicismos)
+const dailyRealities: Record<string, string[]> = {
+  'Mis clientes no tienen presupuesto': [
+    'Probablemente ayer pasaste 2 horas en una videollamada con alguien que al final te pidió presupuesto "sin compromiso". Ya sabes cómo acaba eso.',
+    'Esta mañana te despertaste pensando en cuántas propuestas has enviado esta semana que no han contestado. Ninguna llevaba tu precio real.',
+    'Llevas 3 días dándole vueltas a si bajar el precio de ese proyecto. Ya sabes que aunque lo bajes, no te lo van a pagar.',
+    'El domingo por la tarde revisaste tu cuenta bancaria. Luego abriste Instagram y viste a alguien de tu profesión cerrando proyectos de 5.000€. El lunes volviste a cobrar 400€.',
+    'Ayer te llegó otro "me encanta tu trabajo pero ahora mismo no tengo presupuesto". Esta semana van tres. El mes pasado fueron once.'
+  ],
+  'Trabajo muchas horas y encima estoy tieso': [
+    'Anoche te quedaste hasta las 00:37 terminando algo que cobras 600€. Hoy te levantaste cansado sabiendo que tienes tres proyectos más igual de mal pagados.',
+    'Esta semana trabajaste 52 horas. Cobraste menos que alguien que trabaja 20. Sabes hacer el trabajo. No sabes venderlo.',
+    'El viernes pasado enviaste el último entregable de la semana. Eran las 22:14. Has cobrado 1.200€ por 40 horas de trabajo. Haces las cuentas: 30€/hora. Y tú vales 10 veces eso.',
+    'Llevas dos semanas con un proyecto que te está consumiendo. Lo cobras 800€. Ya llevas metidas 35 horas y aún quedan revisiones. Sabes que vas a perder dinero pero ya es tarde para parar.',
+    'El domingo por la noche miraste tu agenda de la semana que viene. Está llena. Y aún así no llegas a fin de mes. Algo está roto.'
+  ],
+  'No tengo clientes suficientes (no sé ni por donde empezar)': [
+    'Llevas 11 días sin que nadie te escriba preguntando por tu trabajo. Actualizaste el portfolio hace 3 semanas. Optimizaste la biografía hace 10 días. Publicaste contenido "de valor" ayer. Nada.',
+    'Esta mañana abriste Instagram esperando un mensaje. Nada. Revisaste el correo. Nada. Miraste LinkedIn. Nada. Llevas 4 meses así.',
+    'El mes pasado conseguiste 2 clientes. Los dos llegaron por recomendación. Cuando se acaben estos proyectos, vuelta a cero. Sabes hacer el trabajo. No sabes conseguir clientes.',
+    'Ayer publicaste que "abrías agenda para nuevos proyectos". Sabes que está tan abierta como vacía. Y todos lo saben también.',
+    'Llevas 6 meses esperando que el algoritmo te descubra. Tienes el portfolio perfecto. La bio optimizada. El contenido impecable. Y cero leads.'
+  ],
+  'No sé cómo vender lo que hago sin que regateen': [
+    'La semana pasada enviaste una propuesta de 2.400€. Te contestaron "está un poco fuera de presupuesto, ¿tienes algo más económico?". Te adelantaste tú y bajaste a 1.800€. Aún no te han contestado.',
+    'Ayer pasaste 3 horas preparando un presupuesto detallado de 14 páginas. Lo enviaste. Te respondieron "gracias, lo vemos y te decimos". Ya sabes que es un no.',
+    'Esta mañana te llegó otro "me encanta pero es que ahora mismo...". Es el cuarto este mes. Todos te dijeron que sí al principio. Ninguno te pagó lo que pediste.',
+    'El viernes cerraste un proyecto de 1.200€. El cliente te dijo que era mucho. Le explicaste todo el trabajo que conlleva. Aceptó. Pero te quedaste con la sensación de que podrías haber cobrado el doble si hubieras sabido qué decir.',
+    'Llevas 3 días dándole vueltas a cómo presentar tu nuevo servicio. No sabes si poner precio en la web. No sabes cómo justificarlo. No sabes qué decir cuando te pregunten "¿y por qué tan caro?".'
+  ],
+  'Todo lo anterior': [
+    'Esta semana trabajaste 47 horas. Cobraste 1.100€. Tienes el portfolio actualizado al milímetro. Cero leads nuevos. Y un cliente que lleva 5 días sin contestar si aprueba o no el presupuesto.',
+    'Anoche te quedaste hasta la 01:22 terminando un proyecto mal pagado. Esta mañana revisaste Instagram esperando algún lead. Nada. Abriste el correo. Un mensaje: "me encanta tu trabajo pero ahora mismo no tengo presupuesto".',
+    'Llevas 9 días sin que nadie te pregunte por tu trabajo. Tienes 3 proyectos activos mal pagados. Y acabas de actualizar la biografía por decimoquinta vez esperando que algo cambie.',
+    'El domingo hiciste cuentas: este mes has trabajado 180 horas y has cobrado 2.300€. Sabes que algo no funciona. Pero no sabes exactamente qué.',
+    'Ayer viste a alguien de tu profesión cerrar un proyecto de 7.000€. Tú llevas toda la semana negociando 600€ con alguien que probablemente te va a pedir descuento.'
+  ]
+};
+
+// El miedo a actuar (según nivel de score)
+const fearCalls: Record<'hot' | 'qualified' | 'marginal', string[]> = {
+  hot: [
+    'Lo tienes todo para hacerlo. El talento. La experiencia. El hambre.\n\nPero sigues aquí. Leyendo. Dándole vueltas. Esperando el momento perfecto que nunca llega.',
+    'Sabes exactamente lo que hay que hacer. Lo has sabido desde el primer mensaje.\n\nPero no lo haces.\n\nPorque hacer algo diferente da miedo. Aunque lo que haces ahora no funcione.',
+    'La única diferencia entre donde estás y donde quieres estar es una decisión.\n\nPero llevas días posponíendola. Porque es más fácil quedarse donde ya conoces el dolor.'
+  ],
+  qualified: [
+    'Sabes lo que hay que hacer. Pero no lo haces.\n\nSigues puliendo el portfolio. Optimizando la biografía. Esperando que algo cambie sin que tú cambies nada.',
+    'Llevas meses sabiendo que esto no funciona. Pero es más fácil convencerte de que "en algún momento mejorará" que dar el paso y hacer algo diferente.',
+    'El problema no es que no sepas qué hacer.\n\nEs que sabes qué hacer y eliges no hacerlo. Porque da miedo. Aunque lo que haces ahora dé más miedo todavía.'
+  ],
+  marginal: [
+    'Llevas tanto tiempo así que ya te has convencido de que es normal.\n\nQue los clientes regateen. Que te dejen en visto. Que trabajes hasta las 23:47 por cuatro duros.\n\nNo es normal. Es lo que pasa cuando sabes hacer el trabajo pero no sabes venderlo.',
+    'Cada día que pasa sin cambiar nada es un día más convenciéndote de que esto es lo que hay.\n\nNo lo es. Es lo que hay para quien no da el paso.',
+    'Llevas meses (¿años?) haciendo lo mismo esperando resultados diferentes.\n\nYa sabes que eso no funciona. Pero cambiar da más miedo que quedarse donde estás.'
+  ]
+};
+
+// Contrastes "mientras tú... mientras ellos..." (con nombres reales)
+const contrastStatements: Record<string, string> = {
+  'Mis clientes no tienen presupuesto': 
+    'Mientras tú negociabas 100€ de descuento con alguien que nunca iba a pagarte bien, Nico cerró un proyecto de 5.000€ con una sola llamada. Misma semana. Distinta conversación.',
+  'Trabajo muchas horas y encima estoy tieso': 
+    'Mientras tú te quedabas hasta las 23:47 terminando algo mal pagado, Dani cobró 2.000€ por su primer proyecto en el Círculo en 10 días. Mismo talento. Distinta forma de venderlo.',
+  'No tengo clientes suficientes (no sé ni por donde empezar)': 
+    'Mientras tú actualizabas el portfolio esperando que el algoritmo te descubra, Felipe tuvo sus primeras 2 llamadas de venta en 7 días para proyectos de 2.000€ y 5.000€. Misma habilidad. Sistema diferente.',
+  'No sé cómo vender lo que hago sin que regateen': 
+    'Mientras tú enviabas un presupuesto de 14 páginas y te comías un silencio, Cris cerró 3.000€ en una conversación preguntando "¿quién decide y cuándo?". Mismo servicio. Distinto pitch.',
+  'Todo lo anterior': 
+    'Mientras tú pulías el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Tú no. Todavía.'
+};
+
 // Helper: Determinar nivel de agitación según score
 function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
   if (score >= 90) return 'hot';
@@ -1052,143 +1124,144 @@ function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
   return 'marginal';
 }
 
-// Follow-Up #1: Agitación inicial + Pain insight
+// Follow-Up #1: La realidad incómoda
 function generateFollowUp1(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
   const level = getAgitationLevel(score);
-  const agitation = scoreAgitations[level].initial;
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior'];
+  const randomReality = realities[Math.floor(Math.random() * realities.length)];
   const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || painInsights[pain]?.warm || '';
   
   return `
 ${firstName}.
 
-${agitation}
+${randomReality}
 
 ${painInsight}
 
 🔮 RESERVA TU RITUAL DE EVALUACIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-El portal cierra en 48h.
+Cuando quieras.
 
 —
 El Círculo
   `.trim();
 }
 
-// Follow-Up #2: Opening angle + Contextual note
+// Follow-Up #2: El patrón (miedo a actuar)
 function generateFollowUp2(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
-  const angles = painOpeningAngles[pain] || [];
-  const randomAngle = angles[Math.floor(Math.random() * angles.length)] || '';
-  const contextNote = painContextualNotes[pain] || '';
+  const level = getAgitationLevel(score);
+  const fears = fearCalls[level];
+  const randomFear = fears[Math.floor(Math.random() * fears.length)];
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior'];
+  const randomReality = realities[Math.floor(Math.random() * realities.length)];
   
   return `
 ${firstName}.
 
-${randomAngle}
+${randomFear}
 
-${contextNote}
-
-El Círculo no enseña trucos. Enseña cómo cobrar lo que vale tu trabajo.
+${randomReality}
 
 🔮 AGENDA TU SESIÓN
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Solo si te suena.
 
 —
 El Círculo
   `.trim();
 }
 
-// Follow-Up #3: Profession identity + Score agitation + Success stories
+// Follow-Up #3: El contraste brutal
 function generateFollowUp3(name: string, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = name.split(' ')[0];
+  const pain = answers.q1 || '';
   const profession = answers.q2 || 'Otro servicio creativo';
-  const level = getAgitationLevel(score);
-  const agitation = scoreAgitations[level].mid;
-  
-  const professionIdentity: Record<string, string> = {
-    'Diseñador Gráfico / Web': 
-      'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo. La diferencia no está en el portfolio. Está en lo que dices antes de enseñarlo.',
-    'Fotógrafo/Filmmaker': 
-      'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€ por el mismo día de trabajo. Misma cámara. Distinta conversación.',
-    'Automatizador': 
-      'Montar un proceso te paga 500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 10.000€. Mismo trabajo. Diferente forma de venderlo.',
-    'Otro servicio creativo': 
-      'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale tu tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
-  };
-  
-  const identity = professionIdentity[profession];
+  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior'];
   const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo'];
   
   return `
 ${firstName}.
 
-${identity}
+${contrast}
 
-${agitation}
+Misma semana que tú.
+Mismo talento que tú.
+Distinta conversación.
 
-Mientras tanto:
+Los datos:
 ${successStory}
 
 🔮 ÚNETE AL RITUAL
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Tú decides de qué lado estás.
 
 —
 El Círculo
   `.trim();
 }
 
-// Follow-Up #4: Score urgency + Pain prep question
+// Follow-Up #4: La pregunta incómoda
 function generateFollowUp4(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
-  const level = getAgitationLevel(score);
-  const urgency = scoreAgitations[level].urgency;
   const prepQuestions = painPrepQuestions[pain] || [];
   const firstQuestion = prepQuestions[0] || '¿Cuánto tiempo más vas a seguir así?';
   
   return `
 ${firstName}.
 
-${urgency}
-
 Pregunta simple:
 ${firstQuestion}
 
-Si la respuesta te incomoda, es porque ya sabes lo que hay que hacer.
+Si la respuesta te incomoda, ya sabes lo que hay que hacer.
 
-🔮 ÚLTIMA OPORTUNIDAD
+Puedes seguir dándole vueltas.
+O puedes dar el paso.
+
+Pero no puedes hacer las dos cosas.
+
+🔮 AGENDA AQUÍ
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
 
-El portal cierra pronto.
+No hay prisa. Pero tampoco hay pausa.
 
 —
 El Círculo
   `.trim();
 }
 
-// Follow-Up #5: Cierre de ventana
+// Follow-Up #5: El cierre honesto
 function generateFollowUp5(name: string, answers: QuizAnswers): string {
   const firstName = name.split(' ')[0];
   
   return `
 ${firstName}.
 
-El portal de evaluación cierra.
+No vamos a insistir más.
 
-No volveremos a abrir espacios hasta el próximo ciclo.
+Si no era el momento, no pasa nada.
 
-Si no estás listo/a, no pasa nada.
+Pero si lo era y no diste el paso, dentro de 6 meses seguirás exactamente igual.
 
-Pero si lo estás y no das el paso, volverás aquí dentro de 6 meses.
+La única diferencia es que habrás perdido 6 meses más.
 
-Exactamente en la misma situación.
+Cobrando lo mismo.
+Trabajando igual de duro.
+Con los mismos clientes de siempre.
 
-🔮 ÚLTIMA LLAMADA
+O peores.
+
+🔮 ESTO ES TODO
 https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Tú decides.
 
 —
 El Círculo
