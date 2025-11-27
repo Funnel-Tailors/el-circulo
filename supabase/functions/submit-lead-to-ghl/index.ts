@@ -1011,6 +1011,191 @@ El Círculo
   }
 }
 
+// ============= PRE-BOOKING FOLLOW-UPS SYSTEM =============
+
+// Agitación basada en score (sin mostrar puntuación)
+const scoreAgitations = {
+  hot: { // 90+
+    initial: 'Lo tienes todo para hacerlo.\nEl talento. La experiencia. Hasta el hambre.\n\nPero sigues aquí, dándole vueltas.',
+    mid: 'Sabes exactamente lo que hay que hacer. Pero sigues sin hacerlo.',
+    urgency: 'Lo tienes todo para hacerlo.\nPero "tenerlo todo" sin dar el paso es exactamente lo mismo que no tener nada.'
+  },
+  qualified: { // 80-89
+    initial: 'Sabes exactamente lo que hay que hacer.\nPero no lo haces.\n\nSigues puliendo el portfolio, optimizando la bio, esperando que el algoritmo te descubra.',
+    mid: 'Sabes exactamente lo que hay que hacer. Pero sigues sin hacerlo.',
+    urgency: 'El problema no es que no sepas qué hacer.\nEs que llevas meses (¿años?) sin hacerlo.'
+  },
+  marginal: { // 75-79
+    initial: 'Llevas tanto tiempo así que ya te has convencido de que es normal.\n\nClientes que regatean. Ghosting de manual. Trabajar hasta las 23:47 por cuatro duros.\n\nNo es normal. Es lo que pasa cuando sabes hacer el trabajo pero no sabes venderlo.',
+    mid: 'Llevas tanto tiempo así que ya te has convencido de que es normal.',
+    urgency: 'Cada día que pasa sin cambiar nada es un día más convenciéndote de que esto es normal.\nNo lo es.'
+  }
+};
+
+// Casos de éxito por profesión
+const successStoriesMap: Record<string, string> = {
+  'Diseñador Gráfico / Web': 
+    'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
+  'Fotógrafo/Filmmaker': 
+    'Dani hizo 2.000€ con su primer cliente en 10 días.\nCris pasó de tirar la toalla a cerrar 3.000€.',
+  'Automatizador': 
+    'Felipe pasó de cero estrategia a sistema de captación en una semana.',
+  'Otro servicio creativo': 
+    'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
+};
+
+// Helper: Determinar nivel de agitación según score
+function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
+  if (score >= 90) return 'hot';
+  if (score >= 80) return 'qualified';
+  return 'marginal';
+}
+
+// Follow-Up #1: Agitación inicial + Pain insight
+function generateFollowUp1(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0];
+  const pain = answers.q1 || '';
+  const level = getAgitationLevel(score);
+  const agitation = scoreAgitations[level].initial;
+  const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || painInsights[pain]?.warm || '';
+  
+  return `
+${firstName}.
+
+${agitation}
+
+${painInsight}
+
+🔮 RESERVA TU RITUAL DE EVALUACIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+El portal cierra en 48h.
+
+—
+El Círculo
+  `.trim();
+}
+
+// Follow-Up #2: Opening angle + Contextual note
+function generateFollowUp2(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0];
+  const pain = answers.q1 || '';
+  const angles = painOpeningAngles[pain] || [];
+  const randomAngle = angles[Math.floor(Math.random() * angles.length)] || '';
+  const contextNote = painContextualNotes[pain] || '';
+  
+  return `
+${firstName}.
+
+${randomAngle}
+
+${contextNote}
+
+El Círculo no enseña trucos. Enseña cómo cobrar lo que vale tu trabajo.
+
+🔮 AGENDA TU SESIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+—
+El Círculo
+  `.trim();
+}
+
+// Follow-Up #3: Profession identity + Score agitation + Success stories
+function generateFollowUp3(name: string, answers: QuizAnswers, score: number, tags: string[]): string {
+  const firstName = name.split(' ')[0];
+  const profession = answers.q2 || 'Otro servicio creativo';
+  const level = getAgitationLevel(score);
+  const agitation = scoreAgitations[level].mid;
+  
+  const professionIdentity: Record<string, string> = {
+    'Diseñador Gráfico / Web': 
+      'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo. La diferencia no está en el portfolio. Está en lo que dices antes de enseñarlo.',
+    'Fotógrafo/Filmmaker': 
+      'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€ por el mismo día de trabajo. Misma cámara. Distinta conversación.',
+    'Automatizador': 
+      'Montar un proceso te paga 500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 10.000€. Mismo trabajo. Diferente forma de venderlo.',
+    'Otro servicio creativo': 
+      'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale tu tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
+  };
+  
+  const identity = professionIdentity[profession];
+  const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo'];
+  
+  return `
+${firstName}.
+
+${identity}
+
+${agitation}
+
+Mientras tanto:
+${successStory}
+
+🔮 ÚNETE AL RITUAL
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+—
+El Círculo
+  `.trim();
+}
+
+// Follow-Up #4: Score urgency + Pain prep question
+function generateFollowUp4(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0];
+  const pain = answers.q1 || '';
+  const level = getAgitationLevel(score);
+  const urgency = scoreAgitations[level].urgency;
+  const prepQuestions = painPrepQuestions[pain] || [];
+  const firstQuestion = prepQuestions[0] || '¿Cuánto tiempo más vas a seguir así?';
+  
+  return `
+${firstName}.
+
+${urgency}
+
+Pregunta simple:
+${firstQuestion}
+
+Si la respuesta te incomoda, es porque ya sabes lo que hay que hacer.
+
+🔮 ÚLTIMA OPORTUNIDAD
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+El portal cierra pronto.
+
+—
+El Círculo
+  `.trim();
+}
+
+// Follow-Up #5: Cierre de ventana
+function generateFollowUp5(name: string, answers: QuizAnswers): string {
+  const firstName = name.split(' ')[0];
+  
+  return `
+${firstName}.
+
+El portal de evaluación cierra.
+
+No volveremos a abrir espacios hasta el próximo ciclo.
+
+Si no estás listo/a, no pasa nada.
+
+Pero si lo estás y no das el paso, volverás aquí dentro de 6 meses.
+
+Exactamente en la misma situación.
+
+🔮 ÚLTIMA LLAMADA
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+—
+El Círculo
+  `.trim();
+}
+
+// ============= END PRE-BOOKING FOLLOW-UPS =============
+
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
@@ -1254,6 +1439,11 @@ serve(async (req) => {
         { key: 'notification_client', field_value: generateClientNotification(name, answers, tags, score) },
         { key: 'notification_client_post_booking', field_value: generateClientPostBookingNotification(name, answers, tags) },
         { key: 'notification_closer_pre_call', field_value: generateCloserPreCallNotification(contactData, answers, score, tags) },
+        { key: 'notification_followup_1', field_value: generateFollowUp1(name, answers, score) },
+        { key: 'notification_followup_2', field_value: generateFollowUp2(name, answers, score) },
+        { key: 'notification_followup_3', field_value: generateFollowUp3(name, answers, score, tags) },
+        { key: 'notification_followup_4', field_value: generateFollowUp4(name, answers, score) },
+        { key: 'notification_followup_5', field_value: generateFollowUp5(name, answers) },
         { key: 'circulo_fbclid', field_value: fbclid || 'organic' },
         { key: 'vsl_watched', field_value: vslWatched },
         { key: 'vsl_percentage', field_value: vslPercentage },
