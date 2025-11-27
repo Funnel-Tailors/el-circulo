@@ -551,7 +551,8 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
+${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€1.500 - €3.000' ? 'TICKET 3K' : 'TICKET 5K'}` : ''}
 • Decide: ${answers.q7}
 
 📞 CONTACTO:
@@ -621,7 +622,7 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 ⚡ RESUMEN INICIÁTICO:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€1.500 - €3.000' ? 'TICKET 3K' : 'TICKET 5K'}` : '❌ Insuficiente'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
 • Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
