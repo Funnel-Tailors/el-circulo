@@ -101,5 +101,18 @@ export const successCases = [
       "Transformó su posicionamiento hacia clientes premium",
       "Domina el proceso de generación de leads cualificados"
     ]
+  },
+  {
+    name: "Ariadna",
+    role: "Diseñadora Gráfica",
+    offer: "Marca Raíz",
+    highlight: "CLARIDAD",
+    videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/692f12bdaaad91bbaf5f3826.mp4",
+    results: [
+      "Pasó de vender servicios a tener una oferta clara y definida",
+      "Dejó de depender de la suerte para cerrar proyectos",
+      "Atrae clientes que valoran su trabajo (y lo pagan)",
+      "Transformó su mentalidad de 'a ver si hay suerte' a 'sé lo que ofrezco'"
+    ]
   }
 ];
