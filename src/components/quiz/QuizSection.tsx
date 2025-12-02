@@ -869,13 +869,11 @@ const QuizSection = ({
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
+    // HARDSTOP #0: Revenue demasiado bajo - No ICP
+    if (state.q3 === "Menos de €500/mes") return true;
+    
     // HARDSTOP #1: Sin capacidad de inversión mínima
     if (state.q5 === "Menos de €1.500") return true;
-    
-    // HARDSTOP #2: Revenue muy bajo + inversión baja
-    if (state.q3 === "Menos de €500/mes" && state.q5 === "€1.500 - €3.000") {
-      return true;
-    }
     
     // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
     if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {
