@@ -869,8 +869,11 @@ const QuizSection = ({
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
-    // HARDSTOP #0: Revenue demasiado bajo - No ICP
+    // HARDSTOP #0: Revenue demasiado bajo - No ICP (< €500/mes)
     if (state.q3 === "Menos de €500/mes") return true;
+    
+    // HARDSTOP #0.5: Revenue marginal - No puede permitirse inversión (€500 - €1.500/mes)
+    if (state.q3 === "€500 - €1.500/mes") return true;
     
     // HARDSTOP #1: Sin capacidad de inversión mínima
     if (state.q5 === "Menos de €1.500") return true;
