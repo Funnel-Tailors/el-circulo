@@ -30,8 +30,8 @@ export const RESULT_MESSAGES = {
     ]
   },
   notQualified: {
-    title: "El Consejo ha decidido",
-    description: "Tras evaluar tus respuestas, el Consejo determina que aún no eres digno de cruzar el umbral.",
-    footer: "No es un 'no' permanente. Es un 'todavía no'. Cuando tu situación cambie, vuelve a recorrer la Senda."
+    title: "La Senda no es para ti",
+    description: "Esto no es un curso. No es para curiosos. No es para quienes aún no facturan o no tienen pasta para invertir en serio.",
+    footer: "Cuando dejes de trabajar por cuatro duros, quizá nos crucemos. O quizá no."
   }
 };
