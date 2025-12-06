@@ -23,7 +23,9 @@ type EventType =
   | 'senda_video_progress_75'
   | 'senda_video_complete'
   | 'senda_pdf_download'
-  | 'senda_ai_assistant_open';
+  | 'senda_ai_assistant_open'
+  | 'skeptic_challenged'
+  | 'skeptic_converted';
 
 interface TrackEventParams {
   event_type: EventType;
