@@ -146,43 +146,13 @@ export const contactFormSchema = z.object({
       }
     ),
   
-  email: z
-    .string()
-    .min(1, "El email es obligatorio")
-    .max(255, "El email es demasiado largo")
-    .email("Ingresa un email válido")
-    .refine(
-      (value) => {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(value);
-      },
-      {
-        message: "Ingresa un email válido (ejemplo: tu@email.com)",
-      }
-    )
-    .refine(
-      (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
-      {
-        message: "Por favor ingresa un email válido",
-      }
-    )
-    .refine(
-      (value) => {
-        const domain = value.split('@')[1]?.toLowerCase();
-        return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
-      },
-      {
-        message: "No se permiten emails temporales",
-      }
-    ),
-  
   countryCode: z
     .string()
     .min(1, "Selecciona tu país"),
   
   phone: z
     .string()
-    .min(1, "El teléfono es obligatorio")
+    .min(1, "El WhatsApp es obligatorio")
     .refine(
       (value) => {
         // Solo números, espacios y guiones permitidos
@@ -190,7 +160,7 @@ export const contactFormSchema = z.object({
         return /^\d{6,15}$/.test(cleaned);
       },
       {
-        message: "Ingresa un número de teléfono válido (6-15 dígitos)",
+        message: "Ingresa un número de WhatsApp válido (6-15 dígitos)",
       }
     )
     .refine(
@@ -199,7 +169,7 @@ export const contactFormSchema = z.object({
         return !SPAM_PATTERNS.phone.test(cleaned);
       },
       {
-        message: "Por favor ingresa un número de teléfono válido",
+        message: "Por favor ingresa un número de WhatsApp válido",
       }
     ),
   

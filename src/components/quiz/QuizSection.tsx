@@ -130,7 +130,6 @@ const QuizSection = ({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       name: "",
-      email: "",
       countryCode: "+34",
       phone: "",
       website: "" // Honeypot field
@@ -566,7 +565,6 @@ const QuizSection = ({
     console.log('📋 [FORM SUBMIT] Starting submission process...', {
       timestamp: new Date().toISOString(),
       hasName: !!data.name,
-      hasEmail: !!data.email,
       hasPhone: !!data.phone,
       hasWebsite: !!data.website
     });
@@ -633,7 +631,6 @@ const QuizSection = ({
     const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
     const contactData = {
       name: data.name,
-      email: data.email && data.email.trim() !== '' ? data.email : undefined, // Solo incluir email si tiene valor
       whatsapp: fullPhone
     };
     
@@ -994,31 +991,10 @@ const QuizSection = ({
                     <FormMessage />
                   </FormItem>} />
 
-              {/* Campo Email */}
-              <FormField control={form.control} name="email" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel className="text-sm">
-                      📧 Por si no usas WhatsApp
-                    </FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        type="email" 
-                        placeholder="tu@email.com" 
-                        autoComplete="email" 
-                        disabled={isSubmitting}
-                        className="dark-button text-base" 
-                      />
-                    </FormControl>
-                    <p className="text-xs text-muted-foreground mt-1">También sirve para recordatorios críticos</p>
-                    <FormMessage />
-                  </FormItem>} />
-
-              {/* Campo Teléfono con Selector de País - BOOSTED */}
+              {/* Campo Teléfono con Selector de País */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">
-                  💬 Clase al instante + recordatorio 24h antes de tu ritual
+                  💬 Tu WhatsApp para enviarte la clase y recordatorios
                 </Label>
                 <div className="grid grid-cols-[140px_1fr] gap-2">
                   {/* Selector de País */}
