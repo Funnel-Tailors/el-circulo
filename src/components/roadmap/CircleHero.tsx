@@ -142,8 +142,8 @@ const CircleHero = () => {
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
 
-      // Mostrar CTA de testimonios en minuto 3 (180 segundos)
-      if (video.currentTime >= 180 && !testimonialCTADismissed) {
+      // Mostrar CTA de testimonios en 02:51 (171 segundos)
+      if (video.currentTime >= 171 && !testimonialCTADismissed) {
         setShowTestimonialCTA(true);
       }
 
