@@ -204,36 +204,7 @@ const CircleHero = () => {
     };
   }, []);
 
-  // Track scroll depth para capturar engaged visitors
-  useEffect(() => {
-    let hasTrackedScroll = false;
-    const handleScroll = () => {
-      if (hasTrackedScroll) return;
-      const scrollPercentage = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
-
-      // Disparar cuando usuario scrollea >50%
-      if (scrollPercentage > 50) {
-        hasTrackedScroll = true;
-        quizAnalytics.trackMetaPixelEvent('ViewContent', {
-          content_type: 'landing_page',
-          content_name: 'Engaged Visitor - Scrolled >50%',
-          content_category: 'engagement_signal',
-          value: 100,
-          currency: 'EUR',
-          custom_data: {
-            scroll_percentage: Math.round(scrollPercentage),
-            engagement_level: 'medium',
-            time_on_page_seconds: Math.floor((Date.now() - performance.timing.navigationStart) / 1000)
-          }
-        });
-        console.log('✅ Scroll depth tracked: >50%');
-      }
-    };
-    window.addEventListener('scroll', handleScroll, {
-      passive: true
-    });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // (Duplicado eliminado - scroll tracking ya se hace en useEffect línea 91-131)
 
   // Sticky video logic
   useEffect(() => {
@@ -280,7 +251,7 @@ const CircleHero = () => {
               <X className="w-4 h-4" />
             </button>}
           
-          <video ref={videoRef} src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4" autoPlay loop muted playsInline controls className={`
+          <video ref={videoRef} src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4" autoPlay loop muted playsInline controls preload="auto" className={`
               w-full shadow-2xl video-glow transition-all duration-300
               ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
             `} style={{

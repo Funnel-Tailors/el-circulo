@@ -68,11 +68,18 @@ class QuizAnalytics {
     this.stepStartTimes = new Map();
     this.vslMilestones = new Set();
     
-    // Inicializar geolocalización (async, non-blocking)
-    this.initGeoData();
-    
-    // Inicializar Meta Pixel con advanced matching
+    // Inicializar Meta Pixel con advanced matching (síncrono, necesario antes de eventos)
     this.initMetaPixel();
+    
+    // Diferir geolocalización para no bloquear render inicial
+    if (typeof window !== 'undefined') {
+      // Usar requestIdleCallback si disponible, sino setTimeout con 100ms
+      if ('requestIdleCallback' in window) {
+        (window as any).requestIdleCallback(() => this.initGeoData());
+      } else {
+        setTimeout(() => this.initGeoData(), 100);
+      }
+    }
   }
 
   private getOrCreateSessionId(): string {
