@@ -104,7 +104,7 @@ const Index = () => {
           </div>
 
           {/* ASCENDIDOS */}
-          <div className="mt-16 mb-8">
+          <div id="testimonials-section" className="mt-16 mb-8">
             <div className="text-center mb-16 animate-fade-in">
               {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
