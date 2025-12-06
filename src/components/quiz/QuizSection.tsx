@@ -123,6 +123,7 @@ const QuizSection = ({
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quizStartTime] = useState(Date.now()); // Track quiz start time for completion metrics
+  const [showSkepticChallenge, setShowSkepticChallenge] = useState(false); // El Espejo - intervención escépticos
 
 
   // Initialize form at component level (hooks must be called unconditionally)
@@ -793,31 +794,117 @@ const QuizSection = ({
     return false;
   };
   const renderInput = () => {
+    const skepticOption = "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)";
+    const isQ1 = currentQuestion.id === 'q1';
+    
     switch (currentQuestion.type) {
       case "radio":
-        return <RadioGroup value={answers[currentQuestion.id as keyof QuizState] as string || ""} onValueChange={value => {
-          const updatedAnswers = {
-            ...answers,
-            [currentQuestion.id]: value
-          };
-          setAnswers(updatedAnswers);
-          quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
+        return (
+          <>
+            <RadioGroup value={answers[currentQuestion.id as keyof QuizState] as string || ""} onValueChange={value => {
+              // El Espejo: Si selecciona "Todo lo anterior" en Q1, mostrar intervención
+              if (isQ1 && value === skepticOption) {
+                setShowSkepticChallenge(true);
+                quizAnalytics.trackEvent({ event_type: 'skeptic_challenged', step_id: 'q1', answer_value: value });
+                // NO guardar respuesta ni avanzar
+                return;
+              }
+              
+              // Si estaba en modo escéptico y ahora elige otra opción, convertir
+              if (isQ1 && showSkepticChallenge) {
+                setShowSkepticChallenge(false);
+                quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: value });
+              }
+              
+              const updatedAnswers = {
+                ...answers,
+                [currentQuestion.id]: value
+              };
+              setAnswers(updatedAnswers);
+              quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
 
-          // Meta Pixel AddToCart ya se dispara en handleNext con valores graduados
-          // No duplicar aquí para evitar double-tracking
-
-          // Auto-avance después de 300ms para dar feedback visual
-          setTimeout(() => {
-            handleNext();
-          }, 300);
-        }} className="space-y-3">
-            {currentQuestion.options?.map(option => <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                <RadioGroupItem value={option} id={option} className="border-2" />
-                <Label htmlFor={option} className="flex-1 cursor-pointer text-base">
-                  {option}
-                </Label>
-              </div>)}
-          </RadioGroup>;
+              // Auto-avance después de 300ms para dar feedback visual
+              setTimeout(() => {
+                handleNext();
+              }, 300);
+            }} className="space-y-3">
+              {currentQuestion.options?.map(option => {
+                const isSkepticOption = isQ1 && option === skepticOption;
+                const isDisabledByChallenge = showSkepticChallenge && isSkepticOption;
+                const isHighlightedByChallenge = showSkepticChallenge && isQ1 && !isSkepticOption;
+                
+                return (
+                  <div 
+                    key={option} 
+                    className={`flex items-center space-x-3 dark-card p-3 rounded-lg transition-all cursor-pointer ${
+                      isDisabledByChallenge 
+                        ? 'opacity-40 line-through cursor-not-allowed' 
+                        : isHighlightedByChallenge
+                          ? 'hover:bg-accent/50 ring-1 ring-amber-500/50 bg-amber-950/20'
+                          : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <RadioGroupItem 
+                      value={option} 
+                      id={option} 
+                      className="border-2" 
+                      disabled={isDisabledByChallenge}
+                    />
+                    <Label 
+                      htmlFor={option} 
+                      className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      {option}
+                    </Label>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+            
+            {/* El Espejo - Intervención para escépticos */}
+            {showSkepticChallenge && isQ1 && (
+              <div className="mt-6 p-5 border border-amber-500/30 bg-amber-950/20 rounded-xl animate-fade-in">
+                <div className="text-center mb-4">
+                  <span className="text-amber-400/80 text-sm">⟡</span>
+                  <h3 className="text-xl font-display font-bold text-foreground mt-2 glow">El Espejo</h3>
+                </div>
+                
+                <div className="space-y-4 text-foreground/90 text-sm leading-relaxed">
+                  <p>
+                    <span className="font-semibold text-amber-400">"Todo lo anterior"</span> no es una respuesta.
+                  </p>
+                  <p>
+                    Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.
+                  </p>
+                  <p>
+                    Mira, yo no estoy aquí para convencerte de nada.
+                  </p>
+                  <p>
+                    Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.
+                  </p>
+                  <p>
+                    O que crees que me importan algo tus barreras mentales. Que las derribe otro.
+                  </p>
+                  <p className="font-medium">
+                    Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.
+                  </p>
+                </div>
+                
+                <div className="mt-6 pt-4 border-t border-amber-500/20">
+                  <p className="text-amber-400 font-semibold text-center">
+                    ¿Cuál es tu problema REAL?
+                  </p>
+                  <p className="text-foreground/60 text-xs text-center mt-1">
+                    Antes de llamar a una buambulancia
+                  </p>
+                  <p className="text-amber-400/80 text-center mt-3 text-sm">
+                    👇 Elige (ahora prestando atención)
+                  </p>
+                </div>
+              </div>
+            )}
+          </>
+        );
       case "checkbox":
         return <div className="space-y-3">
             {currentQuestion.options?.map(option => <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
