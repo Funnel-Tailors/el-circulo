@@ -911,8 +911,8 @@ const QuizSection = ({
                         <button
                           key={option}
                           onClick={() => {
-                            // Guardar respuesta
-                            setAnswers({ ...answers, q1: option });
+                            // Guardar respuesta + badge escéptico
+                            setAnswers({ ...answers, q1: option, isSkeptic: true });
                             
                             // Trackear conversión del escéptico
                             quizAnalytics.trackEvent({ 
@@ -922,9 +922,9 @@ const QuizSection = ({
                             });
                             quizAnalytics.answerStep('q1', 0, option);
                             
-                            // Cerrar popup y avanzar seamlessly
+                            // Cerrar popup y avanzar instantáneamente a Q2
                             setShowSkepticChallenge(false);
-                            setTimeout(() => handleNext(), 300);
+                            setCurrentStep(1);
                           }}
                           className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 text-xs sm:text-sm text-foreground/90 hover:text-foreground"
                         >

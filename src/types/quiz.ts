@@ -10,4 +10,5 @@ export type QuizState = {
   email?: string;
   whatsapp?: string;
   ghlContactId?: string;
+  isSkeptic?: boolean; // True si entró por popup "El Espejo"
 };
