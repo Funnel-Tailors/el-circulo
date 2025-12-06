@@ -42,6 +42,27 @@ const CircleHero = () => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
+  const [showTestimonialCTA, setShowTestimonialCTA] = useState(false);
+  const [testimonialCTADismissed, setTestimonialCTADismissed] = useState(false);
+
+  // Scroll to testimonials handler
+  const handleScrollToTestimonials = () => {
+    quizAnalytics.trackMetaPixelEvent('ViewContent', {
+      content_type: 'testimonial_engagement',
+      content_name: 'VSL Testimonial CTA Clicked',
+      content_category: 'vsl_testimonial_cta',
+      value: 150,
+      currency: 'EUR'
+    });
+    
+    setShowTestimonialCTA(false);
+    setTestimonialCTADismissed(true);
+    
+    const section = document.getElementById('testimonials-section');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // Track PageView + VSL view on component mount
   useEffect(() => {
@@ -120,6 +141,11 @@ const CircleHero = () => {
     const handleTimeUpdate = () => {
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
+
+      // Mostrar CTA de testimonios en minuto 3 (180 segundos)
+      if (video.currentTime >= 180 && !testimonialCTADismissed) {
+        setShowTestimonialCTA(true);
+      }
 
       // Track analytics interno SOLO en hitos clave (no bloqueante)
       const vslMilestones = [25, 50, 75, 100];
@@ -260,6 +286,30 @@ const CircleHero = () => {
             `} style={{
           aspectRatio: '16/9'
         }} />
+          
+          {/* CTA overlay - aparece en minuto 3 */}
+          {showTestimonialCTA && !testimonialCTADismissed && (
+            <div className="absolute bottom-4 right-4 animate-fade-in z-20">
+              <div className="flex items-center gap-2 bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl px-4 py-2.5 shadow-lg shadow-background/50">
+                <button 
+                  onClick={handleScrollToTestimonials}
+                  className="text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors tracking-wide"
+                >
+                  👀 Escucha su versión
+                </button>
+                <button 
+                  onClick={() => {
+                    setShowTestimonialCTA(false);
+                    setTestimonialCTADismissed(true);
+                  }}
+                  className="text-foreground/60 hover:text-foreground/90 transition-colors p-0.5"
+                  aria-label="Cerrar"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* Spacer invisible cuando el video se vuelve sticky */}
