@@ -83,6 +83,7 @@ interface LeadSubmission {
   isPartialSubmission?: boolean;
   ghlContactId?: string;
   sessionId?: string;
+  isSkeptic?: boolean; // True si entró por popup "El Espejo"
 }
 
 // Helper: Detectar razón específica de hardstop
@@ -135,8 +136,13 @@ function getLeadCategory(score: number, answers: QuizAnswers): string {
   return 'C';
 }
 
-function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false): string[] {
+function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false, isSkeptic: boolean = false): string[] {
   const tags: string[] = [];
+  
+  // Tag de escéptico convertido (si aplica)
+  if (isSkeptic) {
+    tags.push('🪞 CÍRCULO-SKEPTIC-CONVERTED');
+  }
   
   // Tag de estado: parcial o completo
   if (isPartial) {
@@ -1359,7 +1365,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId }: LeadSubmission = await req.json();
+    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId, isSkeptic }: LeadSubmission = await req.json();
     
     // Initialize Supabase client at the top level for use throughout the function
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -1456,8 +1462,8 @@ serve(async (req) => {
       'Content-Type': 'application/json'
     };
     
-    // Generate tags
-    const tags = generateTags(answers, score, qualified, isPartialSubmission || false);
+    // Generate tags (incluye isSkeptic para tag de escéptico convertido)
+    const tags = generateTags(answers, score, qualified, isPartialSubmission || false, isSkeptic || false);
     console.log('Generated tags:', tags);
     
     // Determine contactId to use
