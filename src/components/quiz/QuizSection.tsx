@@ -40,7 +40,7 @@ const steps: QuizStep[] = [{
   type: "radio",
   options: [
     "Mis clientes no tienen presupuesto (cobro poco y me regatean)",
-    "Trabajo muchas horas y encima estoy tieso",
+    "Trabajo muchas horas y no gano tanto como me gustaría",
     "No tengo clientes suficientes (no sé ni por donde empezar)",
     "No sé vender lo que hago a gente que pague 5 cifras por ello",
     "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)"
@@ -864,7 +864,7 @@ const QuizSection = ({
             
             {/* El Espejo - Modal para escépticos */}
             <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
-              <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100%-2rem)] sm:max-w-md mx-4 sm:mx-0 p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+              <DialogContent className="glass-card-dark border-border/40 !left-4 !right-4 !translate-x-0 sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   {/* Header místico */}
                   <div className="text-center space-y-2">
