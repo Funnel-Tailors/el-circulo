@@ -54,13 +54,13 @@ const CircleHero = () => {
       value: 150,
       currency: 'EUR'
     });
-    
     setShowTestimonialCTA(false);
     setTestimonialCTADismissed(true);
-    
     const section = document.getElementById('testimonials-section');
     if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
+      section.scrollIntoView({
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -266,7 +266,7 @@ const CircleHero = () => {
           El problema no es que <span className="glow">no tengas clientes</span>,<br />
           es que tienes clientes <em className="not-italic glow">de mierda</em>
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">Descubre en 5 minutos el secreto para cerrar proyectos cada semana con clientes que pagan sin cuestionarte</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">Descubre en 5 minutos el secreto para llenar tu agenda cada semana de clientes que pagan sin cuestionarte y por adelantado    </p>
       </div>
 
       {/* VSL Container con glow pulsante */}
@@ -288,28 +288,19 @@ const CircleHero = () => {
         }} />
           
           {/* CTA overlay - aparece en minuto 3 */}
-          {showTestimonialCTA && !testimonialCTADismissed && (
-            <div className="absolute bottom-4 right-4 animate-fade-in z-20">
+          {showTestimonialCTA && !testimonialCTADismissed && <div className="absolute bottom-4 right-4 animate-fade-in z-20">
               <div className="flex items-center gap-2 bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl px-4 py-2.5 shadow-lg shadow-background/50">
-                <button 
-                  onClick={handleScrollToTestimonials}
-                  className="text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors tracking-wide"
-                >
+                <button onClick={handleScrollToTestimonials} className="text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors tracking-wide">
                   👀 Escucha su versión
                 </button>
-                <button 
-                  onClick={() => {
-                    setShowTestimonialCTA(false);
-                    setTestimonialCTADismissed(true);
-                  }}
-                  className="text-foreground/60 hover:text-foreground/90 transition-colors p-0.5"
-                  aria-label="Cerrar"
-                >
+                <button onClick={() => {
+              setShowTestimonialCTA(false);
+              setTestimonialCTADismissed(true);
+            }} className="text-foreground/60 hover:text-foreground/90 transition-colors p-0.5" aria-label="Cerrar">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
-            </div>
-          )}
+            </div>}
         </div>
         
         {/* Spacer invisible cuando el video se vuelve sticky */}
