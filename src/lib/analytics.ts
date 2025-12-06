@@ -50,12 +50,6 @@ class QuizAnalytics {
   private stepStartTimes: Map<string, number>;
   private vslMilestones: Set<number>;
   private quizVersion: string = 'v2'; // Nueva versión del quiz con Q1 de pain point
-  private geoData: {
-    city?: string;
-    region?: string;
-    postal?: string;
-    country_code?: string;
-  } | null = null;
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -68,18 +62,8 @@ class QuizAnalytics {
     this.stepStartTimes = new Map();
     this.vslMilestones = new Set();
     
-    // Inicializar Meta Pixel con advanced matching (síncrono, necesario antes de eventos)
+    // Inicializar Meta Pixel con advanced matching
     this.initMetaPixel();
-    
-    // Diferir geolocalización para no bloquear render inicial
-    if (typeof window !== 'undefined') {
-      // Usar requestIdleCallback si disponible, sino setTimeout con 100ms
-      if ('requestIdleCallback' in window) {
-        (window as any).requestIdleCallback(() => this.initGeoData());
-      } else {
-        setTimeout(() => this.initGeoData(), 100);
-      }
-    }
   }
 
   private getOrCreateSessionId(): string {
@@ -178,61 +162,10 @@ class QuizAnalytics {
 
       console.log('🎯 Meta Pixel inicializado con advanced matching:', {
         pixelId: '557247343765576',
-        matching: advancedMatching,
-        geo_available: this.geoData !== null
+        matching: advancedMatching
       });
     } catch (error) {
       console.error('❌ Error inicializando Meta Pixel:', error);
-    }
-  }
-
-  /**
-   * Inicializa la geolocalización usando ipapi.co
-   * - Intenta cargar desde sessionStorage (caché)
-   * - Si no existe, fetch a ipapi.co con timeout de 2s
-   * - Si falla, continúa sin geo data (no rompe nada)
-   */
-  private async initGeoData(): Promise<void> {
-    try {
-      // 1. Intentar cargar desde sessionStorage (caché)
-      const cached = sessionStorage.getItem('user_geo_data');
-      if (cached) {
-        this.geoData = JSON.parse(cached);
-        console.log('📍 Geo data cargada desde caché:', this.geoData);
-        return;
-      }
-
-      // 2. Fetch con timeout de 2 segundos
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
-
-      const response = await fetch('https://ipapi.co/json/', {
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-
-      if (!response.ok) throw new Error('Geo API failed');
-
-      const data = await response.json();
-      
-      // 3. Mapear a formato compatible con Meta Pixel
-      this.geoData = {
-        city: data.city?.toLowerCase(),
-        region: data.region_code?.toLowerCase(), 
-        postal: data.postal,
-        country_code: data.country_code?.toLowerCase()
-      };
-
-      // 4. Guardar en sessionStorage para toda la sesión
-      sessionStorage.setItem('user_geo_data', JSON.stringify(this.geoData));
-      
-      console.log('📍 Geo data obtenida de API:', this.geoData);
-
-    } catch (error) {
-      // Si falla, no pasa nada - continuamos sin geo data
-      console.log('⚠️ Geo data no disponible (continuando sin ella):', error);
-      this.geoData = null;
     }
   }
 
@@ -434,14 +367,6 @@ class QuizAnalytics {
         advancedMatching.fbp = fbpCookie;
       }
 
-      // 4. Geo data (ciudad, región, postal, país) - si disponible
-      if (this.geoData) {
-        if (this.geoData.city) advancedMatching.ct = this.geoData.city;
-        if (this.geoData.region) advancedMatching.st = this.geoData.region;
-        if (this.geoData.postal) advancedMatching.zp = this.geoData.postal;
-        if (this.geoData.country_code) advancedMatching.country = this.geoData.country_code;
-      }
-
       // Agregar event_id a parámetros para deduplicación
       const enrichedParams = {
         ...params,
@@ -455,10 +380,7 @@ class QuizAnalytics {
         eventName,
         eventId,
         params: enrichedParams,
-        matching: {
-          ...advancedMatching,
-          geo_available: !!this.geoData // Flag para debugging
-        }
+        matching: advancedMatching
       });
     } else {
       console.warn('⚠️ Meta Pixel no disponible');
