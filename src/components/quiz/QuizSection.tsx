@@ -926,7 +926,7 @@ const QuizSection = ({
                             setShowSkepticChallenge(false);
                             setTimeout(() => handleNext(), 300);
                           }}
-                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors text-xs sm:text-sm text-foreground/90 hover:text-foreground"
+                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 text-xs sm:text-sm text-foreground/90 hover:text-foreground"
                         >
                           {option}
                         </button>
