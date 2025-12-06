@@ -864,7 +864,7 @@ const QuizSection = ({
             
             {/* El Espejo - Modal para escépticos */}
             <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
-              <DialogContent className="glass-card-dark border-border/40 !left-4 !right-4 !translate-x-0 sm:!left-[50%] sm:!right-auto sm:!translate-x-[-50%] max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+              <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100vw-2rem)] sm:max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   {/* Header místico */}
                   <div className="text-center space-y-2">
