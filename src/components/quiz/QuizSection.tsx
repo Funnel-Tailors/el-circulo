@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
@@ -840,7 +841,7 @@ const QuizSection = ({
                       isDisabledByChallenge 
                         ? 'opacity-40 line-through cursor-not-allowed' 
                         : isHighlightedByChallenge
-                          ? 'hover:bg-accent/50 ring-1 ring-amber-500/50 bg-amber-950/20'
+                          ? 'hover:bg-accent/50 ring-1 ring-foreground/30 bg-background/40'
                           : 'hover:bg-accent/50'
                     }`}
                   >
@@ -861,48 +862,53 @@ const QuizSection = ({
               })}
             </RadioGroup>
             
-            {/* El Espejo - Intervención para escépticos */}
-            {showSkepticChallenge && isQ1 && (
-              <div className="mt-6 p-5 border border-amber-500/30 bg-amber-950/20 rounded-xl animate-fade-in">
-                <div className="text-center mb-4">
-                  <span className="text-amber-400/80 text-sm">⟡</span>
-                  <h3 className="text-xl font-display font-bold text-foreground mt-2 glow">El Espejo</h3>
+            {/* El Espejo - Modal para escépticos */}
+            <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
+              <DialogContent className="glass-card-dark border-border/40 max-w-md p-0 [&>button]:hidden">
+                <div className="p-6 space-y-6">
+                  {/* Header místico */}
+                  <div className="text-center space-y-2">
+                    <span className="text-foreground/60 text-lg">⟡</span>
+                    <h3 className="text-2xl font-display font-black text-foreground glow">El Espejo</h3>
+                  </div>
+                  
+                  {/* Copy brutal */}
+                  <div className="space-y-4 text-foreground/90 text-sm leading-relaxed">
+                    <p>
+                      <span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.
+                    </p>
+                    <p>
+                      Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.
+                    </p>
+                    <p>
+                      Mira, yo no estoy aquí para convencerte de nada.
+                    </p>
+                    <p>
+                      Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.
+                    </p>
+                    <p>
+                      O que crees que me importan algo tus barreras mentales. Que las derribe otro.
+                    </p>
+                    <p className="font-medium text-foreground">
+                      Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.
+                    </p>
+                  </div>
+                  
+                  {/* Footer con CTA */}
+                  <div className="pt-4 border-t border-border/30 space-y-2 text-center">
+                    <p className="text-foreground font-semibold">
+                      ¿Cuál es tu problema REAL?
+                    </p>
+                    <p className="text-foreground/50 text-xs">
+                      Antes de llamar a una buambulancia
+                    </p>
+                    <p className="text-foreground/70 text-sm mt-3">
+                      👇 Elige (ahora prestando atención)
+                    </p>
+                  </div>
                 </div>
-                
-                <div className="space-y-4 text-foreground/90 text-sm leading-relaxed">
-                  <p>
-                    <span className="font-semibold text-amber-400">"Todo lo anterior"</span> no es una respuesta.
-                  </p>
-                  <p>
-                    Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.
-                  </p>
-                  <p>
-                    Mira, yo no estoy aquí para convencerte de nada.
-                  </p>
-                  <p>
-                    Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.
-                  </p>
-                  <p>
-                    O que crees que me importan algo tus barreras mentales. Que las derribe otro.
-                  </p>
-                  <p className="font-medium">
-                    Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.
-                  </p>
-                </div>
-                
-                <div className="mt-6 pt-4 border-t border-amber-500/20">
-                  <p className="text-amber-400 font-semibold text-center">
-                    ¿Cuál es tu problema REAL?
-                  </p>
-                  <p className="text-foreground/60 text-xs text-center mt-1">
-                    Antes de llamar a una buambulancia
-                  </p>
-                  <p className="text-amber-400/80 text-center mt-3 text-sm">
-                    👇 Elige (ahora prestando atención)
-                  </p>
-                </div>
-              </div>
-            )}
+              </DialogContent>
+            </Dialog>
           </>
         );
       case "checkbox":
