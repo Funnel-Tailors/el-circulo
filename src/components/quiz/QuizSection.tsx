@@ -864,7 +864,7 @@ const QuizSection = ({
             
             {/* El Espejo - Modal para escépticos */}
             <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
-              <DialogContent className="glass-card-dark border-border/40 max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+              <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100%-2rem)] sm:max-w-md mx-4 sm:mx-0 p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   {/* Header místico */}
                   <div className="text-center space-y-2">
@@ -907,7 +907,7 @@ const QuizSection = ({
                     
                     {/* Opciones válidas de Q1 dentro del popup */}
                     <div className="space-y-2">
-                      {steps[0].options?.filter(opt => opt !== "Todo lo anterior").map((option) => (
+                      {steps[0].options?.filter(opt => opt !== skepticOption).map((option) => (
                         <button
                           key={option}
                           onClick={() => {
@@ -926,7 +926,7 @@ const QuizSection = ({
                             setShowSkepticChallenge(false);
                             setTimeout(() => handleNext(), 300);
                           }}
-                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 transition-all text-xs sm:text-sm text-foreground/90 hover:text-foreground"
+                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors text-xs sm:text-sm text-foreground/90 hover:text-foreground"
                         >
                           {option}
                         </button>
