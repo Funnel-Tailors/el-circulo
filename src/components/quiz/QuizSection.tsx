@@ -864,16 +864,16 @@ const QuizSection = ({
             
             {/* El Espejo - Modal para escépticos */}
             <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
-              <DialogContent className="glass-card-dark border-border/40 max-w-md p-0 [&>button]:hidden">
-                <div className="p-6 space-y-6">
+              <DialogContent className="glass-card-dark border-border/40 max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   {/* Header místico */}
                   <div className="text-center space-y-2">
                     <span className="text-foreground/60 text-lg">⟡</span>
-                    <h3 className="text-2xl font-display font-black text-foreground glow">El Espejo</h3>
+                    <h3 className="text-xl sm:text-2xl font-display font-black text-foreground glow">El Espejo</h3>
                   </div>
                   
                   {/* Copy brutal */}
-                  <div className="space-y-4 text-foreground/90 text-sm leading-relaxed">
+                  <div className="space-y-3 text-foreground/90 text-xs sm:text-sm leading-relaxed">
                     <p>
                       <span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.
                     </p>
@@ -894,17 +894,44 @@ const QuizSection = ({
                     </p>
                   </div>
                   
-                  {/* Footer con CTA */}
-                  <div className="pt-4 border-t border-border/30 space-y-2 text-center">
-                    <p className="text-foreground font-semibold">
-                      ¿Cuál es tu problema REAL?
-                    </p>
-                    <p className="text-foreground/50 text-xs">
-                      Antes de llamar a una buambulancia
-                    </p>
-                    <p className="text-foreground/70 text-sm mt-3">
-                      👇 Elige (ahora prestando atención)
-                    </p>
+                  {/* CTA + Opciones dentro del popup */}
+                  <div className="pt-4 border-t border-border/30 space-y-3">
+                    <div className="text-center space-y-1">
+                      <p className="text-foreground font-semibold text-sm">
+                        ¿Cuál es tu problema REAL?
+                      </p>
+                      <p className="text-foreground/50 text-xs">
+                        👇 Elige (ahora prestando atención)
+                      </p>
+                    </div>
+                    
+                    {/* Opciones válidas de Q1 dentro del popup */}
+                    <div className="space-y-2">
+                      {steps[0].options?.filter(opt => opt !== "Todo lo anterior").map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => {
+                            // Guardar respuesta
+                            setAnswers({ ...answers, q1: option });
+                            
+                            // Trackear conversión del escéptico
+                            quizAnalytics.trackEvent({ 
+                              event_type: 'skeptic_converted', 
+                              step_id: 'q1', 
+                              answer_value: option 
+                            });
+                            quizAnalytics.answerStep('q1', 0, option);
+                            
+                            // Cerrar popup y avanzar seamlessly
+                            setShowSkepticChallenge(false);
+                            setTimeout(() => handleNext(), 300);
+                          }}
+                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 transition-all text-xs sm:text-sm text-foreground/90 hover:text-foreground"
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </DialogContent>
