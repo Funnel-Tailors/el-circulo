@@ -115,6 +115,7 @@ export const partialContactSchema = z.object({
     ),
 });
 
+// Schema para formulario de contacto - SOLO nombre + WhatsApp (email se captura en calendario)
 export const contactFormSchema = z.object({
   name: z
     .string()
