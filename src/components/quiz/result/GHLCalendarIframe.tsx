@@ -26,8 +26,8 @@ export const GHLCalendarIframe = ({
     const baseUrl = `https://api.leadconnectorhq.com/widget/booking/${calendarId}`;
     const params = new URLSearchParams();
     
-    if (firstName) params.append('firstName', firstName);
-    if (lastName) params.append('lastName', lastName);
+    if (firstName) params.append('first_name', firstName);
+    if (lastName) params.append('last_name', lastName);
     if (email) params.append('email', email);
     if (phone) params.append('phone', phone);
     
