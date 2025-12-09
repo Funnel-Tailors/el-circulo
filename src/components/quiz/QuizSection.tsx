@@ -1097,7 +1097,7 @@ const QuizSection = ({
                     Enviando tus datos...
                   </span>
                 ) : (
-                  '⚡ Reclamar Mi Acceso →'
+                  '📅 Agendar Mi Ritual →'
                 )}
               </Button>
             </form>
