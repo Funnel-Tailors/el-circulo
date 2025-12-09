@@ -975,10 +975,8 @@ const QuizSection = ({
             </p>
 
             {/* Mini value prop de entrega */}
-            <div className="flex items-center justify-center gap-4 text-xs">
-              <span className="text-foreground/80">📩 Enviada en 24h</span>
-              <span className="text-foreground/30">|</span>
-              <span className="font-semibold glow">⚡ O al instante si agendas</span>
+            <div className="flex items-center justify-center text-xs">
+              <span className="font-semibold glow">⚡ Enviada instantáneamente al agendar</span>
             </div>
           </div>
 
