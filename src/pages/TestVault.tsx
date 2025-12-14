@@ -1,15 +1,32 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import VaultPortal from "@/components/senda/VaultPortal";
+import VaultSection from "@/components/senda/VaultSection";
 
 const TestVault = () => {
   const [showPortal, setShowPortal] = useState(false);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
+  const [class2Progress, setClass2Progress] = useState(0);
+  const vaultSectionRef = useRef<HTMLDivElement>(null);
 
   const handleUnlock = () => {
     setShowPortal(false);
     setVaultUnlocked(true);
+    
+    // Smooth scroll to vault section after animation
+    setTimeout(() => {
+      vaultSectionRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 400);
+  };
+
+  const handleReset = () => {
+    setVaultUnlocked(false);
+    setClass2Progress(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -45,23 +62,52 @@ const TestVault = () => {
             <button
               onClick={() => setShowPortal(true)}
               className="dark-button-primary w-full py-3"
+              disabled={vaultUnlocked}
             >
               Mostrar Portal (Vórtice)
             </button>
 
+            {vaultUnlocked && (
+              <>
+                <div className="pt-4 border-t border-foreground/10">
+                  <p className="text-foreground/50 text-sm mb-3">Simular progreso Clase 2:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setClass2Progress(25)}
+                      className={`dark-button py-2 text-xs ${class2Progress >= 25 ? 'ring-1 ring-foreground/30' : ''}`}
+                    >
+                      25%
+                    </button>
+                    <button
+                      onClick={() => setClass2Progress(50)}
+                      className={`dark-button py-2 text-xs ${class2Progress >= 50 ? 'ring-1 ring-foreground/30' : ''}`}
+                    >
+                      50%
+                    </button>
+                    <button
+                      onClick={() => setClass2Progress(100)}
+                      className={`dark-button py-2 text-xs ${class2Progress >= 100 ? 'ring-1 ring-foreground/30' : ''}`}
+                    >
+                      100%
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
             <button
-              onClick={() => setVaultUnlocked(false)}
+              onClick={handleReset}
               className="dark-button w-full py-3"
               disabled={!vaultUnlocked}
             >
-              Reset Estado
+              Reset Todo
             </button>
           </div>
 
           {vaultUnlocked && (
-            <div className="mt-6 p-4 border border-emerald-500/30 bg-emerald-950/20 rounded-lg">
-              <p className="text-emerald-400 text-sm">
-                ✓ La Bóveda desbloqueada — aquí iría el smooth scroll
+            <div className="mt-6 p-4 border border-foreground/20 bg-foreground/5 rounded-lg">
+              <p className="text-foreground/70 text-sm">
+                ✓ La Bóveda desbloqueada — scroll abajo para ver
               </p>
             </div>
           )}
@@ -72,6 +118,14 @@ const TestVault = () => {
           <p className="mb-2">⟡ Versión actual: Vórtice SVG con 3 brazos espirales</p>
           <p>Rotación: 12s | Símbolo central fijo con breathe animation</p>
         </div>
+      </div>
+
+      {/* Vault Section - appears after unlock */}
+      <div ref={vaultSectionRef}>
+        <VaultSection 
+          isVisible={vaultUnlocked} 
+          class2Progress={class2Progress}
+        />
       </div>
 
       {/* Portal Component */}
