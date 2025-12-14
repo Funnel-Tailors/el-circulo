@@ -70,15 +70,19 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             >
               <defs>
                 <linearGradient id="armGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.8" />
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.9" />
                   <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="armGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.6" />
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.7" />
                   <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
                 </linearGradient>
                 <linearGradient id="armGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="armGradient4" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.3" />
                   <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
                 </linearGradient>
                 <filter id="glow">
@@ -90,37 +94,28 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 </filter>
               </defs>
 
-              {/* Spiral arm 1 */}
-              <motion.path
-                d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
-                fill="none"
-                stroke="url(#armGradient1)"
-                strokeWidth="3"
-                strokeLinecap="round"
-                filter="url(#glow)"
-              />
-              
-              {/* Spiral arm 2 - rotated 120deg */}
-              <motion.path
-                d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
-                fill="none"
-                stroke="url(#armGradient2)"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                filter="url(#glow)"
-                style={{ transform: 'rotate(120deg)', transformOrigin: '200px 200px' }}
-              />
-              
-              {/* Spiral arm 3 - rotated 240deg */}
-              <motion.path
-                d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
-                fill="none"
-                stroke="url(#armGradient3)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                filter="url(#glow)"
-                style={{ transform: 'rotate(240deg)', transformOrigin: '200px 200px' }}
-              />
+              {/* 8 brazos espirales distribuidos cada 45° */}
+              {[
+                { rotation: 0, gradient: 'armGradient1', width: 4 },
+                { rotation: 45, gradient: 'armGradient2', width: 2 },
+                { rotation: 90, gradient: 'armGradient1', width: 4 },
+                { rotation: 135, gradient: 'armGradient3', width: 2 },
+                { rotation: 180, gradient: 'armGradient2', width: 3 },
+                { rotation: 225, gradient: 'armGradient4', width: 2 },
+                { rotation: 270, gradient: 'armGradient3', width: 3 },
+                { rotation: 315, gradient: 'armGradient4', width: 2 },
+              ].map((arm, i) => (
+                <motion.path
+                  key={i}
+                  d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
+                  fill="none"
+                  stroke={`url(#${arm.gradient})`}
+                  strokeWidth={arm.width}
+                  strokeLinecap="round"
+                  filter="url(#glow)"
+                  style={{ transform: `rotate(${arm.rotation}deg)`, transformOrigin: '200px 200px' }}
+                />
+              ))}
             </motion.svg>
 
             {/* Center symbol - fixed, doesn't rotate */}
