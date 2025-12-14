@@ -50,43 +50,40 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
           >
             {/* Central glow - concentrated on symbol */}
             <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full"
               animate={{ 
                 boxShadow: [
-                  '0 0 30px 10px hsl(var(--foreground) / 0.2)',
-                  '0 0 50px 20px hsl(var(--foreground) / 0.3)',
-                  '0 0 30px 10px hsl(var(--foreground) / 0.2)'
+                  '0 0 40px 15px hsl(var(--foreground) / 0.25)',
+                  '0 0 60px 25px hsl(var(--foreground) / 0.35)',
+                  '0 0 40px 15px hsl(var(--foreground) / 0.25)'
                 ]
               }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            {/* SVG Vortex */}
+            {/* SVG Vortex with Archimedean Spirals */}
             <motion.svg
               viewBox="0 0 400 400"
               className="w-full h-full"
               animate={{ rotate: 360 }}
-              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
             >
               <defs>
-                <linearGradient id="armGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                {/* Radial gradient for sphere effect - brighter at center */}
+                <radialGradient id="spiralGradient1" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="armGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.1" />
+                </radialGradient>
+                <radialGradient id="spiralGradient2" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.7" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="armGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.05" />
+                </radialGradient>
+                <radialGradient id="spiralGradient3" cx="50%" cy="50%" r="50%">
                   <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="armGradient4" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
-                </linearGradient>
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.02" />
+                </radialGradient>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -94,36 +91,75 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 </filter>
               </defs>
 
-              {/* 16 brazos espirales ultra-densos formando esfera compacta */}
-              {[
-                { rotation: 0, gradient: 'armGradient1', width: 3 },
-                { rotation: 22.5, gradient: 'armGradient2', width: 1.5 },
-                { rotation: 45, gradient: 'armGradient1', width: 2.5 },
-                { rotation: 67.5, gradient: 'armGradient3', width: 1.5 },
-                { rotation: 90, gradient: 'armGradient2', width: 3 },
-                { rotation: 112.5, gradient: 'armGradient4', width: 1.5 },
-                { rotation: 135, gradient: 'armGradient1', width: 2.5 },
-                { rotation: 157.5, gradient: 'armGradient3', width: 1.5 },
-                { rotation: 180, gradient: 'armGradient2', width: 3 },
-                { rotation: 202.5, gradient: 'armGradient4', width: 1.5 },
-                { rotation: 225, gradient: 'armGradient1', width: 2.5 },
-                { rotation: 247.5, gradient: 'armGradient3', width: 1.5 },
-                { rotation: 270, gradient: 'armGradient2', width: 3 },
-                { rotation: 292.5, gradient: 'armGradient4', width: 1.5 },
-                { rotation: 315, gradient: 'armGradient1', width: 2.5 },
-                { rotation: 337.5, gradient: 'armGradient3', width: 1.5 },
-              ].map((arm, i) => (
-                <motion.path
-                  key={i}
-                  d="M200,200 C210,192 218,182 215,175 C212,168 222,160 215,155 C208,150 218,142 210,138"
-                  fill="none"
-                  stroke={`url(#${arm.gradient})`}
-                  strokeWidth={arm.width}
-                  strokeLinecap="round"
-                  filter="url(#glow)"
-                  style={{ transform: `rotate(${arm.rotation}deg)`, transformOrigin: '200px 200px' }}
-                />
-              ))}
+              {/* Archimedean spirals - 8 arms, each doing 1.5 turns (540°) */}
+              {(() => {
+                const generateSpiralPath = (startAngle: number, turns: number = 1.5, clockwise: boolean = true) => {
+                  const cx = 200, cy = 200;
+                  const startRadius = 8;
+                  const endRadius = 85;
+                  const steps = 40;
+                  const direction = clockwise ? 1 : -1;
+                  
+                  const points: { x: number; y: number }[] = [];
+                  for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    const angle = startAngle + (direction * t * turns * 360);
+                    const radius = startRadius + (t * (endRadius - startRadius));
+                    const rad = (angle * Math.PI) / 180;
+                    points.push({
+                      x: cx + radius * Math.cos(rad),
+                      y: cy + radius * Math.sin(rad)
+                    });
+                  }
+                  
+                  // Convert points to smooth bezier path
+                  let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+                  for (let i = 1; i < points.length - 2; i++) {
+                    const p0 = points[i - 1];
+                    const p1 = points[i];
+                    const p2 = points[i + 1];
+                    const p3 = points[i + 2] || p2;
+                    
+                    // Catmull-Rom to Bezier conversion
+                    const cp1x = p1.x + (p2.x - p0.x) / 6;
+                    const cp1y = p1.y + (p2.y - p0.y) / 6;
+                    const cp2x = p2.x - (p3.x - p1.x) / 6;
+                    const cp2y = p2.y - (p3.y - p1.y) / 6;
+                    
+                    d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+                  }
+                  return d;
+                };
+
+                const spirals = [
+                  // Primary spirals (clockwise)
+                  { startAngle: 0, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 60, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 120, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 180, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  { startAngle: 240, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  { startAngle: 300, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  // Counter-clockwise spirals for interlacing
+                  { startAngle: 30, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 90, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 150, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 210, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 270, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 330, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                ];
+
+                return spirals.map((spiral, i) => (
+                  <path
+                    key={i}
+                    d={generateSpiralPath(spiral.startAngle, spiral.turns, spiral.clockwise)}
+                    fill="none"
+                    stroke={spiral.stroke}
+                    strokeWidth={spiral.width}
+                    strokeLinecap="round"
+                    filter="url(#glow)"
+                  />
+                ));
+              })()}
             </motion.svg>
 
             {/* Center symbol - fixed, doesn't rotate */}
