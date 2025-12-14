@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 interface VaultPortalProps {
   isOpen: boolean;
@@ -16,143 +20,150 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
     setTimeout(() => {
       onUnlock();
       setIsExiting(false);
-    }, 800);
+    }, 600);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-transparent border-none shadow-none max-w-lg p-0 overflow-visible">
-        <div className="relative flex flex-col items-center justify-center p-8">
+      <DialogContent className="sm:max-w-2xl bg-transparent border-none shadow-none p-0 overflow-visible">
+        <div className="relative flex flex-col items-center justify-center min-h-[500px]">
+          
+          {/* Close button - on-brand style */}
+          <button
+            onClick={onClose}
+            className="absolute top-0 right-0 z-50 w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm border border-foreground/20 flex items-center justify-center text-foreground/60 hover:text-foreground hover:bg-background transition-all"
+            aria-label="Cerrar"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
           {/* Vortex Container */}
           <motion.div
-            className="relative w-64 h-64 md:w-80 md:h-80 flex items-center justify-center"
+            className="relative w-80 h-80 md:w-96 md:h-96"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ 
               opacity: isExiting ? 0 : 1, 
-              scale: isExiting ? 0.3 : 1,
+              scale: isExiting ? 0.5 : 1,
               rotate: isExiting ? 180 : 0
             }}
-            transition={{ duration: isExiting ? 0.6 : 0.5, ease: "easeOut" }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Outer Glow */}
-            <div 
-              className="absolute inset-0 rounded-full animate-pulse"
-              style={{
-                background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)',
-                filter: 'blur(20px)',
+            {/* Outer glow */}
+            <motion.div
+              className="absolute inset-0 rounded-full"
+              animate={{ 
+                boxShadow: [
+                  '0 0 60px 20px hsl(var(--foreground) / 0.1)',
+                  '0 0 80px 30px hsl(var(--foreground) / 0.15)',
+                  '0 0 60px 20px hsl(var(--foreground) / 0.1)'
+                ]
               }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            {/* Vortex Arms - SVG Spiral */}
-            <svg
-              className="absolute inset-0 w-full h-full"
-              viewBox="0 0 200 200"
-              style={{ animation: 'spin 12s linear infinite' }}
+            {/* SVG Vortex */}
+            <motion.svg
+              viewBox="0 0 400 400"
+              className="w-full h-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
             >
-              {/* Arm 1 */}
-              <path
-                d="M100,100 Q120,80 140,90 T160,100 T140,130 T100,140 T60,130 T40,100 T60,70 T100,60"
+              <defs>
+                <linearGradient id="armGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="armGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+                </linearGradient>
+                <linearGradient id="armGradient3" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0" />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              {/* Spiral arm 1 */}
+              <motion.path
+                d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
                 fill="none"
                 stroke="url(#armGradient1)"
-                strokeWidth="2"
+                strokeWidth="3"
                 strokeLinecap="round"
-                opacity="0.8"
-              />
-              {/* Arm 2 */}
-              <path
-                d="M100,100 Q80,80 60,90 T40,100 T60,130 T100,140 T140,130 T160,100 T140,70 T100,60"
-                fill="none"
-                stroke="url(#armGradient2)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                opacity="0.6"
-              />
-              {/* Arm 3 */}
-              <path
-                d="M100,100 Q100,75 120,60 T100,40 T70,60 T60,100 T70,140 T100,160 T130,140 T140,100"
-                fill="none"
-                stroke="url(#armGradient3)"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                opacity="0.5"
+                filter="url(#glow)"
               />
               
-              {/* Gradients */}
-              <defs>
-                <linearGradient id="armGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="white" stopOpacity="0" />
-                  <stop offset="50%" stopColor="white" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="white" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="armGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="white" stopOpacity="0" />
-                  <stop offset="50%" stopColor="white" stopOpacity="0.6" />
-                  <stop offset="100%" stopColor="white" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="armGradient3" x1="50%" y1="0%" x2="50%" y2="100%">
-                  <stop offset="0%" stopColor="white" stopOpacity="0" />
-                  <stop offset="50%" stopColor="white" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="white" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-            </svg>
+              {/* Spiral arm 2 - rotated 120deg */}
+              <motion.path
+                d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
+                fill="none"
+                stroke="url(#armGradient2)"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                filter="url(#glow)"
+                style={{ transform: 'rotate(120deg)', transformOrigin: '200px 200px' }}
+              />
+              
+              {/* Spiral arm 3 - rotated 240deg */}
+              <motion.path
+                d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
+                fill="none"
+                stroke="url(#armGradient3)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                filter="url(#glow)"
+                style={{ transform: 'rotate(240deg)', transformOrigin: '200px 200px' }}
+              />
+            </motion.svg>
 
-            {/* Center Mist */}
-            <div 
-              className="absolute w-24 h-24 md:w-32 md:h-32 rounded-full"
-              style={{
-                background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)',
-                filter: 'blur(10px)',
-              }}
-            />
-
-            {/* Center Symbol - Fixed, doesn't rotate */}
-            <motion.span
-              className="relative z-10 text-5xl md:text-6xl text-white font-light select-none"
-              style={{
-                textShadow: '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,255,255,0.4)',
-              }}
-              animate={{
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
+            {/* Center symbol - fixed, doesn't rotate */}
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              ⟡
-            </motion.span>
+              <span className="text-5xl md:text-6xl text-foreground glow select-none">
+                ⟡
+              </span>
+            </motion.div>
           </motion.div>
 
-          {/* Copy */}
+          {/* CTA Container - On-brand glassmorphism style */}
           <motion.div
-            className="mt-8 text-center"
+            className="mt-8 text-center bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl shadow-lg p-6 max-w-sm"
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isExiting ? 0 : 1, y: isExiting ? -10 : 0 }}
-            transition={{ delay: isExiting ? 0 : 0.3, duration: 0.4 }}
+            animate={{ 
+              opacity: isExiting ? 0 : 1, 
+              y: isExiting ? -20 : 0 
+            }}
+            transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <p className="text-foreground/80 text-sm md:text-base max-w-xs mx-auto mb-6">
-              Has demostrado compromiso. Hay algo más esperándote.
+            <p className="text-foreground/70 text-sm mb-4">
+              Has encontrado la entrada. <br />
+              <span className="text-foreground/50">Solo quienes cruzan el umbral acceden a La Bóveda.</span>
             </p>
-
-            <motion.button
+            <button
               onClick={handleUnlock}
-              className="dark-button-primary px-8 py-3 text-sm uppercase tracking-wider"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              className="dark-button-primary py-3 px-8 text-sm font-medium"
             >
-              🔓 Abrir La Bóveda
-            </motion.button>
+              Abrir La Bóveda
+            </button>
           </motion.div>
 
-          {/* Exit Flash Effect */}
+          {/* Exit flash effect */}
           <AnimatePresence>
             {isExiting && (
               <motion.div
-                className="absolute inset-0 bg-white rounded-full"
+                className="absolute inset-0 bg-foreground rounded-full"
                 initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: [0, 0.3, 0], scale: 2 }}
+                animate={{ opacity: [0, 0.8, 0], scale: [0.5, 2, 3] }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.6 }}
               />
