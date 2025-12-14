@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Analytics from "./pages/Analytics";
 import Senda from "./pages/Senda";
 import Artefacto from "./pages/Artefacto";
+import TestVault from "./pages/TestVault";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/senda" element={<Senda />} />
           <Route path="/artefacto" element={<Artefacto />} />
+          <Route path="/test-vault" element={<TestVault />} />
           <Route path="/roadmap" element={<Navigate to="/" replace />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
