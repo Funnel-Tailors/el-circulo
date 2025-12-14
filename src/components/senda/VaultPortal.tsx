@@ -94,11 +94,11 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 </filter>
               </defs>
 
-              {/* 8 brazos espirales distribuidos cada 45° */}
+              {/* 8 brazos espirales compactos que forman esfera */}
               {[
-                { rotation: 0, gradient: 'armGradient1', width: 4 },
+                { rotation: 0, gradient: 'armGradient1', width: 3.5 },
                 { rotation: 45, gradient: 'armGradient2', width: 2 },
-                { rotation: 90, gradient: 'armGradient1', width: 4 },
+                { rotation: 90, gradient: 'armGradient1', width: 3.5 },
                 { rotation: 135, gradient: 'armGradient3', width: 2 },
                 { rotation: 180, gradient: 'armGradient2', width: 3 },
                 { rotation: 225, gradient: 'armGradient4', width: 2 },
@@ -107,7 +107,7 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
               ].map((arm, i) => (
                 <motion.path
                   key={i}
-                  d="M200,200 Q250,150 280,120 Q320,80 350,60 Q380,40 400,30"
+                  d="M200,200 C230,185 255,165 260,150 C265,135 280,125 275,110 C270,95 290,85 280,75"
                   fill="none"
                   stroke={`url(#${arm.gradient})`}
                   strokeWidth={arm.width}
