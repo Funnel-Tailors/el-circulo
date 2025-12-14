@@ -48,17 +48,17 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Outer glow */}
+            {/* Central glow - concentrated on symbol */}
             <motion.div
-              className="absolute inset-0 rounded-full"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full"
               animate={{ 
                 boxShadow: [
-                  '0 0 60px 20px hsl(var(--foreground) / 0.1)',
-                  '0 0 80px 30px hsl(var(--foreground) / 0.15)',
-                  '0 0 60px 20px hsl(var(--foreground) / 0.1)'
+                  '0 0 30px 10px hsl(var(--foreground) / 0.2)',
+                  '0 0 50px 20px hsl(var(--foreground) / 0.3)',
+                  '0 0 30px 10px hsl(var(--foreground) / 0.2)'
                 ]
               }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
             />
 
             {/* SVG Vortex */}
@@ -94,20 +94,28 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 </filter>
               </defs>
 
-              {/* 8 brazos espirales compactos que forman esfera */}
+              {/* 16 brazos espirales ultra-densos formando esfera compacta */}
               {[
-                { rotation: 0, gradient: 'armGradient1', width: 3.5 },
-                { rotation: 45, gradient: 'armGradient2', width: 2 },
-                { rotation: 90, gradient: 'armGradient1', width: 3.5 },
-                { rotation: 135, gradient: 'armGradient3', width: 2 },
+                { rotation: 0, gradient: 'armGradient1', width: 3 },
+                { rotation: 22.5, gradient: 'armGradient2', width: 1.5 },
+                { rotation: 45, gradient: 'armGradient1', width: 2.5 },
+                { rotation: 67.5, gradient: 'armGradient3', width: 1.5 },
+                { rotation: 90, gradient: 'armGradient2', width: 3 },
+                { rotation: 112.5, gradient: 'armGradient4', width: 1.5 },
+                { rotation: 135, gradient: 'armGradient1', width: 2.5 },
+                { rotation: 157.5, gradient: 'armGradient3', width: 1.5 },
                 { rotation: 180, gradient: 'armGradient2', width: 3 },
-                { rotation: 225, gradient: 'armGradient4', width: 2 },
-                { rotation: 270, gradient: 'armGradient3', width: 3 },
-                { rotation: 315, gradient: 'armGradient4', width: 2 },
+                { rotation: 202.5, gradient: 'armGradient4', width: 1.5 },
+                { rotation: 225, gradient: 'armGradient1', width: 2.5 },
+                { rotation: 247.5, gradient: 'armGradient3', width: 1.5 },
+                { rotation: 270, gradient: 'armGradient2', width: 3 },
+                { rotation: 292.5, gradient: 'armGradient4', width: 1.5 },
+                { rotation: 315, gradient: 'armGradient1', width: 2.5 },
+                { rotation: 337.5, gradient: 'armGradient3', width: 1.5 },
               ].map((arm, i) => (
                 <motion.path
                   key={i}
-                  d="M200,200 C230,185 255,165 260,150 C265,135 280,125 275,110 C270,95 290,85 280,75"
+                  d="M200,200 C210,192 218,182 215,175 C212,168 222,160 215,155 C208,150 218,142 210,138"
                   fill="none"
                   stroke={`url(#${arm.gradient})`}
                   strokeWidth={arm.width}
