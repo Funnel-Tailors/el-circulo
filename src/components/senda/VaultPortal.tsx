@@ -176,7 +176,7 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
 
           {/* Copy on-brand directo sin card */}
           <motion.div
-            className="mt-6 text-center max-w-md"
+            className="mt-2 md:mt-4 text-center max-w-md px-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ 
               opacity: isExiting ? 0 : 1, 
@@ -184,13 +184,13 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             }}
             transition={{ delay: 1.0, duration: 0.8 }}
           >
-            <span className="text-foreground/30 text-lg mb-4 block">⟡</span>
+            <span className="text-foreground/30 text-lg mb-3 block">⟡</span>
             
-            <h2 className="text-2xl md:text-3xl font-display font-black text-foreground glow mb-3">
+            <h2 className="text-xl md:text-3xl font-display font-black text-foreground glow mb-2">
               Has demostrado ser digno.
             </h2>
             
-            <p className="text-foreground/70 text-base md:text-lg mb-6">
+            <p className="text-foreground/70 text-sm md:text-lg mb-5">
               La Senda te recompensa abriendo un nuevo camino.
             </p>
             
