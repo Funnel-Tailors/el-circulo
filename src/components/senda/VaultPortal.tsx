@@ -176,7 +176,7 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
 
           {/* Copy on-brand directo sin card */}
           <motion.div
-            className="mt-2 md:mt-4 text-center max-w-md px-6"
+            className="-mt-4 md:-mt-2 text-center max-w-md px-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ 
               opacity: isExiting ? 0 : 1, 
