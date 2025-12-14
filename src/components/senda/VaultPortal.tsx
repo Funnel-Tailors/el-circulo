@@ -174,25 +174,31 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             </motion.div>
           </motion.div>
 
-          {/* CTA Container - On-brand glassmorphism style */}
+          {/* Copy on-brand directo sin card */}
           <motion.div
-            className="mt-8 text-center bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl shadow-lg p-6 max-w-sm"
+            className="mt-6 text-center max-w-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ 
               opacity: isExiting ? 0 : 1, 
               y: isExiting ? -20 : 0 
             }}
-            transition={{ delay: 0.3, duration: 0.5 }}
+            transition={{ delay: 1.0, duration: 0.8 }}
           >
-            <p className="text-foreground/70 text-sm mb-4">
-              Has encontrado la entrada. <br />
-              <span className="text-foreground/50">Solo quienes cruzan el umbral acceden a La Bóveda.</span>
+            <span className="text-foreground/30 text-lg mb-4 block">⟡</span>
+            
+            <h2 className="text-2xl md:text-3xl font-display font-black text-foreground glow mb-3">
+              Has demostrado ser digno.
+            </h2>
+            
+            <p className="text-foreground/70 text-base md:text-lg mb-6">
+              La Senda te recompensa abriendo un nuevo camino.
             </p>
+            
             <button
               onClick={handleUnlock}
               className="dark-button-primary py-3 px-8 text-sm font-medium"
             >
-              Abrir La Bóveda
+              Cruzar el umbral
             </button>
           </motion.div>
 
