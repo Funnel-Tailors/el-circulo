@@ -163,11 +163,11 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             <motion.div 
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
               animate={{ 
-                scale: [1, 1.3, 1],
+                scale: [1, 1.15, 1],
                 opacity: [0.9, 1, 0.9]
               }}
               transition={{ 
-                duration: 2,
+                duration: 2.5,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
@@ -176,47 +176,47 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 boxShadow: '0 0 15px 8px rgba(0,0,0,0.9), 0 0 30px 15px rgba(0,0,0,0.6)'
               }}
             />
-          </motion.div>
 
-          {/* Attracted particles system */}
-          {Array.from({ length: 20 }).map((_, i) => {
-            const startAngle = (i / 20) * 360;
-            const startRadius = 140 + (i % 3) * 20;
-            const duration = 3 + (i % 5) * 0.5;
-            const delay = (i / 20) * 3;
-            const size = 0.4 + (i % 4) * 0.2;
-            
-            return (
-              <motion.div
-                key={i}
-                className="absolute top-1/2 left-1/2 text-foreground pointer-events-none"
-                style={{
-                  fontSize: `${size * 10}px`,
-                  filter: size < 0.6 ? 'blur(0.5px)' : 'none',
-                }}
-                initial={{
-                  x: Math.cos(startAngle * Math.PI / 180) * startRadius,
-                  y: Math.sin(startAngle * Math.PI / 180) * startRadius,
-                  opacity: 0,
-                  scale: 1,
-                }}
-                animate={{
-                  x: 0,
-                  y: 0,
-                  opacity: [0, 0.7, 0.9, 0],
-                  scale: [1, 1.2, 0.2],
-                }}
-                transition={{
-                  duration: duration,
-                  delay: delay,
-                  repeat: Infinity,
-                  ease: [0.4, 0, 0.2, 1],
-                }}
-              >
-                ✦
-              </motion.div>
-            );
-          })}
+            {/* Attracted particles system - inside vortex for shared center */}
+            {Array.from({ length: 20 }).map((_, i) => {
+              const startAngle = (i / 20) * 360;
+              const startRadius = 110 + (i % 3) * 15;
+              const duration = 3 + (i % 5) * 0.5;
+              const delay = (i / 20) * 3;
+              const size = 0.4 + (i % 4) * 0.2;
+              
+              return (
+                <motion.div
+                  key={i}
+                  className="absolute top-1/2 left-1/2 text-foreground pointer-events-none"
+                  style={{
+                    fontSize: `${size * 10}px`,
+                    filter: size < 0.6 ? 'blur(0.5px)' : 'none',
+                  }}
+                  initial={{
+                    x: Math.cos(startAngle * Math.PI / 180) * startRadius,
+                    y: Math.sin(startAngle * Math.PI / 180) * startRadius,
+                    opacity: 0,
+                    scale: 1,
+                  }}
+                  animate={{
+                    x: 0,
+                    y: 0,
+                    opacity: [0, 0.7, 0.9, 0],
+                    scale: [1, 1.2, 0.2],
+                  }}
+                  transition={{
+                    duration: duration,
+                    delay: delay,
+                    repeat: Infinity,
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
+                >
+                  ✦
+                </motion.div>
+              );
+            })}
+          </motion.div>
 
 
           {/* Copy on-brand directo sin card */}
