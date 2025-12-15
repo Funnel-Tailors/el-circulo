@@ -57,21 +57,24 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
             >
               <defs>
-                {/* Radial gradient for sphere effect - brighter at center */}
+                {/* Radial gradient for sphere effect - smoother falloff */}
                 <radialGradient id="spiralGradient1" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.1" />
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.7" />
+                  <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.15" />
                 </radialGradient>
                 <radialGradient id="spiralGradient2" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.7" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.05" />
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.5" />
+                  <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.08" />
                 </radialGradient>
                 <radialGradient id="spiralGradient3" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.02" />
+                  <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.3" />
+                  <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.15" />
+                  <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.03" />
                 </radialGradient>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -149,17 +152,29 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 ));
               })()}
             </motion.svg>
+          </motion.div>
 
-            {/* Center symbol - black void epicenter */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          {/* Center symbol - black void epicenter, positioned independently */}
+          <motion.div
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ 
+              opacity: isExiting ? 0 : 1,
+              scale: isExiting ? 0.3 : [1, 1.08, 1]
+            }}
+            transition={{ 
+              opacity: { duration: 0.6 },
+              scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+            }}
+          >
+            <span 
+              className="text-7xl md:text-8xl text-background select-none block"
+              style={{ 
+                filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(0,0,0,0.7)) drop-shadow(0 0 60px rgba(0,0,0,0.5))'
+              }}
             >
-              <span className="text-5xl md:text-6xl text-background select-none">
-                ✦
-              </span>
-            </motion.div>
+              ✦
+            </span>
           </motion.div>
 
           {/* Copy on-brand directo sin card */}
