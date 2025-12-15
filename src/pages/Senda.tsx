@@ -1,16 +1,47 @@
+import { useState, useRef } from "react";
 import { useSendaAccess } from "@/hooks/useSendaAccess";
+import { useVaultTracking } from "@/hooks/useVaultTracking";
 import { HeroSection } from "@/components/senda/HeroSection";
 import { PreparationCards } from "@/components/senda/PreparationCards";
 import { PersonalizedPainSection } from "@/components/senda/PersonalizedPainSection";
 import { ValueStackSection } from "@/components/senda/ValueStackSection";
 import { FilteredSuccessCases } from "@/components/senda/FilteredSuccessCases";
 import { SendaFooter } from "@/components/senda/SendaFooter";
+import VaultSection from "@/components/senda/VaultSection";
+import VaultPortal from "@/components/senda/VaultPortal";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import type { QuizState } from "@/types/quiz";
 
 const Senda = () => {
   const { loading, quizState, token } = useSendaAccess();
+  const { trackVaultEvent } = useVaultTracking(token);
+  
+  // Vault state
+  const [showPortal, setShowPortal] = useState(false);
+  const [vaultUnlocked, setVaultUnlocked] = useState(false);
+  const [class2Progress, setClass2Progress] = useState(0);
+  const vaultSectionRef = useRef<HTMLDivElement>(null);
+
+  // Called when Class 1 video reaches 75%
+  const handleThresholdReached = () => {
+    setShowPortal(true);
+  };
+
+  // Called when user clicks "Atravesar el portal"
+  const handlePortalTraversed = () => {
+    setShowPortal(false);
+    setVaultUnlocked(true);
+    trackVaultEvent('senda_vault_revealed');
+    
+    // Scroll suave tras animación (delay para que clip-path empiece)
+    setTimeout(() => {
+      vaultSectionRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }, 1500);
+  };
 
   if (loading) {
     return (
@@ -33,12 +64,33 @@ const Senda = () => {
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
         <HeroSection quizState={quizState || {} as QuizState} />
-        <PreparationCards token={token} />
+        <PreparationCards 
+          token={token} 
+          onUnlockThreshold={handleThresholdReached}
+        />
         <PersonalizedPainSection quizState={quizState || {} as QuizState} />
         <ValueStackSection />
         <FilteredSuccessCases quizState={quizState || {} as QuizState} />
+        
+        {/* Vault Section - se revela gradualmente */}
+        <div ref={vaultSectionRef}>
+          <VaultSection 
+            isVisible={vaultUnlocked}
+            class2Progress={class2Progress}
+            onClass2Progress={setClass2Progress}
+            token={token}
+          />
+        </div>
+        
         <SendaFooter />
       </div>
+
+      {/* Portal Modal */}
+      <VaultPortal
+        isOpen={showPortal}
+        onClose={() => setShowPortal(false)}
+        onUnlock={handlePortalTraversed}
+      />
     </div>
   );
 };

@@ -125,6 +125,8 @@ const TestVault = () => {
         <VaultSection 
           isVisible={vaultUnlocked} 
           class2Progress={class2Progress}
+          onClass2Progress={setClass2Progress}
+          token="test-token"
         />
       </div>
 

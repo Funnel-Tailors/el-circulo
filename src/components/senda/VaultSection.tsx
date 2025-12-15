@@ -1,14 +1,73 @@
+import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Play, Bot } from "lucide-react";
+import { useVaultTracking } from "@/hooks/useVaultTracking";
 
 interface VaultSectionProps {
   isVisible: boolean;
   class2Progress: number;
+  onClass2Progress: (progress: number) => void;
+  token: string;
 }
 
-const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
+const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: VaultSectionProps) => {
   const assistant1Unlocked = class2Progress >= 25;
   const assistant2Unlocked = class2Progress >= 50;
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const { trackVaultEvent } = useVaultTracking(token);
+  
+  // Track video milestones
+  const tracked25 = useRef(false);
+  const tracked50 = useRef(false);
+  const tracked100 = useRef(false);
+  const trackedStart = useRef(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !isVisible) return;
+
+    const handleTimeUpdate = () => {
+      const progress = (video.currentTime / video.duration) * 100;
+      onClass2Progress(Math.round(progress));
+
+      if (progress >= 25 && !tracked25.current) {
+        tracked25.current = true;
+        trackVaultEvent('senda_vault_video_25');
+      }
+      if (progress >= 50 && !tracked50.current) {
+        tracked50.current = true;
+        trackVaultEvent('senda_vault_video_50');
+      }
+      if (progress >= 99 && !tracked100.current) {
+        tracked100.current = true;
+        trackVaultEvent('senda_vault_video_complete');
+      }
+    };
+
+    const handlePlay = () => {
+      if (!trackedStart.current) {
+        trackedStart.current = true;
+        trackVaultEvent('senda_vault_video_start');
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('play', handlePlay);
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('play', handlePlay);
+    };
+  }, [isVisible, onClass2Progress, trackVaultEvent]);
+
+  const handleAssistant1Open = () => {
+    trackVaultEvent('senda_vault_assistant1_opened');
+  };
+
+  const handleAssistant2Open = () => {
+    trackVaultEvent('senda_vault_assistant2_opened');
+  };
 
   return (
     <motion.section
@@ -21,8 +80,8 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
           : "circle(0% at 50% 0%)"
       }}
       transition={{ 
-        duration: 1.2, 
-        ease: [0.22, 1, 0.36, 1]
+        duration: 2.5,
+        ease: [0.16, 1, 0.3, 1]
       }}
       className="relative z-20 pt-16 pb-24"
       style={{ 
@@ -44,7 +103,7 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
+            transition={{ delay: 1.8, duration: 0.8 }}
           >
             <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
               ⟡ Acceso Exclusivo ⟡
@@ -60,17 +119,22 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
         </div>
 
         {/* Separator */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <motion.div 
+          className="flex items-center justify-center gap-4 mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isVisible ? 1 : 0 }}
+          transition={{ delay: 2.0, duration: 0.6 }}
+        >
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-foreground/20" />
           <span className="text-foreground/30 text-xs">✦</span>
           <div className="h-px w-16 bg-gradient-to-l from-transparent to-foreground/20" />
-        </div>
+        </motion.div>
 
         {/* Video Section */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
+          transition={{ delay: 2.2, duration: 0.8 }}
           className="glass-card-dark p-6 md:p-8 mb-12"
         >
           <div className="flex items-center gap-3 mb-6">
@@ -83,13 +147,15 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
             </div>
           </div>
           
-          {/* Video placeholder */}
-          <div className="aspect-video bg-background/50 rounded-lg border border-foreground/10 flex items-center justify-center">
-            <div className="text-center">
-              <Play className="w-12 h-12 text-foreground/30 mx-auto mb-3" />
-              <p className="text-foreground/40 text-sm">Video Clase Avatar</p>
-              <p className="text-foreground/20 text-xs mt-1">(URL pendiente)</p>
-            </div>
+          {/* Video */}
+          <div className="aspect-video bg-background/50 rounded-lg border border-foreground/10 overflow-hidden">
+            <video
+              ref={videoRef}
+              src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c61440c5b7ed66facfc.mp4"
+              controls
+              className="w-full h-full"
+              playsInline
+            />
           </div>
 
           {/* Progress indicator */}
@@ -110,17 +176,22 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
         </motion.div>
 
         {/* Separator */}
-        <div className="flex items-center justify-center gap-4 mb-12">
+        <motion.div 
+          className="flex items-center justify-center gap-4 mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isVisible ? 1 : 0 }}
+          transition={{ delay: 2.4, duration: 0.6 }}
+        >
           <div className="h-px w-24 bg-gradient-to-r from-transparent to-foreground/20" />
           <span className="text-foreground/30 text-xs">⟡</span>
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
-        </div>
+        </motion.div>
 
         {/* Assistants Grid */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
+          transition={{ delay: 2.6, duration: 0.8 }}
         >
           <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-8">
             Asistentes IA Exclusivos
@@ -155,9 +226,15 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
                       🔒 Desbloquea al 25% de la clase
                     </span>
                   ) : (
-                    <button className="dark-button text-sm py-2 px-4">
+                    <a
+                      href="#"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handleAssistant1Open}
+                      className="inline-block dark-button text-sm py-2 px-4"
+                    >
                       Abrir Asistente
-                    </button>
+                    </a>
                   )}
                 </div>
               </div>
@@ -191,9 +268,15 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
                       🔒 Desbloquea al 50% de la clase
                     </span>
                   ) : (
-                    <button className="dark-button text-sm py-2 px-4">
+                    <a
+                      href="#"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handleAssistant2Open}
+                      className="inline-block dark-button text-sm py-2 px-4"
+                    >
                       Abrir Asistente
-                    </button>
+                    </a>
                   )}
                 </div>
               </div>
@@ -202,11 +285,16 @@ const VaultSection = ({ isVisible, class2Progress }: VaultSectionProps) => {
         </motion.div>
 
         {/* Footer separator */}
-        <div className="flex items-center justify-center gap-4 mt-16">
+        <motion.div 
+          className="flex items-center justify-center gap-4 mt-16"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: isVisible ? 1 : 0 }}
+          transition={{ delay: 2.8, duration: 0.6 }}
+        >
           <div className="h-px w-32 bg-gradient-to-r from-transparent to-foreground/10" />
           <span className="text-foreground/20 text-xs">✦ ⟡ ✦</span>
           <div className="h-px w-32 bg-gradient-to-l from-transparent to-foreground/10" />
-        </div>
+        </motion.div>
       </div>
     </motion.section>
   );
