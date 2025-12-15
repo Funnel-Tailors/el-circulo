@@ -158,6 +158,24 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 ));
               })()}
             </motion.svg>
+
+            {/* Black hole center - inside vortex container for proper centering */}
+            <motion.div 
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
+              animate={{ 
+                scale: [1, 1.3, 1],
+                opacity: [0.9, 1, 0.9]
+              }}
+              transition={{ 
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              style={{ 
+                filter: 'blur(3px)',
+                boxShadow: '0 0 15px 8px rgba(0,0,0,0.9), 0 0 30px 15px rgba(0,0,0,0.6)'
+              }}
+            />
           </motion.div>
 
           {/* Attracted particles system */}
@@ -200,14 +218,6 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             );
           })}
 
-          {/* Black hole center */}
-          <div 
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
-            style={{ 
-              filter: 'blur(3px)',
-              boxShadow: '0 0 15px 8px rgba(0,0,0,0.9), 0 0 30px 15px rgba(0,0,0,0.6)'
-            }}
-          />
 
           {/* Copy on-brand directo sin card */}
           <motion.div
