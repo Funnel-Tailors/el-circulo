@@ -25,7 +25,16 @@ type EventType =
   | 'senda_pdf_download'
   | 'senda_ai_assistant_open'
   | 'skeptic_challenged'
-  | 'skeptic_converted';
+  | 'skeptic_converted'
+  | 'senda_vault_portal_shown'
+  | 'senda_vault_portal_clicked'
+  | 'senda_vault_revealed'
+  | 'senda_vault_video_start'
+  | 'senda_vault_video_25'
+  | 'senda_vault_video_50'
+  | 'senda_vault_video_complete'
+  | 'senda_vault_assistant1_opened'
+  | 'senda_vault_assistant2_opened';
 
 interface TrackEventParams {
   event_type: EventType;

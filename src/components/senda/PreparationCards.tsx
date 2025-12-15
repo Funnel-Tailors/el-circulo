@@ -3,15 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface PreparationCardsProps {
   token: string;
+  onUnlockThreshold?: () => void;
 }
 
-export const PreparationCards = ({ token }: PreparationCardsProps) => {
+export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsProps) => {
   const [videoProgress, setVideoProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const tracked25 = useRef(false);
   const tracked50 = useRef(false);
   const tracked75 = useRef(false);
   const tracked100 = useRef(false);
+  const trackedThreshold = useRef(false);
 
   // Helper to track events
   const trackEvent = async (eventType: string) => {
@@ -48,6 +50,13 @@ export const PreparationCards = ({ token }: PreparationCardsProps) => {
       if (progress >= 75 && !tracked75.current) {
         tracked75.current = true;
         trackEvent('senda_video_progress_75');
+        
+        // Trigger portal unlock at 75%
+        if (!trackedThreshold.current) {
+          trackedThreshold.current = true;
+          trackEvent('senda_vault_portal_shown');
+          onUnlockThreshold?.();
+        }
       }
       if (progress >= 99 && !tracked100.current) {
         tracked100.current = true;
@@ -66,7 +75,7 @@ export const PreparationCards = ({ token }: PreparationCardsProps) => {
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [token]);
+  }, [token, onUnlockThreshold]);
 
   const handleAIAssistantOpen = () => {
     trackEvent('senda_ai_assistant_open');
