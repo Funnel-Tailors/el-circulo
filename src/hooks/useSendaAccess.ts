@@ -8,6 +8,8 @@ export const useSendaAccess = () => {
   const [loading, setLoading] = useState(true);
   const [quizState, setQuizState] = useState<QuizState | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isBlacklisted, setIsBlacklisted] = useState(false);
+  const [blacklistReason, setBlacklistReason] = useState<string | null>(null);
 
   useEffect(() => {
     const validateToken = async () => {
@@ -22,6 +24,30 @@ export const useSendaAccess = () => {
       }
 
       try {
+        // 1. Verificar blacklist PRIMERO
+        const { data: blacklistData } = await supabase
+          .from('senda_blacklist')
+          .select('reason')
+          .eq('ghl_contact_id', tokenParam)
+          .single();
+
+        if (blacklistData) {
+          console.log('🚫 Token blacklisted:', tokenParam);
+          setIsBlacklisted(true);
+          setBlacklistReason(blacklistData.reason);
+          setToken(tokenParam);
+          setLoading(false);
+
+          // Trackear intento de acceso bloqueado
+          await supabase.from('quiz_analytics').insert({
+            session_id: tokenParam,
+            event_type: 'senda_blacklisted_access_attempt',
+            quiz_version: 'v2'
+          });
+          return;
+        }
+
+        // 2. Validar token normal
         const { data, error } = await supabase
           .from('quiz_analytics')
           .select('quiz_state, session_id')
@@ -66,5 +92,5 @@ export const useSendaAccess = () => {
     validateToken();
   }, [searchParams]);
 
-  return { loading, quizState, token };
+  return { loading, quizState, token, isBlacklisted, blacklistReason };
 };

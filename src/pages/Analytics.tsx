@@ -21,6 +21,7 @@ import RecentSessionsTable from '@/components/analytics/RecentSessionsTable';
 import EventDistributionChart from '@/components/analytics/EventDistributionChart';
 import QuestionMetrics from '@/components/analytics/QuestionMetrics';
 import AnswerDistribution from '@/components/analytics/AnswerDistribution';
+import SendaLeadsManager from '@/components/analytics/SendaLeadsManager';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
 import { useMetaPixelHealth } from '@/hooks/useMetaPixelHealth';
@@ -290,12 +291,13 @@ const Analytics = () => {
           </div>
         ) : (
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="vsl">VSL</TabsTrigger>
               <TabsTrigger value="funnel">Embudo</TabsTrigger>
               <TabsTrigger value="meta">Meta Events</TabsTrigger>
               <TabsTrigger value="preguntas">Por Pregunta</TabsTrigger>
+              <TabsTrigger value="leads">Gestión Leads</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
@@ -376,6 +378,10 @@ const Analytics = () => {
                 loading={answerDistLoading}
                 quizVersion={quizVersion}
               />
+            </TabsContent>
+
+            <TabsContent value="leads" className="space-y-6">
+              <SendaLeadsManager />
             </TabsContent>
           </Tabs>
         )}
