@@ -48,18 +48,6 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            {/* Central glow - concentrated on symbol */}
-            <motion.div
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full"
-              animate={{ 
-                boxShadow: [
-                  '0 0 40px 15px hsl(var(--foreground) / 0.25)',
-                  '0 0 60px 25px hsl(var(--foreground) / 0.35)',
-                  '0 0 40px 15px hsl(var(--foreground) / 0.25)'
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            />
 
             {/* SVG Vortex with Archimedean Spirals */}
             <motion.svg
@@ -162,14 +150,14 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
               })()}
             </motion.svg>
 
-            {/* Center symbol - fixed, doesn't rotate */}
+            {/* Center symbol - black void epicenter */}
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              <span className="text-5xl md:text-6xl text-foreground glow select-none">
-                ⟡
+              <span className="text-5xl md:text-6xl text-background select-none">
+                ✦
               </span>
             </motion.div>
           </motion.div>
