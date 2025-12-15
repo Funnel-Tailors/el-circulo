@@ -34,6 +34,7 @@ const blacklistReasons = [
   { value: 'no_show', label: 'No apareció a la llamada' },
   { value: 'ghosted', label: 'Fantasma (no responde)' },
   { value: 'not_admitted', label: 'No admitido tras llamada' },
+  { value: 'cancelled', label: 'Canceló a última hora' },
 ];
 
 // Copys brutales para preview
@@ -41,17 +42,22 @@ const blacklistMessages: Record<string, { title: string; subtitle: string; messa
   no_show: {
     title: "El Portal Se Cierra",
     subtitle: "No apareciste.",
-    message: "Tenías una cita. La confirmaste. Y como buen profesional de manual, no apareciste. Mientras tanto, alguien del Círculo vendía un proyecto de 5.000€ en esa misma hora."
+    message: "Tenías una cita. La confirmaste. Y no apareciste. Mientras tú ignorabas el calendario, alguien del Círculo cerraba un proyecto de 5.000€ en esa misma hora. Eso es lo que cuesta un no-show."
   },
   ghosted: {
     title: "👻",
     subtitle: "Prometiste que no eras un fantasma.",
-    message: "Te preguntamos directamente. Marcaste la casilla. \"No soy un fantasma. Voy a contestar.\" Ghosting de manual. El Círculo no trabaja con gente que ignora WhatsApps como ignoran las revisiones de sus clientes."
+    message: "Te lo preguntamos directamente. Marcaste la casilla. \"No soy un fantasma. Voy a contestar.\" Y aquí estamos. Ghosting de manual. El Círculo no trabaja con gente que ignora WhatsApps como tú ignoras las revisiones de tus clientes."
   },
   not_admitted: {
     title: "La Senda No Es Para Ti",
     subtitle: "Esto no es un curso para curiosos.",
-    message: "La llamada lo dejó claro: no estás donde necesitas estar para que esto funcione. Quizá cuando dejes de trabajar por cuatro duros y perseguir a clientes de mierda, nos crucemos."
+    message: "La llamada lo dejó claro: no estás donde necesitas estar para que esto funcione. Sigues vendiendo por cuatro duros. Sigues persiguiendo clientes de mierda. Sigues culpando al algoritmo. Cuando dejes de hacer todo eso, quizá nos crucemos. O quizá no."
+  },
+  cancelled: {
+    title: "Cancelaste",
+    subtitle: "A última hora. Como un profesional de manual.",
+    message: "Bloqueaste un hueco que podría haber sido de alguien dispuesto a aparecer. Alguien que no cancela citas como cancela plazos de entrega. Alguien que respeta el tiempo de los demás porque respeta el suyo."
   },
 };
 
