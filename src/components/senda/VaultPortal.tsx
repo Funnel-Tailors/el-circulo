@@ -123,20 +123,26 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
                 };
 
                 const spirals = [
-                  // Primary spirals (clockwise)
+                  // Primary spirals (clockwise) - 9 arms at 40° intervals
                   { startAngle: 0, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-                  { startAngle: 60, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-                  { startAngle: 120, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-                  { startAngle: 180, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
-                  { startAngle: 240, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
-                  { startAngle: 300, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
-                  // Counter-clockwise spirals for interlacing
-                  { startAngle: 30, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-                  { startAngle: 90, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-                  { startAngle: 150, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-                  { startAngle: 210, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-                  { startAngle: 270, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-                  { startAngle: 330, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 40, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 80, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 120, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  { startAngle: 160, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  { startAngle: 200, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  { startAngle: 240, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 280, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
+                  { startAngle: 320, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+                  // Counter-clockwise spirals - 9 arms offset 20°
+                  { startAngle: 20, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 60, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 100, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 140, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 180, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 220, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 260, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 300, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+                  { startAngle: 340, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
                 ];
 
                 return spirals.map((spiral, i) => (
@@ -154,28 +160,54 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             </motion.svg>
           </motion.div>
 
-          {/* Center symbol - black void epicenter, positioned independently */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10"
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ 
-              opacity: isExiting ? 0 : 1,
-              scale: isExiting ? 0.3 : [1, 1.08, 1]
+          {/* Attracted particles system */}
+          {Array.from({ length: 20 }).map((_, i) => {
+            const startAngle = (i / 20) * 360;
+            const startRadius = 140 + (i % 3) * 20;
+            const duration = 3 + (i % 5) * 0.5;
+            const delay = (i / 20) * 3;
+            const size = 0.4 + (i % 4) * 0.2;
+            
+            return (
+              <motion.div
+                key={i}
+                className="absolute top-1/2 left-1/2 text-foreground pointer-events-none"
+                style={{
+                  fontSize: `${size * 10}px`,
+                  filter: size < 0.6 ? 'blur(0.5px)' : 'none',
+                }}
+                initial={{
+                  x: Math.cos(startAngle * Math.PI / 180) * startRadius,
+                  y: Math.sin(startAngle * Math.PI / 180) * startRadius,
+                  opacity: 0,
+                  scale: 1,
+                }}
+                animate={{
+                  x: 0,
+                  y: 0,
+                  opacity: [0, 0.7, 0.9, 0],
+                  scale: [1, 1.2, 0.2],
+                }}
+                transition={{
+                  duration: duration,
+                  delay: delay,
+                  repeat: Infinity,
+                  ease: [0.4, 0, 0.2, 1],
+                }}
+              >
+                ✦
+              </motion.div>
+            );
+          })}
+
+          {/* Black hole center */}
+          <div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
+            style={{ 
+              filter: 'blur(3px)',
+              boxShadow: '0 0 15px 8px rgba(0,0,0,0.9), 0 0 30px 15px rgba(0,0,0,0.6)'
             }}
-            transition={{ 
-              opacity: { duration: 0.6 },
-              scale: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-            }}
-          >
-            <span 
-              className="text-7xl md:text-8xl text-background select-none block"
-              style={{ 
-                filter: 'drop-shadow(0 0 20px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(0,0,0,0.7)) drop-shadow(0 0 60px rgba(0,0,0,0.5))'
-              }}
-            >
-              ✦
-            </span>
-          </motion.div>
+          />
 
           {/* Copy on-brand directo sin card */}
           <motion.div
