@@ -241,9 +241,9 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             
             <button
               onClick={handleUnlock}
-              className="dark-button-primary py-3 px-8 text-sm font-medium"
+              className="dark-button-primary py-4 px-10 text-base font-semibold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all duration-300"
             >
-              Cruzar el umbral
+              Atravesar el portal
             </button>
           </motion.div>
 
