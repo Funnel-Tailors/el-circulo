@@ -26,15 +26,9 @@ const Senda = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background effects */}
-      <Starfield />
+      {/* Background effects - ShootingStars first (has gradient bg), then Starfield on top */}
       <ShootingStars />
-      
-      {/* Gradient overlay */}
-      <div 
-        className="fixed inset-0 pointer-events-none"
-        style={{ background: 'var(--gradient-overlay)' }}
-      />
+      <Starfield />
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
