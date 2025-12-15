@@ -9,12 +9,13 @@ import { FilteredSuccessCases } from "@/components/senda/FilteredSuccessCases";
 import { SendaFooter } from "@/components/senda/SendaFooter";
 import VaultSection from "@/components/senda/VaultSection";
 import VaultPortal from "@/components/senda/VaultPortal";
+import BlacklistedResult from "@/components/senda/BlacklistedResult";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import type { QuizState } from "@/types/quiz";
 
 const Senda = () => {
-  const { loading, quizState, token } = useSendaAccess();
+  const { loading, quizState, token, isBlacklisted, blacklistReason } = useSendaAccess();
   const { trackVaultEvent } = useVaultTracking(token);
   
   // Vault state
@@ -53,6 +54,11 @@ const Senda = () => {
         </div>
       </div>
     );
+  }
+
+  // Blacklisted users see the portal closing animation
+  if (isBlacklisted) {
+    return <BlacklistedResult reason={blacklistReason || 'no_show'} />;
   }
 
   return (

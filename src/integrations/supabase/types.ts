@@ -164,6 +164,33 @@ export type Database = {
         }
         Relationships: []
       }
+      senda_blacklist: {
+        Row: {
+          banned_at: string | null
+          banned_by: string | null
+          contact_name: string | null
+          ghl_contact_id: string
+          id: string
+          reason: string
+        }
+        Insert: {
+          banned_at?: string | null
+          banned_by?: string | null
+          contact_name?: string | null
+          ghl_contact_id: string
+          id?: string
+          reason: string
+        }
+        Update: {
+          banned_at?: string | null
+          banned_by?: string | null
+          contact_name?: string | null
+          ghl_contact_id?: string
+          id?: string
+          reason?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
