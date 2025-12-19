@@ -7,7 +7,7 @@ interface VaultSectionProps {
   isVisible: boolean;
   class2Progress: number;
   onClass2Progress: (progress: number) => void;
-  token: string;
+  token: string | null;
 }
 
 const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: VaultSectionProps) => {
@@ -22,6 +22,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: Va
   const tracked50 = useRef(false);
   const tracked100 = useRef(false);
   const trackedStart = useRef(false);
+  const lastProgressUpdate = useRef(0);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -29,8 +30,14 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: Va
 
     const handleTimeUpdate = () => {
       const progress = (video.currentTime / video.duration) * 100;
-      onClass2Progress(Math.round(progress));
+      
+      // Throttle: solo actualizar UI cada 5% para evitar re-renders constantes
+      if (Math.abs(progress - lastProgressUpdate.current) >= 5) {
+        lastProgressUpdate.current = progress;
+        onClass2Progress(Math.round(progress));
+      }
 
+      // Track milestones (solo 1 vez cada uno)
       if (progress >= 25 && !tracked25.current) {
         tracked25.current = true;
         trackVaultEvent('senda_vault_video_25');

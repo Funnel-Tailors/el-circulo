@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PreparationCardsProps {
-  token: string;
+  token: string | null;
   onUnlockThreshold?: () => void;
 }
 
@@ -14,19 +14,27 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
   const tracked75 = useRef(false);
   const tracked100 = useRef(false);
   const trackedThreshold = useRef(false);
+  const trackedStart = useRef(false);
+  const lastProgressUpdate = useRef(0);
 
-  // Helper to track events
-  const trackEvent = async (eventType: string) => {
-    try {
-      await supabase.from('quiz_analytics').insert({
-        session_id: token,
-        event_type: eventType,
-        quiz_version: 'v2'
-      });
-      console.log(`✅ Tracked: ${eventType}`);
-    } catch (error) {
-      console.error(`❌ Error tracking ${eventType}:`, error);
+  // Fire-and-forget tracking - no await, no bloquea UI
+  const trackEvent = (eventType: string) => {
+    if (!token) {
+      console.warn(`⚠️ No token for tracking: ${eventType}`);
+      return;
     }
+
+    supabase.from('quiz_analytics').insert({
+      session_id: token,
+      event_type: eventType,
+      quiz_version: 'v2'
+    }).then(({ error }) => {
+      if (error) {
+        console.error(`❌ Supabase error [${eventType}]:`, error.message);
+      } else {
+        console.log(`✅ Tracked: ${eventType}`);
+      }
+    });
   };
 
   // Track video progress milestones
@@ -36,9 +44,14 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
 
     const handleTimeUpdate = () => {
       const progress = (video.currentTime / video.duration) * 100;
-      setVideoProgress(progress);
+      
+      // Throttle: solo actualizar UI cada 5% para evitar re-renders constantes
+      if (Math.abs(progress - lastProgressUpdate.current) >= 5) {
+        lastProgressUpdate.current = progress;
+        setVideoProgress(Math.round(progress));
+      }
 
-      // Track milestones
+      // Track milestones (solo 1 vez cada uno)
       if (progress >= 25 && !tracked25.current) {
         tracked25.current = true;
         trackEvent('senda_video_progress_25');
@@ -65,7 +78,10 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
     };
 
     const handlePlay = () => {
-      trackEvent('senda_video_start');
+      if (!trackedStart.current) {
+        trackedStart.current = true;
+        trackEvent('senda_video_start');
+      }
     };
 
     video.addEventListener('timeupdate', handleTimeUpdate);
@@ -119,7 +135,7 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
 
           {videoProgress > 0 && (
             <div className="text-xs text-muted-foreground text-center">
-              Progreso: {Math.round(videoProgress)}%
+              Progreso: {videoProgress}%
             </div>
           )}
 

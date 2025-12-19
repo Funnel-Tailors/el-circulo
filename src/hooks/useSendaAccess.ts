@@ -25,11 +25,15 @@ export const useSendaAccess = () => {
 
       try {
         // 1. Verificar blacklist PRIMERO
-        const { data: blacklistData } = await supabase
+        const { data: blacklistData, error: blacklistError } = await supabase
           .from('senda_blacklist')
           .select('reason')
           .eq('ghl_contact_id', tokenParam)
           .single();
+
+        if (blacklistError && blacklistError.code !== 'PGRST116') {
+          console.error('❌ Error checking blacklist:', blacklistError.message);
+        }
 
         if (blacklistData) {
           console.log('🚫 Token blacklisted:', tokenParam);
@@ -38,11 +42,17 @@ export const useSendaAccess = () => {
           setToken(tokenParam);
           setLoading(false);
 
-          // Trackear intento de acceso bloqueado
-          await supabase.from('quiz_analytics').insert({
+          // Fire-and-forget: trackear intento de acceso bloqueado
+          supabase.from('quiz_analytics').insert({
             session_id: tokenParam,
             event_type: 'senda_blacklisted_access_attempt',
             quiz_version: 'v2'
+          }).then(({ error }) => {
+            if (error) {
+              console.error('❌ Error tracking blacklist attempt:', error.message);
+            } else {
+              console.log('✅ Tracked: senda_blacklisted_access_attempt');
+            }
           });
           return;
         }
@@ -75,10 +85,17 @@ export const useSendaAccess = () => {
 
         setLoading(false);
 
-        await supabase.from('quiz_analytics').insert({
+        // Fire-and-forget: trackear page view
+        supabase.from('quiz_analytics').insert({
           session_id: tokenParam,
           event_type: 'senda_page_view',
           quiz_version: 'v2'
+        }).then(({ error: insertError }) => {
+          if (insertError) {
+            console.error('❌ Error tracking senda_page_view:', insertError.message, insertError.code);
+          } else {
+            console.log('✅ Tracked: senda_page_view for', tokenParam);
+          }
         });
         
       } catch (err) {
