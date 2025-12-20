@@ -15,10 +15,14 @@ export interface SendaProgress {
   // Clase 2 (Avatar)
   class2VideoStarted: boolean;
   class2VideoProgress: number;
+  class2DropsCaputred: string[];
+  class2DropsMissed: string[];
+  class2SequenceCompleted: boolean;
+  class2SequenceFailedAttempts: number;
+  
+  // Asistente único de Clase 2 (El Arquitecto de Avatares)
   assistant1Unlocked: boolean;
   assistant1Opened: boolean;
-  assistant2Unlocked: boolean;
-  assistant2Opened: boolean;
   
   // Asistente Clase 1
   class1AssistantOpened: boolean;
@@ -39,10 +43,12 @@ const DEFAULT_PROGRESS: SendaProgress = {
   vaultUnlockedAt: null,
   class2VideoStarted: false,
   class2VideoProgress: 0,
+  class2DropsCaputred: [],
+  class2DropsMissed: [],
+  class2SequenceCompleted: false,
+  class2SequenceFailedAttempts: 0,
   assistant1Unlocked: false,
   assistant1Opened: false,
-  assistant2Unlocked: false,
-  assistant2Opened: false,
   class1AssistantOpened: false,
   firstVisitAt: null,
   lastActivityAt: null,
@@ -100,10 +106,12 @@ export const useSendaProgress = (token: string | null) => {
     vaultUnlockedAt: row.vault_unlocked_at ?? null,
     class2VideoStarted: row.class2_video_started ?? false,
     class2VideoProgress: row.class2_video_progress ?? 0,
+    class2DropsCaputred: row.class2_drops_captured ?? [],
+    class2DropsMissed: row.class2_drops_missed ?? [],
+    class2SequenceCompleted: row.class2_sequence_completed ?? false,
+    class2SequenceFailedAttempts: row.class2_sequence_failed_attempts ?? 0,
     assistant1Unlocked: row.assistant1_unlocked ?? false,
     assistant1Opened: row.assistant1_opened ?? false,
-    assistant2Unlocked: row.assistant2_unlocked ?? false,
-    assistant2Opened: row.assistant2_opened ?? false,
     class1AssistantOpened: row.class1_assistant_opened ?? false,
     firstVisitAt: row.first_visit_at ?? null,
     lastActivityAt: row.last_activity_at ?? null,
@@ -123,10 +131,12 @@ export const useSendaProgress = (token: string | null) => {
     if (p.vaultUnlockedAt !== undefined) result.vault_unlocked_at = p.vaultUnlockedAt;
     if (p.class2VideoStarted !== undefined) result.class2_video_started = p.class2VideoStarted;
     if (p.class2VideoProgress !== undefined) result.class2_video_progress = p.class2VideoProgress;
+    if (p.class2DropsCaputred !== undefined) result.class2_drops_captured = p.class2DropsCaputred;
+    if (p.class2DropsMissed !== undefined) result.class2_drops_missed = p.class2DropsMissed;
+    if (p.class2SequenceCompleted !== undefined) result.class2_sequence_completed = p.class2SequenceCompleted;
+    if (p.class2SequenceFailedAttempts !== undefined) result.class2_sequence_failed_attempts = p.class2SequenceFailedAttempts;
     if (p.assistant1Unlocked !== undefined) result.assistant1_unlocked = p.assistant1Unlocked;
     if (p.assistant1Opened !== undefined) result.assistant1_opened = p.assistant1Opened;
-    if (p.assistant2Unlocked !== undefined) result.assistant2_unlocked = p.assistant2Unlocked;
-    if (p.assistant2Opened !== undefined) result.assistant2_opened = p.assistant2Opened;
     if (p.class1AssistantOpened !== undefined) result.class1_assistant_opened = p.class1AssistantOpened;
     
     // Always update last_activity_at
@@ -243,17 +253,16 @@ export const useSendaProgress = (token: string | null) => {
       | 'class1_sequence_completed'
       | 'vault_unlocked'
       | 'class2_video_started'
+      | 'class2_sequence_completed'
       | 'assistant1_unlocked'
       | 'assistant1_opened'
-      | 'assistant2_unlocked'
-      | 'assistant2_opened'
       | 'class1_assistant_opened'
   ) => {
     const updates: Partial<SendaProgress> = {};
     
     switch (milestone) {
       case 'class1_video_started':
-        if (progress.class1VideoStarted) return; // Already marked
+        if (progress.class1VideoStarted) return;
         updates.class1VideoStarted = true;
         break;
       case 'class1_sequence_completed':
@@ -269,19 +278,16 @@ export const useSendaProgress = (token: string | null) => {
         if (progress.class2VideoStarted) return;
         updates.class2VideoStarted = true;
         break;
+      case 'class2_sequence_completed':
+        if (progress.class2SequenceCompleted) return;
+        updates.class2SequenceCompleted = true;
+        break;
       case 'assistant1_unlocked':
         if (progress.assistant1Unlocked) return;
         updates.assistant1Unlocked = true;
         break;
       case 'assistant1_opened':
         updates.assistant1Opened = true;
-        break;
-      case 'assistant2_unlocked':
-        if (progress.assistant2Unlocked) return;
-        updates.assistant2Unlocked = true;
-        break;
-      case 'assistant2_opened':
-        updates.assistant2Opened = true;
         break;
       case 'class1_assistant_opened':
         updates.class1AssistantOpened = true;
@@ -293,7 +299,7 @@ export const useSendaProgress = (token: string | null) => {
     }
   }, [progress, updateProgress]);
 
-  // Record a drop capture
+  // Record a drop capture (Class 1)
   const recordDropCapture = useCallback(async (dropId: string) => {
     if (progress.class1DropsCaputred.includes(dropId)) return;
     
@@ -302,7 +308,7 @@ export const useSendaProgress = (token: string | null) => {
     });
   }, [progress.class1DropsCaputred, updateProgress]);
 
-  // Record a drop miss
+  // Record a drop miss (Class 1)
   const recordDropMiss = useCallback(async (dropId: string) => {
     if (progress.class1DropsMissed.includes(dropId)) return;
     
@@ -311,12 +317,37 @@ export const useSendaProgress = (token: string | null) => {
     });
   }, [progress.class1DropsMissed, updateProgress]);
 
-  // Record sequence failure
+  // Record sequence failure (Class 1)
   const recordSequenceFailure = useCallback(async () => {
     await updateProgress({
       class1SequenceFailedAttempts: progress.class1SequenceFailedAttempts + 1,
     });
   }, [progress.class1SequenceFailedAttempts, updateProgress]);
+
+  // Record a drop capture (Class 2)
+  const recordClass2DropCapture = useCallback(async (dropId: string) => {
+    if (progress.class2DropsCaputred.includes(dropId)) return;
+    
+    await updateProgress({
+      class2DropsCaputred: [...progress.class2DropsCaputred, dropId],
+    });
+  }, [progress.class2DropsCaputred, updateProgress]);
+
+  // Record a drop miss (Class 2)
+  const recordClass2DropMiss = useCallback(async (dropId: string) => {
+    if (progress.class2DropsMissed.includes(dropId)) return;
+    
+    await updateProgress({
+      class2DropsMissed: [...progress.class2DropsMissed, dropId],
+    });
+  }, [progress.class2DropsMissed, updateProgress]);
+
+  // Record sequence failure (Class 2)
+  const recordClass2SequenceFailure = useCallback(async () => {
+    await updateProgress({
+      class2SequenceFailedAttempts: progress.class2SequenceFailedAttempts + 1,
+    });
+  }, [progress.class2SequenceFailedAttempts, updateProgress]);
 
   // Update video progress
   const updateVideoProgress = useCallback(async (classNumber: 1 | 2, progressPercent: number) => {
@@ -345,6 +376,9 @@ export const useSendaProgress = (token: string | null) => {
     recordDropCapture,
     recordDropMiss,
     recordSequenceFailure,
+    recordClass2DropCapture,
+    recordClass2DropMiss,
+    recordClass2SequenceFailure,
     updateVideoProgress,
     loadProgress,
   };
