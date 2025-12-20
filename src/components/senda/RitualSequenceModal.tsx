@@ -7,6 +7,7 @@ interface RitualSequenceModalProps {
   isOpen: boolean;
   capturedDrops: Drop[];
   onSequenceComplete: () => void;
+  onSequenceFailed?: () => void;
   onClose: () => void;
 }
 
@@ -23,7 +24,8 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 export const RitualSequenceModal = ({ 
   isOpen, 
   capturedDrops, 
-  onSequenceComplete, 
+  onSequenceComplete,
+  onSequenceFailed,
   onClose 
 }: RitualSequenceModalProps) => {
   const [shuffledDrops, setShuffledDrops] = useState<Drop[]>([]);
@@ -68,6 +70,7 @@ export const RitualSequenceModal = ({
       } else {
         setShowError(true);
         setIsShaking(true);
+        onSequenceFailed?.();
         setTimeout(() => {
           setIsShaking(false);
           setSelectedSequence([]);

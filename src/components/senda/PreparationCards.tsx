@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
+import { useSendaProgress, SendaProgress } from "@/hooks/useSendaProgress";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
@@ -8,12 +9,13 @@ import { RitualSequenceModal } from "./RitualSequenceModal";
 interface PreparationCardsProps {
   token: string | null;
   onSequenceComplete?: () => void;
+  initialProgress?: SendaProgress;
 }
 
-export const PreparationCards = ({ token, onSequenceComplete }: PreparationCardsProps) => {
-  const [videoProgress, setVideoProgress] = useState(0);
+export const PreparationCards = ({ token, onSequenceComplete, initialProgress }: PreparationCardsProps) => {
+  const [videoProgress, setVideoProgress] = useState(initialProgress?.class1VideoProgress || 0);
   const [showSequenceModal, setShowSequenceModal] = useState(false);
-  const [sequenceCompleted, setSequenceCompleted] = useState(false);
+  const [sequenceCompleted, setSequenceCompleted] = useState(initialProgress?.class1SequenceCompleted || false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const tracked25 = useRef(false);
@@ -23,6 +25,15 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
   const sequenceModalShownRef = useRef(false);
+
+  // Progress persistence
+  const { 
+    markMilestone, 
+    recordDropCapture, 
+    recordDropMiss,
+    recordSequenceFailure,
+    updateVideoProgress 
+  } = useSendaProgress(token);
 
   // Video drops system
   const {
@@ -36,14 +47,21 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
     sessionId: token,
     onCapture: (drop) => {
       trackEvent(`senda_drop_captured_${drop.id}`);
+      recordDropCapture(drop.id.toString());
+      
+      // Track all captured milestone
+      if (capturedDrops.length === drops.length - 1) {
+        trackEvent('senda_all_drops_captured');
+      }
     },
     onMiss: (drop) => {
       trackEvent(`senda_drop_missed_${drop.id}`);
+      recordDropMiss(drop.id.toString());
     },
   });
 
   // Fire-and-forget tracking
-  const trackEvent = (eventType: string) => {
+  const trackEvent = useCallback((eventType: string) => {
     if (!token) return;
 
     supabase.from('quiz_analytics').insert({
@@ -55,7 +73,7 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
         console.error(`❌ Supabase error [${eventType}]:`, error.message);
       }
     });
-  };
+  }, [token]);
 
   // Track video progress milestones + check for drops
   useEffect(() => {
@@ -73,6 +91,11 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
       if (Math.abs(progressPercent - lastProgressUpdate.current) >= 5) {
         lastProgressUpdate.current = progressPercent;
         setVideoProgress(Math.round(progressPercent));
+        
+        // Persist progress every 10%
+        if (Math.round(progressPercent) % 10 === 0) {
+          updateVideoProgress(1, Math.round(progressPercent));
+        }
       }
 
       // Track milestones
@@ -95,6 +118,7 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
         // Show sequence modal at 99% if captured at least 2 drops
         if (capturedDrops.length >= 2 && !sequenceModalShownRef.current && !sequenceCompleted) {
           sequenceModalShownRef.current = true;
+          trackEvent('senda_ritual_modal_shown');
           setShowSequenceModal(true);
         }
       }
@@ -104,6 +128,7 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
       if (!trackedStart.current) {
         trackedStart.current = true;
         trackEvent('senda_video_start');
+        markMilestone('class1_video_started');
       }
     };
 
@@ -114,17 +139,24 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [token, checkForDrop, capturedDrops.length, sequenceCompleted]);
+  }, [token, checkForDrop, capturedDrops.length, sequenceCompleted, trackEvent, markMilestone, updateVideoProgress]);
 
   const handleAIAssistantOpen = () => {
     trackEvent('senda_ai_assistant_open');
+    markMilestone('class1_assistant_opened');
   };
 
   const handleSequenceComplete = () => {
     setShowSequenceModal(false);
     setSequenceCompleted(true);
     trackEvent('senda_ritual_sequence_complete');
+    markMilestone('class1_sequence_completed');
     onSequenceComplete?.();
+  };
+
+  const handleSequenceFailed = () => {
+    trackEvent('senda_ritual_sequence_failed');
+    recordSequenceFailure();
   };
 
   return (
@@ -233,6 +265,7 @@ export const PreparationCards = ({ token, onSequenceComplete }: PreparationCards
         isOpen={showSequenceModal}
         capturedDrops={capturedDrops}
         onSequenceComplete={handleSequenceComplete}
+        onSequenceFailed={handleSequenceFailed}
         onClose={() => setShowSequenceModal(false)}
       />
     </div>
