@@ -2,20 +2,23 @@ import { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Play, Bot } from "lucide-react";
 import { useVaultTracking } from "@/hooks/useVaultTracking";
+import { useSendaProgress, SendaProgress } from "@/hooks/useSendaProgress";
 
 interface VaultSectionProps {
   isVisible: boolean;
   class2Progress: number;
   onClass2Progress: (progress: number) => void;
   token: string | null;
+  initialProgress?: SendaProgress;
 }
 
-const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: VaultSectionProps) => {
-  const assistant1Unlocked = class2Progress >= 25;
-  const assistant2Unlocked = class2Progress >= 50;
+const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, initialProgress }: VaultSectionProps) => {
+  const assistant1Unlocked = class2Progress >= 25 || initialProgress?.assistant1Unlocked;
+  const assistant2Unlocked = class2Progress >= 50 || initialProgress?.assistant2Unlocked;
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const { trackVaultEvent } = useVaultTracking(token);
+  const { markMilestone } = useSendaProgress(token);
   
   // Track video milestones
   const tracked25 = useRef(false);
@@ -41,10 +44,12 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: Va
       if (progress >= 25 && !tracked25.current) {
         tracked25.current = true;
         trackVaultEvent('senda_vault_video_25');
+        markMilestone('assistant1_unlocked');
       }
       if (progress >= 50 && !tracked50.current) {
         tracked50.current = true;
         trackVaultEvent('senda_vault_video_50');
+        markMilestone('assistant2_unlocked');
       }
       if (progress >= 99 && !tracked100.current) {
         tracked100.current = true;
@@ -56,6 +61,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: Va
       if (!trackedStart.current) {
         trackedStart.current = true;
         trackVaultEvent('senda_vault_video_start');
+        markMilestone('class2_video_started');
       }
     };
 
@@ -66,14 +72,16 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token }: Va
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [isVisible, onClass2Progress, trackVaultEvent]);
+  }, [isVisible, onClass2Progress, trackVaultEvent, markMilestone]);
 
   const handleAssistant1Open = () => {
     trackVaultEvent('senda_vault_assistant1_opened');
+    markMilestone('assistant1_opened');
   };
 
   const handleAssistant2Open = () => {
     trackVaultEvent('senda_vault_assistant2_opened');
+    markMilestone('assistant2_opened');
   };
 
   return (

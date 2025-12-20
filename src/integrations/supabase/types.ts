@@ -191,6 +191,78 @@ export type Database = {
         }
         Relationships: []
       }
+      senda_progress: {
+        Row: {
+          assistant1_opened: boolean | null
+          assistant1_unlocked: boolean | null
+          assistant2_opened: boolean | null
+          assistant2_unlocked: boolean | null
+          class1_assistant_opened: boolean | null
+          class1_drops_captured: string[] | null
+          class1_drops_missed: string[] | null
+          class1_sequence_completed: boolean | null
+          class1_sequence_failed_attempts: number | null
+          class1_video_progress: number | null
+          class1_video_started: boolean | null
+          class2_video_progress: number | null
+          class2_video_started: boolean | null
+          created_at: string | null
+          first_visit_at: string | null
+          ghl_contact_id: string
+          id: string
+          last_activity_at: string | null
+          updated_at: string | null
+          vault_unlocked: boolean | null
+          vault_unlocked_at: string | null
+        }
+        Insert: {
+          assistant1_opened?: boolean | null
+          assistant1_unlocked?: boolean | null
+          assistant2_opened?: boolean | null
+          assistant2_unlocked?: boolean | null
+          class1_assistant_opened?: boolean | null
+          class1_drops_captured?: string[] | null
+          class1_drops_missed?: string[] | null
+          class1_sequence_completed?: boolean | null
+          class1_sequence_failed_attempts?: number | null
+          class1_video_progress?: number | null
+          class1_video_started?: boolean | null
+          class2_video_progress?: number | null
+          class2_video_started?: boolean | null
+          created_at?: string | null
+          first_visit_at?: string | null
+          ghl_contact_id: string
+          id?: string
+          last_activity_at?: string | null
+          updated_at?: string | null
+          vault_unlocked?: boolean | null
+          vault_unlocked_at?: string | null
+        }
+        Update: {
+          assistant1_opened?: boolean | null
+          assistant1_unlocked?: boolean | null
+          assistant2_opened?: boolean | null
+          assistant2_unlocked?: boolean | null
+          class1_assistant_opened?: boolean | null
+          class1_drops_captured?: string[] | null
+          class1_drops_missed?: string[] | null
+          class1_sequence_completed?: boolean | null
+          class1_sequence_failed_attempts?: number | null
+          class1_video_progress?: number | null
+          class1_video_started?: boolean | null
+          class2_video_progress?: number | null
+          class2_video_started?: boolean | null
+          created_at?: string | null
+          first_visit_at?: string | null
+          ghl_contact_id?: string
+          id?: string
+          last_activity_at?: string | null
+          updated_at?: string | null
+          vault_unlocked?: boolean | null
+          vault_unlocked_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -494,6 +566,10 @@ export type Database = {
           step_index: number
           views: number
         }[]
+      }
+      get_senda_journey_metrics: {
+        Args: { interval_days?: number }
+        Returns: Json
       }
       get_session_funnel_filtered:
         | {

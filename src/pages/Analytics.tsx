@@ -22,6 +22,7 @@ import EventDistributionChart from '@/components/analytics/EventDistributionChar
 import QuestionMetrics from '@/components/analytics/QuestionMetrics';
 import AnswerDistribution from '@/components/analytics/AnswerDistribution';
 import SendaLeadsManager from '@/components/analytics/SendaLeadsManager';
+import SendaJourneyMetrics from '@/components/analytics/SendaJourneyMetrics';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { useMetaEventsJourney } from '@/hooks/useMetaEventsJourney';
 import { useMetaPixelHealth } from '@/hooks/useMetaPixelHealth';
@@ -291,12 +292,13 @@ const Analytics = () => {
           </div>
         ) : (
           <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="vsl">VSL</TabsTrigger>
               <TabsTrigger value="funnel">Embudo</TabsTrigger>
               <TabsTrigger value="meta">Meta Events</TabsTrigger>
               <TabsTrigger value="preguntas">Por Pregunta</TabsTrigger>
+              <TabsTrigger value="senda">Senda Journey</TabsTrigger>
               <TabsTrigger value="leads">Gestión Leads</TabsTrigger>
             </TabsList>
 
@@ -378,6 +380,10 @@ const Analytics = () => {
                 loading={answerDistLoading}
                 quizVersion={quizVersion}
               />
+            </TabsContent>
+
+            <TabsContent value="senda" className="space-y-6">
+              <SendaJourneyMetrics intervalDays={parseFloat(dateRange)} />
             </TabsContent>
 
             <TabsContent value="leads" className="space-y-6">
