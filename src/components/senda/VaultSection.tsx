@@ -1,8 +1,13 @@
-import { useRef, useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useRef, useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Play, Bot } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useVaultTracking } from "@/hooks/useVaultTracking";
 import { useSendaProgress, SendaProgress } from "@/hooks/useSendaProgress";
+import { useVideoDrops } from "@/hooks/useVideoDrops";
+import { VideoDropOverlay } from "./VideoDropOverlay";
+import { DropsInventory } from "./DropsInventory";
+import { RitualSequenceModal } from "./RitualSequenceModal";
 
 interface VaultSectionProps {
   isVisible: boolean;
@@ -13,47 +18,119 @@ interface VaultSectionProps {
 }
 
 const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, initialProgress }: VaultSectionProps) => {
-  const assistant1Unlocked = class2Progress >= 25 || initialProgress?.assistant1Unlocked;
-  const assistant2Unlocked = class2Progress >= 50 || initialProgress?.assistant2Unlocked;
-  
   const videoRef = useRef<HTMLVideoElement>(null);
   const { trackVaultEvent } = useVaultTracking(token);
-  const { markMilestone } = useSendaProgress(token);
+  const { 
+    markMilestone, 
+    recordClass2DropCapture, 
+    recordClass2DropMiss, 
+    recordClass2SequenceFailure,
+    updateVideoProgress 
+  } = useSendaProgress(token);
   
   // Track video milestones
   const tracked25 = useRef(false);
   const tracked50 = useRef(false);
+  const tracked75 = useRef(false);
   const tracked100 = useRef(false);
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
+  const sequenceModalShownRef = useRef(false);
+
+  // State for sequence
+  const [showSequenceModal, setShowSequenceModal] = useState(false);
+  const [sequenceCompleted, setSequenceCompleted] = useState(
+    initialProgress?.class2SequenceCompleted || false
+  );
+
+  // Fire-and-forget tracking
+  const trackEvent = useCallback((eventType: string) => {
+    if (!token) return;
+
+    supabase.from('quiz_analytics').insert({
+      session_id: token,
+      event_type: eventType,
+      quiz_version: 'v2'
+    }).then(({ error }) => {
+      if (error) {
+        console.error(`❌ Supabase error [${eventType}]:`, error.message);
+      }
+    });
+  }, [token]);
+
+  // Video drops system (Class 2 = 5 drops)
+  const {
+    drops,
+    capturedDrops,
+    activeDrop,
+    checkForDrop,
+    captureDrop,
+    allCaptured,
+  } = useVideoDrops({
+    sessionId: token,
+    classNumber: 2,
+    onCapture: (drop) => {
+      const dropNumber = parseInt(drop.id.replace('c2_drop', ''));
+      trackEvent(`senda_vault_drop_captured_${dropNumber}`);
+      recordClass2DropCapture(drop.id);
+      
+      // Track all captured milestone
+      if (capturedDrops.length === drops.length - 1) {
+        trackEvent('senda_vault_all_drops_captured');
+      }
+    },
+    onMiss: (drop) => {
+      const dropNumber = parseInt(drop.id.replace('c2_drop', ''));
+      trackEvent(`senda_vault_drop_missed_${dropNumber}`);
+      recordClass2DropMiss(drop.id);
+    },
+  });
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || !isVisible) return;
 
     const handleTimeUpdate = () => {
-      const progress = (video.currentTime / video.duration) * 100;
+      const progress = (video.currentTime / video.duration);
+      const progressPercent = progress * 100;
+      
+      // Check for drops
+      checkForDrop(progress);
       
       // Throttle: solo actualizar UI cada 5% para evitar re-renders constantes
-      if (Math.abs(progress - lastProgressUpdate.current) >= 5) {
-        lastProgressUpdate.current = progress;
-        onClass2Progress(Math.round(progress));
+      if (Math.abs(progressPercent - lastProgressUpdate.current) >= 5) {
+        lastProgressUpdate.current = progressPercent;
+        onClass2Progress(Math.round(progressPercent));
+        
+        // Persist progress every 10%
+        if (Math.round(progressPercent) % 10 === 0) {
+          updateVideoProgress(2, Math.round(progressPercent));
+        }
       }
 
       // Track milestones (solo 1 vez cada uno)
-      if (progress >= 25 && !tracked25.current) {
+      if (progressPercent >= 25 && !tracked25.current) {
         tracked25.current = true;
         trackVaultEvent('senda_vault_video_25');
-        markMilestone('assistant1_unlocked');
       }
-      if (progress >= 50 && !tracked50.current) {
+      if (progressPercent >= 50 && !tracked50.current) {
         tracked50.current = true;
         trackVaultEvent('senda_vault_video_50');
-        markMilestone('assistant2_unlocked');
       }
-      if (progress >= 99 && !tracked100.current) {
+      if (progressPercent >= 75 && !tracked75.current) {
+        tracked75.current = true;
+        trackVaultEvent('senda_vault_video_75');
+      }
+      if (progressPercent >= 99 && !tracked100.current) {
         tracked100.current = true;
         trackVaultEvent('senda_vault_video_complete');
+        
+        // Show sequence modal at 99% if captured at least 3 drops and not completed
+        if (capturedDrops.length >= 3 && !sequenceModalShownRef.current && !sequenceCompleted) {
+          sequenceModalShownRef.current = true;
+          trackEvent('senda_vault_ritual_modal_shown');
+          setShowSequenceModal(true);
+        }
       }
     };
 
@@ -72,16 +149,36 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [isVisible, onClass2Progress, trackVaultEvent, markMilestone]);
+  }, [isVisible, onClass2Progress, trackVaultEvent, markMilestone, checkForDrop, capturedDrops.length, sequenceCompleted, trackEvent, updateVideoProgress, drops.length, recordClass2DropCapture, recordClass2DropMiss]);
 
-  const handleAssistant1Open = () => {
-    trackVaultEvent('senda_vault_assistant1_opened');
+  const handleSequenceComplete = () => {
+    setShowSequenceModal(false);
+    setSequenceCompleted(true);
+    trackEvent('senda_vault_ritual_sequence_complete');
+    markMilestone('class2_sequence_completed');
+    markMilestone('assistant1_unlocked');
+  };
+
+  const handleSequenceFailed = () => {
+    trackEvent('senda_vault_ritual_sequence_failed');
+    recordClass2SequenceFailure();
+  };
+
+  const handleAssistantOpen = () => {
+    trackVaultEvent('senda_vault_assistant_opened');
     markMilestone('assistant1_opened');
   };
 
-  const handleAssistant2Open = () => {
-    trackVaultEvent('senda_vault_assistant2_opened');
-    markMilestone('assistant2_opened');
+  // Messages based on captured drops
+  const getDropsMessage = () => {
+    const count = capturedDrops.length;
+    if (count === 0) return null;
+    if (count === 1) return "Uno. Quedan cuatro. No bajes la guardia.";
+    if (count === 2) return "Dos. El patrón empieza a revelarse.";
+    if (count === 3) return "Tres. Ya puedes intentar el ritual cuando termine el vídeo.";
+    if (count === 4) return "Cuatro. Solo uno más.";
+    if (count === 5) return "✧ Los cinco resquicios han sido reclamados. Demuestra tu memoria.";
+    return null;
   };
 
   return (
@@ -114,7 +211,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
 
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
@@ -133,26 +230,52 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           </motion.div>
         </div>
 
+        {/* Ritual intro - on-brand copy */}
+        {!sequenceCompleted && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
+            transition={{ delay: 2.0, duration: 0.8 }}
+            className="text-center mb-8"
+          >
+            <div className="space-y-3 text-foreground/60 max-w-2xl mx-auto">
+              <p className="text-base md:text-lg">
+                El primer ritual fue solo el <span className="text-foreground">aperitivo</span>.
+              </p>
+              <p className="text-base md:text-lg">
+                Ahora viene la <span className="text-foreground">prueba real</span>.
+              </p>
+              <p className="text-sm text-foreground/50 mt-4 italic">
+                Cinco resquicios. Más esquivos. Más rápidos.<br />
+                El umbral al verdadero conocimiento no se cruza por accidente.
+              </p>
+              <p className="text-xs text-foreground/40 mt-2">
+                El Arquitecto de Avatares espera... pero no a cualquiera.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         {/* Separator */}
         <motion.div 
-          className="flex items-center justify-center gap-4 mb-12"
+          className="flex items-center justify-center gap-4 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
-          transition={{ delay: 2.0, duration: 0.6 }}
+          transition={{ delay: 2.2, duration: 0.6 }}
         >
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-foreground/20" />
           <span className="text-foreground/30 text-xs">✦</span>
           <div className="h-px w-16 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
-        {/* Video Section */}
+        {/* VIDEO HERO - Outside card, full width */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-          transition={{ delay: 2.2, duration: 0.8 }}
-          className="glass-card-dark p-6 md:p-8 mb-12"
+          transition={{ delay: 2.4, duration: 0.8 }}
+          className="mb-8"
         >
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center">
               <Play className="w-5 h-5 text-foreground" />
             </div>
@@ -162,8 +285,8 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
             </div>
           </div>
           
-          {/* Video */}
-          <div className="aspect-video bg-background/50 rounded-lg border border-foreground/10 overflow-hidden">
+          {/* Video with drop overlay */}
+          <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
             <video
               ref={videoRef}
               src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c61440c5b7ed66facfc.mp4"
@@ -171,10 +294,16 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
               className="w-full h-full"
               playsInline
             />
+            
+            {/* Drop overlay */}
+            <VideoDropOverlay 
+              activeDrop={activeDrop} 
+              onCapture={captureDrop} 
+            />
           </div>
 
           {/* Progress indicator */}
-          <div className="mt-6">
+          <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-foreground/50">Tu progreso</span>
               <span className="text-foreground/70">{class2Progress}%</span>
@@ -188,112 +317,106 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
               />
             </div>
           </div>
+
+          {/* Drops inventory - appears after first capture */}
+          <DropsInventory 
+            capturedDrops={capturedDrops}
+            totalDrops={drops.length}
+            allCaptured={allCaptured}
+          />
+
+          {/* Dynamic message based on drops */}
+          <AnimatePresence mode="wait">
+            {getDropsMessage() && (
+              <motion.p
+                key={capturedDrops.length}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-center text-sm text-foreground/60 mt-4 italic"
+              >
+                {getDropsMessage()}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </motion.div>
 
         {/* Separator */}
         <motion.div 
-          className="flex items-center justify-center gap-4 mb-12"
+          className="flex items-center justify-center gap-4 mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
-          transition={{ delay: 2.4, duration: 0.6 }}
+          transition={{ delay: 2.6, duration: 0.6 }}
         >
           <div className="h-px w-24 bg-gradient-to-r from-transparent to-foreground/20" />
           <span className="text-foreground/30 text-xs">⟡</span>
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
-        {/* Assistants Grid */}
+        {/* Single Assistant - Blocked until sequence complete */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
-          transition={{ delay: 2.6, duration: 0.8 }}
+          transition={{ delay: 2.8, duration: 0.8 }}
         >
-          <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-8">
-            Asistentes IA Exclusivos
+          <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
+            Asistente IA Exclusivo
           </h3>
           
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Assistant 1 */}
-            <div className={`glass-card-dark p-6 transition-all duration-500 ${
-              !assistant1Unlocked ? 'opacity-50 grayscale' : ''
-            }`}>
-              <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  assistant1Unlocked 
-                    ? 'bg-foreground/10' 
-                    : 'bg-foreground/5'
-                }`}>
-                  {assistant1Unlocked ? (
-                    <Bot className="w-6 h-6 text-foreground" />
-                  ) : (
-                    <Lock className="w-5 h-5 text-foreground/40" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-foreground font-semibold mb-1">
-                    El Arquitecto de Avatares
-                  </h4>
-                  <p className="text-foreground/50 text-sm mb-3">
-                    Diseña tu cliente ideal con precisión quirúrgica
-                  </p>
-                  {!assistant1Unlocked ? (
-                    <span className="text-foreground/30 text-xs">
-                      🔒 Desbloquea al 25% de la clase
-                    </span>
-                  ) : (
-                    <a
-                      href="#"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={handleAssistant1Open}
-                      className="inline-block dark-button text-sm py-2 px-4"
-                    >
-                      Abrir Asistente
-                    </a>
-                  )}
-                </div>
+          <div className={`glass-card-dark p-8 transition-all duration-700 max-w-xl mx-auto ${
+            !sequenceCompleted ? 'opacity-40 grayscale blur-[1px]' : ''
+          }`}>
+            <div className="flex flex-col items-center text-center gap-4">
+              <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
+                sequenceCompleted 
+                  ? 'bg-foreground/10' 
+                  : 'bg-foreground/5'
+              }`}>
+                {sequenceCompleted ? (
+                  <Bot className="w-8 h-8 text-foreground" />
+                ) : (
+                  <Lock className="w-7 h-7 text-foreground/40" />
+                )}
               </div>
-            </div>
-
-            {/* Assistant 2 */}
-            <div className={`glass-card-dark p-6 transition-all duration-500 ${
-              !assistant2Unlocked ? 'opacity-50 grayscale' : ''
-            }`}>
-              <div className="flex items-start gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                  assistant2Unlocked 
-                    ? 'bg-foreground/10' 
-                    : 'bg-foreground/5'
-                }`}>
-                  {assistant2Unlocked ? (
-                    <Bot className="w-6 h-6 text-foreground" />
-                  ) : (
-                    <Lock className="w-5 h-5 text-foreground/40" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-foreground font-semibold mb-1">
-                    El Espejo de Dolores
-                  </h4>
-                  <p className="text-foreground/50 text-sm mb-3">
-                    Descubre qué mantiene despierto a tu avatar por las noches
-                  </p>
-                  {!assistant2Unlocked ? (
-                    <span className="text-foreground/30 text-xs">
-                      🔒 Desbloquea al 50% de la clase
+              
+              <div>
+                <h4 className="text-xl font-bold text-foreground mb-2">
+                  El Arquitecto de Avatares
+                </h4>
+                <p className="text-foreground/50 text-sm mb-4">
+                  Diseña el cliente que mereces con precisión quirúrgica
+                </p>
+                
+                {!sequenceCompleted ? (
+                  <div className="space-y-2">
+                    <span className="text-foreground/30 text-sm block">
+                      🔒 Demuestra tu valía completando el ritual
                     </span>
-                  ) : (
+                    <p className="text-foreground/20 text-xs">
+                      Captura los resquicios y resuelve el enigma
+                    </p>
+                  </div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                  >
+                    <p className="text-foreground/60 text-sm mb-4 italic">
+                      "El Arquitecto de Avatares reconoce tu valía.<br />
+                      Ahora, diseña el cliente que mereces."
+                    </p>
                     <a
-                      href="#"
+                      href="https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar"
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={handleAssistant2Open}
-                      className="inline-block dark-button text-sm py-2 px-4"
+                      onClick={handleAssistantOpen}
+                      className="inline-block dark-button-primary text-base py-3 px-8"
                     >
-                      Abrir Asistente
+                      Abrir Asistente →
                     </a>
-                  )}
-                </div>
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>
@@ -304,13 +427,22 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           className="flex items-center justify-center gap-4 mt-16"
           initial={{ opacity: 0 }}
           animate={{ opacity: isVisible ? 1 : 0 }}
-          transition={{ delay: 2.8, duration: 0.6 }}
+          transition={{ delay: 3.0, duration: 0.6 }}
         >
           <div className="h-px w-32 bg-gradient-to-r from-transparent to-foreground/10" />
           <span className="text-foreground/20 text-xs">✦ ⟡ ✦</span>
           <div className="h-px w-32 bg-gradient-to-l from-transparent to-foreground/10" />
         </motion.div>
       </div>
+
+      {/* Ritual Sequence Modal (5 drops) */}
+      <RitualSequenceModal
+        isOpen={showSequenceModal}
+        capturedDrops={capturedDrops}
+        onSequenceComplete={handleSequenceComplete}
+        onSequenceFailed={handleSequenceFailed}
+        onClose={() => setShowSequenceModal(false)}
+      />
     </motion.section>
   );
 };
