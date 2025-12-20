@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 
 interface VortexEffectProps {
@@ -16,7 +16,10 @@ const VortexEffect = ({
   rotationSpeed = 15,
   className = '' 
 }: VortexEffectProps) => {
-  const instanceId = useId();
+  const instanceId = useMemo(
+    () => `vortex-${Math.random().toString(36).slice(2, 11)}`,
+    []
+  );
   
   const sizeClasses = {
     sm: 'w-64 h-64',
