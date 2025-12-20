@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { motion } from "framer-motion";
 
 interface VortexEffectProps {
@@ -15,6 +16,7 @@ const VortexEffect = ({
   rotationSpeed = 15,
   className = '' 
 }: VortexEffectProps) => {
+  const instanceId = useId();
   
   const sizeClasses = {
     sm: 'w-64 h-64',
@@ -61,25 +63,25 @@ const VortexEffect = ({
 
   const spirals = [
     // Primary spirals (clockwise) - 9 arms at 40° intervals
-    { startAngle: 0, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-    { startAngle: 40, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-    { startAngle: 80, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-    { startAngle: 120, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
-    { startAngle: 160, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
-    { startAngle: 200, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
-    { startAngle: 240, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-    { startAngle: 280, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient1)', width: 2.5 },
-    { startAngle: 320, turns: 1.5, clockwise: true, stroke: 'url(#spiralGradient2)', width: 2 },
+    { startAngle: 0, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
+    { startAngle: 40, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
+    { startAngle: 80, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
+    { startAngle: 120, turns: 1.5, clockwise: true, gradient: 2, width: 2 },
+    { startAngle: 160, turns: 1.5, clockwise: true, gradient: 2, width: 2 },
+    { startAngle: 200, turns: 1.5, clockwise: true, gradient: 2, width: 2 },
+    { startAngle: 240, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
+    { startAngle: 280, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
+    { startAngle: 320, turns: 1.5, clockwise: true, gradient: 2, width: 2 },
     // Counter-clockwise spirals - 9 arms offset 20°
-    { startAngle: 20, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 60, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 100, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 140, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 180, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 220, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 260, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 300, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
-    { startAngle: 340, turns: 1.3, clockwise: false, stroke: 'url(#spiralGradient3)', width: 1.5 },
+    { startAngle: 20, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 60, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 100, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 140, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 180, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 220, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 260, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 300, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
+    { startAngle: 340, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
   ];
 
   return (
@@ -100,8 +102,8 @@ const VortexEffect = ({
       <motion.svg
         viewBox="0 0 400 400"
         className="w-full h-full"
-        animate={isStatic ? {} : { rotate: isClosing ? -360 : 360 }}
-        transition={isStatic ? {} : { 
+        animate={isStatic ? undefined : { rotate: isClosing ? -360 : 360 }}
+        transition={isStatic ? undefined : { 
           duration: rotationSpeed, 
           repeat: Infinity, 
           ease: "linear" 
@@ -109,22 +111,22 @@ const VortexEffect = ({
       >
         <defs>
           {/* Radial gradient for sphere effect - smoother falloff */}
-          <radialGradient id="spiralGradient1" cx="50%" cy="50%" r="50%">
+          <radialGradient id={`${instanceId}-spiralGradient1`} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.7" />
             <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
             <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.15" />
           </radialGradient>
-          <radialGradient id="spiralGradient2" cx="50%" cy="50%" r="50%">
+          <radialGradient id={`${instanceId}-spiralGradient2`} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.5" />
             <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.3" />
             <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.08" />
           </radialGradient>
-          <radialGradient id="spiralGradient3" cx="50%" cy="50%" r="50%">
+          <radialGradient id={`${instanceId}-spiralGradient3`} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.3" />
             <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.15" />
             <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.03" />
           </radialGradient>
-          <filter id="glow">
+          <filter id={`${instanceId}-glow`}>
             <feGaussianBlur stdDeviation="3.5" result="coloredBlur"/>
             <feMerge>
               <feMergeNode in="coloredBlur"/>
@@ -139,10 +141,10 @@ const VortexEffect = ({
             key={i}
             d={generateSpiralPath(spiral.startAngle, spiral.turns, spiral.clockwise)}
             fill="none"
-            stroke={spiral.stroke}
+            stroke={`url(#${instanceId}-spiralGradient${spiral.gradient})`}
             strokeWidth={spiral.width}
             strokeLinecap="round"
-            filter="url(#glow)"
+            filter={`url(#${instanceId}-glow)`}
           />
         ))}
       </motion.svg>
@@ -150,11 +152,11 @@ const VortexEffect = ({
       {/* Black hole center */}
       <motion.div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
-        animate={isStatic ? {} : { 
+        animate={isStatic ? undefined : { 
           scale: [1, 1.15, 1],
           opacity: [0.9, 1, 0.9]
         }}
-        transition={isStatic ? {} : { 
+        transition={isStatic ? undefined : { 
           duration: 2.5,
           repeat: Infinity,
           ease: "easeInOut"
