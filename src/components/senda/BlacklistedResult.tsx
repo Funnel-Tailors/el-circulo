@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import Starfield from "@/components/quiz/Starfield";
+import VortexEffect from "./VortexEffect";
 
 interface BlacklistedResultProps {
   reason: string;
@@ -51,70 +52,13 @@ const BlacklistedResult = ({ reason }: BlacklistedResultProps) => {
       <Starfield />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6">
-        {/* Vórtice cerrándose - inverso al de apertura */}
-        <motion.div
-          className="relative w-64 h-64 md:w-80 md:h-80 mb-8"
-          initial={{ scale: 1, opacity: 1 }}
-          animate={{
-            scale: portalClosed ? 0 : 1,
-            opacity: portalClosed ? 0 : 1,
-            rotate: portalClosed ? -180 : 0
-          }}
-          transition={{
-            duration: 2.5,
-            ease: [0.16, 1, 0.3, 1]
-          }}
-        >
-          {/* SVG del vórtice colapsando */}
-          <motion.svg
-            viewBox="0 0 400 400"
-            className="w-full h-full"
-            animate={{ rotate: -360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          >
-            <defs>
-              <radialGradient id="closeGradient" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.1" />
-              </radialGradient>
-            </defs>
-
-            {/* Spirales que colapsan */}
-            {Array.from({ length: 8 }).map((_, i) => {
-              const startAngle = (i / 8) * 360;
-              return (
-                <motion.path
-                  key={i}
-                  d={generateSpiralPath(startAngle)}
-                  fill="none"
-                  stroke="url(#closeGradient)"
-                  strokeWidth={2}
-                  strokeLinecap="round"
-                  initial={{ pathLength: 1 }}
-                  animate={{ pathLength: portalClosed ? 0 : 1 }}
-                  transition={{ duration: 2, ease: "easeIn" }}
-                />
-              );
-            })}
-          </motion.svg>
-
-          {/* Centro negro que absorbe todo */}
-          <motion.div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-background"
-            initial={{ width: 24, height: 24 }}
-            animate={{
-              width: portalClosed ? 400 : 24,
-              height: portalClosed ? 400 : 24,
-            }}
-            transition={{
-              duration: 2.5,
-              ease: [0.16, 1, 0.3, 1]
-            }}
-            style={{
-              boxShadow: '0 0 30px 15px rgba(0,0,0,0.8)'
-            }}
+        {/* Vórtice cerrándose - exact copy from VaultPortal */}
+        <div className="mb-8">
+          <VortexEffect 
+            size="md" 
+            isClosing={portalClosed}
           />
-        </motion.div>
+        </div>
 
         {/* Mensaje que aparece después del colapso */}
         <motion.div
@@ -148,32 +92,5 @@ const BlacklistedResult = ({ reason }: BlacklistedResultProps) => {
     </div>
   );
 };
-
-// Helper para generar spiral path
-function generateSpiralPath(startAngle: number): string {
-  const cx = 200, cy = 200;
-  const startRadius = 10;
-  const endRadius = 90;
-  const turns = 1.5;
-  const steps = 30;
-
-  const points: { x: number; y: number }[] = [];
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const angle = startAngle + (t * turns * 360);
-    const radius = startRadius + (t * (endRadius - startRadius));
-    const rad = (angle * Math.PI) / 180;
-    points.push({
-      x: cx + radius * Math.cos(rad),
-      y: cy + radius * Math.sin(rad)
-    });
-  }
-
-  let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
-  for (let i = 1; i < points.length; i++) {
-    d += ` L${points[i].x.toFixed(1)},${points[i].y.toFixed(1)}`;
-  }
-  return d;
-}
 
 export default BlacklistedResult;
