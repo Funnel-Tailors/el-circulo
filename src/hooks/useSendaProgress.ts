@@ -281,6 +281,23 @@ export const useSendaProgress = (token: string | null) => {
       case 'class2_sequence_completed':
         if (progress.class2SequenceCompleted) return;
         updates.class2SequenceCompleted = true;
+        // Also mark journey as completed
+        if (token) {
+          supabase
+            .from('senda_progress')
+            .update({ 
+              journey_completed: true,
+              journey_completed_at: new Date().toISOString()
+            })
+            .eq('ghl_contact_id', token)
+            .then(({ error }) => {
+              if (error) {
+                console.error('Error auto-marking journey_completed:', error);
+              } else {
+                console.log('✅ Journey auto-marked as completed');
+              }
+            });
+        }
         break;
       case 'assistant1_unlocked':
         if (progress.assistant1Unlocked) return;
