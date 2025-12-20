@@ -90,27 +90,33 @@ const VortexEffect = ({
   return (
     <motion.div
       className={`relative ${sizeClasses[size]} ${className}`}
-      initial={{ scale: 1, opacity: 1 }}
-      animate={{
-        scale: isClosing ? 0 : 1,
-        opacity: isClosing ? 0 : 1,
-        rotate: isClosing ? -180 : 0
-      }}
-      transition={{
-        duration: isClosing ? 2.5 : 0.6,
-        ease: isClosing ? [0.16, 1, 0.3, 1] : [0.22, 1, 0.36, 1]
-      }}
+      initial={{ scale: 1, opacity: 1, rotate: 0 }}
+      animate={
+        isClosing
+          ? { scale: 0, opacity: 0, rotate: -180 }
+          : { scale: 1, opacity: 1, rotate: 0 }
+      }
+      transition={
+        isClosing
+          ? { duration: 2.5, ease: [0.16, 1, 0.3, 1] }
+          : { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+      }
     >
       {/* SVG Vortex with Archimedean Spirals */}
       <motion.svg
         viewBox="0 0 400 400"
         className="w-full h-full"
-        animate={isStatic ? undefined : { rotate: isClosing ? -360 : 360 }}
-        transition={isStatic ? undefined : { 
-          duration: rotationSpeed, 
-          repeat: Infinity, 
-          ease: "linear" 
-        }}
+        initial={{ rotate: 0 }}
+        animate={{ rotate: isStatic ? 0 : isClosing ? -360 : 360 }}
+        transition={
+          isStatic
+            ? { duration: 0 }
+            : {
+                duration: rotationSpeed,
+                repeat: Infinity,
+                ease: "linear",
+              }
+        }
       >
         <defs>
           {/* Radial gradient for sphere effect - smoother falloff */}
@@ -180,7 +186,7 @@ const VortexEffect = ({
         
         return (
           <motion.div
-            key={i}
+            key={`particle-${instanceId}-${i}`}
             className="absolute top-1/2 left-1/2 text-foreground pointer-events-none"
             style={{
               fontSize: `${particleSize * 10}px`,
