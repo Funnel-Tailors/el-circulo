@@ -32,7 +32,6 @@ const PortalFinalState = ({ variant, callDate }: PortalFinalStateProps) => {
   };
 
   const { title, subtitle, message } = content[variant];
-  const isStatic = variant === 'completed';
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
@@ -44,7 +43,6 @@ const PortalFinalState = ({ variant, callDate }: PortalFinalStateProps) => {
         <div className="mb-12">
           <VortexEffect 
             size="md" 
-            isStatic={isStatic}
             rotationSpeed={variant === 'expired' ? 20 : 15}
           />
         </div>

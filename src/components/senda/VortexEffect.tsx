@@ -11,8 +11,7 @@ interface VortexEffectProps {
 
 const VortexEffect = ({ 
   size = 'md', 
-  isClosing = false, 
-  isStatic = false,
+  isClosing = false,
   rotationSpeed = 15,
   className = '' 
 }: VortexEffectProps) => {
@@ -106,14 +105,8 @@ const VortexEffect = ({
       <motion.svg
         viewBox="0 0 400 400"
         className="w-full h-full"
-        {...(!isStatic && {
-          animate: { rotate: isClosing ? -360 : 360 },
-          transition: {
-            duration: rotationSpeed,
-            repeat: Infinity,
-            ease: "linear",
-          },
-        })}
+        animate={{ rotate: isClosing ? -360 : 360 }}
+        transition={{ duration: rotationSpeed, repeat: Infinity, ease: "linear" }}
       >
         <defs>
           {/* Radial gradient for sphere effect - smoother falloff */}
@@ -158,17 +151,15 @@ const VortexEffect = ({
       {/* Black hole center */}
       <motion.div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
-        {...(!isStatic && {
-          animate: {
-            scale: [1, 1.15, 1],
-            opacity: [0.9, 1, 0.9],
-          },
-          transition: {
-            duration: 2.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          },
-        })}
+        animate={{
+          scale: [1, 1.15, 1],
+          opacity: [0.9, 1, 0.9],
+        }}
+        transition={{
+          duration: 2.5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
         style={{ 
           filter: 'blur(3px)',
           boxShadow: '0 0 15px 8px rgba(0,0,0,0.9), 0 0 30px 15px rgba(0,0,0,0.6)'
@@ -176,7 +167,7 @@ const VortexEffect = ({
       />
 
       {/* 20 Attracted particles */}
-      {!isStatic && Array.from({ length: 20 }).map((_, i) => {
+      {Array.from({ length: 20 }).map((_, i) => {
         const startAngle = (i / 20) * 360;
         const startRadius = 110 + (i % 3) * 15;
         const duration = 3 + (i % 5) * 0.5;
