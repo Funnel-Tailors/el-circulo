@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format, differenceInHours, isPast } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useSendaLeads, SendaLead } from '@/hooks/useSendaLeads';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Select,
   SelectContent,
@@ -18,7 +18,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { RefreshCw, Eye, Ban, Undo2 } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { RefreshCw, Eye, Ban, Undo2, CalendarIcon, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const statusLabels: Record<SendaLead['sendaStatus'], { label: string; color: string }> = {
@@ -27,6 +32,7 @@ const statusLabels: Record<SendaLead['sendaStatus'], { label: string; color: str
   watching: { label: '🟢 Viendo clase', color: 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30' },
   portal_shown: { label: '✨ Portal desbloqueado', color: 'bg-purple-950/50 text-purple-400 border-purple-500/30' },
   vault_revealed: { label: '🔮 En La Bóveda', color: 'bg-indigo-950/50 text-indigo-400 border-indigo-500/30' },
+  completed: { label: '✅ Completado', color: 'bg-emerald-950/50 text-emerald-300 border-emerald-400/30' },
   revoked: { label: '🔴 Revocado', color: 'bg-red-950/50 text-red-400 border-red-500/30' },
 };
 
@@ -61,12 +67,47 @@ const blacklistMessages: Record<string, { title: string; subtitle: string; messa
   },
 };
 
+// Helper to render expiration/call info
+const renderExpirationInfo = (lead: SendaLead) => {
+  if (lead.journeyCompleted) {
+    return <span className="text-emerald-400 text-xs">✅ Completado</span>;
+  }
+  
+  if (lead.callScheduledAt) {
+    const callDate = new Date(lead.callScheduledAt);
+    return (
+      <span className="text-purple-400 text-xs">
+        📅 {format(callDate, "d MMM HH:mm", { locale: es })}
+      </span>
+    );
+  }
+  
+  if (lead.expiresAt) {
+    const expireDate = new Date(lead.expiresAt);
+    const hoursLeft = differenceInHours(expireDate, new Date());
+    
+    if (isPast(expireDate)) {
+      return <span className="text-red-400 text-xs">⏰ Expirado</span>;
+    }
+    
+    return (
+      <span className={`text-xs ${hoursLeft < 12 ? 'text-orange-400' : 'text-foreground/50'}`}>
+        ⏳ {hoursLeft}h restantes
+      </span>
+    );
+  }
+  
+  return <span className="text-foreground/30 text-xs">—</span>;
+};
+
 const SendaLeadsManager = () => {
-  const { leads, loading, fetchLeads, banLead, unbanLead } = useSendaLeads();
+  const { leads, loading, fetchLeads, banLead, unbanLead, scheduleCall, markCompleted } = useSendaLeads();
   const [selectedLead, setSelectedLead] = useState<SendaLead | null>(null);
   const [banReason, setBanReason] = useState<string>('no_show');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewReason, setPreviewReason] = useState<string>('no_show');
+  const [scheduleLeadId, setScheduleLeadId] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
   const handleBan = async (lead: SendaLead) => {
     try {
@@ -87,6 +128,27 @@ const SendaLeadsManager = () => {
     }
   };
 
+  const handleScheduleCall = async (ghlContactId: string) => {
+    if (!selectedDate) return;
+    try {
+      await scheduleCall(ghlContactId, selectedDate);
+      toast({ title: 'Llamada agendada', description: `Fecha: ${format(selectedDate, "d 'de' MMMM", { locale: es })}` });
+      setScheduleLeadId(null);
+      setSelectedDate(undefined);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo agendar la llamada' });
+    }
+  };
+
+  const handleMarkCompleted = async (lead: SendaLead) => {
+    try {
+      await markCompleted(lead.ghlContactId);
+      toast({ title: 'Journey completado', description: `${lead.name} marcado como completado` });
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo marcar como completado' });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -98,7 +160,7 @@ const SendaLeadsManager = () => {
             <span className="text-foreground/30">⟡</span>
           </h2>
           <p className="text-foreground/60 text-sm mt-1">
-            {leads.length} leads • {leads.filter(l => l.sendaStatus === 'revoked').length} revocados
+            {leads.length} leads • {leads.filter(l => l.sendaStatus === 'completed').length} completados • {leads.filter(l => l.sendaStatus === 'revoked').length} revocados
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -130,8 +192,8 @@ const SendaLeadsManager = () => {
               <tr className="border-b border-foreground/10">
                 <th className="text-left p-4 text-foreground/70 font-medium text-sm">Nombre</th>
                 <th className="text-left p-4 text-foreground/70 font-medium text-sm">Fecha</th>
-                <th className="text-left p-4 text-foreground/70 font-medium text-sm">Token</th>
-                <th className="text-left p-4 text-foreground/70 font-medium text-sm">Estado Senda</th>
+                <th className="text-left p-4 text-foreground/70 font-medium text-sm">Estado</th>
+                <th className="text-left p-4 text-foreground/70 font-medium text-sm">Expira / Llamada</th>
                 <th className="text-right p-4 text-foreground/70 font-medium text-sm">Acciones</th>
               </tr>
             </thead>
@@ -151,11 +213,6 @@ const SendaLeadsManager = () => {
                     {formatDistanceToNow(new Date(lead.submittedAt), { addSuffix: true, locale: es })}
                   </td>
                   <td className="p-4">
-                    <code className="text-xs bg-foreground/10 px-2 py-1 rounded text-foreground/60">
-                      {lead.ghlContactId.slice(0, 8)}...
-                    </code>
-                  </td>
-                  <td className="p-4">
                     <Badge className={`${statusLabels[lead.sendaStatus].color} border`}>
                       {statusLabels[lead.sendaStatus].label}
                       {lead.sendaStatus === 'watching' && lead.videoProgress > 0 && (
@@ -164,16 +221,71 @@ const SendaLeadsManager = () => {
                     </Badge>
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center justify-end gap-2">
+                    {renderExpirationInfo(lead)}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center justify-end gap-1">
+                      {/* Schedule call button */}
+                      {!lead.isBlacklisted && !lead.journeyCompleted && (
+                        <Popover open={scheduleLeadId === lead.ghlContactId} onOpenChange={(open) => {
+                          if (!open) {
+                            setScheduleLeadId(null);
+                            setSelectedDate(undefined);
+                          }
+                        }}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setScheduleLeadId(lead.ghlContactId)}
+                              className="text-purple-400 hover:text-purple-300 hover:bg-purple-950/30"
+                            >
+                              <CalendarIcon className="w-4 h-4" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="end">
+                            <Calendar
+                              mode="single"
+                              selected={selectedDate}
+                              onSelect={setSelectedDate}
+                              disabled={(date) => date < new Date()}
+                              initialFocus
+                            />
+                            <div className="p-3 border-t border-foreground/10">
+                              <Button 
+                                size="sm" 
+                                className="w-full"
+                                disabled={!selectedDate}
+                                onClick={() => handleScheduleCall(lead.ghlContactId)}
+                              >
+                                Agendar llamada
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      )}
+
+                      {/* Mark completed button */}
+                      {!lead.isBlacklisted && !lead.journeyCompleted && lead.sendaStatus !== 'no_access' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleMarkCompleted(lead)}
+                          className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30"
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      {/* Ban/Unban */}
                       {lead.isBlacklisted ? (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleUnban(lead)}
-                          className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30"
+                          className="text-foreground/50 hover:text-foreground hover:bg-foreground/10"
                         >
-                          <Undo2 className="w-4 h-4 mr-1" />
-                          Restaurar
+                          <Undo2 className="w-4 h-4" />
                         </Button>
                       ) : (
                         <Button
@@ -182,8 +294,7 @@ const SendaLeadsManager = () => {
                           onClick={() => setSelectedLead(lead)}
                           className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
                         >
-                          <Ban className="w-4 h-4 mr-1" />
-                          Revocar
+                          <Ban className="w-4 h-4" />
                         </Button>
                       )}
                     </div>

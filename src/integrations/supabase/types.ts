@@ -195,6 +195,7 @@ export type Database = {
         Row: {
           assistant1_opened: boolean | null
           assistant1_unlocked: boolean | null
+          call_scheduled_at: string | null
           class1_assistant_opened: boolean | null
           class1_drops_captured: string[] | null
           class1_drops_missed: string[] | null
@@ -212,6 +213,8 @@ export type Database = {
           first_visit_at: string | null
           ghl_contact_id: string
           id: string
+          journey_completed: boolean | null
+          journey_completed_at: string | null
           last_activity_at: string | null
           updated_at: string | null
           vault_unlocked: boolean | null
@@ -220,6 +223,7 @@ export type Database = {
         Insert: {
           assistant1_opened?: boolean | null
           assistant1_unlocked?: boolean | null
+          call_scheduled_at?: string | null
           class1_assistant_opened?: boolean | null
           class1_drops_captured?: string[] | null
           class1_drops_missed?: string[] | null
@@ -237,6 +241,8 @@ export type Database = {
           first_visit_at?: string | null
           ghl_contact_id: string
           id?: string
+          journey_completed?: boolean | null
+          journey_completed_at?: string | null
           last_activity_at?: string | null
           updated_at?: string | null
           vault_unlocked?: boolean | null
@@ -245,6 +251,7 @@ export type Database = {
         Update: {
           assistant1_opened?: boolean | null
           assistant1_unlocked?: boolean | null
+          call_scheduled_at?: string | null
           class1_assistant_opened?: boolean | null
           class1_drops_captured?: string[] | null
           class1_drops_missed?: string[] | null
@@ -262,6 +269,8 @@ export type Database = {
           first_visit_at?: string | null
           ghl_contact_id?: string
           id?: string
+          journey_completed?: boolean | null
+          journey_completed_at?: string | null
           last_activity_at?: string | null
           updated_at?: string | null
           vault_unlocked?: boolean | null

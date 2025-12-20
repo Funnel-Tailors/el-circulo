@@ -3,6 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { QuizState } from '@/types/quiz';
 
+interface JourneyState {
+  isExpiredOrScheduled: boolean;
+  callScheduledAt: Date | null;
+  journeyCompleted: boolean;
+}
+
 export const useSendaAccess = () => {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
@@ -10,6 +16,11 @@ export const useSendaAccess = () => {
   const [token, setToken] = useState<string | null>(null);
   const [isBlacklisted, setIsBlacklisted] = useState(false);
   const [blacklistReason, setBlacklistReason] = useState<string | null>(null);
+  const [journeyState, setJourneyState] = useState<JourneyState>({
+    isExpiredOrScheduled: false,
+    callScheduledAt: null,
+    journeyCompleted: false
+  });
 
   useEffect(() => {
     const validateToken = async () => {
@@ -57,7 +68,48 @@ export const useSendaAccess = () => {
           return;
         }
 
-        // 2. Validar token normal
+        // 2. Check senda_progress for journey state
+        const { data: progressData } = await supabase
+          .from('senda_progress')
+          .select('first_visit_at, call_scheduled_at, journey_completed')
+          .eq('ghl_contact_id', tokenParam)
+          .single();
+
+        if (progressData) {
+          let isExpiredOrScheduled = false;
+          let callScheduledAt: Date | null = null;
+
+          // Check if journey is completed
+          if (progressData.journey_completed) {
+            setJourneyState({
+              isExpiredOrScheduled: false,
+              callScheduledAt: null,
+              journeyCompleted: true
+            });
+          } else {
+            // Check for scheduled call
+            if (progressData.call_scheduled_at) {
+              callScheduledAt = new Date(progressData.call_scheduled_at);
+              isExpiredOrScheduled = true;
+            }
+            // Check for 48h expiration
+            else if (progressData.first_visit_at) {
+              const expireDate = new Date(progressData.first_visit_at);
+              expireDate.setHours(expireDate.getHours() + 48);
+              if (new Date() > expireDate) {
+                isExpiredOrScheduled = true;
+              }
+            }
+
+            setJourneyState({
+              isExpiredOrScheduled,
+              callScheduledAt,
+              journeyCompleted: false
+            });
+          }
+        }
+
+        // 3. Validar token normal
         const { data, error } = await supabase
           .from('quiz_analytics')
           .select('quiz_state, session_id')
@@ -80,7 +132,8 @@ export const useSendaAccess = () => {
         
         console.log('✅ Senda access validated:', {
           token: tokenParam,
-          quizState: data.quiz_state
+          quizState: data.quiz_state,
+          journeyState
         });
 
         setLoading(false);
@@ -109,5 +162,15 @@ export const useSendaAccess = () => {
     validateToken();
   }, [searchParams]);
 
-  return { loading, quizState, token, isBlacklisted, blacklistReason };
+  return { 
+    loading, 
+    quizState, 
+    token, 
+    isBlacklisted, 
+    blacklistReason,
+    // Journey state
+    isExpiredOrScheduled: journeyState.isExpiredOrScheduled,
+    callScheduledAt: journeyState.callScheduledAt,
+    journeyCompleted: journeyState.journeyCompleted
+  };
 };

@@ -6,10 +6,15 @@ export interface SendaLead {
   name: string;
   phone: string;
   submittedAt: string;
-  sendaStatus: 'no_access' | 'visited' | 'watching' | 'portal_shown' | 'vault_revealed' | 'revoked';
+  sendaStatus: 'no_access' | 'visited' | 'watching' | 'portal_shown' | 'vault_revealed' | 'completed' | 'revoked';
   videoProgress: number;
   isBlacklisted: boolean;
   blacklistReason: string | null;
+  // New journey fields
+  firstVisitAt: string | null;
+  expiresAt: string | null; // first_visit + 48h
+  callScheduledAt: string | null;
+  journeyCompleted: boolean;
 }
 
 export const useSendaLeads = () => {
@@ -39,9 +44,19 @@ export const useSendaLeads = () => {
         (blacklist || []).map(b => [b.ghl_contact_id, b.reason])
       );
 
-      // 3. Obtener eventos senda para cada lead
+      // 3. Obtener senda_progress para cada lead
       const ghlIds = submissions?.map(s => s.ghl_contact_id).filter(Boolean) || [];
       
+      const { data: progressData } = await supabase
+        .from('senda_progress')
+        .select('ghl_contact_id, first_visit_at, call_scheduled_at, journey_completed, class1_video_progress, class2_video_progress, vault_unlocked, class2_sequence_completed')
+        .in('ghl_contact_id', ghlIds);
+
+      const progressMap = new Map(
+        (progressData || []).map(p => [p.ghl_contact_id, p])
+      );
+
+      // 4. Obtener eventos senda para cada lead
       const { data: sendaEvents } = await supabase
         .from('quiz_analytics')
         .select('session_id, event_type')
@@ -56,20 +71,34 @@ export const useSendaLeads = () => {
         eventsMap.set(e.session_id, existing);
       });
 
-      // 4. Mapear a SendaLead
+      // 5. Mapear a SendaLead
       const mappedLeads: SendaLead[] = (submissions || []).map(sub => {
         const quizState = sub.quiz_state as any;
         const ghlId = sub.ghl_contact_id!;
         const events = eventsMap.get(ghlId) || [];
+        const progress = progressMap.get(ghlId);
         
+        // Calculate expiration (48h from first visit)
+        let expiresAt: string | null = null;
+        if (progress?.first_visit_at) {
+          const expireDate = new Date(progress.first_visit_at);
+          expireDate.setHours(expireDate.getHours() + 48);
+          expiresAt = expireDate.toISOString();
+        }
+
         // Determinar estado
         let status: SendaLead['sendaStatus'] = 'no_access';
-        let videoProgress = 0;
+        let videoProgress = progress?.class1_video_progress || 0;
 
         if (blacklistMap.has(ghlId)) {
           status = 'revoked';
-        } else if (events.includes('senda_vault_revealed')) {
+        } else if (progress?.journey_completed) {
+          status = 'completed';
+        } else if (progress?.class2_sequence_completed || events.includes('senda_vault_ritual_sequence_complete')) {
+          status = 'completed';
+        } else if (progress?.vault_unlocked || events.includes('senda_vault_revealed')) {
           status = 'vault_revealed';
+          videoProgress = progress?.class2_video_progress || 0;
         } else if (events.includes('senda_vault_portal_shown')) {
           status = 'portal_shown';
         } else if (events.some(e => e.startsWith('senda_video_'))) {
@@ -77,12 +106,12 @@ export const useSendaLeads = () => {
           // Extraer progreso máximo
           const progressEvents = events.filter(e => e.startsWith('senda_video_'));
           progressEvents.forEach(e => {
-            const match = e.match(/senda_video_(\d+)/);
+            const match = e.match(/senda_video_progress_(\d+)/);
             if (match) {
               videoProgress = Math.max(videoProgress, parseInt(match[1]));
             }
           });
-        } else if (events.includes('senda_page_view')) {
+        } else if (events.includes('senda_page_view') || progress?.first_visit_at) {
           status = 'visited';
         }
 
@@ -94,7 +123,12 @@ export const useSendaLeads = () => {
           sendaStatus: status,
           videoProgress,
           isBlacklisted: blacklistMap.has(ghlId),
-          blacklistReason: blacklistMap.get(ghlId) || null
+          blacklistReason: blacklistMap.get(ghlId) || null,
+          // Journey fields
+          firstVisitAt: progress?.first_visit_at || null,
+          expiresAt,
+          callScheduledAt: progress?.call_scheduled_at || null,
+          journeyCompleted: progress?.journey_completed || false
         };
       });
 
@@ -129,9 +163,39 @@ export const useSendaLeads = () => {
     await fetchLeads();
   };
 
+  const scheduleCall = async (ghlContactId: string, callDate: Date) => {
+    // Upsert: create if not exists, update if exists
+    const { error } = await supabase
+      .from('senda_progress')
+      .upsert({
+        ghl_contact_id: ghlContactId,
+        call_scheduled_at: callDate.toISOString()
+      }, {
+        onConflict: 'ghl_contact_id'
+      });
+
+    if (error) throw error;
+    await fetchLeads();
+  };
+
+  const markCompleted = async (ghlContactId: string) => {
+    const { error } = await supabase
+      .from('senda_progress')
+      .upsert({
+        ghl_contact_id: ghlContactId,
+        journey_completed: true,
+        journey_completed_at: new Date().toISOString()
+      }, {
+        onConflict: 'ghl_contact_id'
+      });
+
+    if (error) throw error;
+    await fetchLeads();
+  };
+
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
 
-  return { leads, loading, fetchLeads, banLead, unbanLead };
+  return { leads, loading, fetchLeads, banLead, unbanLead, scheduleCall, markCompleted };
 };
