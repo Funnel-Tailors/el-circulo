@@ -106,17 +106,14 @@ const VortexEffect = ({
       <motion.svg
         viewBox="0 0 400 400"
         className="w-full h-full"
-        initial={{ rotate: 0 }}
-        animate={{ rotate: isStatic ? 0 : isClosing ? -360 : 360 }}
-        transition={
-          isStatic
-            ? { duration: 0 }
-            : {
-                duration: rotationSpeed,
-                repeat: Infinity,
-                ease: "linear",
-              }
-        }
+        {...(!isStatic && {
+          animate: { rotate: isClosing ? -360 : 360 },
+          transition: {
+            duration: rotationSpeed,
+            repeat: Infinity,
+            ease: "linear",
+          },
+        })}
       >
         <defs>
           {/* Radial gradient for sphere effect - smoother falloff */}
@@ -161,15 +158,17 @@ const VortexEffect = ({
       {/* Black hole center */}
       <motion.div 
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-background z-10"
-        animate={isStatic ? undefined : { 
-          scale: [1, 1.15, 1],
-          opacity: [0.9, 1, 0.9]
-        }}
-        transition={isStatic ? undefined : { 
-          duration: 2.5,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
+        {...(!isStatic && {
+          animate: {
+            scale: [1, 1.15, 1],
+            opacity: [0.9, 1, 0.9],
+          },
+          transition: {
+            duration: 2.5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          },
+        })}
         style={{ 
           filter: 'blur(3px)',
           boxShadow: '0 0 15px 8px rgba(0,0,0,0.9), 0 0 30px 15px rgba(0,0,0,0.6)'
