@@ -11,12 +11,22 @@ import { SendaFooter } from "@/components/senda/SendaFooter";
 import VaultSection from "@/components/senda/VaultSection";
 import VaultPortal from "@/components/senda/VaultPortal";
 import BlacklistedResult from "@/components/senda/BlacklistedResult";
+import PortalFinalState from "@/components/senda/PortalFinalState";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import type { QuizState } from "@/types/quiz";
 
 const Senda = () => {
-  const { loading, quizState, token, isBlacklisted, blacklistReason } = useSendaAccess();
+  const { 
+    loading, 
+    quizState, 
+    token, 
+    isBlacklisted, 
+    blacklistReason,
+    isExpiredOrScheduled,
+    callScheduledAt,
+    journeyCompleted
+  } = useSendaAccess();
   const { trackVaultEvent } = useVaultTracking(token);
   const { progress, loading: progressLoading, markMilestone, updateProgress } = useSendaProgress(token);
   
@@ -90,6 +100,16 @@ const Senda = () => {
   // Blacklisted users see the portal closing animation
   if (isBlacklisted) {
     return <BlacklistedResult reason={blacklistReason || 'no_show'} />;
+  }
+
+  // Journey completed - show static completed portal
+  if (journeyCompleted) {
+    return <PortalFinalState variant="completed" />;
+  }
+
+  // Expired or has scheduled call - show scheduled portal
+  if (isExpiredOrScheduled) {
+    return <PortalFinalState variant="scheduled" callDate={callScheduledAt} />;
   }
 
   return (
