@@ -108,6 +108,7 @@ const SendaLeadsManager = () => {
   const [previewReason, setPreviewReason] = useState<string>('no_show');
   const [scheduleLeadId, setScheduleLeadId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string>("10:00");
 
   const handleBan = async (lead: SendaLead) => {
     try {
@@ -130,13 +131,20 @@ const SendaLeadsManager = () => {
 
   const handleScheduleCall = async (ghlContactId: string) => {
     if (!selectedDate) return;
+    
+    // Combinar fecha + hora
+    const [hours, minutes] = selectedTime.split(':').map(Number);
+    const combinedDate = new Date(selectedDate);
+    combinedDate.setHours(hours, minutes, 0, 0);
+    
     try {
-      await scheduleCall(ghlContactId, selectedDate);
-      toast({ title: 'Llamada agendada', description: `Fecha: ${format(selectedDate, "d 'de' MMMM", { locale: es })}` });
+      await scheduleCall(ghlContactId, combinedDate);
+      toast({ title: 'Llamada registrada', description: `${format(combinedDate, "d 'de' MMMM 'a las' HH:mm", { locale: es })}` });
       setScheduleLeadId(null);
       setSelectedDate(undefined);
+      setSelectedTime("10:00");
     } catch (err) {
-      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo agendar la llamada' });
+      toast({ variant: 'destructive', title: 'Error', description: 'No se pudo registrar la llamada' });
     }
   };
 
@@ -226,11 +234,12 @@ const SendaLeadsManager = () => {
                   <td className="p-4">
                     <div className="flex items-center justify-end gap-1">
                       {/* Schedule call button */}
-                      {!lead.isBlacklisted && !lead.journeyCompleted && (
+                      {!lead.isBlacklisted && (
                         <Popover open={scheduleLeadId === lead.ghlContactId} onOpenChange={(open) => {
                           if (!open) {
                             setScheduleLeadId(null);
                             setSelectedDate(undefined);
+                            setSelectedTime("10:00");
                           }
                         }}>
                           <PopoverTrigger asChild>
@@ -239,6 +248,7 @@ const SendaLeadsManager = () => {
                               size="sm"
                               onClick={() => setScheduleLeadId(lead.ghlContactId)}
                               className="text-purple-400 hover:text-purple-300 hover:bg-purple-950/30"
+                              title="Registrar fecha de llamada"
                             >
                               <CalendarIcon className="w-4 h-4" />
                             </Button>
@@ -250,15 +260,29 @@ const SendaLeadsManager = () => {
                               onSelect={setSelectedDate}
                               disabled={(date) => date < new Date()}
                               initialFocus
+                              className="pointer-events-auto"
                             />
-                            <div className="p-3 border-t border-foreground/10">
+                            <div className="p-3 border-t border-foreground/10 space-y-3">
+                              <Select value={selectedTime} onValueChange={setSelectedTime}>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Hora" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
+                                    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+                                    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
+                                    "18:00", "18:30", "19:00", "19:30", "20:00"].map(time => (
+                                    <SelectItem key={time} value={time}>{time}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                               <Button 
                                 size="sm" 
                                 className="w-full"
                                 disabled={!selectedDate}
                                 onClick={() => handleScheduleCall(lead.ghlContactId)}
                               >
-                                Agendar llamada
+                                Registrar llamada
                               </Button>
                             </div>
                           </PopoverContent>
