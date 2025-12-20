@@ -1,28 +1,50 @@
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useVideoDrops } from "@/hooks/useVideoDrops";
+import { VideoDropOverlay } from "./VideoDropOverlay";
+import { DropsInventory } from "./DropsInventory";
+import { RitualSequenceModal } from "./RitualSequenceModal";
 
 interface PreparationCardsProps {
   token: string | null;
-  onUnlockThreshold?: () => void;
+  onSequenceComplete?: () => void;
 }
 
-export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsProps) => {
+export const PreparationCards = ({ token, onSequenceComplete }: PreparationCardsProps) => {
   const [videoProgress, setVideoProgress] = useState(0);
+  const [showSequenceModal, setShowSequenceModal] = useState(false);
+  const [sequenceCompleted, setSequenceCompleted] = useState(false);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const tracked25 = useRef(false);
   const tracked50 = useRef(false);
   const tracked75 = useRef(false);
   const tracked100 = useRef(false);
-  const trackedThreshold = useRef(false);
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
+  const sequenceModalShownRef = useRef(false);
 
-  // Fire-and-forget tracking - no await, no bloquea UI
+  // Video drops system
+  const {
+    drops,
+    capturedDrops,
+    activeDrop,
+    checkForDrop,
+    captureDrop,
+    allCaptured,
+  } = useVideoDrops({
+    sessionId: token,
+    onCapture: (drop) => {
+      trackEvent(`senda_drop_captured_${drop.id}`);
+    },
+    onMiss: (drop) => {
+      trackEvent(`senda_drop_missed_${drop.id}`);
+    },
+  });
+
+  // Fire-and-forget tracking
   const trackEvent = (eventType: string) => {
-    if (!token) {
-      console.warn(`⚠️ No token for tracking: ${eventType}`);
-      return;
-    }
+    if (!token) return;
 
     supabase.from('quiz_analytics').insert({
       session_id: token,
@@ -31,49 +53,50 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
     }).then(({ error }) => {
       if (error) {
         console.error(`❌ Supabase error [${eventType}]:`, error.message);
-      } else {
-        console.log(`✅ Tracked: ${eventType}`);
       }
     });
   };
 
-  // Track video progress milestones
+  // Track video progress milestones + check for drops
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleTimeUpdate = () => {
-      const progress = (video.currentTime / video.duration) * 100;
+      const progress = (video.currentTime / video.duration);
+      const progressPercent = progress * 100;
       
-      // Throttle: solo actualizar UI cada 5% para evitar re-renders constantes
-      if (Math.abs(progress - lastProgressUpdate.current) >= 5) {
-        lastProgressUpdate.current = progress;
-        setVideoProgress(Math.round(progress));
+      // Check for drops
+      checkForDrop(progress);
+      
+      // Throttle UI updates
+      if (Math.abs(progressPercent - lastProgressUpdate.current) >= 5) {
+        lastProgressUpdate.current = progressPercent;
+        setVideoProgress(Math.round(progressPercent));
       }
 
-      // Track milestones (solo 1 vez cada uno)
-      if (progress >= 25 && !tracked25.current) {
+      // Track milestones
+      if (progressPercent >= 25 && !tracked25.current) {
         tracked25.current = true;
         trackEvent('senda_video_progress_25');
       }
-      if (progress >= 50 && !tracked50.current) {
+      if (progressPercent >= 50 && !tracked50.current) {
         tracked50.current = true;
         trackEvent('senda_video_progress_50');
       }
-      if (progress >= 75 && !tracked75.current) {
+      if (progressPercent >= 75 && !tracked75.current) {
         tracked75.current = true;
         trackEvent('senda_video_progress_75');
-        
-        // Trigger portal unlock at 75%
-        if (!trackedThreshold.current) {
-          trackedThreshold.current = true;
-          trackEvent('senda_vault_portal_shown');
-          onUnlockThreshold?.();
-        }
       }
-      if (progress >= 99 && !tracked100.current) {
+      if (progressPercent >= 99 && !tracked100.current) {
         tracked100.current = true;
         trackEvent('senda_video_complete');
+        
+        // Show sequence modal at 99% if captured at least 2 drops
+        if (capturedDrops.length >= 2 && !sequenceModalShownRef.current && !sequenceCompleted) {
+          sequenceModalShownRef.current = true;
+          setShowSequenceModal(true);
+        }
       }
     };
 
@@ -91,74 +114,92 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [token, onUnlockThreshold]);
+  }, [token, checkForDrop, capturedDrops.length, sequenceCompleted]);
 
   const handleAIAssistantOpen = () => {
     trackEvent('senda_ai_assistant_open');
   };
 
+  const handleSequenceComplete = () => {
+    setShowSequenceModal(false);
+    setSequenceCompleted(true);
+    trackEvent('senda_ritual_sequence_complete');
+    onSequenceComplete?.();
+  };
+
   return (
     <div className="space-y-8 mb-16">
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
-          <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-          <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
-          <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-        </div>
-
-        <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight text-foreground">
-          PREPÁRATE PARA EL RITUAL
-        </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          Para que la consulta sea efectiva, estudia este material:
-        </p>
+      {/* Separator */}
+      <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
+        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+        <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-        {/* Video Card */}
-        <div className="glass-card-dark p-6 space-y-4">
-          <div className="text-center space-y-3">
-            <div className="text-4xl">🎬</div>
-            <h3 className="text-xl font-bold text-foreground">Clase Completa</h3>
-            <p className="text-sm text-muted-foreground">"Crea Tu Oferta Premium" • 40 minutos</p>
-          </div>
+      {/* Ritual intro copy - on-brand, challenging */}
+      <div className="text-center space-y-4 max-w-3xl mx-auto">
+        <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight text-foreground">
+          EL RITUAL COMIENZA
+        </h2>
+        <div className="space-y-3 text-muted-foreground">
+          <p className="text-base md:text-lg">
+            Esto no es un curso. No es un webinar de mierda.
+          </p>
+          <p className="text-base md:text-lg">
+            Es un <span className="text-primary font-medium">ritual</span>. Y los rituales tienen un precio.
+          </p>
+          <p className="text-sm md:text-base text-muted-foreground/80 mt-4 italic">
+            A lo largo del vídeo aparecerán <span className="text-primary">resquicios de magia</span>.<br />
+            Solo una vez. Solo si estás atento.<br />
+            Si los capturas todos, tendrás la oportunidad de demostrar que eres digno de cruzar el umbral.
+          </p>
+          <p className="text-xs text-muted-foreground/60 mt-2">
+            Si los pierdes... bueno, ya sabes dónde está la puerta.
+          </p>
+        </div>
+      </div>
 
-          <div className="aspect-video bg-black rounded-lg overflow-hidden video-glow">
-            <video
-              ref={videoRef}
-              src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a5a72e44d0ded5ced1e47e.mp4"
-              controls
-              className="w-full h-full"
-              playsInline
-            />
-          </div>
-
-          {videoProgress > 0 && (
-            <div className="text-xs text-muted-foreground text-center">
-              Progreso: {videoProgress}%
-            </div>
-          )}
-
-          <ul className="text-sm text-muted-foreground space-y-2">
-            <li>✓ Framework de ofertas €2K-5K</li>
-            <li>✓ Por qué cobras poco (y cómo arreglarlo)</li>
-            <li>✓ Casos reales de miembros del Círculo</li>
-          </ul>
+      {/* VIDEO HERO - Full width, no card wrapper */}
+      <div className="max-w-4xl mx-auto">
+        <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
+          <video
+            ref={videoRef}
+            src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a5a72e44d0ded5ced1e47e.mp4"
+            controls
+            className="w-full h-full"
+            playsInline
+          />
+          
+          {/* Drop overlay */}
+          <VideoDropOverlay 
+            activeDrop={activeDrop} 
+            onCapture={captureDrop} 
+          />
         </div>
 
-        {/* AI Assistant Card */}
+        {/* Video progress indicator */}
+        {videoProgress > 0 && (
+          <div className="text-xs text-muted-foreground text-center mt-3">
+            Progreso: {videoProgress}%
+          </div>
+        )}
+
+        {/* Drops inventory - appears after first capture */}
+        <DropsInventory 
+          capturedDrops={capturedDrops}
+          totalDrops={drops.length}
+          allCaptured={allCaptured}
+        />
+      </div>
+
+      {/* AI Assistant - Secondary card below */}
+      <div className="max-w-2xl mx-auto">
         <div className="glass-card-dark p-6 space-y-4">
           <div className="text-center space-y-3">
             <div className="text-4xl">🤖</div>
             <h3 className="text-xl font-bold text-foreground">Asistente IA Exclusivo</h3>
             <p className="text-sm text-muted-foreground">
               GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso
-            </p>
-          </div>
-
-          <div className="aspect-video bg-accent/30 rounded-lg flex items-center justify-center border border-border">
-            <p className="text-muted-foreground text-sm px-4 text-center">
-              Tu asistente IA personal para preparar la consulta
             </p>
           </div>
 
@@ -180,11 +221,20 @@ export const PreparationCards = ({ token, onUnlockThreshold }: PreparationCardsP
         </div>
       </div>
 
+      {/* Bottom separator */}
       <div className="flex items-center justify-center gap-4 pt-8" aria-hidden="true">
         <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
         <div className="text-muted-foreground text-xs">✦</div>
         <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
+
+      {/* Ritual Sequence Modal */}
+      <RitualSequenceModal
+        isOpen={showSequenceModal}
+        capturedDrops={capturedDrops}
+        onSequenceComplete={handleSequenceComplete}
+        onClose={() => setShowSequenceModal(false)}
+      />
     </div>
   );
 };

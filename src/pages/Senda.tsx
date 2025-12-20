@@ -24,8 +24,8 @@ const Senda = () => {
   const [class2Progress, setClass2Progress] = useState(0);
   const vaultSectionRef = useRef<HTMLDivElement>(null);
 
-  // Called when Class 1 video reaches 75%
-  const handleThresholdReached = () => {
+  // Called when ritual sequence is completed successfully
+  const handleSequenceComplete = () => {
     setShowPortal(true);
   };
 
@@ -72,7 +72,7 @@ const Senda = () => {
         <HeroSection quizState={quizState || {} as QuizState} />
         <PreparationCards 
           token={token} 
-          onUnlockThreshold={handleThresholdReached}
+          onSequenceComplete={handleSequenceComplete}
         />
         <PersonalizedPainSection quizState={quizState || {} as QuizState} />
         <ValueStackSection />
