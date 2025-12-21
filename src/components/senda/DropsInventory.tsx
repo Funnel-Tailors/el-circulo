@@ -6,14 +6,26 @@ interface DropsInventoryProps {
   capturedDrops: Drop[];
   totalDrops: number;
   allCaptured: boolean;
+  classNumber?: 1 | 2;
 }
 
-const MESSAGES = {
-  first: "Resquicio capturado. Permanece atento.",
-  second: "Dos de tres. El umbral se acerca.",
-  third: "✦ Asistente desbloqueado.",
+// Class 1 messages (3 drops)
+const CLASS_1_MESSAGES: Record<number, string> = {
+  1: "Resquicio capturado. Permanece atento.",
+  2: "Dos de tres. El umbral se acerca.",
+  3: "✦ Asistente desbloqueado.",
 };
 
+// Class 2 messages (5 drops)
+const CLASS_2_MESSAGES: Record<number, string> = {
+  1: "Uno. Quedan cuatro. No bajes la guardia.",
+  2: "Dos. El patrón empieza a revelarse.",
+  3: "Tres. Sigue atento.",
+  4: "Cuatro. Solo uno más.",
+  5: "✦ Arquitecto de Avatares desbloqueado.",
+};
+
+// Hint only for Class 1
 const HINT_MESSAGE = "Dicen que algo permanece oculto en los últimos minutos. Si alguna vez necesitas atravesar un portal... el orden de los símbolos podría ser la clave.";
 
 // Beam connector between slots
@@ -35,14 +47,11 @@ const Beam = ({ connected }: { connected: boolean }) => (
   />
 );
 
-export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured }: DropsInventoryProps) => {
+export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNumber = 1 }: DropsInventoryProps) => {
+  const messages = classNumber === 2 ? CLASS_2_MESSAGES : CLASS_1_MESSAGES;
+  
   const getMessage = () => {
-    switch (capturedDrops.length) {
-      case 1: return MESSAGES.first;
-      case 2: return MESSAGES.second;
-      case 3: return MESSAGES.third;
-      default: return "";
-    }
+    return messages[capturedDrops.length] || "";
   };
 
   // Don't render until first drop captured
@@ -165,9 +174,9 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured }: Drops
         </motion.p>
       </AnimatePresence>
 
-      {/* Hint - only when all captured */}
+      {/* Hint - only when all captured AND Class 1 */}
       <AnimatePresence>
-        {allCaptured && (
+        {allCaptured && classNumber === 1 && (
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
