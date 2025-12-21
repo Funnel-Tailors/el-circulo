@@ -225,6 +225,7 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
             capturedDrops={capturedDrops}
             totalDrops={drops.length}
             allCaptured={allCaptured}
+            classNumber={1}
           />
         )}
       </div>
