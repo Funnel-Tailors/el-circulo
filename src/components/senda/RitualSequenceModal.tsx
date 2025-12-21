@@ -62,6 +62,8 @@ export const RitualSequenceModal = ({
   const [isShaking, setIsShaking] = useState(false);
   const [showError, setShowError] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [failCount, setFailCount] = useState(0);
+  const [revealedCount, setRevealedCount] = useState(0);
 
   // Shuffle drops when modal opens
   useEffect(() => {
@@ -70,6 +72,8 @@ export const RitualSequenceModal = ({
       setSelectedSequence([]);
       setShowError(false);
       setShowSuccess(false);
+      setFailCount(0);
+      setRevealedCount(0);
     }
   }, [isOpen, capturedDrops]);
 
@@ -79,9 +83,15 @@ export const RitualSequenceModal = ({
   // Check if drop is already selected
   const isSelected = (drop: Drop) => selectedSequence.some(d => d.id === drop.id);
 
+  // Check if drop is revealed (locked as correct)
+  const isRevealed = (drop: Drop) => {
+    const revealedDrops = capturedDrops.slice(0, revealedCount);
+    return revealedDrops.some(d => d.id === drop.id);
+  };
+
   // Add drop to sequence
   const handleDropClick = useCallback((drop: Drop) => {
-    if (isSelected(drop) || isShaking || showSuccess) return;
+    if (isSelected(drop) || isShaking || showSuccess || isRevealed(drop)) return;
 
     const newSequence = [...selectedSequence, drop];
     setSelectedSequence(newSequence);
@@ -99,19 +109,33 @@ export const RitualSequenceModal = ({
       } else {
         setShowError(true);
         setIsShaking(true);
+        
+        const newFailCount = failCount + 1;
+        setFailCount(newFailCount);
+        
         onSequenceFailed?.();
+        
         setTimeout(() => {
           setIsShaking(false);
-          setSelectedSequence([]);
           setShowError(false);
+          
+          // Reveal next correct symbol after failure
+          if (newFailCount <= capturedDrops.length - 1) {
+            setRevealedCount(newFailCount);
+            // Pre-fill sequence with revealed symbols
+            setSelectedSequence(capturedDrops.slice(0, newFailCount));
+          } else {
+            setSelectedSequence([]);
+          }
         }, 800);
       }
     }
-  }, [selectedSequence, capturedDrops, correctOrder, isShaking, showSuccess, onSequenceComplete]);
+  }, [selectedSequence, capturedDrops, correctOrder, isShaking, showSuccess, onSequenceComplete, failCount, revealedCount]);
 
-  // Remove last from sequence
+  // Remove last from sequence (only if not revealed)
   const handleUndo = () => {
     if (isShaking || showSuccess) return;
+    if (selectedSequence.length <= revealedCount) return; // Can't undo revealed symbols
     setSelectedSequence(prev => prev.slice(0, -1));
   };
 
@@ -154,26 +178,29 @@ export const RitualSequenceModal = ({
             <div className="flex items-center justify-center">
               {shuffledDrops.map((drop, index) => {
                 const selected = isSelected(drop);
+                const revealed = isRevealed(drop);
+                const isLocked = revealed || selected;
+                
                 return (
                   <Fragment key={drop.id}>
                     {/* Beam connector between available drops */}
                     {index > 0 && (
-                      <Beam connected={!selected && !isSelected(shuffledDrops[index - 1])} />
+                      <Beam connected={!isLocked && !isSelected(shuffledDrops[index - 1]) && !isRevealed(shuffledDrops[index - 1])} />
                     )}
                     
                     <motion.button
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ 
-                        opacity: selected ? 0.3 : 1, 
-                        scale: selected ? 0.85 : 1 
+                        opacity: isLocked ? 0.3 : 1, 
+                        scale: isLocked ? 0.85 : 1 
                       }}
                       transition={{ delay: index * 0.1 }}
                       onClick={() => handleDropClick(drop)}
-                      disabled={selected || isShaking || showSuccess}
+                      disabled={isLocked || isShaking || showSuccess}
                       className="relative"
                     >
                       {/* Outer glow when available */}
-                      {!selected && (
+                      {!isLocked && (
                         <motion.div
                           className="absolute inset-[-4px] rounded-full"
                           style={{ 
@@ -193,20 +220,20 @@ export const RitualSequenceModal = ({
                           relative w-12 h-12 md:w-14 md:h-14 rounded-full border
                           flex items-center justify-center text-xl md:text-2xl
                           transition-all duration-200
-                          ${selected 
+                          ${isLocked 
                             ? 'border-primary/15 bg-black/20 text-primary/20 cursor-not-allowed' 
                             : 'border-primary/50 bg-primary/5 text-primary cursor-pointer hover:bg-primary/10 hover:border-primary/70'
                           }
                         `}
                         style={{
-                          boxShadow: selected 
+                          boxShadow: isLocked 
                             ? 'inset 0 0 10px rgba(0,0,0,0.3)'
                             : '0 0 12px hsl(var(--primary) / 0.3), inset 0 0 8px hsl(var(--primary) / 0.1)'
                         }}
-                        whileHover={!selected ? { scale: 1.05 } : {}}
-                        whileTap={!selected ? { scale: 0.95 } : {}}
+                        whileHover={!isLocked ? { scale: 1.05 } : {}}
+                        whileTap={!isLocked ? { scale: 0.95 } : {}}
                       >
-                        <span className={`select-none ${!selected ? 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]' : ''}`}>
+                        <span className={`select-none ${!isLocked ? 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]' : ''}`}>
                           {drop.symbol}
                         </span>
                       </motion.div>
@@ -231,6 +258,7 @@ export const RitualSequenceModal = ({
                 const selected = selectedSequence[index];
                 const previousSelected = index > 0 && !!selectedSequence[index - 1];
                 const currentFilled = !!selected;
+                const isSlotRevealed = index < revealedCount;
                 
                 return (
                   <Fragment key={index}>
@@ -249,6 +277,17 @@ export const RitualSequenceModal = ({
                       transition={{ duration: 0.4, delay: index * 0.1 }}
                       className="relative"
                     >
+                      {/* Lock icon for revealed slots */}
+                      {isSlotRevealed && selected && !showSuccess && !showError && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="absolute -top-1 -right-1 z-10 w-4 h-4 rounded-full bg-muted border border-muted-foreground/30 flex items-center justify-center"
+                        >
+                          <span className="text-[8px] text-muted-foreground">🔒</span>
+                        </motion.div>
+                      )}
+                      
                       {/* Outer glow for filled slots */}
                       {selected && (
                         <motion.div
@@ -258,11 +297,13 @@ export const RitualSequenceModal = ({
                               ? 'radial-gradient(circle, hsl(142 76% 36% / 0.4) 0%, transparent 70%)'
                               : showError
                                 ? 'radial-gradient(circle, hsl(0 84% 60% / 0.4) 0%, transparent 70%)'
-                                : 'radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)',
+                                : isSlotRevealed
+                                  ? 'radial-gradient(circle, hsl(var(--muted-foreground) / 0.3) 0%, transparent 70%)'
+                                  : 'radial-gradient(circle, hsl(var(--primary) / 0.3) 0%, transparent 70%)',
                             filter: 'blur(6px)'
                           }}
                           animate={{ 
-                            opacity: [0.5, 0.8, 0.5],
+                            opacity: isSlotRevealed && !showSuccess && !showError ? [0.3, 0.5, 0.3] : [0.5, 0.8, 0.5],
                             scale: [1, 1.1, 1]
                           }}
                           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -279,7 +320,9 @@ export const RitualSequenceModal = ({
                               ? 'border-green-500/50 bg-green-500/10 text-green-400'
                               : showError
                                 ? 'border-red-500/50 bg-red-500/10 text-red-400'
-                                : 'border-primary/50 bg-primary/5 text-primary'
+                                : isSlotRevealed
+                                  ? 'border-muted-foreground/40 bg-muted/30 text-muted-foreground'
+                                  : 'border-primary/50 bg-primary/5 text-primary'
                             : 'border-primary/15 bg-black/20 text-primary/20'
                           }
                         `}
@@ -289,7 +332,9 @@ export const RitualSequenceModal = ({
                               ? '0 0 12px hsl(142 76% 36% / 0.4), inset 0 0 8px hsl(142 76% 36% / 0.1)'
                               : showError
                                 ? '0 0 12px hsl(0 84% 60% / 0.4), inset 0 0 8px hsl(0 84% 60% / 0.1)'
-                                : '0 0 12px hsl(var(--primary) / 0.4), inset 0 0 8px hsl(var(--primary) / 0.1)'
+                                : isSlotRevealed
+                                  ? '0 0 8px hsl(var(--muted-foreground) / 0.2), inset 0 0 6px hsl(var(--muted-foreground) / 0.1)'
+                                  : '0 0 12px hsl(var(--primary) / 0.4), inset 0 0 8px hsl(var(--primary) / 0.1)'
                             : 'inset 0 0 10px rgba(0,0,0,0.3)'
                         }}
                       >
@@ -306,7 +351,9 @@ export const RitualSequenceModal = ({
                                   ? 'drop-shadow-[0_0_6px_hsl(142_76%_36%/0.6)]'
                                   : showError
                                     ? 'drop-shadow-[0_0_6px_hsl(0_84%_60%/0.6)]'
-                                    : 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]'
+                                    : isSlotRevealed
+                                      ? 'drop-shadow-[0_0_4px_hsl(var(--muted-foreground)/0.4)]'
+                                      : 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]'
                               }`}
                             >
                               {selected.symbol}
@@ -329,9 +376,25 @@ export const RitualSequenceModal = ({
             </motion.div>
           </div>
 
+          {/* Hint message for revealed symbols */}
+          <AnimatePresence>
+            {revealedCount > 0 && !showSuccess && !showError && (
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-center text-muted-foreground/80 text-xs italic mb-4"
+              >
+                💡 {revealedCount === 1 
+                  ? "El primer símbolo ha sido revelado..." 
+                  : `Los primeros ${revealedCount} símbolos han sido revelados...`}
+              </motion.p>
+            )}
+          </AnimatePresence>
+
           {/* Undo button */}
           <AnimatePresence>
-            {selectedSequence.length > 0 && !showSuccess && (
+            {selectedSequence.length > revealedCount && !showSuccess && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
