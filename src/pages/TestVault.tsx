@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import VaultPortal from "@/components/senda/VaultPortal";
@@ -6,8 +7,14 @@ import VaultSection from "@/components/senda/VaultSection";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const TestVault = () => {
+  const navigate = useNavigate();
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const [showPortal, setShowPortal] = useState(false);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [class2Progress, setClass2Progress] = useState(0);
@@ -16,6 +23,40 @@ const TestVault = () => {
   // Drops testing state
   const [selectedClass, setSelectedClass] = useState<1 | 2>(1);
   const [showDropDemo, setShowDropDemo] = useState(false);
+
+  // Auth check
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (!roles) {
+        toast({
+          variant: 'destructive',
+          title: 'Acceso denegado',
+          description: 'No tienes permisos de administrador',
+        });
+        navigate('/');
+        return;
+      }
+
+      setIsAdmin(true);
+      setInitialLoading(false);
+    };
+
+    checkAuth();
+  }, [navigate]);
 
   const {
     drops,
@@ -50,6 +91,18 @@ const TestVault = () => {
     setClass2Progress(0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Loading screen
+  if (initialLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted-foreground">Verificando acceso...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
