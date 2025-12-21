@@ -42,37 +42,57 @@ export const useVideoDrops = ({
   onMiss, 
   onAllCaptured 
 }: UseVideoDropsOptions) => {
-  const DROPS_CONFIG = classNumber === 1 ? CLASS_1_DROPS : CLASS_2_DROPS;
-  
   const [capturedDrops, setCapturedDrops] = useState<Drop[]>([]);
   const [activeDrop, setActiveDrop] = useState<Drop | null>(null);
   const [shownDropIds, setShownDropIds] = useState<Set<string>>(new Set());
   
   const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const allCapturedFiredRef = useRef(false);
+  const initializedRef = useRef(false);
+  
+  // Stable refs for callbacks to avoid re-renders
+  const onCaptureRef = useRef(onCapture);
+  const onMissRef = useRef(onMiss);
+  const onAllCapturedRef = useRef(onAllCaptured);
+  
+  // Update refs when callbacks change (no deps, runs every render)
+  useEffect(() => {
+    onCaptureRef.current = onCapture;
+    onMissRef.current = onMiss;
+    onAllCapturedRef.current = onAllCaptured;
+  });
 
-  // Load from localStorage on mount
+  // Get drops config based on class (stable reference)
+  const DROPS_CONFIG = classNumber === 1 ? CLASS_1_DROPS : CLASS_2_DROPS;
+
+  // Load from localStorage on mount - stable dependencies only
   useEffect(() => {
     if (!sessionId) return;
+    if (initializedRef.current) return; // Prevent re-initialization
     
+    const drops = classNumber === 1 ? CLASS_1_DROPS : CLASS_2_DROPS;
     const stored = localStorage.getItem(getStorageKey(sessionId, classNumber));
+    
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const restoredDrops = DROPS_CONFIG.filter(d => parsed.capturedIds?.includes(d.id));
+        const restoredDrops = drops.filter(d => parsed.capturedIds?.includes(d.id));
         setCapturedDrops(restoredDrops);
         setShownDropIds(new Set(parsed.shownIds || []));
         
         // Check if all already captured
-        if (restoredDrops.length === DROPS_CONFIG.length && !allCapturedFiredRef.current) {
+        if (restoredDrops.length === drops.length) {
           allCapturedFiredRef.current = true;
-          onAllCaptured?.();
+          // Use ref to avoid dependency
+          setTimeout(() => onAllCapturedRef.current?.(), 0);
         }
       } catch (e) {
         console.error('Error loading drops state:', e);
       }
     }
-  }, [sessionId, classNumber, onAllCaptured, DROPS_CONFIG]);
+    
+    initializedRef.current = true;
+  }, [sessionId, classNumber]);
 
   // Save to localStorage when state changes
   useEffect(() => {
@@ -101,7 +121,7 @@ export const useVideoDrops = ({
         dropTimeoutRef.current = setTimeout(() => {
           setActiveDrop(currentDrop => {
             if (currentDrop?.id === drop.id) {
-              onMiss?.(drop);
+              onMissRef.current?.(drop);
               return null;
             }
             return currentDrop;
@@ -111,7 +131,7 @@ export const useVideoDrops = ({
         break; // Only show one drop at a time
       }
     }
-  }, [activeDrop, shownDropIds, capturedDrops, onMiss, DROPS_CONFIG]);
+  }, [activeDrop, shownDropIds, capturedDrops, DROPS_CONFIG]);
 
   // Capture the active drop
   const captureDrop = useCallback(() => {
@@ -130,14 +150,14 @@ export const useVideoDrops = ({
       // Check if all drops captured
       if (newCaptured.length === DROPS_CONFIG.length && !allCapturedFiredRef.current) {
         allCapturedFiredRef.current = true;
-        setTimeout(() => onAllCaptured?.(), 100);
+        setTimeout(() => onAllCapturedRef.current?.(), 100);
       }
       
       return newCaptured;
     });
     setActiveDrop(null);
-    onCapture?.(captured);
-  }, [activeDrop, onCapture, onAllCaptured, DROPS_CONFIG]);
+    onCaptureRef.current?.(captured);
+  }, [activeDrop, DROPS_CONFIG.length]);
 
   // Get the correct order for validation
   const getCorrectOrder = useCallback(() => {
