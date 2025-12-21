@@ -136,7 +136,8 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
         trackEvent('senda_video_complete');
         
         // Show sequence modal at 99% if captured at least 2 drops
-        if (capturedDrops.length >= 2 && !sequenceModalShownRef.current && !sequenceCompleted) {
+        // Only show modal if ALL drops captured
+        if (allCaptured && !sequenceModalShownRef.current && !sequenceCompleted) {
           sequenceModalShownRef.current = true;
           trackEvent('senda_ritual_modal_shown');
           setShowSequenceModal(true);
@@ -159,7 +160,7 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [token, checkForDrop, capturedDrops.length, sequenceCompleted, trackEvent, markMilestone, updateVideoProgress]);
+  }, [token, checkForDrop, allCaptured, sequenceCompleted, trackEvent, markMilestone, updateVideoProgress]);
 
   const handleAIAssistantOpen = () => {
     trackEvent('senda_ai_assistant_open');
@@ -228,9 +229,23 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
         )}
       </div>
 
-      {/* AI Assistant - Secondary card below */}
+      {/* AI Assistant - Locked until all drops captured */}
       <div className="max-w-2xl mx-auto">
-        <div className="glass-card-dark p-6 space-y-4">
+        <div className={`glass-card-dark p-6 space-y-4 relative transition-all duration-500 ${
+          allCaptured ? 'opacity-100' : 'opacity-40 pointer-events-none'
+        }`}>
+          {/* Lock overlay */}
+          {!allCaptured && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+              <div className="text-center px-4">
+                <span className="text-3xl mb-3 block">🔒</span>
+                <p className="text-sm text-muted-foreground">
+                  Captura los 3 resquicios para desbloquear
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div className="text-center space-y-3">
             <div className="text-4xl">🤖</div>
             <h3 className="text-xl font-bold text-foreground">Asistente IA Exclusivo</h3>
