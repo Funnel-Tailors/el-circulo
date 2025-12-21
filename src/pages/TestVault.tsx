@@ -7,6 +7,7 @@ import VaultSection from "@/components/senda/VaultSection";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
+import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -23,6 +24,7 @@ const TestVault = () => {
   // Drops testing state
   const [selectedClass, setSelectedClass] = useState<1 | 2>(1);
   const [showDropDemo, setShowDropDemo] = useState(false);
+  const [showRitualModal, setShowRitualModal] = useState(false);
 
   // Auth check
   useEffect(() => {
@@ -275,6 +277,14 @@ const TestVault = () => {
           >
             🔄 Reset Drops
           </button>
+
+          <button
+            onClick={() => setShowRitualModal(true)}
+            className="dark-button w-full py-3 mt-2"
+            disabled={capturedDrops.length < 2}
+          >
+            🔮 Test Modal Ritual (ordenar secuencia)
+          </button>
           
           {/* Info estado actual */}
           <div className="mt-4 text-xs text-foreground/50">
@@ -331,6 +341,24 @@ const TestVault = () => {
         isOpen={showPortal}
         onClose={() => setShowPortal(false)}
         onUnlock={handleUnlock}
+      />
+
+      {/* Ritual Sequence Modal */}
+      <RitualSequenceModal
+        isOpen={showRitualModal}
+        capturedDrops={capturedDrops}
+        onSequenceComplete={() => {
+          console.log('Sequence completed!');
+          toast({
+            title: '✦ Secuencia correcta',
+            description: 'El ritual ha sido completado',
+          });
+          setShowRitualModal(false);
+        }}
+        onSequenceFailed={() => {
+          console.log('Sequence failed!');
+        }}
+        onClose={() => setShowRitualModal(false)}
       />
     </div>
   );
