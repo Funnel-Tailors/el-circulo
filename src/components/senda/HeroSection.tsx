@@ -29,13 +29,6 @@ export const HeroSection = ({ quizState }: HeroSectionProps) => {
       <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
         {personalization.heroSubtext}
       </p>
-
-      {/* Bottom divider */}
-      <div className="flex items-center justify-center gap-4 pt-4" aria-hidden="true">
-        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-        <div className="text-muted-foreground text-xs">✦</div>
-        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-      </div>
     </div>
   );
 };

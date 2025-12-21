@@ -5,6 +5,7 @@ import { useSendaProgress, SendaProgress } from "@/hooks/useSendaProgress";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
+import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
 
 interface PreparationCardsProps {
   token: string | null;
@@ -16,6 +17,14 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
   const [videoProgress, setVideoProgress] = useState(initialProgress?.class1VideoProgress || 0);
   const [showSequenceModal, setShowSequenceModal] = useState(false);
   const [sequenceCompleted, setSequenceCompleted] = useState(initialProgress?.class1SequenceCompleted || false);
+  const [ritualAccepted, setRitualAccepted] = useState(false);
+  
+  const hasAcceptedFromStorage = useRitualAccepted(token, 1);
+  
+  // Sync with localStorage on mount
+  useEffect(() => {
+    setRitualAccepted(hasAcceptedFromStorage);
+  }, [hasAcceptedFromStorage]);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const tracked25 = useRef(false);
@@ -74,6 +83,10 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
       }
     });
   }, [token]);
+
+  const handleRitualAccept = () => {
+    setRitualAccepted(true);
+  };
 
   // Track video progress milestones + check for drops
   useEffect(() => {
@@ -161,36 +174,6 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
 
   return (
     <div className="space-y-8 mb-16">
-      {/* Separator */}
-      <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
-        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-        <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
-        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-      </div>
-
-      {/* Ritual intro copy - on-brand, challenging */}
-      <div className="text-center space-y-4 max-w-3xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight text-foreground">
-          EL RITUAL COMIENZA
-        </h2>
-        <div className="space-y-3 text-muted-foreground">
-          <p className="text-base md:text-lg">
-            Esto no es un curso. No es un webinar de mierda.
-          </p>
-          <p className="text-base md:text-lg">
-            Es un <span className="text-primary font-medium">ritual</span>. Y los rituales tienen un precio.
-          </p>
-          <p className="text-sm md:text-base text-muted-foreground/80 mt-4 italic">
-            A lo largo del vídeo aparecerán <span className="text-primary">resquicios de magia</span>.<br />
-            Solo una vez. Solo si estás atento.<br />
-            Si los capturas todos, tendrás la oportunidad de demostrar que eres digno de cruzar el umbral.
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-2">
-            Si los pierdes... bueno, ya sabes dónde está la puerta.
-          </p>
-        </div>
-      </div>
-
       {/* VIDEO HERO - Full width, no card wrapper */}
       <div className="max-w-4xl mx-auto">
         <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
@@ -198,30 +181,43 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
             ref={videoRef}
             src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a5a72e44d0ded5ced1e47e.mp4"
             controls
-            className="w-full h-full"
+            className={`w-full h-full transition-all duration-300 ${!ritualAccepted ? 'pointer-events-none opacity-50 blur-[2px]' : ''}`}
             playsInline
           />
           
-          {/* Drop overlay */}
-          <VideoDropOverlay 
-            activeDrop={activeDrop} 
-            onCapture={captureDrop} 
+          {/* Ritual Overlay - Desktop: sobre el video */}
+          <VideoRitualOverlay 
+            token={token}
+            classNumber={1}
+            onAccept={handleRitualAccept}
           />
+          
+          {/* Drop overlay - only active after ritual accepted */}
+          {ritualAccepted && (
+            <VideoDropOverlay 
+              activeDrop={activeDrop} 
+              onCapture={captureDrop} 
+            />
+          )}
         </div>
 
+        {/* Ritual Overlay - Mobile: debajo del video (handled inside component) */}
+
         {/* Video progress indicator */}
-        {videoProgress > 0 && (
+        {ritualAccepted && videoProgress > 0 && (
           <div className="text-xs text-muted-foreground text-center mt-3">
             Progreso: {videoProgress}%
           </div>
         )}
 
         {/* Drops inventory - appears after first capture */}
-        <DropsInventory 
-          capturedDrops={capturedDrops}
-          totalDrops={drops.length}
-          allCaptured={allCaptured}
-        />
+        {ritualAccepted && (
+          <DropsInventory 
+            capturedDrops={capturedDrops}
+            totalDrops={drops.length}
+            allCaptured={allCaptured}
+          />
+        )}
       </div>
 
       {/* AI Assistant - Secondary card below */}
