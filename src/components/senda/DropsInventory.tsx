@@ -182,9 +182,22 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNu
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-center text-xs text-muted-foreground/50 italic mt-4 max-w-md mx-auto leading-relaxed"
+            className="text-center text-sm text-muted-foreground/80 italic mt-4 max-w-md mx-auto leading-relaxed"
           >
-            {HINT_MESSAGE}
+            Dicen que algo permanece oculto en los últimos minutos. Si alguna vez necesitas atravesar un portal...{' '}
+            <motion.span 
+              className="text-white font-semibold not-italic"
+              animate={{ 
+                textShadow: [
+                  '0 0 6px hsl(var(--primary) / 0.3), 0 0 12px hsl(var(--primary) / 0.15)',
+                  '0 0 10px hsl(var(--primary) / 0.5), 0 0 18px hsl(var(--primary) / 0.25)',
+                  '0 0 6px hsl(var(--primary) / 0.3), 0 0 12px hsl(var(--primary) / 0.15)',
+                ]
+              }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            >
+              el orden de los símbolos podría ser la clave
+            </motion.span>.
           </motion.p>
         )}
       </AnimatePresence>
