@@ -209,7 +209,7 @@ const SendaLeadsManager = () => {
               {leads.map((lead) => (
                 <tr 
                   key={lead.ghlContactId} 
-                  className="border-b border-foreground/5 hover:bg-foreground/5 transition-colors"
+                  className="border-b border-foreground/5"
                 >
                   <td className="p-4">
                     <div>
