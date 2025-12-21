@@ -199,12 +199,16 @@ export type Database = {
           class1_assistant_opened: boolean | null
           class1_drops_captured: string[] | null
           class1_drops_missed: string[] | null
+          class1_ritual_accepted: boolean | null
+          class1_ritual_accepted_at: string | null
           class1_sequence_completed: boolean | null
           class1_sequence_failed_attempts: number | null
           class1_video_progress: number | null
           class1_video_started: boolean | null
           class2_drops_captured: string[] | null
           class2_drops_missed: string[] | null
+          class2_ritual_accepted: boolean | null
+          class2_ritual_accepted_at: string | null
           class2_sequence_completed: boolean | null
           class2_sequence_failed_attempts: number | null
           class2_video_progress: number | null
@@ -227,12 +231,16 @@ export type Database = {
           class1_assistant_opened?: boolean | null
           class1_drops_captured?: string[] | null
           class1_drops_missed?: string[] | null
+          class1_ritual_accepted?: boolean | null
+          class1_ritual_accepted_at?: string | null
           class1_sequence_completed?: boolean | null
           class1_sequence_failed_attempts?: number | null
           class1_video_progress?: number | null
           class1_video_started?: boolean | null
           class2_drops_captured?: string[] | null
           class2_drops_missed?: string[] | null
+          class2_ritual_accepted?: boolean | null
+          class2_ritual_accepted_at?: string | null
           class2_sequence_completed?: boolean | null
           class2_sequence_failed_attempts?: number | null
           class2_video_progress?: number | null
@@ -255,12 +263,16 @@ export type Database = {
           class1_assistant_opened?: boolean | null
           class1_drops_captured?: string[] | null
           class1_drops_missed?: string[] | null
+          class1_ritual_accepted?: boolean | null
+          class1_ritual_accepted_at?: string | null
           class1_sequence_completed?: boolean | null
           class1_sequence_failed_attempts?: number | null
           class1_video_progress?: number | null
           class1_video_started?: boolean | null
           class2_drops_captured?: string[] | null
           class2_drops_missed?: string[] | null
+          class2_ritual_accepted?: boolean | null
+          class2_ritual_accepted_at?: string | null
           class2_sequence_completed?: boolean | null
           class2_sequence_failed_attempts?: number | null
           class2_video_progress?: number | null

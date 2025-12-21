@@ -9,6 +9,8 @@ export interface SendaProgress {
   class1DropsMissed: string[];
   class1SequenceCompleted: boolean;
   class1SequenceFailedAttempts: number;
+  class1RitualAccepted: boolean;
+  class1RitualAcceptedAt: string | null;
   vaultUnlocked: boolean;
   vaultUnlockedAt: string | null;
   
@@ -19,6 +21,8 @@ export interface SendaProgress {
   class2DropsMissed: string[];
   class2SequenceCompleted: boolean;
   class2SequenceFailedAttempts: number;
+  class2RitualAccepted: boolean;
+  class2RitualAcceptedAt: string | null;
   
   // Asistente único de Clase 2 (El Arquitecto de Avatares)
   assistant1Unlocked: boolean;
@@ -39,6 +43,8 @@ const DEFAULT_PROGRESS: SendaProgress = {
   class1DropsMissed: [],
   class1SequenceCompleted: false,
   class1SequenceFailedAttempts: 0,
+  class1RitualAccepted: false,
+  class1RitualAcceptedAt: null,
   vaultUnlocked: false,
   vaultUnlockedAt: null,
   class2VideoStarted: false,
@@ -47,6 +53,8 @@ const DEFAULT_PROGRESS: SendaProgress = {
   class2DropsMissed: [],
   class2SequenceCompleted: false,
   class2SequenceFailedAttempts: 0,
+  class2RitualAccepted: false,
+  class2RitualAcceptedAt: null,
   assistant1Unlocked: false,
   assistant1Opened: false,
   class1AssistantOpened: false,
@@ -102,6 +110,8 @@ export const useSendaProgress = (token: string | null) => {
     class1DropsMissed: row.class1_drops_missed ?? [],
     class1SequenceCompleted: row.class1_sequence_completed ?? false,
     class1SequenceFailedAttempts: row.class1_sequence_failed_attempts ?? 0,
+    class1RitualAccepted: row.class1_ritual_accepted ?? false,
+    class1RitualAcceptedAt: row.class1_ritual_accepted_at ?? null,
     vaultUnlocked: row.vault_unlocked ?? false,
     vaultUnlockedAt: row.vault_unlocked_at ?? null,
     class2VideoStarted: row.class2_video_started ?? false,
@@ -110,6 +120,8 @@ export const useSendaProgress = (token: string | null) => {
     class2DropsMissed: row.class2_drops_missed ?? [],
     class2SequenceCompleted: row.class2_sequence_completed ?? false,
     class2SequenceFailedAttempts: row.class2_sequence_failed_attempts ?? 0,
+    class2RitualAccepted: row.class2_ritual_accepted ?? false,
+    class2RitualAcceptedAt: row.class2_ritual_accepted_at ?? null,
     assistant1Unlocked: row.assistant1_unlocked ?? false,
     assistant1Opened: row.assistant1_opened ?? false,
     class1AssistantOpened: row.class1_assistant_opened ?? false,
@@ -127,6 +139,8 @@ export const useSendaProgress = (token: string | null) => {
     if (p.class1DropsMissed !== undefined) result.class1_drops_missed = p.class1DropsMissed;
     if (p.class1SequenceCompleted !== undefined) result.class1_sequence_completed = p.class1SequenceCompleted;
     if (p.class1SequenceFailedAttempts !== undefined) result.class1_sequence_failed_attempts = p.class1SequenceFailedAttempts;
+    if (p.class1RitualAccepted !== undefined) result.class1_ritual_accepted = p.class1RitualAccepted;
+    if (p.class1RitualAcceptedAt !== undefined) result.class1_ritual_accepted_at = p.class1RitualAcceptedAt;
     if (p.vaultUnlocked !== undefined) result.vault_unlocked = p.vaultUnlocked;
     if (p.vaultUnlockedAt !== undefined) result.vault_unlocked_at = p.vaultUnlockedAt;
     if (p.class2VideoStarted !== undefined) result.class2_video_started = p.class2VideoStarted;
@@ -135,6 +149,8 @@ export const useSendaProgress = (token: string | null) => {
     if (p.class2DropsMissed !== undefined) result.class2_drops_missed = p.class2DropsMissed;
     if (p.class2SequenceCompleted !== undefined) result.class2_sequence_completed = p.class2SequenceCompleted;
     if (p.class2SequenceFailedAttempts !== undefined) result.class2_sequence_failed_attempts = p.class2SequenceFailedAttempts;
+    if (p.class2RitualAccepted !== undefined) result.class2_ritual_accepted = p.class2RitualAccepted;
+    if (p.class2RitualAcceptedAt !== undefined) result.class2_ritual_accepted_at = p.class2RitualAcceptedAt;
     if (p.assistant1Unlocked !== undefined) result.assistant1_unlocked = p.assistant1Unlocked;
     if (p.assistant1Opened !== undefined) result.assistant1_opened = p.assistant1Opened;
     if (p.class1AssistantOpened !== undefined) result.class1_assistant_opened = p.class1AssistantOpened;
@@ -251,9 +267,11 @@ export const useSendaProgress = (token: string | null) => {
     milestone: 
       | 'class1_video_started'
       | 'class1_sequence_completed'
+      | 'class1_ritual_accepted'
       | 'vault_unlocked'
       | 'class2_video_started'
       | 'class2_sequence_completed'
+      | 'class2_ritual_accepted'
       | 'assistant1_unlocked'
       | 'assistant1_opened'
       | 'class1_assistant_opened'
@@ -268,6 +286,11 @@ export const useSendaProgress = (token: string | null) => {
       case 'class1_sequence_completed':
         if (progress.class1SequenceCompleted) return;
         updates.class1SequenceCompleted = true;
+        break;
+      case 'class1_ritual_accepted':
+        if (progress.class1RitualAccepted) return;
+        updates.class1RitualAccepted = true;
+        updates.class1RitualAcceptedAt = new Date().toISOString();
         break;
       case 'vault_unlocked':
         if (progress.vaultUnlocked) return;
@@ -298,6 +321,11 @@ export const useSendaProgress = (token: string | null) => {
               }
             });
         }
+        break;
+      case 'class2_ritual_accepted':
+        if (progress.class2RitualAccepted) return;
+        updates.class2RitualAccepted = true;
+        updates.class2RitualAcceptedAt = new Date().toISOString();
         break;
       case 'assistant1_unlocked':
         if (progress.assistant1Unlocked) return;
