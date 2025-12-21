@@ -46,34 +46,28 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured }: Drops
                 className={`
                   w-12 h-12 md:w-14 md:h-14 rounded-lg border-2 
                   flex items-center justify-center text-2xl md:text-3xl
-                  transition-all duration-300
+                  transition-colors duration-300
                   ${isCaptured 
                     ? 'border-primary bg-primary/10 text-primary' 
                     : 'border-border/50 bg-accent/20 text-muted-foreground/30'
                   }
                 `}
-                initial={isCaptured ? { scale: 0 } : {}}
-                animate={isCaptured ? { scale: 1 } : {}}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
               >
                 <AnimatePresence mode="wait">
                   {isCaptured ? (
                     <motion.span
                       key={drop.symbol}
-                      initial={{ scale: 0, rotate: -180 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      exit={{ scale: 0 }}
-                      transition={{ type: "spring", stiffness: 400 }}
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.5, opacity: 0 }}
+                      transition={{ duration: 0.4, ease: "easeOut" }}
                     >
                       {drop.symbol}
                     </motion.span>
                   ) : (
-                    <motion.span
-                      key="empty"
-                      className="text-muted-foreground/20"
-                    >
+                    <span className="text-muted-foreground/20">
                       _
-                    </motion.span>
+                    </span>
                   )}
                 </AnimatePresence>
               </motion.div>
