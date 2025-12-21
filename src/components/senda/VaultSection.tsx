@@ -8,6 +8,7 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
+import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
 
 interface VaultSectionProps {
   isVisible: boolean;
@@ -37,11 +38,19 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
   const lastProgressUpdate = useRef(0);
   const sequenceModalShownRef = useRef(false);
 
-  // State for sequence
+  // State for sequence and ritual
   const [showSequenceModal, setShowSequenceModal] = useState(false);
   const [sequenceCompleted, setSequenceCompleted] = useState(
     initialProgress?.class2SequenceCompleted || false
   );
+  const [ritualAccepted, setRitualAccepted] = useState(false);
+  
+  const hasAcceptedFromStorage = useRitualAccepted(token, 2);
+  
+  // Sync with localStorage on mount
+  useEffect(() => {
+    setRitualAccepted(hasAcceptedFromStorage);
+  }, [hasAcceptedFromStorage]);
 
   // Fire-and-forget tracking
   const trackEvent = useCallback((eventType: string) => {
@@ -57,6 +66,10 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
       }
     });
   }, [token]);
+
+  const handleRitualAccept = () => {
+    setRitualAccepted(true);
+  };
 
   // Video drops system (Class 2 = 5 drops)
   const {
@@ -230,43 +243,6 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           </motion.div>
         </div>
 
-        {/* Ritual intro - on-brand copy */}
-        {!sequenceCompleted && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
-            transition={{ delay: 2.0, duration: 0.8 }}
-            className="text-center mb-8"
-          >
-            <div className="space-y-3 text-foreground/60 max-w-2xl mx-auto">
-              <p className="text-base md:text-lg">
-                El primer ritual fue solo el <span className="text-foreground">aperitivo</span>.
-              </p>
-              <p className="text-base md:text-lg">
-                Ahora viene la <span className="text-foreground">prueba real</span>.
-              </p>
-              <p className="text-sm text-foreground/50 mt-4 italic">
-                Cinco resquicios. Más esquivos. Más rápidos.<br />
-                El umbral al verdadero conocimiento no se cruza por accidente.
-              </p>
-              <p className="text-xs text-foreground/40 mt-2">
-                El Arquitecto de Avatares espera... pero no a cualquiera.
-              </p>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Separator */}
-        <motion.div 
-          className="flex items-center justify-center gap-4 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: isVisible ? 1 : 0 }}
-          transition={{ delay: 2.2, duration: 0.6 }}
-        >
-          <div className="h-px w-16 bg-gradient-to-r from-transparent to-foreground/20" />
-          <span className="text-foreground/30 text-xs">✦</span>
-          <div className="h-px w-16 bg-gradient-to-l from-transparent to-foreground/20" />
-        </motion.div>
 
         {/* VIDEO HERO - Outside card, full width */}
         <motion.div
@@ -285,49 +261,62 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
             </div>
           </div>
           
-          {/* Video with drop overlay */}
+          {/* Video with ritual + drop overlay */}
           <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
             <video
               ref={videoRef}
               src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c61440c5b7ed66facfc.mp4"
               controls
-              className="w-full h-full"
+              className={`w-full h-full transition-all duration-300 ${!ritualAccepted ? 'pointer-events-none opacity-50 blur-[2px]' : ''}`}
               playsInline
             />
             
-            {/* Drop overlay */}
-            <VideoDropOverlay 
-              activeDrop={activeDrop} 
-              onCapture={captureDrop} 
+            {/* Ritual Overlay - Desktop: sobre el video */}
+            <VideoRitualOverlay 
+              token={token}
+              classNumber={2}
+              onAccept={handleRitualAccept}
             />
-          </div>
-
-          {/* Progress indicator */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm mb-2">
-              <span className="text-foreground/50">Tu progreso</span>
-              <span className="text-foreground/70">{class2Progress}%</span>
-            </div>
-            <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
-              <motion.div 
-                className="h-full bg-foreground/40"
-                initial={{ width: 0 }}
-                animate={{ width: `${class2Progress}%` }}
-                transition={{ duration: 0.5 }}
+            
+            {/* Drop overlay - only active after ritual accepted */}
+            {ritualAccepted && (
+              <VideoDropOverlay 
+                activeDrop={activeDrop} 
+                onCapture={captureDrop} 
               />
-            </div>
+            )}
           </div>
 
-          {/* Drops inventory - appears after first capture */}
-          <DropsInventory 
-            capturedDrops={capturedDrops}
-            totalDrops={drops.length}
-            allCaptured={allCaptured}
-          />
+          {/* Progress indicator - only show after ritual accepted */}
+          {ritualAccepted && (
+            <div className="mt-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-foreground/50">Tu progreso</span>
+                <span className="text-foreground/70">{class2Progress}%</span>
+              </div>
+              <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-foreground/40"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${class2Progress}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Drops inventory - appears after ritual accepted and first capture */}
+          {ritualAccepted && (
+            <DropsInventory 
+              capturedDrops={capturedDrops}
+              totalDrops={drops.length}
+              allCaptured={allCaptured}
+            />
+          )}
 
           {/* Dynamic message based on drops */}
           <AnimatePresence mode="wait">
-            {getDropsMessage() && (
+            {ritualAccepted && getDropsMessage() && (
               <motion.p
                 key={capturedDrops.length}
                 initial={{ opacity: 0, y: 10 }}
