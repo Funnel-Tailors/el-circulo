@@ -6,6 +6,7 @@ interface VideoRitualOverlayProps {
   token: string | null;
   classNumber: 1 | 2;
   onAccept: () => void;
+  initialAccepted?: boolean; // From DB via useSendaProgress
 }
 
 const COPY = {
@@ -42,17 +43,24 @@ const COPY = {
   },
 };
 
-export const VideoRitualOverlay = ({ token, classNumber, onAccept }: VideoRitualOverlayProps) => {
-  const [hasAccepted, setHasAccepted] = useState(false);
+export const VideoRitualOverlay = ({ token, classNumber, onAccept, initialAccepted }: VideoRitualOverlayProps) => {
+  const [hasAccepted, setHasAccepted] = useState(initialAccepted ?? false);
   const copy = COPY[classNumber];
 
-  // Check localStorage on mount
+  // Prioritize DB state over localStorage
   useEffect(() => {
+    // If already accepted in DB, use that
+    if (initialAccepted) {
+      setHasAccepted(true);
+      return;
+    }
+    
+    // Fallback to localStorage for compatibility
     if (!token) return;
     const key = `${copy.storageKey}_${token}`;
     const accepted = localStorage.getItem(key) === "true";
     setHasAccepted(accepted);
-  }, [token, copy.storageKey]);
+  }, [token, copy.storageKey, initialAccepted]);
 
   // Track event
   const trackEvent = useCallback((eventType: string) => {
@@ -164,17 +172,28 @@ export const VideoRitualOverlay = ({ token, classNumber, onAccept }: VideoRitual
   );
 };
 
-// Hook para verificar si el ritual fue aceptado
-export const useRitualAccepted = (token: string | null, classNumber: 1 | 2): boolean => {
-  const [hasAccepted, setHasAccepted] = useState(false);
+// Hook para verificar si el ritual fue aceptado (DB first, localStorage fallback)
+export const useRitualAccepted = (
+  token: string | null, 
+  classNumber: 1 | 2,
+  dbAccepted?: boolean // Optional, from useSendaProgress
+): boolean => {
+  const [hasAccepted, setHasAccepted] = useState(dbAccepted ?? false);
   const storageKey = classNumber === 1 ? "senda_ritual_accepted" : "senda_vault_ritual_accepted";
 
   useEffect(() => {
+    // If DB says accepted, use that
+    if (dbAccepted) {
+      setHasAccepted(true);
+      return;
+    }
+    
+    // Fallback to localStorage
     if (!token) return;
     const key = `${storageKey}_${token}`;
     const accepted = localStorage.getItem(key) === "true";
     setHasAccepted(accepted);
-  }, [token, storageKey]);
+  }, [token, storageKey, dbAccepted]);
 
   return hasAccepted;
 };

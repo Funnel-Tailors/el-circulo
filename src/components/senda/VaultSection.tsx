@@ -22,6 +22,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
   const videoRef = useRef<HTMLVideoElement>(null);
   const { trackVaultEvent } = useVaultTracking(token);
   const { 
+    progress,
     markMilestone, 
     recordClass2DropCapture, 
     recordClass2DropMiss, 
@@ -45,12 +46,17 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
   );
   const [ritualAccepted, setRitualAccepted] = useState(false);
   
-  const hasAcceptedFromStorage = useRitualAccepted(token, 2);
+  // Check DB first, then localStorage
+  const hasAcceptedFromStorage = useRitualAccepted(token, 2, progress.class2RitualAccepted);
   
-  // Sync with localStorage on mount
+  // Sync ritual state: DB has priority, then localStorage
   useEffect(() => {
-    setRitualAccepted(hasAcceptedFromStorage);
-  }, [hasAcceptedFromStorage]);
+    if (progress.class2RitualAccepted) {
+      setRitualAccepted(true);
+    } else {
+      setRitualAccepted(hasAcceptedFromStorage);
+    }
+  }, [hasAcceptedFromStorage, progress.class2RitualAccepted]);
 
   // Fire-and-forget tracking
   const trackEvent = useCallback((eventType: string) => {
@@ -69,6 +75,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
 
   const handleRitualAccept = () => {
     setRitualAccepted(true);
+    markMilestone('class2_ritual_accepted');
   };
 
   // Video drops system (Class 2 = 5 drops)
@@ -276,6 +283,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
               token={token}
               classNumber={2}
               onAccept={handleRitualAccept}
+              initialAccepted={progress.class2RitualAccepted}
             />
             
             {/* Drop overlay - only active after ritual accepted */}

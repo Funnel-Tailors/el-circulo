@@ -14,17 +14,32 @@ interface PreparationCardsProps {
 }
 
 export const PreparationCards = ({ token, onSequenceComplete, initialProgress }: PreparationCardsProps) => {
+  // Progress persistence - get progress from hook
+  const { 
+    progress,
+    markMilestone, 
+    recordDropCapture, 
+    recordDropMiss,
+    recordSequenceFailure,
+    updateVideoProgress 
+  } = useSendaProgress(token);
+
   const [videoProgress, setVideoProgress] = useState(initialProgress?.class1VideoProgress || 0);
   const [showSequenceModal, setShowSequenceModal] = useState(false);
   const [sequenceCompleted, setSequenceCompleted] = useState(initialProgress?.class1SequenceCompleted || false);
   const [ritualAccepted, setRitualAccepted] = useState(false);
   
-  const hasAcceptedFromStorage = useRitualAccepted(token, 1);
+  // Check DB first, then localStorage
+  const hasAcceptedFromStorage = useRitualAccepted(token, 1, progress.class1RitualAccepted);
   
-  // Sync with localStorage on mount
+  // Sync ritual state: DB has priority, then localStorage
   useEffect(() => {
-    setRitualAccepted(hasAcceptedFromStorage);
-  }, [hasAcceptedFromStorage]);
+    if (progress.class1RitualAccepted) {
+      setRitualAccepted(true);
+    } else {
+      setRitualAccepted(hasAcceptedFromStorage);
+    }
+  }, [hasAcceptedFromStorage, progress.class1RitualAccepted]);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const tracked25 = useRef(false);
@@ -34,15 +49,6 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
   const sequenceModalShownRef = useRef(false);
-
-  // Progress persistence
-  const { 
-    markMilestone, 
-    recordDropCapture, 
-    recordDropMiss,
-    recordSequenceFailure,
-    updateVideoProgress 
-  } = useSendaProgress(token);
 
   // Video drops system
   const {
@@ -86,6 +92,7 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
 
   const handleRitualAccept = () => {
     setRitualAccepted(true);
+    markMilestone('class1_ritual_accepted');
   };
 
   // Track video progress milestones + check for drops
@@ -190,6 +197,7 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
             token={token}
             classNumber={1}
             onAccept={handleRitualAccept}
+            initialAccepted={progress.class1RitualAccepted}
           />
           
           {/* Drop overlay - only active after ritual accepted */}
