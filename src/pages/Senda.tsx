@@ -122,6 +122,8 @@ const Senda = () => {
       <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
         <HeroSection quizState={quizState || {} as QuizState} />
         
+        <PersonalizedPainSection quizState={quizState || {} as QuizState} />
+        
         {/* Only show preparation if vault not yet unlocked */}
         {!progress.vaultUnlocked && (
           <PreparationCards 
@@ -140,7 +142,6 @@ const Senda = () => {
           </div>
         )}
         
-        <PersonalizedPainSection quizState={quizState || {} as QuizState} />
         <ValueStackSection />
         <FilteredSuccessCases quizState={quizState || {} as QuizState} />
         
