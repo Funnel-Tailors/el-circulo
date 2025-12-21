@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { Drop } from "@/hooks/useVideoDrops";
 
@@ -7,36 +8,37 @@ interface VideoDropOverlayProps {
 }
 
 export const VideoDropOverlay = ({ activeDrop, onCapture }: VideoDropOverlayProps) => {
-  // Random position (avoiding edges)
-  const getRandomPosition = () => {
+  // Fix position when drop appears (won't move during animation)
+  const position = useMemo(() => {
+    if (!activeDrop) return { x: 50, y: 50 };
     const x = 15 + Math.random() * 70; // 15% to 85%
     const y = 15 + Math.random() * 70; // 15% to 85%
     return { x, y };
-  };
-
-  const position = activeDrop ? getRandomPosition() : { x: 50, y: 50 };
+  }, [activeDrop?.id]);
 
   return (
     <AnimatePresence>
       {activeDrop && (
         <motion.button
           key={activeDrop.id}
-          initial={{ scale: 0, opacity: 0 }}
+          initial={{ scale: 0.8, opacity: 0 }}
           animate={{ 
-            scale: [1, 1.2, 1],
+            scale: 1,
             opacity: 1,
+            y: [0, -8, 0], // Subtle mystical float
           }}
           exit={{ 
-            scale: 0,
+            scale: 0.8,
             opacity: 0,
-            filter: "blur(10px)",
+            filter: "blur(8px)",
           }}
           transition={{
-            duration: 0.5,
-            scale: {
+            duration: 0.6,
+            ease: "easeOut",
+            y: {
               repeat: Infinity,
-              repeatType: "reverse",
-              duration: 0.8,
+              duration: 3,
+              ease: "easeInOut",
             }
           }}
           onClick={(e) => {
@@ -49,46 +51,46 @@ export const VideoDropOverlay = ({ activeDrop, onCapture }: VideoDropOverlayProp
             top: `${position.y}%`,
             transform: 'translate(-50%, -50%)',
           }}
-          whileHover={{ scale: 1.3 }}
-          whileTap={{ scale: 0.8 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
         >
           <motion.div
             className="relative"
             animate={{
               filter: [
-                "drop-shadow(0 0 10px hsl(var(--primary)))",
-                "drop-shadow(0 0 25px hsl(var(--primary)))",
-                "drop-shadow(0 0 10px hsl(var(--primary)))",
+                "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))",
+                "drop-shadow(0 0 18px hsl(var(--primary) / 0.8))",
+                "drop-shadow(0 0 12px hsl(var(--primary) / 0.6))",
               ],
             }}
             transition={{
-              duration: 1.5,
+              duration: 4,
               repeat: Infinity,
               ease: "easeInOut",
             }}
           >
-            {/* Glow ring */}
+            {/* Soft halo glow */}
             <motion.div
-              className="absolute inset-0 rounded-full bg-primary/20"
+              className="absolute rounded-full bg-primary/10"
               animate={{
-                scale: [1, 2, 1],
-                opacity: [0.5, 0, 0.5],
+                opacity: [0.3, 0.5, 0.3],
               }}
               transition={{
-                duration: 1.5,
+                duration: 3,
                 repeat: Infinity,
-                ease: "easeOut",
+                ease: "easeInOut",
               }}
               style={{
-                width: '80px',
-                height: '80px',
-                left: '-20px',
-                top: '-20px',
+                width: '70px',
+                height: '70px',
+                left: '-15px',
+                top: '-15px',
+                filter: 'blur(8px)',
               }}
             />
             
             {/* Symbol */}
-            <span className="text-5xl md:text-6xl text-primary font-bold drop-shadow-lg">
+            <span className="text-5xl md:text-6xl text-primary font-bold">
               {activeDrop.symbol}
             </span>
           </motion.div>
