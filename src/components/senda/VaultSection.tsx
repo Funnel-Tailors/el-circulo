@@ -7,7 +7,6 @@ import { useSendaProgress, SendaProgress } from "@/hooks/useSendaProgress";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
-import { RitualSequenceModal } from "./RitualSequenceModal";
 import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
 
 interface VaultSectionProps {
@@ -26,7 +25,6 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
     markMilestone, 
     recordClass2DropCapture, 
     recordClass2DropMiss, 
-    recordClass2SequenceFailure,
     updateVideoProgress 
   } = useSendaProgress(token);
   
@@ -37,13 +35,8 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
   const tracked100 = useRef(false);
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
-  const sequenceModalShownRef = useRef(false);
 
-  // State for sequence and ritual
-  const [showSequenceModal, setShowSequenceModal] = useState(false);
-  const [sequenceCompleted, setSequenceCompleted] = useState(
-    initialProgress?.class2SequenceCompleted || false
-  );
+  // State for ritual
   const [ritualAccepted, setRitualAccepted] = useState(false);
   
   // Check DB first, then localStorage
@@ -97,6 +90,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
       // Track all captured milestone
       if (capturedDrops.length === drops.length - 1) {
         trackEvent('senda_vault_all_drops_captured');
+        markMilestone('assistant1_unlocked');
       }
     },
     onMiss: (drop) => {
@@ -144,13 +138,6 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
       if (progressPercent >= 99 && !tracked100.current) {
         tracked100.current = true;
         trackVaultEvent('senda_vault_video_complete');
-        
-        // Show sequence modal at 99% if captured at least 3 drops and not completed
-        if (capturedDrops.length >= 3 && !sequenceModalShownRef.current && !sequenceCompleted) {
-          sequenceModalShownRef.current = true;
-          trackEvent('senda_vault_ritual_modal_shown');
-          setShowSequenceModal(true);
-        }
       }
     };
 
@@ -169,36 +156,12 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
       video.removeEventListener('timeupdate', handleTimeUpdate);
       video.removeEventListener('play', handlePlay);
     };
-  }, [isVisible, onClass2Progress, trackVaultEvent, markMilestone, checkForDrop, capturedDrops.length, sequenceCompleted, trackEvent, updateVideoProgress, drops.length, recordClass2DropCapture, recordClass2DropMiss]);
-
-  const handleSequenceComplete = () => {
-    setShowSequenceModal(false);
-    setSequenceCompleted(true);
-    trackEvent('senda_vault_ritual_sequence_complete');
-    markMilestone('class2_sequence_completed');
-    markMilestone('assistant1_unlocked');
-  };
-
-  const handleSequenceFailed = () => {
-    trackEvent('senda_vault_ritual_sequence_failed');
-    recordClass2SequenceFailure();
-  };
+  }, [isVisible, onClass2Progress, trackVaultEvent, markMilestone, checkForDrop, trackEvent, updateVideoProgress, drops.length, recordClass2DropCapture, recordClass2DropMiss]);
 
   const handleAssistantOpen = () => {
     trackVaultEvent('senda_vault_assistant_opened');
     markMilestone('assistant1_opened');
-  };
-
-  // Messages based on captured drops
-  const getDropsMessage = () => {
-    const count = capturedDrops.length;
-    if (count === 0) return null;
-    if (count === 1) return "Uno. Quedan cuatro. No bajes la guardia.";
-    if (count === 2) return "Dos. El patrón empieza a revelarse.";
-    if (count === 3) return "Tres. Ya puedes intentar el ritual cuando termine el vídeo.";
-    if (count === 4) return "Cuatro. Solo uno más.";
-    if (count === 5) return "✧ Los cinco resquicios han sido reclamados. Demuestra tu memoria.";
-    return null;
+    markMilestone('class2_sequence_completed'); // Mark as completed when assistant is opened
   };
 
   return (
@@ -319,23 +282,9 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
               capturedDrops={capturedDrops}
               totalDrops={drops.length}
               allCaptured={allCaptured}
+              classNumber={2}
             />
           )}
-
-          {/* Dynamic message based on drops */}
-          <AnimatePresence mode="wait">
-            {ritualAccepted && getDropsMessage() && (
-              <motion.p
-                key={capturedDrops.length}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="text-center text-sm text-foreground/60 mt-4 italic"
-              >
-                {getDropsMessage()}
-              </motion.p>
-            )}
-          </AnimatePresence>
         </motion.div>
 
         {/* Separator */}
@@ -350,7 +299,7 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
-        {/* Single Assistant - Blocked until sequence complete */}
+        {/* Single Assistant - Blocked until all drops captured */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
@@ -360,16 +309,28 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
             Asistente IA Exclusivo
           </h3>
           
-          <div className={`glass-card-dark p-8 transition-all duration-700 max-w-xl mx-auto ${
-            !sequenceCompleted ? 'opacity-40 grayscale blur-[1px]' : ''
+          <div className={`glass-card-dark p-8 transition-all duration-700 max-w-xl mx-auto relative ${
+            !allCaptured ? 'opacity-40 grayscale blur-[1px]' : ''
           }`}>
+            {/* Lock overlay when not all captured */}
+            {!allCaptured && (
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+                <div className="text-center">
+                  <span className="text-2xl mb-2 block">🔒</span>
+                  <p className="text-sm text-muted-foreground">
+                    Captura los 5 resquicios para desbloquear
+                  </p>
+                </div>
+              </div>
+            )}
+            
             <div className="flex flex-col items-center text-center gap-4">
               <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
-                sequenceCompleted 
+                allCaptured 
                   ? 'bg-foreground/10' 
                   : 'bg-foreground/5'
               }`}>
-                {sequenceCompleted ? (
+                {allCaptured ? (
                   <Bot className="w-8 h-8 text-foreground" />
                 ) : (
                   <Lock className="w-7 h-7 text-foreground/40" />
@@ -384,14 +345,11 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
                   Diseña el cliente que mereces con precisión quirúrgica
                 </p>
                 
-                {!sequenceCompleted ? (
+                {!allCaptured ? (
                   <div className="space-y-2">
                     <span className="text-foreground/30 text-sm block">
-                      🔒 Demuestra tu valía completando el ritual
+                      🔒 Captura los 5 resquicios para desbloquear
                     </span>
-                    <p className="text-foreground/20 text-xs">
-                      Captura los resquicios y resuelve el enigma
-                    </p>
                   </div>
                 ) : (
                   <motion.div
@@ -431,15 +389,6 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           <div className="h-px w-32 bg-gradient-to-l from-transparent to-foreground/10" />
         </motion.div>
       </div>
-
-      {/* Ritual Sequence Modal (5 drops) */}
-      <RitualSequenceModal
-        isOpen={showSequenceModal}
-        capturedDrops={capturedDrops}
-        onSequenceComplete={handleSequenceComplete}
-        onSequenceFailed={handleSequenceFailed}
-        onClose={() => setShowSequenceModal(false)}
-      />
     </motion.section>
   );
 };
