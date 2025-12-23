@@ -293,13 +293,13 @@ const CircleHero = () => {
         <EndlessTools3D 
           embedId="d5e20946-1c89-4b1f-8d4a-9bc050121883"
           size="md"
-          showGlow={true}
-          floatAnimation={true}
+          showGlow={false}
+          floatAnimation={false}
         />
       </div>
 
       {/* Logo EL CÍRCULO - solapando el elemento 3D */}
-      <div className="space-y-4 -mt-10 relative z-10">
+      <div className="space-y-4 -mt-28 relative z-10">
         <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow whitespace-nowrap">
           EL CÍRCULO
         </h1>
