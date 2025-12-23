@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 import { X } from "lucide-react";
+import { EndlessTools3D } from "@/components/senda/EndlessTools3D";
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
     // Track CTA click ANTES de trackQuizStart
@@ -287,8 +288,18 @@ const CircleHero = () => {
         </Button>
       </div>
 
-      {/* Logo EL CÍRCULO */}
-      <div className="space-y-4 mt-12">
+      {/* Elemento 3D - transición visual */}
+      <div className="relative flex justify-center mt-8">
+        <EndlessTools3D 
+          embedId="d5e20946-1c89-4b1f-8d4a-9bc050121883"
+          size="md"
+          showGlow={true}
+          floatAnimation={true}
+        />
+      </div>
+
+      {/* Logo EL CÍRCULO - solapando el elemento 3D */}
+      <div className="space-y-4 -mt-10 relative z-10">
         <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow whitespace-nowrap">
           EL CÍRCULO
         </h1>
