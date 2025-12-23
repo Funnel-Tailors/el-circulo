@@ -292,8 +292,7 @@ export const useSendaLeads = () => {
 
     const { error } = await supabase
       .from('senda_progress')
-      .update(updates)
-      .eq('ghl_contact_id', ghlContactId);
+      .upsert({ ghl_contact_id: ghlContactId, ...updates }, { onConflict: 'ghl_contact_id' });
 
     if (error) throw error;
     await fetchLeads();
