@@ -12,6 +12,7 @@ interface VideoRitualOverlayProps {
 const COPY = {
   1: {
     title: "EL RITUAL COMIENZA",
+    // Desktop: copy completo
     lines: [
       "Esto no es un curso. Es un ritual.",
       "Y los rituales tienen un precio.",
@@ -22,13 +23,21 @@ const COPY = {
       "Si los capturas todos, tendrás la oportunidad",
       "de demostrar que eres digno de cruzar el umbral.",
     ],
+    // Móvil: versión condensada (Opción B - Medio)
+    mobileLines: [
+      "Esto no es un curso. Es un ritual.",
+      "Aparecerán resquicios de magia durante el vídeo.",
+      "Captúralos todos para cruzar el umbral.",
+    ],
     warning: "Si los pierdes, perderás para siempre uno de los artefactos del Círculo.",
+    mobileWarning: "Captúralos o los perderás para siempre.",
     cta: "ACEPTO EL RITUAL",
     eventName: "senda_ritual_accepted",
     storageKey: "senda_ritual_accepted",
   },
   2: {
     title: "EL SEGUNDO RITUAL",
+    // Desktop: copy completo
     lines: [
       "El primer ritual fue solo el aperitivo.",
       "Ahora viene la prueba real.",
@@ -36,7 +45,14 @@ const COPY = {
       "Cinco resquicios. Más esquivos. Más rápidos.",
       "El umbral al verdadero conocimiento no se cruza por accidente.",
     ],
+    // Móvil: versión condensada (Opción B - Medio)
+    mobileLines: [
+      "El primer ritual fue solo el aperitivo.",
+      "Cinco resquicios. Más esquivos. Más rápidos.",
+      "Captúralos para cruzar el umbral real.",
+    ],
     warning: "El Arquitecto de Avatares espera... pero no a cualquiera.",
+    mobileWarning: "El Arquitecto espera... pero no a cualquiera.",
     cta: "ACEPTO EL RITUAL",
     eventName: "senda_vault_ritual_accepted",
     storageKey: "senda_vault_ritual_accepted",
@@ -96,77 +112,53 @@ export const VideoRitualOverlay = ({ token, classNumber, onAccept, initialAccept
   return (
     <AnimatePresence>
       {!hasAccepted && (
-        <>
-          {/* Desktop: Overlay sobre el video */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="hidden md:flex absolute inset-0 z-20 bg-black/90 backdrop-blur-sm flex-col items-center justify-center p-8"
-          >
-            <div className="text-center space-y-6 max-w-lg">
-              <span className="text-foreground/40 text-sm tracking-[0.3em]">⟡</span>
-              
-              <h3 className="text-2xl md:text-3xl font-display font-bold text-foreground uppercase tracking-wider">
-                {copy.title}
-              </h3>
-              
-              <div className="space-y-1 text-foreground/70 text-sm md:text-base">
-                {copy.lines.map((line, i) => (
-                  <p key={i} className={line === "" ? "h-3" : ""}>
-                    {line}
-                  </p>
-                ))}
-              </div>
-              
-              <p className="text-destructive/80 text-sm flex items-center justify-center gap-2">
-                <span>⚠️</span>
-                <span>{copy.warning}</span>
-              </p>
-              
-              <button
-                onClick={handleAccept}
-                className="dark-button-primary px-8 py-3 text-sm font-semibold tracking-wider uppercase"
-              >
-                {copy.cta} →
-              </button>
-            </div>
-          </motion.div>
-
-          {/* Mobile: Copy debajo del video (no overlay) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden mt-6 text-center space-y-4 px-4"
-          >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-20 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-4 md:p-8"
+        >
+          <div className="text-center space-y-4 md:space-y-6 max-w-lg">
             <span className="text-foreground/40 text-sm tracking-[0.3em]">⟡</span>
             
-            <h3 className="text-xl font-display font-bold text-foreground uppercase tracking-wider">
+            <h3 className="text-xl md:text-3xl font-display font-bold text-foreground uppercase tracking-wider">
               {copy.title}
             </h3>
             
-            <div className="space-y-1 text-foreground/70 text-sm">
+            {/* Desktop: copy completo */}
+            <div className="hidden md:block space-y-1 text-foreground/70 text-base">
               {copy.lines.map((line, i) => (
-                <p key={i} className={line === "" ? "h-2" : ""}>
+                <p key={i} className={line === "" ? "h-3" : ""}>
                   {line}
                 </p>
               ))}
             </div>
             
-            <p className="text-destructive/80 text-xs flex items-center justify-center gap-2">
+            {/* Móvil: copy reducido */}
+            <div className="md:hidden space-y-2 text-foreground/70 text-sm">
+              {copy.mobileLines.map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
+            </div>
+            
+            {/* Warning diferente por dispositivo */}
+            <p className="hidden md:flex text-destructive/80 text-sm items-center justify-center gap-2">
               <span>⚠️</span>
               <span>{copy.warning}</span>
+            </p>
+            <p className="md:hidden text-destructive/80 text-xs flex items-center justify-center gap-2">
+              <span>⚠️</span>
+              <span>{copy.mobileWarning}</span>
             </p>
             
             <button
               onClick={handleAccept}
-              className="dark-button-primary px-6 py-3 text-sm font-semibold tracking-wider uppercase w-full"
+              className="dark-button-primary px-6 md:px-8 py-3 text-sm font-semibold tracking-wider uppercase w-full md:w-auto"
             >
               {copy.cta} →
             </button>
-          </motion.div>
-        </>
+          </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );
