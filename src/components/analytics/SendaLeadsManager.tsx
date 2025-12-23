@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/popover';
 import { RefreshCw, Eye, Ban, Undo2, CalendarIcon, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { SendaProgressBar } from './SendaProgressBar';
 
 const statusLabels: Record<SendaLead['sendaStatus'], { label: string; color: string }> = {
   no_access: { label: '⚪ Sin acceso', color: 'bg-muted text-muted-foreground' },
@@ -101,7 +102,7 @@ const renderExpirationInfo = (lead: SendaLead) => {
 };
 
 const SendaLeadsManager = () => {
-  const { leads, loading, fetchLeads, banLead, unbanLead, scheduleCall, markCompleted } = useSendaLeads();
+  const { leads, loading, fetchLeads, banLead, unbanLead, scheduleCall, markCompleted, unlockMilestone, resetMilestone } = useSendaLeads();
   const [selectedLead, setSelectedLead] = useState<SendaLead | null>(null);
   const [banReason, setBanReason] = useState<string>('no_show');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -207,123 +208,138 @@ const SendaLeadsManager = () => {
             </thead>
             <tbody>
               {leads.map((lead) => (
-                <tr 
-                  key={lead.ghlContactId} 
-                  className="border-b border-foreground/5"
-                >
-                  <td className="p-4">
-                    <div>
-                      <p className="font-medium text-foreground">{lead.name}</p>
-                      <p className="text-xs text-foreground/50">{lead.phone}</p>
-                    </div>
-                  </td>
-                  <td className="p-4 text-foreground/70 text-sm">
-                    {formatDistanceToNow(new Date(lead.submittedAt), { addSuffix: true, locale: es })}
-                  </td>
-                  <td className="p-4">
-                    <Badge className={`${statusLabels[lead.sendaStatus].color} border`}>
-                      {statusLabels[lead.sendaStatus].label}
-                      {lead.sendaStatus === 'watching' && lead.videoProgress > 0 && (
-                        <span className="ml-1">({lead.videoProgress}%)</span>
-                      )}
-                    </Badge>
-                  </td>
-                  <td className="p-4">
-                    {renderExpirationInfo(lead)}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center justify-end gap-1">
-                      {/* Schedule call button */}
-                      {!lead.isBlacklisted && (
-                        <Popover open={scheduleLeadId === lead.ghlContactId} onOpenChange={(open) => {
-                          if (!open) {
-                            setScheduleLeadId(null);
-                            setSelectedDate(undefined);
-                            setSelectedTime("10:00");
-                          }
-                        }}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setScheduleLeadId(lead.ghlContactId)}
-                              className="text-purple-400 hover:text-purple-300 hover:bg-purple-950/30"
-                              title="Registrar fecha de llamada"
-                            >
-                              <CalendarIcon className="w-4 h-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="end">
-                            <Calendar
-                              mode="single"
-                              selected={selectedDate}
-                              onSelect={setSelectedDate}
-                              disabled={(date) => date < new Date()}
-                              initialFocus
-                              className="pointer-events-auto"
-                            />
-                            <div className="p-3 border-t border-foreground/10 space-y-3">
-                              <Select value={selectedTime} onValueChange={setSelectedTime}>
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Hora" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
-                                    "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
-                                    "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
-                                    "18:00", "18:30", "19:00", "19:30", "20:00"].map(time => (
-                                    <SelectItem key={time} value={time}>{time}</SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <Button 
-                                size="sm" 
-                                className="w-full"
-                                disabled={!selectedDate}
-                                onClick={() => handleScheduleCall(lead.ghlContactId)}
+                <>
+                  <tr 
+                    key={lead.ghlContactId} 
+                    className="border-b border-foreground/5"
+                  >
+                    <td className="p-4">
+                      <div>
+                        <p className="font-medium text-foreground">{lead.name}</p>
+                        <p className="text-xs text-foreground/50">{lead.phone}</p>
+                      </div>
+                    </td>
+                    <td className="p-4 text-foreground/70 text-sm">
+                      {formatDistanceToNow(new Date(lead.submittedAt), { addSuffix: true, locale: es })}
+                    </td>
+                    <td className="p-4">
+                      <Badge className={`${statusLabels[lead.sendaStatus].color} border`}>
+                        {statusLabels[lead.sendaStatus].label}
+                        {lead.sendaStatus === 'watching' && lead.videoProgress > 0 && (
+                          <span className="ml-1">({lead.videoProgress}%)</span>
+                        )}
+                      </Badge>
+                    </td>
+                    <td className="p-4">
+                      {renderExpirationInfo(lead)}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Schedule call button */}
+                        {!lead.isBlacklisted && (
+                          <Popover open={scheduleLeadId === lead.ghlContactId} onOpenChange={(open) => {
+                            if (!open) {
+                              setScheduleLeadId(null);
+                              setSelectedDate(undefined);
+                              setSelectedTime("10:00");
+                            }
+                          }}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setScheduleLeadId(lead.ghlContactId)}
+                                className="text-purple-400 hover:text-purple-300 hover:bg-purple-950/30"
+                                title="Registrar fecha de llamada"
                               >
-                                Registrar llamada
+                                <CalendarIcon className="w-4 h-4" />
                               </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      )}
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                              <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={setSelectedDate}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                                className="pointer-events-auto"
+                              />
+                              <div className="p-3 border-t border-foreground/10 space-y-3">
+                                <Select value={selectedTime} onValueChange={setSelectedTime}>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Hora" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
+                                      "12:00", "12:30", "13:00", "13:30", "14:00", "14:30",
+                                      "15:00", "15:30", "16:00", "16:30", "17:00", "17:30",
+                                      "18:00", "18:30", "19:00", "19:30", "20:00"].map(time => (
+                                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button 
+                                  size="sm" 
+                                  className="w-full"
+                                  disabled={!selectedDate}
+                                  onClick={() => handleScheduleCall(lead.ghlContactId)}
+                                >
+                                  Registrar llamada
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
 
-                      {/* Mark completed button */}
-                      {!lead.isBlacklisted && !lead.journeyCompleted && lead.sendaStatus !== 'no_access' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleMarkCompleted(lead)}
-                          className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30"
-                        >
-                          <Check className="w-4 h-4" />
-                        </Button>
-                      )}
+                        {/* Mark completed button */}
+                        {!lead.isBlacklisted && !lead.journeyCompleted && lead.sendaStatus !== 'no_access' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMarkCompleted(lead)}
+                            className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/30"
+                          >
+                            <Check className="w-4 h-4" />
+                          </Button>
+                        )}
 
-                      {/* Ban/Unban */}
-                      {lead.isBlacklisted ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleUnban(lead)}
-                          className="text-foreground/50 hover:text-foreground hover:bg-foreground/10"
-                        >
-                          <Undo2 className="w-4 h-4" />
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSelectedLead(lead)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
-                        >
-                          <Ban className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                        {/* Ban/Unban */}
+                        {lead.isBlacklisted ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleUnban(lead)}
+                            className="text-foreground/50 hover:text-foreground hover:bg-foreground/10"
+                          >
+                            <Undo2 className="w-4 h-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedLead(lead)}
+                            className="text-red-400 hover:text-red-300 hover:bg-red-950/30"
+                          >
+                            <Ban className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                  {/* Progress bar row */}
+                  {lead.progress && (
+                    <tr key={`${lead.ghlContactId}-progress`}>
+                      <td colSpan={5} className="px-4 pb-4">
+                        <SendaProgressBar
+                          progress={lead.progress}
+                          leadName={lead.name}
+                          onUnlockMilestone={(milestone) => unlockMilestone(lead.ghlContactId, milestone)}
+                          onResetMilestone={(milestone) => resetMilestone(lead.ghlContactId, milestone)}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
