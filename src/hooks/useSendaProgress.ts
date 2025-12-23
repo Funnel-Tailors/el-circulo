@@ -229,8 +229,8 @@ export const useSendaProgress = (token: string | null) => {
     }
   }, [token, loadFromLocalStorage, saveToLocalStorage]);
 
-  // Update progress (both DB and localStorage)
-  const updateProgress = useCallback(async (updates: Partial<SendaProgress>) => {
+  // Update progress (both DB and localStorage) - Fire-and-forget for performance
+  const updateProgress = useCallback((updates: Partial<SendaProgress>) => {
     if (!token) return;
 
     // Optimistically update local state
@@ -238,28 +238,25 @@ export const useSendaProgress = (token: string | null) => {
     setProgress(newProgress);
     saveToLocalStorage(newProgress);
 
-    // Update DB
+    // Update DB - fire-and-forget (don't block main thread)
     const dbUpdates = progressToDb(updates);
     
-    try {
-      const { error } = await supabase
-        .from('senda_progress')
-        .update(dbUpdates)
-        .eq('ghl_contact_id', token);
-
-      if (error) {
-        console.error('Error updating progress in DB:', error);
-        // If record doesn't exist, create it
-        if (error.code === 'PGRST116') {
-          await supabase.from('senda_progress').insert({
-            ghl_contact_id: token,
-            ...dbUpdates,
-          });
+    supabase
+      .from('senda_progress')
+      .update(dbUpdates)
+      .eq('ghl_contact_id', token)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error updating progress in DB:', error);
+          // If record doesn't exist, create it
+          if (error.code === 'PGRST116') {
+            supabase.from('senda_progress').insert({
+              ghl_contact_id: token,
+              ...dbUpdates,
+            }).then(() => {});
+          }
         }
-      }
-    } catch (error) {
-      console.error('Error in updateProgress:', error);
-    }
+      });
   }, [token, progress, saveToLocalStorage]);
 
   // Mark a specific milestone (helper for common operations)
