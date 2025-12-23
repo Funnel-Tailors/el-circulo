@@ -8,6 +8,7 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
+import { EndlessTools3D } from "@/components/senda/EndlessTools3D";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -25,6 +26,11 @@ const TestVault = () => {
   const [selectedClass, setSelectedClass] = useState<1 | 2>(1);
   const [showDropDemo, setShowDropDemo] = useState(false);
   const [showRitualModal, setShowRitualModal] = useState(false);
+
+  // 3D Element testing state
+  const [element3DSize, setElement3DSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
+  const [showGlow, setShowGlow] = useState(true);
+  const [showFloat, setShowFloat] = useState(true);
 
   // Auth check
   useEffect(() => {
@@ -194,6 +200,73 @@ const TestVault = () => {
         <div className="mt-12 text-center text-foreground/40 text-xs max-w-lg mx-auto">
           <p className="mb-2">⟡ Versión actual: Vórtice SVG con 3 brazos espirales</p>
           <p>Rotación: 12s | Símbolo central fijo con breathe animation</p>
+        </div>
+
+        {/* ENDLESS TOOLS 3D TEST SECTION */}
+        <div className="glass-card-dark p-8 max-w-lg mx-auto text-center mt-8">
+          <h2 className="text-xl font-semibold text-foreground mb-6">
+            ✦ Test: Elemento 3D Endless Tools
+          </h2>
+          
+          {/* 3D Element */}
+          <div className="flex justify-center mb-6">
+            <EndlessTools3D 
+              embedId="d5e20946-1c89-4b1f-8d4a-9bc050121883"
+              size={element3DSize}
+              showGlow={showGlow}
+              floatAnimation={showFloat}
+            />
+          </div>
+
+          {/* Size controls */}
+          <div className="mb-4">
+            <p className="text-foreground/50 text-sm mb-2">Tamaño:</p>
+            <div className="flex justify-center gap-2">
+              {(['sm', 'md', 'lg', 'xl'] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setElement3DSize(s)}
+                  className={`px-3 py-1.5 rounded-lg text-sm transition-all ${
+                    element3DSize === s 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'dark-button'
+                  }`}
+                >
+                  {s.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Effect toggles */}
+          <div className="flex justify-center gap-4 mb-4">
+            <button
+              onClick={() => setShowGlow(!showGlow)}
+              className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                showGlow ? 'bg-primary/20 text-primary ring-1 ring-primary/30' : 'dark-button'
+              }`}
+            >
+              ✨ Glow {showGlow ? 'ON' : 'OFF'}
+            </button>
+            <button
+              onClick={() => setShowFloat(!showFloat)}
+              className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                showFloat ? 'bg-primary/20 text-primary ring-1 ring-primary/30' : 'dark-button'
+              }`}
+            >
+              🎈 Float {showFloat ? 'ON' : 'OFF'}
+            </button>
+          </div>
+
+          {/* Info */}
+          <div className="mt-4 p-3 border border-foreground/10 rounded-lg bg-foreground/5">
+            <p className="text-xs text-foreground/50">
+              Embed ID: d5e20946-1c89-4b1f-8d4a-9bc050121883
+            </p>
+            <p className="text-xs text-foreground/40 mt-1">
+              El elemento es interactivo (rotar con mouse/touch)
+            </p>
+          </div>
         </div>
 
         {/* DROPS TEST SECTION */}
