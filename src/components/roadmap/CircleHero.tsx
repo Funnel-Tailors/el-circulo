@@ -299,7 +299,7 @@ const CircleHero = () => {
       </div>
 
       {/* Logo EL CÍRCULO - solapando el elemento 3D */}
-      <div className="space-y-4 -mt-28 relative z-10">
+      <div className="space-y-4 -mt-80 relative z-10">
         <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow whitespace-nowrap">
           EL CÍRCULO
         </h1>
