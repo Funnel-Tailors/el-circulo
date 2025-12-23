@@ -256,6 +256,7 @@ export const useSendaLeads = () => {
         updates.class1_sequence_completed = true;
         updates.class1_ritual_accepted = true;
         updates.class1_ritual_accepted_at = new Date().toISOString();
+        updates.class1_assistant_opened = true; // Desbloquear asistente clase 1
         updates.vault_unlocked = true;
         updates.vault_unlocked_at = new Date().toISOString();
         break;
@@ -324,6 +325,10 @@ export const useSendaLeads = () => {
         updates.journey_completed_at = null;
         break;
       case 'full_reset':
+        // Reiniciar timer de expiración (48h desde ahora)
+        updates.first_visit_at = new Date().toISOString();
+        updates.last_activity_at = new Date().toISOString();
+        // Reset completo del progreso
         updates.class1_video_started = false;
         updates.class1_video_progress = 0;
         updates.class1_drops_captured = [];
