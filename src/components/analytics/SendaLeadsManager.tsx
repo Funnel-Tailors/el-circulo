@@ -110,6 +110,21 @@ const SendaLeadsManager = () => {
   const [scheduleLeadId, setScheduleLeadId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string>("10:00");
+  const [resetConfirmation, setResetConfirmation] = useState<{
+    ghlContactId: string;
+    milestone: string;
+    leadName: string;
+  } | null>(null);
+
+  const handleResetWithConfirmation = (ghlContactId: string, leadName: string, journeyCompleted: boolean) => 
+    async (milestone: string) => {
+      if (journeyCompleted) {
+        setResetConfirmation({ ghlContactId, milestone, leadName });
+      } else {
+        await resetMilestone(ghlContactId, milestone);
+        toast({ title: 'Milestone reseteado' });
+      }
+    };
 
   const handleBan = async (lead: SendaLead) => {
     try {
@@ -326,15 +341,15 @@ const SendaLeadsManager = () => {
                       </div>
                     </td>
                   </tr>
-                  {/* Progress bar row */}
-                  {lead.progress && (
+                  {/* Progress bar row - only show for leads that have started */}
+                  {lead.progress && lead.sendaStatus !== 'no_access' && (
                     <tr key={`${lead.ghlContactId}-progress`}>
                       <td colSpan={5} className="px-4 pb-4">
                         <SendaProgressBar
                           progress={lead.progress}
                           leadName={lead.name}
                           onUnlockMilestone={(milestone) => unlockMilestone(lead.ghlContactId, milestone)}
-                          onResetMilestone={(milestone) => resetMilestone(lead.ghlContactId, milestone)}
+                          onResetMilestone={handleResetWithConfirmation(lead.ghlContactId, lead.name, lead.journeyCompleted)}
                         />
                       </td>
                     </tr>
@@ -419,6 +434,38 @@ const SendaLeadsManager = () => {
               <p className="text-sm text-foreground/60">
                 {blacklistMessages[previewReason]?.message}
               </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={!!resetConfirmation} onOpenChange={() => setResetConfirmation(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>⚠️ Confirmar reset</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-foreground/70">
+              <strong>{resetConfirmation?.leadName}</strong> ha completado el journey. 
+              ¿Estás seguro de querer resetear <code className="bg-foreground/10 px-1 rounded">{resetConfirmation?.milestone}</code>?
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setResetConfirmation(null)}>
+                Cancelar
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={async () => {
+                  if (resetConfirmation) {
+                    await resetMilestone(resetConfirmation.ghlContactId, resetConfirmation.milestone);
+                    toast({ title: 'Milestone reseteado' });
+                    setResetConfirmation(null);
+                  }
+                }}
+              >
+                Sí, resetear
+              </Button>
             </div>
           </div>
         </DialogContent>
