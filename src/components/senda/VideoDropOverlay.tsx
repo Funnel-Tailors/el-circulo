@@ -9,10 +9,11 @@ interface VideoDropOverlayProps {
 
 export const VideoDropOverlay = ({ activeDrop, onCapture }: VideoDropOverlayProps) => {
   // Fix position when drop appears (won't move during animation)
+  // Range 20%-80% keeps drops centered, easier to tap on mobile
   const position = useMemo(() => {
     if (!activeDrop) return { x: 50, y: 50 };
-    const x = 15 + Math.random() * 70; // 15% to 85%
-    const y = 15 + Math.random() * 70; // 15% to 85%
+    const x = 20 + Math.random() * 60; // 20% to 80%
+    const y = 20 + Math.random() * 60; // 20% to 80%
     return { x, y };
   }, [activeDrop?.id]);
 
@@ -45,7 +46,7 @@ export const VideoDropOverlay = ({ activeDrop, onCapture }: VideoDropOverlayProp
             e.stopPropagation();
             onCapture();
           }}
-          className="absolute z-20 cursor-pointer select-none"
+          className="absolute z-20 cursor-pointer select-none p-4 md:p-2"
           style={{
             left: `${position.x}%`,
             top: `${position.y}%`,
@@ -81,11 +82,11 @@ export const VideoDropOverlay = ({ activeDrop, onCapture }: VideoDropOverlayProp
                 ease: "easeInOut",
               }}
               style={{
-                width: '70px',
-                height: '70px',
-                left: '-15px',
-                top: '-15px',
-                filter: 'blur(8px)',
+                width: '80px',
+                height: '80px',
+                left: '-20px',
+                top: '-20px',
+                filter: 'blur(10px)',
               }}
             />
             
