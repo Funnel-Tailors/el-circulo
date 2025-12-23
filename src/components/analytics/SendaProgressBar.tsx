@@ -326,6 +326,49 @@ export const SendaProgressBar = ({
                   <span className="text-emerald-400">✅ Journey completado</span>
                 </div>
               )}
+
+              {/* Quick Actions */}
+              <div className="mt-4 pt-4 border-t border-foreground/10">
+                <p className="text-xs text-foreground/50 mb-2">Acciones rápidas:</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs"
+                    disabled={loading !== null || progress?.vault_unlocked}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_vault'), 'pushVault')}
+                  >
+                    {loading === 'pushVault' ? '...' : '🔮 Empujar hasta Vault'}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="text-xs"
+                    disabled={loading !== null || progress?.class2_sequence_completed}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_class2_complete'), 'pushC2')}
+                  >
+                    {loading === 'pushC2' ? '...' : '🎭 Empujar hasta Clase 2'}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="default"
+                    className="text-xs"
+                    disabled={loading !== null || progress?.journey_completed}
+                    onClick={() => handleAction(() => onUnlockMilestone('complete_journey'), 'complete')}
+                  >
+                    {loading === 'complete' ? '...' : '✅ Marcar Completado'}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    className="text-xs"
+                    disabled={loading !== null}
+                    onClick={() => handleAction(() => onResetMilestone('full_reset'), 'fullReset')}
+                  >
+                    {loading === 'fullReset' ? '...' : '🔄 Reset Total'}
+                  </Button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

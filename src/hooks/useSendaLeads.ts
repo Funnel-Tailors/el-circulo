@@ -247,6 +247,40 @@ export const useSendaLeads = () => {
       case 'assistant':
         updates.assistant1_unlocked = true;
         break;
+      // Push actions - cascade unlocks
+      case 'push_to_vault':
+        updates.class1_video_started = true;
+        updates.class1_video_progress = 100;
+        updates.class1_drops_captured = ['c1_drop1', 'c1_drop2', 'c1_drop3'];
+        updates.class1_drops_missed = [];
+        updates.class1_sequence_completed = true;
+        updates.class1_ritual_accepted = true;
+        updates.class1_ritual_accepted_at = new Date().toISOString();
+        updates.vault_unlocked = true;
+        updates.vault_unlocked_at = new Date().toISOString();
+        break;
+      case 'push_to_class2_complete':
+        updates.class1_video_started = true;
+        updates.class1_video_progress = 100;
+        updates.class1_drops_captured = ['c1_drop1', 'c1_drop2', 'c1_drop3'];
+        updates.class1_drops_missed = [];
+        updates.class1_sequence_completed = true;
+        updates.class1_ritual_accepted = true;
+        updates.class1_ritual_accepted_at = new Date().toISOString();
+        updates.vault_unlocked = true;
+        updates.vault_unlocked_at = new Date().toISOString();
+        updates.class2_video_started = true;
+        updates.class2_video_progress = 100;
+        updates.class2_drops_captured = ['c2_drop1', 'c2_drop2', 'c2_drop3', 'c2_drop4', 'c2_drop5'];
+        updates.class2_drops_missed = [];
+        updates.class2_sequence_completed = true;
+        updates.class2_ritual_accepted = true;
+        updates.class2_ritual_accepted_at = new Date().toISOString();
+        break;
+      case 'complete_journey':
+        updates.journey_completed = true;
+        updates.journey_completed_at = new Date().toISOString();
+        break;
       default:
         console.warn('Unknown milestone:', milestone);
         return;
@@ -284,6 +318,35 @@ export const useSendaLeads = () => {
       case 'vault':
         updates.vault_unlocked = false;
         updates.vault_unlocked_at = null;
+        break;
+      case 'journey':
+        updates.journey_completed = false;
+        updates.journey_completed_at = null;
+        break;
+      case 'full_reset':
+        updates.class1_video_started = false;
+        updates.class1_video_progress = 0;
+        updates.class1_drops_captured = [];
+        updates.class1_drops_missed = [];
+        updates.class1_ritual_accepted = false;
+        updates.class1_ritual_accepted_at = null;
+        updates.class1_sequence_completed = false;
+        updates.class1_sequence_failed_attempts = 0;
+        updates.class1_assistant_opened = false;
+        updates.vault_unlocked = false;
+        updates.vault_unlocked_at = null;
+        updates.class2_video_started = false;
+        updates.class2_video_progress = 0;
+        updates.class2_drops_captured = [];
+        updates.class2_drops_missed = [];
+        updates.class2_ritual_accepted = false;
+        updates.class2_ritual_accepted_at = null;
+        updates.class2_sequence_completed = false;
+        updates.class2_sequence_failed_attempts = 0;
+        updates.assistant1_unlocked = false;
+        updates.assistant1_opened = false;
+        updates.journey_completed = false;
+        updates.journey_completed_at = null;
         break;
       default:
         console.warn('Unknown milestone for reset:', milestone);
