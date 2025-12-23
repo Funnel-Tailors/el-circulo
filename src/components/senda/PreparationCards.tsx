@@ -49,6 +49,7 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
   const sequenceModalShownRef = useRef(false);
+  const lastTimeUpdateRef = useRef(0);
 
   // Video drops system
   const {
@@ -101,6 +102,11 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
     if (!video) return;
 
     const handleTimeUpdate = () => {
+      // Throttle: max 4 updates per second
+      const now = Date.now();
+      if (now - lastTimeUpdateRef.current < 250) return;
+      lastTimeUpdateRef.current = now;
+      
       const progress = (video.currentTime / video.duration);
       const progressPercent = progress * 100;
       

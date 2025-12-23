@@ -49,6 +49,7 @@ export const useVideoDrops = ({
   const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const allCapturedFiredRef = useRef(false);
   const initializedRef = useRef(false);
+  const lastCheckRef = useRef(0);
   
   // Stable refs for callbacks to avoid re-renders
   const onCaptureRef = useRef(onCapture);
@@ -106,6 +107,11 @@ export const useVideoDrops = ({
 
   // Check if a drop should appear based on video progress
   const checkForDrop = useCallback((progress: number) => {
+    // Debounce: max 2 checks per second
+    const now = Date.now();
+    if (now - lastCheckRef.current < 500) return;
+    lastCheckRef.current = now;
+    
     if (activeDrop) return; // Already showing a drop
     
     for (const drop of DROPS_CONFIG) {

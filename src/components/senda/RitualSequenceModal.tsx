@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Fragment } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type { Drop } from "@/hooks/useVideoDrops";
 
 interface RitualSequenceModalProps {
@@ -29,21 +29,21 @@ const Beam = ({ connected, success, error }: { connected: boolean; success?: boo
     animate={{ 
       scaleX: 1,
       backgroundColor: success 
-        ? 'hsl(142 76% 36% / 0.6)' 
+        ? 'rgba(34, 197, 94, 0.6)' 
         : error 
-          ? 'hsl(0 84% 60% / 0.6)'
+          ? 'rgba(239, 68, 68, 0.6)'
           : connected 
-            ? 'hsl(var(--primary) / 0.6)' 
-            : 'hsl(var(--primary) / 0.15)'
+            ? 'rgba(147, 51, 234, 0.6)' 
+            : 'rgba(147, 51, 234, 0.15)'
     }}
     style={{ 
       originX: 0,
       boxShadow: connected 
         ? success 
-          ? '0 0 8px hsl(142 76% 36% / 0.4)'
+          ? '0 0 8px rgba(34, 197, 94, 0.4)'
           : error
-            ? '0 0 8px hsl(0 84% 60% / 0.4)'
-            : '0 0 8px hsl(var(--primary) / 0.4)' 
+            ? '0 0 8px rgba(239, 68, 68, 0.4)'
+            : '0 0 8px rgba(147, 51, 234, 0.4)' 
         : 'none'
     }}
     transition={{ duration: 0.3, ease: "easeOut" }}
@@ -144,6 +144,7 @@ export const RitualSequenceModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg bg-background/95 backdrop-blur-xl border-primary/20 p-0 overflow-hidden">
+        <DialogTitle className="sr-only">El Ritual Final</DialogTitle>
         {/* Subtle vortex background */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute inset-0 bg-gradient-radial from-primary/20 to-transparent animate-pulse" />
@@ -437,9 +438,9 @@ export const RitualSequenceModal = ({
                 <motion.p
                   animate={{ 
                     textShadow: [
-                      "0 0 10px hsl(var(--primary))",
-                      "0 0 30px hsl(var(--primary))",
-                      "0 0 10px hsl(var(--primary))",
+                      "0 0 10px rgba(147, 51, 234, 1)",
+                      "0 0 30px rgba(147, 51, 234, 1)",
+                      "0 0 10px rgba(147, 51, 234, 1)",
                     ]
                   }}
                   transition={{ duration: 1, repeat: Infinity }}
