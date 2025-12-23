@@ -30,7 +30,7 @@ const CLASS_2_DROPS: Drop[] = [
   { id: 'c2_drop5', symbol: '◈', timestamp: 0.82 },
 ];
 
-const DROP_WINDOW_MS = 5000; // 5 seconds to capture
+const DROP_WINDOW_MS = 10000; // 10 seconds to capture (más generoso)
 
 const getStorageKey = (sessionId: string, classNumber: number) => 
   `senda_drops_c${classNumber}_${sessionId}`;
@@ -123,11 +123,24 @@ export const useVideoDrops = ({
         setActiveDrop(drop);
         setShownDropIds(prev => new Set([...prev, drop.id]));
         
-        // Set timeout to hide drop if not captured
+        // Auto-captura después del timeout (en vez de miss)
         dropTimeoutRef.current = setTimeout(() => {
           setActiveDrop(currentDrop => {
             if (currentDrop?.id === drop.id) {
-              onMissRef.current?.(drop);
+              // AUTO-CAPTURA: el usuario no pierde el drop
+              setCapturedDrops(prev => {
+                const newCaptured = [...prev, drop];
+                
+                // Check if all drops captured
+                if (newCaptured.length === DROPS_CONFIG.length && !allCapturedFiredRef.current) {
+                  allCapturedFiredRef.current = true;
+                  setTimeout(() => onAllCapturedRef.current?.(), 100);
+                }
+                
+                return newCaptured;
+              });
+              // Track como captura (el usuario no sabrá que fue auto)
+              onCaptureRef.current?.(drop);
               return null;
             }
             return currentDrop;
