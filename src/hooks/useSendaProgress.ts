@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SendaProgress {
-  // Clase 1 (Oferta)
+  // Clase 1 (Oferta / Sello 1: El Precio)
   class1VideoStarted: boolean;
   class1VideoProgress: number;
   class1DropsCaputred: string[];
@@ -14,7 +14,7 @@ export interface SendaProgress {
   vaultUnlocked: boolean;
   vaultUnlockedAt: string | null;
   
-  // Clase 2 (Avatar)
+  // Clase 2 (Avatar / Sello 2: El Espejo)
   class2VideoStarted: boolean;
   class2VideoProgress: number;
   class2DropsCaputred: string[];
@@ -24,12 +24,46 @@ export interface SendaProgress {
   class2RitualAccepted: boolean;
   class2RitualAcceptedAt: string | null;
   
-  // Asistente único de Clase 2 (El Arquitecto de Avatares)
+  // Asistentes existentes
   assistant1Unlocked: boolean;
   assistant1Opened: boolean;
-  
-  // Asistente Clase 1
   class1AssistantOpened: boolean;
+  
+  // Módulo 3 (Sello 3: La Voz)
+  module3Unlocked: boolean;
+  module3UnlockedAt: string | null;
+  module3Video1Started: boolean;
+  module3Video1Progress: number;
+  module3Video2Started: boolean;
+  module3Video2Progress: number;
+  module3RitualAccepted: boolean;
+  module3RitualAcceptedAt: string | null;
+  module3DropsCaputred: string[];
+  module3DropsMissed: string[];
+  module3SequenceCompleted: boolean;
+  module3SequenceFailedAttempts: number;
+  module3Assistant1Opened: boolean;
+  module3Assistant2Opened: boolean;
+  module3Assistant3Opened: boolean;
+  
+  // Módulo 4 (Sello 4: El Cierre)
+  module4Unlocked: boolean;
+  module4UnlockedAt: string | null;
+  module4VideoStarted: boolean;
+  module4VideoProgress: number;
+  module4RitualAccepted: boolean;
+  module4RitualAcceptedAt: string | null;
+  module4DropsCaputred: string[];
+  module4DropsMissed: string[];
+  module4SequenceCompleted: boolean;
+  module4SequenceFailedAttempts: number;
+  module4RoleplayUnlocked: boolean;
+  module4RoleplayOpened: boolean;
+  
+  // Skip the Line
+  skipTheLineEligible: boolean;
+  skipTheLineShown: boolean;
+  skipTheLineClicked: boolean;
   
   // Timestamps
   firstVisitAt: string | null;
@@ -58,6 +92,40 @@ const DEFAULT_PROGRESS: SendaProgress = {
   assistant1Unlocked: false,
   assistant1Opened: false,
   class1AssistantOpened: false,
+  // Módulo 3
+  module3Unlocked: false,
+  module3UnlockedAt: null,
+  module3Video1Started: false,
+  module3Video1Progress: 0,
+  module3Video2Started: false,
+  module3Video2Progress: 0,
+  module3RitualAccepted: false,
+  module3RitualAcceptedAt: null,
+  module3DropsCaputred: [],
+  module3DropsMissed: [],
+  module3SequenceCompleted: false,
+  module3SequenceFailedAttempts: 0,
+  module3Assistant1Opened: false,
+  module3Assistant2Opened: false,
+  module3Assistant3Opened: false,
+  // Módulo 4
+  module4Unlocked: false,
+  module4UnlockedAt: null,
+  module4VideoStarted: false,
+  module4VideoProgress: 0,
+  module4RitualAccepted: false,
+  module4RitualAcceptedAt: null,
+  module4DropsCaputred: [],
+  module4DropsMissed: [],
+  module4SequenceCompleted: false,
+  module4SequenceFailedAttempts: 0,
+  module4RoleplayUnlocked: false,
+  module4RoleplayOpened: false,
+  // Skip the Line
+  skipTheLineEligible: false,
+  skipTheLineShown: false,
+  skipTheLineClicked: false,
+  // Timestamps
   firstVisitAt: null,
   lastActivityAt: null,
 };

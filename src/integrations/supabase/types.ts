@@ -220,6 +220,36 @@ export type Database = {
           journey_completed: boolean | null
           journey_completed_at: string | null
           last_activity_at: string | null
+          module3_assistant1_opened: boolean | null
+          module3_assistant2_opened: boolean | null
+          module3_assistant3_opened: boolean | null
+          module3_drops_captured: string[] | null
+          module3_drops_missed: string[] | null
+          module3_ritual_accepted: boolean | null
+          module3_ritual_accepted_at: string | null
+          module3_sequence_completed: boolean | null
+          module3_sequence_failed_attempts: number | null
+          module3_unlocked: boolean | null
+          module3_unlocked_at: string | null
+          module3_video1_progress: number | null
+          module3_video1_started: boolean | null
+          module3_video2_progress: number | null
+          module3_video2_started: boolean | null
+          module4_drops_captured: string[] | null
+          module4_drops_missed: string[] | null
+          module4_ritual_accepted: boolean | null
+          module4_ritual_accepted_at: string | null
+          module4_roleplay_opened: boolean | null
+          module4_roleplay_unlocked: boolean | null
+          module4_sequence_completed: boolean | null
+          module4_sequence_failed_attempts: number | null
+          module4_unlocked: boolean | null
+          module4_unlocked_at: string | null
+          module4_video_progress: number | null
+          module4_video_started: boolean | null
+          skip_the_line_clicked: boolean | null
+          skip_the_line_eligible: boolean | null
+          skip_the_line_shown: boolean | null
           updated_at: string | null
           vault_unlocked: boolean | null
           vault_unlocked_at: string | null
@@ -252,6 +282,36 @@ export type Database = {
           journey_completed?: boolean | null
           journey_completed_at?: string | null
           last_activity_at?: string | null
+          module3_assistant1_opened?: boolean | null
+          module3_assistant2_opened?: boolean | null
+          module3_assistant3_opened?: boolean | null
+          module3_drops_captured?: string[] | null
+          module3_drops_missed?: string[] | null
+          module3_ritual_accepted?: boolean | null
+          module3_ritual_accepted_at?: string | null
+          module3_sequence_completed?: boolean | null
+          module3_sequence_failed_attempts?: number | null
+          module3_unlocked?: boolean | null
+          module3_unlocked_at?: string | null
+          module3_video1_progress?: number | null
+          module3_video1_started?: boolean | null
+          module3_video2_progress?: number | null
+          module3_video2_started?: boolean | null
+          module4_drops_captured?: string[] | null
+          module4_drops_missed?: string[] | null
+          module4_ritual_accepted?: boolean | null
+          module4_ritual_accepted_at?: string | null
+          module4_roleplay_opened?: boolean | null
+          module4_roleplay_unlocked?: boolean | null
+          module4_sequence_completed?: boolean | null
+          module4_sequence_failed_attempts?: number | null
+          module4_unlocked?: boolean | null
+          module4_unlocked_at?: string | null
+          module4_video_progress?: number | null
+          module4_video_started?: boolean | null
+          skip_the_line_clicked?: boolean | null
+          skip_the_line_eligible?: boolean | null
+          skip_the_line_shown?: boolean | null
           updated_at?: string | null
           vault_unlocked?: boolean | null
           vault_unlocked_at?: string | null
@@ -284,6 +344,36 @@ export type Database = {
           journey_completed?: boolean | null
           journey_completed_at?: string | null
           last_activity_at?: string | null
+          module3_assistant1_opened?: boolean | null
+          module3_assistant2_opened?: boolean | null
+          module3_assistant3_opened?: boolean | null
+          module3_drops_captured?: string[] | null
+          module3_drops_missed?: string[] | null
+          module3_ritual_accepted?: boolean | null
+          module3_ritual_accepted_at?: string | null
+          module3_sequence_completed?: boolean | null
+          module3_sequence_failed_attempts?: number | null
+          module3_unlocked?: boolean | null
+          module3_unlocked_at?: string | null
+          module3_video1_progress?: number | null
+          module3_video1_started?: boolean | null
+          module3_video2_progress?: number | null
+          module3_video2_started?: boolean | null
+          module4_drops_captured?: string[] | null
+          module4_drops_missed?: string[] | null
+          module4_ritual_accepted?: boolean | null
+          module4_ritual_accepted_at?: string | null
+          module4_roleplay_opened?: boolean | null
+          module4_roleplay_unlocked?: boolean | null
+          module4_sequence_completed?: boolean | null
+          module4_sequence_failed_attempts?: number | null
+          module4_unlocked?: boolean | null
+          module4_unlocked_at?: string | null
+          module4_video_progress?: number | null
+          module4_video_started?: boolean | null
+          skip_the_line_clicked?: boolean | null
+          skip_the_line_eligible?: boolean | null
+          skip_the_line_shown?: boolean | null
           updated_at?: string | null
           vault_unlocked?: boolean | null
           vault_unlocked_at?: string | null
