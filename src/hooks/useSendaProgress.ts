@@ -170,7 +170,6 @@ export const useSendaProgress = (token: string | null) => {
     }
   }, [getLocalKey]);
 
-  // Convert DB row to SendaProgress
   const dbToProgress = (row: any): SendaProgress => ({
     class1VideoStarted: row.class1_video_started ?? false,
     class1VideoProgress: row.class1_video_progress ?? 0,
@@ -193,6 +192,40 @@ export const useSendaProgress = (token: string | null) => {
     assistant1Unlocked: row.assistant1_unlocked ?? false,
     assistant1Opened: row.assistant1_opened ?? false,
     class1AssistantOpened: row.class1_assistant_opened ?? false,
+    // Módulo 3
+    module3Unlocked: row.module3_unlocked ?? false,
+    module3UnlockedAt: row.module3_unlocked_at ?? null,
+    module3Video1Started: row.module3_video1_started ?? false,
+    module3Video1Progress: row.module3_video1_progress ?? 0,
+    module3Video2Started: row.module3_video2_started ?? false,
+    module3Video2Progress: row.module3_video2_progress ?? 0,
+    module3RitualAccepted: row.module3_ritual_accepted ?? false,
+    module3RitualAcceptedAt: row.module3_ritual_accepted_at ?? null,
+    module3DropsCaputred: row.module3_drops_captured ?? [],
+    module3DropsMissed: row.module3_drops_missed ?? [],
+    module3SequenceCompleted: row.module3_sequence_completed ?? false,
+    module3SequenceFailedAttempts: row.module3_sequence_failed_attempts ?? 0,
+    module3Assistant1Opened: row.module3_assistant1_opened ?? false,
+    module3Assistant2Opened: row.module3_assistant2_opened ?? false,
+    module3Assistant3Opened: row.module3_assistant3_opened ?? false,
+    // Módulo 4
+    module4Unlocked: row.module4_unlocked ?? false,
+    module4UnlockedAt: row.module4_unlocked_at ?? null,
+    module4VideoStarted: row.module4_video_started ?? false,
+    module4VideoProgress: row.module4_video_progress ?? 0,
+    module4RitualAccepted: row.module4_ritual_accepted ?? false,
+    module4RitualAcceptedAt: row.module4_ritual_accepted_at ?? null,
+    module4DropsCaputred: row.module4_drops_captured ?? [],
+    module4DropsMissed: row.module4_drops_missed ?? [],
+    module4SequenceCompleted: row.module4_sequence_completed ?? false,
+    module4SequenceFailedAttempts: row.module4_sequence_failed_attempts ?? 0,
+    module4RoleplayUnlocked: row.module4_roleplay_unlocked ?? false,
+    module4RoleplayOpened: row.module4_roleplay_opened ?? false,
+    // Skip the Line
+    skipTheLineEligible: row.skip_the_line_eligible ?? false,
+    skipTheLineShown: row.skip_the_line_shown ?? false,
+    skipTheLineClicked: row.skip_the_line_clicked ?? false,
+    // Timestamps
     firstVisitAt: row.first_visit_at ?? null,
     lastActivityAt: row.last_activity_at ?? null,
   });
@@ -201,6 +234,7 @@ export const useSendaProgress = (token: string | null) => {
   const progressToDb = (p: Partial<SendaProgress>): Record<string, any> => {
     const result: Record<string, any> = {};
     
+    // Clase 1
     if (p.class1VideoStarted !== undefined) result.class1_video_started = p.class1VideoStarted;
     if (p.class1VideoProgress !== undefined) result.class1_video_progress = p.class1VideoProgress;
     if (p.class1DropsCaputred !== undefined) result.class1_drops_captured = p.class1DropsCaputred;
@@ -211,6 +245,8 @@ export const useSendaProgress = (token: string | null) => {
     if (p.class1RitualAcceptedAt !== undefined) result.class1_ritual_accepted_at = p.class1RitualAcceptedAt;
     if (p.vaultUnlocked !== undefined) result.vault_unlocked = p.vaultUnlocked;
     if (p.vaultUnlockedAt !== undefined) result.vault_unlocked_at = p.vaultUnlockedAt;
+    
+    // Clase 2
     if (p.class2VideoStarted !== undefined) result.class2_video_started = p.class2VideoStarted;
     if (p.class2VideoProgress !== undefined) result.class2_video_progress = p.class2VideoProgress;
     if (p.class2DropsCaputred !== undefined) result.class2_drops_captured = p.class2DropsCaputred;
@@ -222,6 +258,42 @@ export const useSendaProgress = (token: string | null) => {
     if (p.assistant1Unlocked !== undefined) result.assistant1_unlocked = p.assistant1Unlocked;
     if (p.assistant1Opened !== undefined) result.assistant1_opened = p.assistant1Opened;
     if (p.class1AssistantOpened !== undefined) result.class1_assistant_opened = p.class1AssistantOpened;
+    
+    // Módulo 3
+    if (p.module3Unlocked !== undefined) result.module3_unlocked = p.module3Unlocked;
+    if (p.module3UnlockedAt !== undefined) result.module3_unlocked_at = p.module3UnlockedAt;
+    if (p.module3Video1Started !== undefined) result.module3_video1_started = p.module3Video1Started;
+    if (p.module3Video1Progress !== undefined) result.module3_video1_progress = p.module3Video1Progress;
+    if (p.module3Video2Started !== undefined) result.module3_video2_started = p.module3Video2Started;
+    if (p.module3Video2Progress !== undefined) result.module3_video2_progress = p.module3Video2Progress;
+    if (p.module3RitualAccepted !== undefined) result.module3_ritual_accepted = p.module3RitualAccepted;
+    if (p.module3RitualAcceptedAt !== undefined) result.module3_ritual_accepted_at = p.module3RitualAcceptedAt;
+    if (p.module3DropsCaputred !== undefined) result.module3_drops_captured = p.module3DropsCaputred;
+    if (p.module3DropsMissed !== undefined) result.module3_drops_missed = p.module3DropsMissed;
+    if (p.module3SequenceCompleted !== undefined) result.module3_sequence_completed = p.module3SequenceCompleted;
+    if (p.module3SequenceFailedAttempts !== undefined) result.module3_sequence_failed_attempts = p.module3SequenceFailedAttempts;
+    if (p.module3Assistant1Opened !== undefined) result.module3_assistant1_opened = p.module3Assistant1Opened;
+    if (p.module3Assistant2Opened !== undefined) result.module3_assistant2_opened = p.module3Assistant2Opened;
+    if (p.module3Assistant3Opened !== undefined) result.module3_assistant3_opened = p.module3Assistant3Opened;
+    
+    // Módulo 4
+    if (p.module4Unlocked !== undefined) result.module4_unlocked = p.module4Unlocked;
+    if (p.module4UnlockedAt !== undefined) result.module4_unlocked_at = p.module4UnlockedAt;
+    if (p.module4VideoStarted !== undefined) result.module4_video_started = p.module4VideoStarted;
+    if (p.module4VideoProgress !== undefined) result.module4_video_progress = p.module4VideoProgress;
+    if (p.module4RitualAccepted !== undefined) result.module4_ritual_accepted = p.module4RitualAccepted;
+    if (p.module4RitualAcceptedAt !== undefined) result.module4_ritual_accepted_at = p.module4RitualAcceptedAt;
+    if (p.module4DropsCaputred !== undefined) result.module4_drops_captured = p.module4DropsCaputred;
+    if (p.module4DropsMissed !== undefined) result.module4_drops_missed = p.module4DropsMissed;
+    if (p.module4SequenceCompleted !== undefined) result.module4_sequence_completed = p.module4SequenceCompleted;
+    if (p.module4SequenceFailedAttempts !== undefined) result.module4_sequence_failed_attempts = p.module4SequenceFailedAttempts;
+    if (p.module4RoleplayUnlocked !== undefined) result.module4_roleplay_unlocked = p.module4RoleplayUnlocked;
+    if (p.module4RoleplayOpened !== undefined) result.module4_roleplay_opened = p.module4RoleplayOpened;
+    
+    // Skip the Line
+    if (p.skipTheLineEligible !== undefined) result.skip_the_line_eligible = p.skipTheLineEligible;
+    if (p.skipTheLineShown !== undefined) result.skip_the_line_shown = p.skipTheLineShown;
+    if (p.skipTheLineClicked !== undefined) result.skip_the_line_clicked = p.skipTheLineClicked;
     
     // Always update last_activity_at
     result.last_activity_at = new Date().toISOString();

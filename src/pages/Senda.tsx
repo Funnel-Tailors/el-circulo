@@ -12,9 +12,14 @@ import VaultSection from "@/components/senda/VaultSection";
 import VaultPortal from "@/components/senda/VaultPortal";
 import BlacklistedResult from "@/components/senda/BlacklistedResult";
 import PortalFinalState from "@/components/senda/PortalFinalState";
+import Module3Section from "@/components/senda/Module3Section";
+import Module4Section from "@/components/senda/Module4Section";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import type { QuizState } from "@/types/quiz";
+
+// Feature flag - Activar cuando esté listo "La Brecha"
+const ENABLE_ADVANCED_SEALS = false;
 
 const Senda = () => {
   const { 
@@ -32,9 +37,17 @@ const Senda = () => {
   
   // Vault state - initialized from persisted progress
   const [showPortal, setShowPortal] = useState(false);
+  const [currentSealCompleting, setCurrentSealCompleting] = useState<1 | 2 | 3>(1);
   const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [class2Progress, setClass2Progress] = useState(0);
+  
+  // Module 3-4 states (only used when ENABLE_ADVANCED_SEALS = true)
+  const [module3Unlocked, setModule3Unlocked] = useState(false);
+  const [module4Unlocked, setModule4Unlocked] = useState(false);
+  
   const vaultSectionRef = useRef<HTMLDivElement>(null);
+  const module3Ref = useRef<HTMLDivElement>(null);
+  const module4Ref = useRef<HTMLDivElement>(null);
 
   // Sync state with persisted progress
   useEffect(() => {
@@ -47,32 +60,56 @@ const Senda = () => {
       if (progress.class2VideoProgress > class2Progress) {
         setClass2Progress(progress.class2VideoProgress);
       }
+      // Restore module 3-4 states (when enabled)
+      if (ENABLE_ADVANCED_SEALS) {
+        if (progress.module3Unlocked && !module3Unlocked) {
+          setModule3Unlocked(true);
+        }
+        if (progress.module4Unlocked && !module4Unlocked) {
+          setModule4Unlocked(true);
+        }
+      }
     }
-  }, [progressLoading, progress, vaultUnlocked, class2Progress]);
+  }, [progressLoading, progress, vaultUnlocked, class2Progress, module3Unlocked, module4Unlocked]);
 
   // Called when ritual sequence is completed successfully
-  const handleSequenceComplete = () => {
+  const handleSequenceComplete = (sealNumber: 1 | 2 | 3 = 1) => {
+    setCurrentSealCompleting(sealNumber);
     setShowPortal(true);
-    trackVaultEvent('senda_portal_shown');
+    trackVaultEvent(`senda_seal${sealNumber}_portal_shown`);
   };
 
   // Called when user clicks "Atravesar el portal"
   const handlePortalTraversed = async () => {
     setShowPortal(false);
-    setVaultUnlocked(true);
-    trackVaultEvent('senda_portal_traversed');
-    trackVaultEvent('senda_vault_revealed');
     
-    // Persist vault unlock
-    await markMilestone('vault_unlocked');
-    
-    // Scroll suave tras animación (delay para que clip-path empiece)
-    setTimeout(() => {
-      vaultSectionRef.current?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }, 1500);
+    // Unlock next module based on which seal was completed
+    if (currentSealCompleting === 1) {
+      setVaultUnlocked(true);
+      trackVaultEvent('senda_portal_traversed');
+      trackVaultEvent('senda_vault_revealed');
+      await markMilestone('vault_unlocked');
+      
+      setTimeout(() => {
+        vaultSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 1500);
+    } else if (currentSealCompleting === 2 && ENABLE_ADVANCED_SEALS) {
+      setModule3Unlocked(true);
+      trackVaultEvent('senda_seal2_portal_traversed');
+      await updateProgress({ module3Unlocked: true, module3UnlockedAt: new Date().toISOString() });
+      
+      setTimeout(() => {
+        module3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 1500);
+    } else if (currentSealCompleting === 3 && ENABLE_ADVANCED_SEALS) {
+      setModule4Unlocked(true);
+      trackVaultEvent('senda_seal3_portal_traversed');
+      await updateProgress({ module4Unlocked: true, module4UnlockedAt: new Date().toISOString() });
+      
+      setTimeout(() => {
+        module4Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 1500);
+    }
   };
 
   // Handle class 2 progress updates with persistence
@@ -128,7 +165,7 @@ const Senda = () => {
         {!progress.vaultUnlocked && (
           <PreparationCards 
             token={token} 
-            onSequenceComplete={handleSequenceComplete}
+            onSequenceComplete={() => handleSequenceComplete(1)}
             initialProgress={progress}
           />
         )}
@@ -156,14 +193,38 @@ const Senda = () => {
           />
         </div>
         
+        {/* Module 3: La Voz (hidden until ENABLE_ADVANCED_SEALS = true) */}
+        {ENABLE_ADVANCED_SEALS && (
+          <div ref={module3Ref}>
+            <Module3Section 
+              isVisible={module3Unlocked}
+              token={token}
+              initialProgress={progress}
+              onShowPortal={() => handleSequenceComplete(3)}
+            />
+          </div>
+        )}
+        
+        {/* Module 4: El Cierre (hidden until ENABLE_ADVANCED_SEALS = true) */}
+        {ENABLE_ADVANCED_SEALS && (
+          <div ref={module4Ref}>
+            <Module4Section 
+              isVisible={module4Unlocked}
+              token={token}
+              initialProgress={progress}
+            />
+          </div>
+        )}
+        
         <SendaFooter />
       </div>
 
-      {/* Portal Modal */}
+      {/* Portal Modal - with dynamic copy based on seal */}
       <VaultPortal
         isOpen={showPortal}
         onClose={() => setShowPortal(false)}
         onUnlock={handlePortalTraversed}
+        sealNumber={currentSealCompleting}
       />
     </div>
   );
