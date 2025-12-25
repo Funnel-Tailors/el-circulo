@@ -8,10 +8,17 @@ export interface Drop {
 
 interface UseVideoDropsOptions {
   sessionId: string | null;
-  classNumber?: 1 | 2; // Which class (1 = 3 drops, 2 = 5 drops)
+  classNumber?: 1 | 2 | 3 | 4; // Which class (1-4)
   onCapture?: (drop: Drop) => void;
   onMiss?: (drop: Drop) => void;
   onAllCaptured?: () => void;
+}
+
+// Drops config per class - includes window time and auto-capture setting
+interface DropsConfig {
+  drops: Drop[];
+  windowMs: number;
+  autoCapture: boolean;
 }
 
 // Class 1: 3 drops (original)
@@ -30,7 +37,30 @@ const CLASS_2_DROPS: Drop[] = [
   { id: 'c2_drop5', symbol: '◈', timestamp: 0.82 },
 ];
 
-const DROP_WINDOW_MS = 10000; // 10 seconds to capture (más generoso)
+// Class 3: 4 drops (La Voz - in video 2)
+const CLASS_3_DROPS: Drop[] = [
+  { id: 'c3_drop1', symbol: '◆', timestamp: 0.20 },
+  { id: 'c3_drop2', symbol: '⬢', timestamp: 0.45 },
+  { id: 'c3_drop3', symbol: '✧', timestamp: 0.70 },
+  { id: 'c3_drop4', symbol: '◇', timestamp: 0.90 },
+];
+
+// Class 4: 5 drops (El Cierre - NO auto-capture!)
+const CLASS_4_DROPS: Drop[] = [
+  { id: 'c4_drop1', symbol: '⌬', timestamp: 0.12 },
+  { id: 'c4_drop2', symbol: '⏣', timestamp: 0.28 },
+  { id: 'c4_drop3', symbol: '⬡', timestamp: 0.48 },
+  { id: 'c4_drop4', symbol: '◈', timestamp: 0.68 },
+  { id: 'c4_drop5', symbol: '✦', timestamp: 0.88 },
+];
+
+// Drops configuration per class
+const DROPS_CONFIG_MAP: Record<1 | 2 | 3 | 4, DropsConfig> = {
+  1: { drops: CLASS_1_DROPS, windowMs: 10000, autoCapture: true },
+  2: { drops: CLASS_2_DROPS, windowMs: 8000, autoCapture: true },
+  3: { drops: CLASS_3_DROPS, windowMs: 7000, autoCapture: true },
+  4: { drops: CLASS_4_DROPS, windowMs: 4000, autoCapture: false }, // NO auto-capture!
+};
 
 const getStorageKey = (sessionId: string, classNumber: number) => 
   `senda_drops_c${classNumber}_${sessionId}`;
@@ -42,6 +72,9 @@ export const useVideoDrops = ({
   onMiss, 
   onAllCaptured 
 }: UseVideoDropsOptions) => {
+  // Validate and get config for this class
+  const validClass = (classNumber >= 1 && classNumber <= 4 ? classNumber : 1) as 1 | 2 | 3 | 4;
+  const config = DROPS_CONFIG_MAP[validClass];
   const [capturedDrops, setCapturedDrops] = useState<Drop[]>([]);
   const [activeDrop, setActiveDrop] = useState<Drop | null>(null);
   const [shownDropIds, setShownDropIds] = useState<Set<string>>(new Set());
@@ -63,26 +96,22 @@ export const useVideoDrops = ({
     onAllCapturedRef.current = onAllCaptured;
   });
 
-  // Get drops config based on class (stable reference)
-  const DROPS_CONFIG = classNumber === 1 ? CLASS_1_DROPS : CLASS_2_DROPS;
-
   // Load from localStorage on mount - stable dependencies only
   useEffect(() => {
     if (!sessionId) return;
     if (initializedRef.current) return; // Prevent re-initialization
     
-    const drops = classNumber === 1 ? CLASS_1_DROPS : CLASS_2_DROPS;
-    const stored = localStorage.getItem(getStorageKey(sessionId, classNumber));
+    const stored = localStorage.getItem(getStorageKey(sessionId, validClass));
     
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        const restoredDrops = drops.filter(d => parsed.capturedIds?.includes(d.id));
+        const restoredDrops = config.drops.filter(d => parsed.capturedIds?.includes(d.id));
         setCapturedDrops(restoredDrops);
         setShownDropIds(new Set(parsed.shownIds || []));
         
         // Check if all already captured
-        if (restoredDrops.length === drops.length) {
+        if (restoredDrops.length === config.drops.length) {
           allCapturedFiredRef.current = true;
           // Use ref to avoid dependency
           setTimeout(() => onAllCapturedRef.current?.(), 0);
@@ -93,17 +122,17 @@ export const useVideoDrops = ({
     }
     
     initializedRef.current = true;
-  }, [sessionId, classNumber]);
+  }, [sessionId, validClass, config.drops]);
 
   // Save to localStorage when state changes
   useEffect(() => {
     if (!sessionId) return;
     
-    localStorage.setItem(getStorageKey(sessionId, classNumber), JSON.stringify({
+    localStorage.setItem(getStorageKey(sessionId, validClass), JSON.stringify({
       capturedIds: capturedDrops.map(d => d.id),
       shownIds: Array.from(shownDropIds),
     }));
-  }, [sessionId, classNumber, capturedDrops, shownDropIds]);
+  }, [sessionId, validClass, capturedDrops, shownDropIds]);
 
   // Check if a drop should appear based on video progress
   const checkForDrop = useCallback((progress: number) => {
@@ -114,7 +143,7 @@ export const useVideoDrops = ({
     
     if (activeDrop) return; // Already showing a drop
     
-    for (const drop of DROPS_CONFIG) {
+    for (const drop of config.drops) {
       const alreadyShown = shownDropIds.has(drop.id);
       const alreadyCaptured = capturedDrops.some(d => d.id === drop.id);
       
@@ -123,34 +152,39 @@ export const useVideoDrops = ({
         setActiveDrop(drop);
         setShownDropIds(prev => new Set([...prev, drop.id]));
         
-        // Auto-captura después del timeout (en vez de miss)
+        // Handle timeout based on autoCapture setting
         dropTimeoutRef.current = setTimeout(() => {
           setActiveDrop(currentDrop => {
             if (currentDrop?.id === drop.id) {
-              // AUTO-CAPTURA: el usuario no pierde el drop
-              setCapturedDrops(prev => {
-                const newCaptured = [...prev, drop];
-                
-                // Check if all drops captured
-                if (newCaptured.length === DROPS_CONFIG.length && !allCapturedFiredRef.current) {
-                  allCapturedFiredRef.current = true;
-                  setTimeout(() => onAllCapturedRef.current?.(), 100);
-                }
-                
-                return newCaptured;
-              });
-              // Track como captura (el usuario no sabrá que fue auto)
-              onCaptureRef.current?.(drop);
+              if (config.autoCapture) {
+                // AUTO-CAPTURA: el usuario no pierde el drop
+                setCapturedDrops(prev => {
+                  const newCaptured = [...prev, drop];
+                  
+                  // Check if all drops captured
+                  if (newCaptured.length === config.drops.length && !allCapturedFiredRef.current) {
+                    allCapturedFiredRef.current = true;
+                    setTimeout(() => onAllCapturedRef.current?.(), 100);
+                  }
+                  
+                  return newCaptured;
+                });
+                // Track como captura (el usuario no sabrá que fue auto)
+                onCaptureRef.current?.(drop);
+              } else {
+                // NO AUTO-CAPTURA: el usuario pierde el drop para siempre
+                onMissRef.current?.(drop);
+              }
               return null;
             }
             return currentDrop;
           });
-        }, DROP_WINDOW_MS);
+        }, config.windowMs);
         
         break; // Only show one drop at a time
       }
     }
-  }, [activeDrop, shownDropIds, capturedDrops, DROPS_CONFIG]);
+  }, [activeDrop, shownDropIds, capturedDrops, config]);
 
   // Capture the active drop
   const captureDrop = useCallback(() => {
@@ -167,7 +201,7 @@ export const useVideoDrops = ({
       const newCaptured = [...prev, captured];
       
       // Check if all drops captured
-      if (newCaptured.length === DROPS_CONFIG.length && !allCapturedFiredRef.current) {
+      if (newCaptured.length === config.drops.length && !allCapturedFiredRef.current) {
         allCapturedFiredRef.current = true;
         setTimeout(() => onAllCapturedRef.current?.(), 100);
       }
@@ -176,7 +210,7 @@ export const useVideoDrops = ({
     });
     setActiveDrop(null);
     onCaptureRef.current?.(captured);
-  }, [activeDrop, DROPS_CONFIG.length]);
+  }, [activeDrop, config.drops.length]);
 
   // Get the correct order for validation
   const getCorrectOrder = useCallback(() => {
@@ -193,16 +227,16 @@ export const useVideoDrops = ({
   // Reset drops (for testing)
   const resetDrops = useCallback(() => {
     if (sessionId) {
-      localStorage.removeItem(getStorageKey(sessionId, classNumber));
+      localStorage.removeItem(getStorageKey(sessionId, validClass));
     }
     setCapturedDrops([]);
     setShownDropIds(new Set());
     setActiveDrop(null);
     allCapturedFiredRef.current = false;
-  }, [sessionId, classNumber]);
+  }, [sessionId, validClass]);
 
   return {
-    drops: DROPS_CONFIG,
+    drops: config.drops,
     capturedDrops,
     activeDrop,
     checkForDrop,
@@ -210,6 +244,9 @@ export const useVideoDrops = ({
     validateSequence,
     getCorrectOrder,
     resetDrops,
-    allCaptured: capturedDrops.length === DROPS_CONFIG.length,
+    allCaptured: capturedDrops.length === config.drops.length,
+    // Expose config for external use
+    hasAutoCapture: config.autoCapture,
+    windowMs: config.windowMs,
   };
 };

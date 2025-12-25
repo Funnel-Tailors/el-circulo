@@ -10,10 +10,30 @@ interface VaultPortalProps {
   isOpen: boolean;
   onClose: () => void;
   onUnlock: () => void;
+  sealNumber?: 1 | 2 | 3; // Which seal was just completed
 }
 
-const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
+const PORTAL_COPY: Record<1 | 2 | 3, { title: string; subtitle: string; cta: string }> = {
+  1: {
+    title: "El Primer Sello ha sido completado.",
+    subtitle: "La Senda revela el Segundo Sello: El Espejo.",
+    cta: "Atravesar el portal",
+  },
+  2: {
+    title: "El Segundo Sello ha sido completado.",
+    subtitle: "La Senda revela el Tercer Sello: La Voz.",
+    cta: "Atravesar el portal",
+  },
+  3: {
+    title: "El Tercer Sello ha sido completado.",
+    subtitle: "La Senda revela el Sello Final: El Cierre.",
+    cta: "Atravesar el portal",
+  },
+};
+
+const VaultPortal = ({ isOpen, onClose, onUnlock, sealNumber = 1 }: VaultPortalProps) => {
   const [isExiting, setIsExiting] = useState(false);
+  const copy = PORTAL_COPY[sealNumber];
 
   const handleUnlock = () => {
     setIsExiting(true);
@@ -232,18 +252,18 @@ const VaultPortal = ({ isOpen, onClose, onUnlock }: VaultPortalProps) => {
             <span className="text-foreground/30 text-lg mb-3 block">⟡</span>
             
             <h2 className="text-xl md:text-3xl font-display font-black text-foreground glow mb-2">
-              Has demostrado ser digno.
+              {copy.title}
             </h2>
             
             <p className="text-foreground/70 text-sm md:text-lg mb-5">
-              La Senda te recompensa abriendo un nuevo camino.
+              {copy.subtitle}
             </p>
             
             <button
               onClick={handleUnlock}
               className="dark-button-primary py-4 px-10 text-base font-semibold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] transition-all duration-300"
             >
-              Atravesar el portal
+              {copy.cta}
             </button>
           </motion.div>
 
