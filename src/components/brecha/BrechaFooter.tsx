@@ -10,7 +10,7 @@ interface BrechaFooterProps {
 
 export const BrechaFooter = ({ 
   showCalendar, 
-  calendarId = "rGFYrJEBNP5bnRt4CMWZ",
+  calendarId = "8C2kck4NCnEihznxvL29",
   firstName,
   eventDate,
 }: BrechaFooterProps) => {
