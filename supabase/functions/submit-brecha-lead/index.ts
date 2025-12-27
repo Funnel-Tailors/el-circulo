@@ -394,7 +394,7 @@ ${identity}
 La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
 
 🔮 RESERVA TU RITUAL DE EVALUACIÓN
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ Solo 3 espacios semanales para candidatos prioritarios
 🎭 Un Miembro Honorario evaluará tu caso específico (60 min)
@@ -415,7 +415,7 @@ ${identity}
 ¿Listo/a para el salto o seguimos dándole vueltas?
 
 🔮 RESERVA TU SESIÓN DE EVALUACIÓN
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 —
 El Círculo
@@ -431,7 +431,7 @@ Tu evaluación revela fricciones importantes.
 No todos están listos para el Círculo. Y eso está bien.
 
 🔮 AGENDA UNA SESIÓN EXPLORATORIA
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 —
 El Círculo
@@ -554,7 +554,7 @@ ${randomReality}
 ${painInsight}
 
 🔮 RESERVA TU RITUAL DE EVALUACIÓN
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Cuando quieras.
 
@@ -580,7 +580,7 @@ ${randomFear}
 ${randomReality}
 
 🔮 AGENDA TU SESIÓN
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Solo si te suena.
 
@@ -609,7 +609,7 @@ Los datos:
 ${successStory}
 
 🔮 ÚNETE AL RITUAL
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Tú decides de qué lado estás.
 
@@ -638,7 +638,7 @@ O puedes dar el paso.
 Pero no puedes hacer las dos cosas.
 
 🔮 AGENDA AQUÍ
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 No hay prisa. Pero tampoco hay pausa.
 
@@ -666,7 +666,7 @@ Trabajando igual de duro.
 Con los mismos clientes de siempre.
 
 🔮 ESTO ES TODO
-https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Tú decides.
 
