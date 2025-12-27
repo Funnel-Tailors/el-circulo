@@ -17,8 +17,15 @@ export const BrechaFooter = ({
   const isExpired = eventDate.getTime() < Date.now();
 
   return (
-    <footer className="relative py-16 px-4 border-t border-primary/10">
-      <div className="max-w-4xl mx-auto">
+    <footer className="relative z-10">
+      {/* Runic divider top */}
+      <div className="flex items-center justify-center gap-4 py-16">
+        <div className="h-px w-16 bg-gradient-to-r from-transparent to-border" />
+        <span className="text-muted-foreground/50 text-sm">✦</span>
+        <div className="h-px w-16 bg-gradient-to-l from-transparent to-border" />
+      </div>
+
+      <div className="container mx-auto px-4 pb-12">
         {showCalendar && !isExpired ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -27,7 +34,7 @@ export const BrechaFooter = ({
           >
             {/* CTA Header */}
             <div className="text-center mb-8">
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+              <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground glow">
                 El último paso
               </h2>
               <p className="text-muted-foreground mt-3 max-w-md mx-auto">
@@ -35,8 +42,8 @@ export const BrechaFooter = ({
               </p>
             </div>
 
-            {/* Calendar */}
-            <div className="rounded-xl overflow-hidden border border-primary/20 bg-black/20">
+            {/* Calendar - glass-card-dark like Senda */}
+            <div className="glass-card-dark p-4 max-w-4xl mx-auto rounded-xl overflow-hidden">
               <GHLCalendarIframe 
                 calendarId={calendarId}
                 firstName={firstName}
@@ -48,7 +55,7 @@ export const BrechaFooter = ({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center"
+            className="text-center glass-card-dark p-8 max-w-md mx-auto"
           >
             <h2 className="text-2xl font-display font-bold text-muted-foreground">
               La brecha se ha cerrado
@@ -62,7 +69,7 @@ export const BrechaFooter = ({
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center"
+            className="text-center glass-card-dark p-8 max-w-md mx-auto"
           >
             <h2 className="text-2xl font-display font-bold text-muted-foreground">
               Completa los fragmentos primero
@@ -74,7 +81,7 @@ export const BrechaFooter = ({
         )}
 
         {/* Footer links */}
-        <div className="mt-12 pt-8 border-t border-primary/5 text-center">
+        <div className="mt-12 pt-8 text-center">
           <p className="text-muted-foreground/50 text-sm">
             © {new Date().getFullYear()} La Brecha. Todos los derechos reservados.
           </p>
