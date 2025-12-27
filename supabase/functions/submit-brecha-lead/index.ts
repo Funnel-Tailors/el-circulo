@@ -180,6 +180,13 @@ function generateTags(
     if (hardstopReason) {
       toApply.push(`brecha:hardstop_${hardstopReason}`)
     }
+    // Tags de segmentación para automatizar follow-ups
+    if (hardstopReason === 'low_revenue') {
+      toApply.push('brecha_low_revenue')
+    }
+    if (hardstopReason === 'low_budget') {
+      toApply.push('brecha_low_budget')
+    }
     toRemove.push('brecha:qualified', 'brecha:pending')
   }
 
@@ -675,6 +682,19 @@ El Círculo
   `.trim()
 }
 
+// ============= BRECHA-SPECIFIC HELPERS =============
+
+function getRandomDailyReality(painLiteral: string | null): string {
+  if (!painLiteral || !dailyRealities[painLiteral]) return ''
+  const realities = dailyRealities[painLiteral]
+  return realities[Math.floor(Math.random() * realities.length)]
+}
+
+function getRandomFearCall(level: 'hot' | 'qualified' | 'marginal'): string {
+  const calls = fearCalls[level]
+  return calls[Math.floor(Math.random() * calls.length)]
+}
+
 // ============= BRECHA-SPECIFIC NOTIFICATION =============
 
 function generateBrechaNotification(
@@ -682,41 +702,72 @@ function generateBrechaNotification(
   firstName: string,
   tier: string,
   url: string | null,
-  hardstopReason: string | null
+  hardstopReason: string | null,
+  painLiteral: string | null,
+  revenueLiteral: string | null,
+  budgetLiteral: string | null,
+  dailyReality: string,
+  contrastStatement: string,
+  fearCall: string
 ): string {
   if (isQualified && url) {
-    return `Los siete sellos se han roto.
+    return `${firstName}.
 
-Has demostrado ser digno de cruzar La Brecha.
+${dailyReality}
 
-Tu portal personal está aquí:
+Sé lo que es eso.
+
+${contrastStatement}
+
+Has superado las siete pruebas.
+
+La Brecha se abre para ti.
+
 ${url}
 
-⚠️ IMPORTANTE:
-- No compartas este enlace
-- Solo funciona una vez
+Intransferible. Personal. Caduca.
 
-Nos vemos al otro lado.`
+${fearCall}`
   }
   
   if (hardstopReason === 'low_revenue') {
-    return `Los sellos permanecen intactos.
+    return `${firstName}.
 
-Tu nivel de facturación actual indica que aún no es el momento.
+${dailyReality}
 
-Cuando tu negocio genere más de €1.500/mes, vuelve a intentarlo.
+Facturas ${revenueLiteral}.
 
-El umbral estará aquí esperando.`
+Las siete pruebas existen por algo.
+
+No es que no merezcas cruzar. Es que aún no has construido los cimientos para sostener lo que hay dentro.
+
+La Brecha no se abre para ti. Todavía.
+
+Pero hay otros caminos.
+
+¿Cuánto pondrías sobre la mesa HOY por algo que te acerque al umbral?`
   }
   
   if (hardstopReason === 'low_budget') {
-    return `El tributo ofrecido no abre esta puerta.
+    return `${firstName}.
 
-La Brecha requiere una inversión mínima de €1.500.
+${dailyReality}
 
-Cuando estés listo para invertir en tu transformación, vuelve.
+Dices que ${painLiteral?.toLowerCase() || 'tienes fricciones'}.
 
-El umbral permanece.`
+Y cuando te pregunto qué invertirías en solucionarlo...
+
+"${budgetLiteral}"
+
+Tus clientes hacen lo mismo contigo.
+
+Las siete pruebas existen por algo.
+
+La Brecha no se abre para quien no está dispuesto a pagar el precio.
+
+Pero hay otras grietas.
+
+¿Cuánto pondrías REALMENTE sobre la mesa?`
   }
   
   return ''
@@ -907,7 +958,27 @@ Deno.serve(async (req) => {
     }
 
     // Generate all notifications
-    const brechaNotification = generateBrechaNotification(isQualified, first_name || 'Lead', tier, brechaUrl, hardstopReason)
+    // Generate personalized elements for Brecha notification
+    const dailyReality = getRandomDailyReality(literalAnswers.q1 || null)
+    const contrastStatement = literalAnswers.q1 && contrastStatements[literalAnswers.q1] 
+      ? contrastStatements[literalAnswers.q1] 
+      : ''
+    const agitLevel = getAgitationLevel(score)
+    const fearCall = getRandomFearCall(agitLevel)
+
+    const brechaNotification = generateBrechaNotification(
+      isQualified, 
+      first_name || 'Viajero', 
+      tier, 
+      brechaUrl, 
+      hardstopReason,
+      literalAnswers.q1 || null,
+      literalAnswers.q3 || null,
+      literalAnswers.q5 || null,
+      dailyReality,
+      contrastStatement,
+      fearCall
+    )
     const closerNotification = generateCloserNotification(contactData, literalAnswers, score, tags.toApply)
     const internalNotification = generateInternalNotification(contactData, literalAnswers, score, tags.toApply)
     const clientNotification = generateClientNotification(first_name || 'Lead', literalAnswers, score)
