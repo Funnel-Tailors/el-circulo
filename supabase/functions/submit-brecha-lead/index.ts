@@ -814,19 +814,33 @@ Deno.serve(async (req) => {
     const body = await req.json()
     console.log('Received payload:', JSON.stringify(body, null, 2))
 
-    const {
+    // Extract from root level OR customData (GHL sends data in different places)
+    const ghl_contact_id = body.contact_id || body.customData?.ghl_contact_id || body.ghl_contact_id
+    const first_name = body.first_name || body.customData?.first_name || ''
+
+    // Extract answers from customData (where GHL actually sends them) OR root brecha_qX fields
+    const customData = body.customData || {}
+    const pain_answer = customData.pain_answer || body.brecha_q1_pain || ''
+    const profession_answer = customData.profession_answer || body.brecha_q2_profession || ''
+    const revenue_answer = customData.revenue_answer || body.brecha_q3_revenue || ''
+    const acquisition_answer = customData.acquisition_answer || body.brecha_q4_acquisition || ''
+    const budget_answer = customData.budget_answer || body.brecha_q5_budget || ''
+    const urgency_answer = customData.urgency_answer || body.brecha_q6_urgency || ''
+    const authority_answer = customData.authority_answer || body.brecha_q7_authority || ''
+    const email = body.email || customData.email || ''
+    const phone = body.phone || customData.phone || ''
+
+    console.log('Extracted data:', {
       ghl_contact_id,
       first_name,
-      email,
-      phone,
       pain_answer,
       profession_answer,
       revenue_answer,
       acquisition_answer,
       budget_answer,
       urgency_answer,
-      authority_answer,
-    } = body
+      authority_answer
+    })
 
     if (!ghl_contact_id) {
       return new Response(
