@@ -11,6 +11,17 @@ import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { EndlessTools3D } from "@/components/senda/EndlessTools3D";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { AlertTriangle, Info } from "lucide-react";
+
+// Drops config info for display
+const DROPS_INFO: Record<number, { count: number; windowMs: number; autoCapture: boolean }> = {
+  1: { count: 3, windowMs: 10000, autoCapture: true },
+  2: { count: 5, windowMs: 8000, autoCapture: true },
+  3: { count: 4, windowMs: 7000, autoCapture: true },
+  4: { count: 5, windowMs: 4000, autoCapture: false },
+  5: { count: 3, windowMs: 4000, autoCapture: false },
+  6: { count: 5, windowMs: 4000, autoCapture: false },
+};
 
 const TestVault = () => {
   const navigate = useNavigate();
@@ -23,9 +34,10 @@ const TestVault = () => {
   const vaultSectionRef = useRef<HTMLDivElement>(null);
 
   // Drops testing state
-  const [selectedClass, setSelectedClass] = useState<1 | 2>(1);
+  const [selectedClass, setSelectedClass] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
   const [showDropDemo, setShowDropDemo] = useState(false);
   const [showRitualModal, setShowRitualModal] = useState(false);
+  const [simulatedMissedDrops, setSimulatedMissedDrops] = useState<string[]>([]);
 
   // 3D Element testing state
   const [element3DSize, setElement3DSize] = useState<'sm' | 'md' | 'lg' | 'xl'>('md');
@@ -74,11 +86,16 @@ const TestVault = () => {
     captureDrop,
     resetDrops,
     allCaptured,
+    hasAutoCapture,
+    windowMs,
   } = useVideoDrops({
     sessionId: 'test-vault-drops',
     classNumber: selectedClass,
     onCapture: (drop) => console.log('Captured:', drop.symbol),
-    onMiss: (drop) => console.log('Missed:', drop.symbol),
+    onMiss: (drop) => {
+      console.log('Missed:', drop.symbol);
+      setSimulatedMissedDrops(prev => [...prev, drop.id]);
+    },
     onAllCaptured: () => console.log('All drops captured!'),
   });
 
@@ -97,7 +114,15 @@ const TestVault = () => {
   const handleReset = () => {
     setVaultUnlocked(false);
     setClass2Progress(0);
+    setSimulatedMissedDrops([]);
+    resetDrops();
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleClassChange = (classNum: 1 | 2 | 3 | 4 | 5 | 6) => {
+    setSelectedClass(classNum);
+    setSimulatedMissedDrops([]);
+    resetDrops();
   };
 
   // Loading screen
@@ -111,6 +136,8 @@ const TestVault = () => {
       </div>
     );
   }
+
+  const currentConfig = DROPS_INFO[selectedClass];
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
@@ -270,59 +297,84 @@ const TestVault = () => {
         </div>
 
         {/* DROPS TEST SECTION */}
-        <div className="glass-card-dark p-8 max-w-lg mx-auto text-center mt-8">
+        <div className="glass-card-dark p-8 max-w-2xl mx-auto text-center mt-8">
           <h2 className="text-xl font-semibold text-foreground mb-6">
             🎮 Test: Minijuego de Drops
           </h2>
           
-          {/* Selector de clase */}
-          <div className="flex justify-center gap-2 mb-6">
-            <button
-              onClick={() => {
-                setSelectedClass(1);
-                resetDrops();
-              }}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                selectedClass === 1 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'dark-button'
-              }`}
-            >
-              Clase 1 (3 drops)
-            </button>
-            <button
-              onClick={() => {
-                setSelectedClass(2);
-                resetDrops();
-              }}
-              className={`px-4 py-2 rounded-lg transition-all ${
-                selectedClass === 2 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'dark-button'
-              }`}
-            >
-              Clase 2 (5 drops)
-            </button>
+          {/* Class selector - ALL 6 CLASSES */}
+          <div className="flex flex-wrap justify-center gap-2 mb-6">
+            {([1, 2, 3, 4, 5, 6] as const).map((classNum) => {
+              const info = DROPS_INFO[classNum];
+              const isNoAutoCapture = !info.autoCapture;
+              return (
+                <button
+                  key={classNum}
+                  onClick={() => handleClassChange(classNum)}
+                  className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 ${
+                    selectedClass === classNum 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'dark-button'
+                  }`}
+                >
+                  <span>
+                    {classNum <= 4 ? `Clase ${classNum}` : `Brecha F${classNum - 4}`}
+                  </span>
+                  <span className="text-xs opacity-70">({info.count})</span>
+                  {isNoAutoCapture && (
+                    <AlertTriangle className="w-3 h-3 text-destructive" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Config info card */}
+          <div className="glass-card-dark p-4 mb-6 inline-block">
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Info className="w-4 h-4 text-primary" />
+                <span className="text-foreground/70">Drops: {currentConfig.count}</span>
+              </div>
+              <div className="text-foreground/50">|</div>
+              <div className="text-foreground/70">
+                Window: {currentConfig.windowMs / 1000}s
+              </div>
+              <div className="text-foreground/50">|</div>
+              <div className={`flex items-center gap-1 ${!currentConfig.autoCapture ? 'text-destructive' : 'text-primary'}`}>
+                {currentConfig.autoCapture ? (
+                  <>✅ Auto-captura</>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-4 h-4" />
+                    SIN auto-captura
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Lista de drops y botones para simular */}
           <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mb-6">
             {drops.map((drop) => {
               const isCaptured = capturedDrops.some(d => d.id === drop.id);
+              const isMissed = simulatedMissedDrops.includes(drop.id);
               return (
                 <button
                   key={drop.id}
                   onClick={() => {
-                    if (!isCaptured) {
+                    if (!isCaptured && !isMissed) {
                       checkForDrop(drop.timestamp + 0.001);
                     }
                   }}
-                  disabled={isCaptured}
+                  disabled={isCaptured || isMissed}
                   className={`
-                    p-3 rounded-lg text-2xl transition-all
+                    p-3 rounded-lg text-2xl transition-all relative
                     ${isCaptured 
                       ? 'bg-primary/20 text-primary opacity-50 cursor-not-allowed' 
-                      : 'dark-button hover:bg-foreground/10'
+                      : isMissed
+                        ? 'bg-destructive/20 text-destructive opacity-50 cursor-not-allowed'
+                        : 'dark-button hover:bg-foreground/10'
                     }
                   `}
                   title={`Timestamp: ${Math.round(drop.timestamp * 100)}%`}
@@ -331,6 +383,9 @@ const TestVault = () => {
                   <span className="block text-xs mt-1 opacity-50">
                     {Math.round(drop.timestamp * 100)}%
                   </span>
+                  {isMissed && (
+                    <span className="absolute top-1 right-1 text-xs text-destructive">✗</span>
+                  )}
                 </button>
               );
             })}
@@ -344,26 +399,61 @@ const TestVault = () => {
             {showDropDemo ? 'Ocultar Área de Demo' : 'Mostrar Área de Demo'}
           </button>
           
-          <button
-            onClick={resetDrops}
-            className="dark-button w-full py-3"
-          >
-            🔄 Reset Drops
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => {
+                setSimulatedMissedDrops([]);
+                resetDrops();
+              }}
+              className="dark-button py-3"
+            >
+              🔄 Reset Drops
+            </button>
 
-          <button
-            onClick={() => setShowRitualModal(true)}
-            className="dark-button w-full py-3 mt-2"
-            disabled={capturedDrops.length < 2}
-          >
-            🔮 Test Modal Ritual (ordenar secuencia)
-          </button>
+            <button
+              onClick={() => setShowRitualModal(true)}
+              className="dark-button py-3"
+              disabled={capturedDrops.length < 2}
+            >
+              🔮 Test Modal Ritual
+            </button>
+          </div>
+
+          {/* Simulate miss button for no-autocapture classes */}
+          {!currentConfig.autoCapture && (
+            <button
+              onClick={() => {
+                const nextDrop = drops.find(d => 
+                  !capturedDrops.some(c => c.id === d.id) && 
+                  !simulatedMissedDrops.includes(d.id)
+                );
+                if (nextDrop) {
+                  setSimulatedMissedDrops(prev => [...prev, nextDrop.id]);
+                  toast({
+                    variant: 'destructive',
+                    title: 'Drop perdido',
+                    description: `Has perdido ${nextDrop.symbol} para siempre`,
+                  });
+                }
+              }}
+              className="dark-button w-full py-3 mt-2 border-destructive/30 text-destructive hover:bg-destructive/10"
+              disabled={drops.every(d => capturedDrops.some(c => c.id === d.id) || simulatedMissedDrops.includes(d.id))}
+            >
+              ⚠️ Simular Pérdida de Drop
+            </button>
+          )}
           
           {/* Info estado actual */}
-          <div className="mt-4 text-xs text-foreground/50">
+          <div className="mt-4 text-xs text-foreground/50 space-y-1">
             <p>Capturados: {capturedDrops.length}/{drops.length}</p>
+            <p>Perdidos: {simulatedMissedDrops.length}</p>
             <p>Drop activo: {activeDrop ? activeDrop.symbol : 'ninguno'}</p>
             <p>Todos capturados: {allCaptured ? '✅ Sí' : '❌ No'}</p>
+            {!hasAutoCapture && simulatedMissedDrops.length > 0 && (
+              <p className="text-destructive">
+                ⚠️ {selectedClass === 4 ? 'Roleplay bloqueado permanentemente' : 'Drops perdidos para siempre'}
+              </p>
+            )}
           </div>
         </div>
 
@@ -395,6 +485,8 @@ const TestVault = () => {
             capturedDrops={capturedDrops}
             totalDrops={drops.length}
             allCaptured={allCaptured}
+            classNumber={selectedClass}
+            missedDrops={simulatedMissedDrops}
           />
         </div>
       </div>

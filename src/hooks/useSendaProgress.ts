@@ -417,6 +417,12 @@ export const useSendaProgress = (token: string | null) => {
       | 'module3_ritual_accepted'
       | 'module3_sequence_completed'
       | 'module3_unlocked'
+      | 'module4_video_started'
+      | 'module4_sequence_completed'
+      | 'module4_ritual_accepted'
+      | 'module4_unlocked'
+      | 'module4_roleplay_unlocked'
+      | 'module4_roleplay_opened'
   ) => {
     const updates: Partial<SendaProgress> = {};
     
@@ -484,6 +490,31 @@ export const useSendaProgress = (token: string | null) => {
         updates.module3Unlocked = true;
         updates.module3UnlockedAt = new Date().toISOString();
         break;
+      case 'module4_video_started':
+        if (progress.module4VideoStarted) return;
+        updates.module4VideoStarted = true;
+        break;
+      case 'module4_sequence_completed':
+        if (progress.module4SequenceCompleted) return;
+        updates.module4SequenceCompleted = true;
+        break;
+      case 'module4_ritual_accepted':
+        if (progress.module4RitualAccepted) return;
+        updates.module4RitualAccepted = true;
+        updates.module4RitualAcceptedAt = new Date().toISOString();
+        break;
+      case 'module4_unlocked':
+        if (progress.module4Unlocked) return;
+        updates.module4Unlocked = true;
+        updates.module4UnlockedAt = new Date().toISOString();
+        break;
+      case 'module4_roleplay_unlocked':
+        if (progress.module4RoleplayUnlocked) return;
+        updates.module4RoleplayUnlocked = true;
+        break;
+      case 'module4_roleplay_opened':
+        updates.module4RoleplayOpened = true;
+        break;
     }
 
     if (Object.keys(updates).length > 0) {
@@ -542,7 +573,7 @@ export const useSendaProgress = (token: string | null) => {
   }, [progress.class2SequenceFailedAttempts, updateProgress]);
 
   // Update video progress
-  const updateVideoProgress = useCallback(async (classNumber: 1 | 2 | 3, progressPercent: number, videoNumber?: 1 | 2) => {
+  const updateVideoProgress = useCallback(async (classNumber: 1 | 2 | 3 | 4, progressPercent: number, videoNumber?: 1 | 2) => {
     if (classNumber === 1) {
       if (progressPercent <= progress.class1VideoProgress) return;
       await updateProgress({ class1VideoProgress: progressPercent });
@@ -557,8 +588,11 @@ export const useSendaProgress = (token: string | null) => {
         if (progressPercent <= progress.module3Video2Progress) return;
         await updateProgress({ module3Video2Progress: progressPercent });
       }
+    } else if (classNumber === 4) {
+      if (progressPercent <= progress.module4VideoProgress) return;
+      await updateProgress({ module4VideoProgress: progressPercent });
     }
-  }, [progress.class1VideoProgress, progress.class2VideoProgress, progress.module3Video1Progress, progress.module3Video2Progress, updateProgress]);
+  }, [progress.class1VideoProgress, progress.class2VideoProgress, progress.module3Video1Progress, progress.module3Video2Progress, progress.module4VideoProgress, updateProgress]);
 
   // Record a drop capture (Module 3)
   const recordModule3DropCapture = useCallback(async (dropId: string) => {
@@ -596,6 +630,38 @@ export const useSendaProgress = (token: string | null) => {
     }
   }, [progress.module3Assistant1Opened, progress.module3Assistant2Opened, progress.module3Assistant3Opened, updateProgress]);
 
+  // Record a drop capture (Module 4)
+  const recordModule4DropCapture = useCallback(async (dropId: string) => {
+    if (progress.module4DropsCaputred.includes(dropId)) return;
+    
+    await updateProgress({
+      module4DropsCaputred: [...progress.module4DropsCaputred, dropId],
+    });
+  }, [progress.module4DropsCaputred, updateProgress]);
+
+  // Record a drop miss (Module 4) - CRITICAL: This locks roleplay permanently
+  const recordModule4DropMiss = useCallback(async (dropId: string) => {
+    if (progress.module4DropsMissed.includes(dropId)) return;
+    
+    await updateProgress({
+      module4DropsMissed: [...progress.module4DropsMissed, dropId],
+    });
+  }, [progress.module4DropsMissed, updateProgress]);
+
+  // Record sequence failure (Module 4)
+  const recordModule4SequenceFailure = useCallback(async () => {
+    await updateProgress({
+      module4SequenceFailedAttempts: progress.module4SequenceFailedAttempts + 1,
+    });
+  }, [progress.module4SequenceFailedAttempts, updateProgress]);
+
+  // Mark module 4 roleplay opened
+  const markModule4RoleplayOpened = useCallback(async () => {
+    if (!progress.module4RoleplayOpened) {
+      await updateProgress({ module4RoleplayOpened: true });
+    }
+  }, [progress.module4RoleplayOpened, updateProgress]);
+
   // Load on mount
   useEffect(() => {
     if (token && !initialized) {
@@ -619,6 +685,10 @@ export const useSendaProgress = (token: string | null) => {
     recordModule3DropMiss,
     recordModule3SequenceFailure,
     markModule3AssistantOpened,
+    recordModule4DropCapture,
+    recordModule4DropMiss,
+    recordModule4SequenceFailure,
+    markModule4RoleplayOpened,
     updateVideoProgress,
     loadProgress,
   };
