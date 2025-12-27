@@ -6,7 +6,7 @@ interface DropsInventoryProps {
   capturedDrops: Drop[];
   totalDrops: number;
   allCaptured: boolean;
-  classNumber?: 1 | 2 | 5 | 6; // 5-6 = La Brecha
+  classNumber?: 1 | 2 | 3 | 5 | 6; // 3 = Module 3 (La Voz), 5-6 = La Brecha
   missedDrops?: string[]; // IDs of missed drops (for La Brecha)
 }
 
@@ -24,6 +24,14 @@ const CLASS_2_MESSAGES: Record<number, string> = {
   3: "Tres. Sigue atento.",
   4: "Cuatro. Solo uno más.",
   5: "✦ Arquitecto de Avatares desbloqueado.",
+};
+
+// Class 3 messages (4 drops - La Voz)
+const CLASS_3_MESSAGES: Record<number, string> = {
+  1: "Uno. Tu voz empieza a formarse.",
+  2: "Dos. El mensaje se aclara.",
+  3: "Tres. Casi listo para hablar.",
+  4: "✦ Asistentes de campaña desbloqueados.",
 };
 
 // La Brecha - Fragmento 1 messages (3 drops)
@@ -73,6 +81,7 @@ export const DropsInventory = ({
 }: DropsInventoryProps) => {
   const getMessages = () => {
     switch (classNumber) {
+      case 3: return CLASS_3_MESSAGES;
       case 5: return CLASS_5_MESSAGES;
       case 6: return CLASS_6_MESSAGES;
       case 2: return CLASS_2_MESSAGES;

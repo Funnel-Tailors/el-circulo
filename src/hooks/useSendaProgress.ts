@@ -412,6 +412,11 @@ export const useSendaProgress = (token: string | null) => {
       | 'assistant1_unlocked'
       | 'assistant1_opened'
       | 'class1_assistant_opened'
+      | 'module3_video1_started'
+      | 'module3_video2_started'
+      | 'module3_ritual_accepted'
+      | 'module3_sequence_completed'
+      | 'module3_unlocked'
   ) => {
     const updates: Partial<SendaProgress> = {};
     
@@ -441,23 +446,6 @@ export const useSendaProgress = (token: string | null) => {
       case 'class2_sequence_completed':
         if (progress.class2SequenceCompleted) return;
         updates.class2SequenceCompleted = true;
-        // Also mark journey as completed
-        if (token) {
-          supabase
-            .from('senda_progress')
-            .update({ 
-              journey_completed: true,
-              journey_completed_at: new Date().toISOString()
-            })
-            .eq('ghl_contact_id', token)
-            .then(({ error }) => {
-              if (error) {
-                console.error('Error auto-marking journey_completed:', error);
-              } else {
-                console.log('✅ Journey auto-marked as completed');
-              }
-            });
-        }
         break;
       case 'class2_ritual_accepted':
         if (progress.class2RitualAccepted) return;
@@ -473,6 +461,28 @@ export const useSendaProgress = (token: string | null) => {
         break;
       case 'class1_assistant_opened':
         updates.class1AssistantOpened = true;
+        break;
+      case 'module3_video1_started':
+        if (progress.module3Video1Started) return;
+        updates.module3Video1Started = true;
+        break;
+      case 'module3_video2_started':
+        if (progress.module3Video2Started) return;
+        updates.module3Video2Started = true;
+        break;
+      case 'module3_ritual_accepted':
+        if (progress.module3RitualAccepted) return;
+        updates.module3RitualAccepted = true;
+        updates.module3RitualAcceptedAt = new Date().toISOString();
+        break;
+      case 'module3_sequence_completed':
+        if (progress.module3SequenceCompleted) return;
+        updates.module3SequenceCompleted = true;
+        break;
+      case 'module3_unlocked':
+        if (progress.module3Unlocked) return;
+        updates.module3Unlocked = true;
+        updates.module3UnlockedAt = new Date().toISOString();
         break;
     }
 
@@ -532,15 +542,59 @@ export const useSendaProgress = (token: string | null) => {
   }, [progress.class2SequenceFailedAttempts, updateProgress]);
 
   // Update video progress
-  const updateVideoProgress = useCallback(async (classNumber: 1 | 2, progressPercent: number) => {
+  const updateVideoProgress = useCallback(async (classNumber: 1 | 2 | 3, progressPercent: number, videoNumber?: 1 | 2) => {
     if (classNumber === 1) {
       if (progressPercent <= progress.class1VideoProgress) return;
       await updateProgress({ class1VideoProgress: progressPercent });
-    } else {
+    } else if (classNumber === 2) {
       if (progressPercent <= progress.class2VideoProgress) return;
       await updateProgress({ class2VideoProgress: progressPercent });
+    } else if (classNumber === 3) {
+      if (videoNumber === 1) {
+        if (progressPercent <= progress.module3Video1Progress) return;
+        await updateProgress({ module3Video1Progress: progressPercent });
+      } else if (videoNumber === 2) {
+        if (progressPercent <= progress.module3Video2Progress) return;
+        await updateProgress({ module3Video2Progress: progressPercent });
+      }
     }
-  }, [progress.class1VideoProgress, progress.class2VideoProgress, updateProgress]);
+  }, [progress.class1VideoProgress, progress.class2VideoProgress, progress.module3Video1Progress, progress.module3Video2Progress, updateProgress]);
+
+  // Record a drop capture (Module 3)
+  const recordModule3DropCapture = useCallback(async (dropId: string) => {
+    if (progress.module3DropsCaputred.includes(dropId)) return;
+    
+    await updateProgress({
+      module3DropsCaputred: [...progress.module3DropsCaputred, dropId],
+    });
+  }, [progress.module3DropsCaputred, updateProgress]);
+
+  // Record a drop miss (Module 3)
+  const recordModule3DropMiss = useCallback(async (dropId: string) => {
+    if (progress.module3DropsMissed.includes(dropId)) return;
+    
+    await updateProgress({
+      module3DropsMissed: [...progress.module3DropsMissed, dropId],
+    });
+  }, [progress.module3DropsMissed, updateProgress]);
+
+  // Record sequence failure (Module 3)
+  const recordModule3SequenceFailure = useCallback(async () => {
+    await updateProgress({
+      module3SequenceFailedAttempts: progress.module3SequenceFailedAttempts + 1,
+    });
+  }, [progress.module3SequenceFailedAttempts, updateProgress]);
+
+  // Mark module 3 assistant opened
+  const markModule3AssistantOpened = useCallback(async (assistantNumber: 1 | 2 | 3) => {
+    if (assistantNumber === 1 && !progress.module3Assistant1Opened) {
+      await updateProgress({ module3Assistant1Opened: true });
+    } else if (assistantNumber === 2 && !progress.module3Assistant2Opened) {
+      await updateProgress({ module3Assistant2Opened: true });
+    } else if (assistantNumber === 3 && !progress.module3Assistant3Opened) {
+      await updateProgress({ module3Assistant3Opened: true });
+    }
+  }, [progress.module3Assistant1Opened, progress.module3Assistant2Opened, progress.module3Assistant3Opened, updateProgress]);
 
   // Load on mount
   useEffect(() => {
@@ -561,6 +615,10 @@ export const useSendaProgress = (token: string | null) => {
     recordClass2DropCapture,
     recordClass2DropMiss,
     recordClass2SequenceFailure,
+    recordModule3DropCapture,
+    recordModule3DropMiss,
+    recordModule3SequenceFailure,
+    markModule3AssistantOpened,
     updateVideoProgress,
     loadProgress,
   };
