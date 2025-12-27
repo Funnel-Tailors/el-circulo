@@ -55,7 +55,76 @@ const AUTHORITY_MAP: Record<string, { value: string; score: number }> = {
   '👥': { value: 'shared', score: 5 },
 }
 
-// Parse emoji from text
+// ============= LITERAL TRANSLATION MAPS (emoji value → readable text) =============
+
+const PAIN_LITERAL_MAP: Record<string, string> = {
+  'low_budget_clients': 'Mis clientes no tienen presupuesto',
+  'overworked_underpaid': 'Trabajo muchas horas y encima estoy tieso',
+  'no_clients': 'No tengo clientes suficientes (no sé ni por donde empezar)',
+  'cant_sell_high_ticket': 'No sé cómo vender lo que hago sin que me regateen',
+  'all_above': 'Todo lo anterior',
+}
+
+const PROFESSION_LITERAL_MAP: Record<string, string> = {
+  'designer': 'Diseñador Gráfico / Web',
+  'photographer': 'Fotógrafo/Filmmaker',
+  'automation': 'Automatizador',
+  'other_creative': 'Otro servicio creativo',
+}
+
+const REVENUE_LITERAL_MAP: Record<string, string> = {
+  'menos_500': 'Menos de €500/mes',
+  '500_1500': '€500 - €1.500/mes',
+  '1500_3000': '€1.500 - €2.500/mes',
+  '3000_6000': '€2.500 - €5.000/mes',
+  'mas_6000': 'Más de €5.000/mes',
+}
+
+const ACQUISITION_LITERAL_MAP: Record<string, string> = {
+  'referrals': 'Recomendaciones',
+  'organic': 'Contenido orgánico (redes/web)',
+  'paid': 'Anuncios pagados',
+  'outreach': 'Cold outreach',
+  'no_system': 'Aún no tengo un sistema',
+}
+
+const BUDGET_LITERAL_MAP: Record<string, string> = {
+  'menos_1500': 'Menos de €1.500',
+  '1500_3000': '€1.500 - €3.000',
+  '3000_5000': '€3.000 - €5.000',
+  'mas_5000': 'Más de €5.000',
+}
+
+const URGENCY_LITERAL_MAP: Record<string, string> = {
+  'fast': 'Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA',
+  'gradual': 'Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas',
+}
+
+const AUTHORITY_LITERAL_MAP: Record<string, string> = {
+  'solo': 'Solo yo',
+  'shared': 'Yo con mi pareja/socio (lo invitaré a la llamada)',
+}
+
+// ============= INTERFACES =============
+
+interface QuizAnswers {
+  q1?: string;  // Pain Point
+  q2?: string;  // Profesión
+  q3?: string;  // Facturación mensual
+  q4?: string[]; // Métodos de adquisición (array)
+  q5?: string;  // Presupuesto de inversión
+  q6?: string;  // Urgencia/Compromiso
+  q7?: string;  // Autoridad de decisión
+}
+
+interface ContactData {
+  name: string;
+  email?: string;
+  whatsapp?: string;
+}
+
+// ============= HELPER FUNCTIONS =============
+
 function parseEmoji(text: string, map: Record<string, any>): { value: string; score: number; hardstop?: boolean } | null {
   if (!text) return null
   for (const emoji of Object.keys(map)) {
@@ -66,7 +135,6 @@ function parseEmoji(text: string, map: Record<string, any>): { value: string; sc
   return null
 }
 
-// Parse multiple emojis (for acquisition Q4)
 function parseMultipleEmojis(text: string, map: Record<string, { value: string; score: number }>): { values: string[]; totalScore: number } {
   if (!text) return { values: [], totalScore: 0 }
   const values: string[] = []
@@ -80,21 +148,16 @@ function parseMultipleEmojis(text: string, map: Record<string, { value: string; 
   return { values, totalScore }
 }
 
-// Determine tier based on budget and score
 function determineTier(budgetValue: string, score: number): string {
-  // Premium: budget >= 3000 and high score
   if ((budgetValue === '3000_5000' || budgetValue === 'mas_5000') && score >= 90) {
     return 'premium'
   }
-  // Full access: qualified leads
   if (score >= 60) {
     return 'full_access'
   }
-  // Offer only: lower scores but qualified
   return 'offer_only'
 }
 
-// Generate tags based on qualification
 function generateTags(
   isQualified: boolean,
   tier: string,
@@ -120,7 +183,6 @@ function generateTags(
     toRemove.push('brecha:qualified', 'brecha:pending')
   }
 
-  // Segmentation tags
   if (painValue) toApply.push(`brecha:pain_${painValue}`)
   if (professionValue) toApply.push(`brecha:profession_${professionValue}`)
   if (revenueValue) toApply.push(`brecha:revenue_${revenueValue}`)
@@ -130,8 +192,539 @@ function generateTags(
   return { toApply, toRemove }
 }
 
+// ============= NOTIFICATION GENERATION (copied from submit-lead-to-ghl) =============
+
+const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
+  'Mis clientes no tienen presupuesto': {
+    hot: 'El problema no son tus clientes. Es que apuntas a quién no debe. Los miembros del Círculo dejan de perseguir mierdecillas que regatean €100 y empiezan a hablar con quien sabe lo que vale su tiempo.',
+    warm: 'Tus clientes sí tienen presupuesto. Pero no para ti. Eso se arregla reposicionando. No es magia. Es saber a quién dirigirte y qué decir.',
+    cold: 'Si tus clientes no tienen pasta, es porque buscas en el lugar equivocado. Antes de invertir en ti, necesitas saber a quién vender.'
+  },
+  'Trabajo muchas horas y encima estoy tieso': {
+    hot: 'Ese tren de trabajar hasta las 23:47 por cuatro duros tiene una parada. Los miembros del Círculo cobran €5K+ trabajando la mitad que tú. No es magia. Es saber cobrar por transformación, no por horas.',
+    warm: 'Trabajar más no te va a sacar de ahí. Necesitas cobrar más por las mismas horas. Eso requiere cambiar lo que vendes y cómo lo vendes.',
+    cold: 'Ese burnout de trabajar sin parar por poco no se arregla trabajando más. Necesitas primero creer que puedes cobrar 5x más por lo que ya haces.'
+  },
+  'No tengo clientes suficientes (no sé ni por donde empezar)': {
+    hot: 'Ese "no sé por dónde empezar" es tu mayor fricción. Los miembros del Círculo tienen 4-6 leads semanales sin mendigar en redes. Sistema claro. Sin regateos. Sin rogar.',
+    warm: 'Sin clientes = sin sistema. El 89% de creativos no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
+    cold: 'Sin clientes suficientes porque persigues leads como todos. Necesitas primero un sistema antes de invertir en cualquier otra cosa.'
+  },
+  'No sé cómo vender lo que hago sin que me regateen': {
+    hot: 'Te regatean porque estás vendiendo píxeles bonitos en lugar de transformación. Los miembros del Círculo dicen su precio sin tartamudear y el cliente aún piensa que es una ganga.',
+    warm: 'El regateo pasa cuando vendes servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
+    cold: 'Te regatean porque no sabes defender tu valor. Antes de cobrar más, necesitas aprender a vender diferente.'
+  },
+  'Todo lo anterior': {
+    hot: 'Todas las fricciones a la vez y aún así tienes para invertir en ti. Eso dice mucho. Los que deciden salir de ahí, salen. Los que exploran eternamente, se quedan.',
+    warm: 'Llevas tanto tiempo así que ya te has convencido de que es normal. Los miembros del Círculo hace tiempo que trascendieron esa mierda. Y tú estás a un ritual de distancia.',
+    cold: 'Todas las fricciones a la vez. O te hundes o cruzas el umbral. No hay punto medio. Pero primero necesitas decidir si estás listo.'
+  }
+}
+
+const dailyRealities: Record<string, string[]> = {
+  'Mis clientes no tienen presupuesto': [
+    'Probablemente ayer pasaste 2 horas en una videollamada con alguien que al final te pidió presupuesto "sin compromiso". Ya sabes cómo acaba eso.',
+    'Esta mañana te despertaste pensando en cuántas propuestas has enviado esta semana que no han contestado. Ninguna llevaba tu precio real.',
+    'Llevas 3 días dándole vueltas a si bajar el precio de ese proyecto. Ya sabes que aunque lo bajes, no te lo van a pagar.'
+  ],
+  'Trabajo muchas horas y encima estoy tieso': [
+    'Anoche te quedaste hasta las 00:37 terminando algo que cobras 600€. Hoy te levantaste cansado sabiendo que tienes tres proyectos más igual de mal pagados.',
+    'Esta semana trabajaste 52 horas. Cobraste menos que alguien que trabaja 20. Sabes hacer el trabajo. No sabes venderlo.',
+    'El viernes pasado enviaste el último entregable de la semana. Eran las 22:14. Has cobrado 1.200€ por 40 horas de trabajo.'
+  ],
+  'No tengo clientes suficientes (no sé ni por donde empezar)': [
+    'Llevas 11 días sin que nadie te escriba preguntando por tu trabajo. Actualizaste el portfolio hace 3 semanas. Optimizaste la biografía hace 10 días. Nada.',
+    'Esta mañana abriste Instagram esperando un mensaje. Nada. Revisaste el correo. Nada. Miraste LinkedIn. Nada. Llevas 4 meses así.',
+    'El mes pasado conseguiste 2 clientes. Los dos llegaron por recomendación. Cuando se acaben estos proyectos, vuelta a cero.'
+  ],
+  'No sé cómo vender lo que hago sin que me regateen': [
+    'La semana pasada enviaste una propuesta de 2.400€. Te contestaron "está un poco fuera de presupuesto". Te adelantaste tú y bajaste a 1.800€. Aún no te han contestado.',
+    'Ayer pasaste 3 horas preparando un presupuesto detallado de 14 páginas. Lo enviaste. Te respondieron "gracias, lo vemos y te decimos". Ya sabes que es un no.',
+    'El viernes cerraste un proyecto de 1.200€. El cliente te dijo que era mucho. Aceptó. Pero te quedaste con la sensación de que podrías haber cobrado el doble.'
+  ],
+  'Todo lo anterior': [
+    'Esta semana trabajaste 47 horas. Cobraste 1.100€. Tienes el portfolio actualizado al milímetro. Cero leads nuevos.',
+    'Anoche te quedaste hasta la 01:22 terminando un proyecto mal pagado. Esta mañana revisaste Instagram esperando algún lead. Nada.',
+    'Llevas 9 días sin que nadie te pregunte por tu trabajo. Tienes 3 proyectos activos mal pagados.'
+  ]
+}
+
+const contrastStatements: Record<string, string> = {
+  'Mis clientes no tienen presupuesto': 
+    'Mientras tú negociabas 100€ de descuento con alguien que nunca iba a pagarte bien, Nico cerró un proyecto de 5.000€ con una sola llamada.',
+  'Trabajo muchas horas y encima estoy tieso': 
+    'Mientras tú te quedabas hasta las 23:47 terminando algo mal pagado, Dani cobró 2.000€ por su primer proyecto en el Círculo en 10 días.',
+  'No tengo clientes suficientes (no sé ni por donde empezar)': 
+    'Mientras tú actualizabas el portfolio esperando que el algoritmo te descubra, Felipe tuvo sus primeras 2 llamadas de venta en 7 días.',
+  'No sé cómo vender lo que hago sin que me regateen': 
+    'Mientras tú enviabas un presupuesto de 14 páginas y te comías un silencio, Cris cerró 3.000€ en una conversación.',
+  'Todo lo anterior': 
+    'Mientras tú pulías el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo.'
+}
+
+const successStoriesMap: Record<string, string> = {
+  'Diseñador Gráfico / Web': 'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
+  'Fotógrafo/Filmmaker': 'Dani hizo 2.000€ con su primer cliente en 10 días.\nCris pasó de tirar la toalla a cerrar 3.000€.',
+  'Automatizador': 'Felipe pasó de cero estrategia a sistema de captación en una semana.',
+  'Otro servicio creativo': 'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
+}
+
+const painPrepQuestions: Record<string, string[]> = {
+  'Mis clientes no tienen presupuesto': ['¿Qué tipo de clientes persigues actualmente?', '¿Cuánto cobras de media por proyecto?', '¿Por qué crees que te regatean?'],
+  'Trabajo muchas horas y encima estoy tieso': ['¿Cuántas horas trabajas por semana?', '¿Qué cobras por proyecto actualmente?', '¿Dónde se va tu tiempo sin generar pasta?'],
+  'No tengo clientes suficientes (no sé ni por donde empezar)': ['¿Cuántos leads tienes al mes actualmente?', '¿Qué has probado para conseguir clientes?', '¿Qué te frena ahora mismo?'],
+  'No sé cómo vender lo que hago sin que me regateen': ['¿Cómo presentas actualmente tus servicios?', '¿Cuál es la objeción más común que recibes?', '¿Cuánto cobras actualmente vs. cuánto quieres cobrar?'],
+  'Todo lo anterior': ['¿Cuál de todas las fricciones te afecta más?', '¿Cuánto tiempo llevas en esta situación?', '¿Qué esperas lograr en los próximos 90 días?']
+}
+
+const fearCalls: Record<'hot' | 'qualified' | 'marginal', string[]> = {
+  hot: [
+    'Lo tienes todo para hacerlo. El talento. La experiencia. El hambre.\n\nPero sigues aquí. Leyendo. Dándole vueltas.',
+    'Sabes exactamente lo que hay que hacer. Lo has sabido desde el primer mensaje.\n\nPero no lo haces.',
+    'La única diferencia entre donde estás y donde quieres estar es una decisión.\n\nPero llevas días posponíendola.'
+  ],
+  qualified: [
+    'Sabes lo que hay que hacer. Pero no lo haces.\n\nSigues puliendo el portfolio. Optimizando la biografía.',
+    'Llevas meses sabiendo que esto no funciona. Pero es más fácil convencerte de que "en algún momento mejorará".',
+    'El problema no es que no sepas qué hacer.\n\nEs que sabes qué hacer y eliges no hacerlo.'
+  ],
+  marginal: [
+    'Llevas tanto tiempo así que ya te has convencido de que es normal.',
+    'Cada día que pasa sin cambiar nada es un día más convenciéndote de que esto es lo que hay.',
+    'Llevas meses (¿años?) haciendo lo mismo esperando resultados diferentes.'
+  ]
+}
+
+function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
+  if (score >= 90) return 'hot'
+  if (score >= 80) return 'qualified'
+  return 'marginal'
+}
+
+function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+  const firstName = contact.name.split(' ')[0]
+  const isHot = score >= 85
+  const hasInvestment = answers.q5 !== 'Menos de €1.500'
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes'
+  const isIdealClient = lowRevenue && hasInvestment
+  const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️'
+  
+  let contactWindow = '⏰ CONTACTAR: En las próximas 48h'
+  if (isIdealClient) {
+    contactWindow = '🎯 CLIENTE IDEAL - CONTACTAR HOY: Antes de las 20:00'
+  } else if (isHot && hasInvestment) {
+    contactWindow = '🔥 CONTACTAR HOY: Antes de las 20:00'
+  }
+  
+  const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
+  
+  return `
+${tempEmoji} NUEVO LEAD BRECHA: ${firstName}
+
+${contactWindow}
+${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Cobra poco + tiene inversión = Alto potencial\n' : ''}
+
+📊 SCORE: ${score}/110 ${scoreBar}
+
+💼 PERFIL:
+• Pain: ${answers.q1}
+• Profesión: ${answers.q2}
+• Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
+• Decide: ${answers.q7}
+
+📞 CONTACTO:
+• WhatsApp: ${contact.whatsapp || 'No proporcionado'}
+• Email: ${contact.email || 'No proporcionado'}
+
+🎯 OBJETIVO LLAMADA:
+${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agendar segunda sesión si hay potencial'}
+  `.trim()
+}
+
+function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+  const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
+  const hasInvestment = answers.q5 !== 'Menos de €1.500'
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes'
+  const authSolo = answers.q7 === 'Solo yo'
+  
+  return `
+🔮 PERFIL BRECHA: ${contact.name.split(' ')[0]}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VEREDICTO: ${score}/110 ${scoreBar}
+📞 ${contact.name} | ${contact.email || 'Sin email'}
+💬 ${contact.whatsapp || 'Sin WhatsApp'}
+
+⚡ RESUMEN:
+• Pain: ${answers.q1}
+• Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
+• Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
+  `.trim()
+}
+
+function generateClientNotification(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const level = getAgitationLevel(score)
+  const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || painInsights[pain]?.warm || ''
+  
+  const professionIdentity: Record<string, string> = {
+    'Diseñador Gráfico / Web': 'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo.',
+    'Fotógrafo/Filmmaker': 'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€ por el mismo día.',
+    'Automatizador': 'Montar un proceso te paga 500€. Diseñar un sistema que escala un negocio te paga 10.000€.',
+    'Otro servicio creativo': 'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale.'
+  }
+  
+  const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro servicio creativo']
+  
+  if (score >= 85) {
+    return `
+${firstName}.
+
+Tu evaluación revela algo que la mayoría nunca verá.
+
+⚔️ ${painInsight}
+
+${identity}
+
+La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
+
+🔮 RESERVA TU RITUAL DE EVALUACIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+⏳ Solo 3 espacios semanales para candidatos prioritarios
+🎭 Un Miembro Honorario evaluará tu caso específico (60 min)
+
+—
+El Círculo
+    `.trim()
+  } else if (score >= 75) {
+    return `
+${firstName}.
+
+Tu perfil muestra potencial. Pero potencial sin ejecución es teoría.
+
+⚔️ ${painInsight}
+
+${identity}
+
+¿Listo/a para el salto o seguimos dándole vueltas?
+
+🔮 RESERVA TU SESIÓN DE EVALUACIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+—
+El Círculo
+    `.trim()
+  } else {
+    return `
+${firstName}.
+
+Tu evaluación revela fricciones importantes.
+
+⚔️ ${painInsight}
+
+No todos están listos para el Círculo. Y eso está bien.
+
+🔮 AGENDA UNA SESIÓN EXPLORATORIA
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+—
+El Círculo
+    `.trim()
+  }
+}
+
+function generateClientPostBookingNotification(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0]
+  const isHot = score >= 85
+  const pain = answers.q1 || ''
+  
+  const professionGoals: Record<string, { prep: string[] }> = {
+    'Diseñador Gráfico / Web': { prep: ['Tu portfolio actual (3-5 mejores proyectos)', 'Cuánto cobras actualmente por proyecto', 'Qué tipo de clientes quieres atraer'] },
+    'Fotógrafo/Filmmaker': { prep: ['Tu reel/portfolio (mejores 3-10 trabajos)', 'Qué cobras por proyecto/sesión actualmente', 'Tipo de producciones que quieres hacer'] },
+    'Automatizador': { prep: ['Tus últimos 3 proyectos de automatización', 'Qué cobras actualmente', 'Herramientas que dominas'] },
+    'Otro servicio creativo': { prep: ['Tu situación actual y servicios que ofreces', 'Tus objetivos principales', 'Tus mayores desafíos'] }
+  }
+  
+  const professionData = professionGoals[answers.q2 || ''] || professionGoals['Otro servicio creativo']
+  const painQuestions = painPrepQuestions[pain] || []
+  
+  if (isHot) {
+    return `
+${firstName}.
+
+Tu espacio está asegurado.
+
+⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes del ritual.
+
+📜 PREPARA ESTO:
+
+Sobre tu situación específica:
+${painQuestions.map(q => `• ${q}`).join('\n')}
+
+Información específica:
+${professionData.prep.map(item => `• ${item}`).join('\n')}
+
+🔮 Logística:
+• Lugar sin interrupciones
+• Cámara encendida
+• Libreta
+• Agua o café. 45-60 min
+
+—
+El Círculo
+    `.trim()
+  } else {
+    return `
+${firstName}.
+
+Tu sesión está confirmada.
+
+📜 PREPARA ESTO:
+
+Información específica:
+${professionData.prep.map(item => `• ${item}`).join('\n')}
+
+🔮 Logística:
+• Lugar sin interrupciones
+• Cámara encendida
+• Libreta
+• 45-60 min
+
+—
+El Círculo
+    `.trim()
+  }
+}
+
+function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number): string {
+  const firstName = contact.name.split(' ')[0]
+  const hasInvestment = answers.q5 !== 'Menos de €1.500'
+  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes'
+  const authSolo = answers.q7 === 'Solo yo'
+  
+  const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD'
+  const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
+  
+  let closingStrategy = ''
+  if (lowRevenue && hasInvestment) {
+    closingStrategy = 'CLIENTE IDEAL - Dolor agudo + inversión = MÁXIMA PRIORIDAD.'
+  } else if (score >= 85 && hasInvestment) {
+    closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min.'
+  } else if (score >= 75) {
+    closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado.'
+  } else {
+    closingStrategy = 'EXPLORACIÓN - Aporta valor, identifica gaps.'
+  }
+  
+  return `
+🎭 RITUAL BRECHA: ${firstName} | ${score}/110 ${scoreBar} | ${scoreEmoji}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email || 'Sin email'}
+
+📋 PERFIL DEL CANDIDATO:
+• Pain: ${answers.q1}
+• ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+
+🎯 ESTRATEGIA DE CIERRE:
+${closingStrategy}
+  `.trim()
+}
+
+function generateFollowUp1(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const level = getAgitationLevel(score)
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const randomReality = realities[Math.floor(Math.random() * realities.length)]
+  const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || ''
+  
+  return `
+${firstName}.
+
+${randomReality}
+
+${painInsight}
+
+🔮 RESERVA TU RITUAL DE EVALUACIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Cuando quieras.
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateFollowUp2(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const level = getAgitationLevel(score)
+  const fears = fearCalls[level]
+  const randomFear = fears[Math.floor(Math.random() * fears.length)]
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const randomReality = realities[Math.floor(Math.random() * realities.length)]
+  
+  return `
+${firstName}.
+
+${randomFear}
+
+${randomReality}
+
+🔮 AGENDA TU SESIÓN
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Solo si te suena.
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateFollowUp3(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const profession = answers.q2 || 'Otro servicio creativo'
+  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior']
+  const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo']
+  
+  return `
+${firstName}.
+
+${contrast}
+
+Misma semana que tú.
+Mismo talento que tú.
+Distinta conversación.
+
+Los datos:
+${successStory}
+
+🔮 ÚNETE AL RITUAL
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Tú decides de qué lado estás.
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateFollowUp4(name: string, answers: QuizAnswers, score: number): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const prepQuestions = painPrepQuestions[pain] || []
+  const firstQuestion = prepQuestions[0] || '¿Cuánto tiempo más vas a seguir así?'
+  
+  return `
+${firstName}.
+
+Pregunta simple:
+${firstQuestion}
+
+Si la respuesta te incomoda, ya sabes lo que hay que hacer.
+
+Puedes seguir dándole vueltas.
+O puedes dar el paso.
+
+Pero no puedes hacer las dos cosas.
+
+🔮 AGENDA AQUÍ
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+No hay prisa. Pero tampoco hay pausa.
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateFollowUp5(name: string, answers: QuizAnswers): string {
+  const firstName = name.split(' ')[0]
+  
+  return `
+${firstName}.
+
+No vamos a insistir más.
+
+Si no era el momento, no pasa nada.
+
+Pero si lo era y no diste el paso, dentro de 6 meses seguirás exactamente igual.
+
+La única diferencia es que habrás perdido 6 meses más.
+
+Cobrando lo mismo.
+Trabajando igual de duro.
+Con los mismos clientes de siempre.
+
+🔮 ESTO ES TODO
+https://api.leadconnectorhq.com/widget/booking/xkfGe4Gjr8REwK34dZke
+
+Tú decides.
+
+—
+El Círculo
+  `.trim()
+}
+
+// ============= BRECHA-SPECIFIC NOTIFICATION =============
+
+function generateBrechaNotification(
+  isQualified: boolean,
+  firstName: string,
+  tier: string,
+  url: string | null,
+  hardstopReason: string | null
+): string {
+  if (isQualified && url) {
+    return `Los siete sellos se han roto.
+
+Has demostrado ser digno de cruzar La Brecha.
+
+Tu portal personal está aquí:
+${url}
+
+⚠️ IMPORTANTE:
+- No compartas este enlace
+- Solo funciona una vez
+
+Nos vemos al otro lado.`
+  }
+  
+  if (hardstopReason === 'low_revenue') {
+    return `Los sellos permanecen intactos.
+
+Tu nivel de facturación actual indica que aún no es el momento.
+
+Cuando tu negocio genere más de €1.500/mes, vuelve a intentarlo.
+
+El umbral estará aquí esperando.`
+  }
+  
+  if (hardstopReason === 'low_budget') {
+    return `El tributo ofrecido no abre esta puerta.
+
+La Brecha requiere una inversión mínima de €1.500.
+
+Cuando estés listo para invertir en tu transformación, vuelve.
+
+El umbral permanece.`
+  }
+  
+  return ''
+}
+
+// ============= MAIN HANDLER =============
+
 Deno.serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -149,12 +742,32 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Get GHL credentials
+    const GHL_API_TOKEN = Deno.env.get('GHL_API_TOKEN')
+    const GHL_LOCATION_ID = Deno.env.get('GHL_LOCATION_ID')
+
+    if (!GHL_API_TOKEN || !GHL_LOCATION_ID) {
+      console.error('Missing GHL credentials')
+      return new Response(
+        JSON.stringify({ error: 'Missing GHL credentials' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const ghlHeaders = {
+      'Authorization': `Bearer ${GHL_API_TOKEN}`,
+      'Version': '2021-07-28',
+      'Content-Type': 'application/json'
+    }
+
     const body = await req.json()
     console.log('Received payload:', JSON.stringify(body, null, 2))
 
     const {
       ghl_contact_id,
       first_name,
+      email,
+      phone,
       pain_answer,
       profession_answer,
       revenue_answer,
@@ -171,7 +784,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Parse all answers
+    // Parse all emoji answers
     const painParsed = parseEmoji(pain_answer || '', PAIN_MAP)
     const professionParsed = parseEmoji(profession_answer || '', PROFESSION_MAP)
     const revenueParsed = parseEmoji(revenue_answer || '', REVENUE_MAP)
@@ -212,10 +825,7 @@ Deno.serve(async (req) => {
 
     console.log('Qualification score:', score)
 
-    // Determine if qualified (no hardstop)
     const isQualified = !hardstopReason
-
-    // Determine tier
     const tier = isQualified 
       ? determineTier(budgetParsed?.value || '', score)
       : 'rejected'
@@ -278,6 +888,92 @@ Deno.serve(async (req) => {
       hardstopReason
     )
 
+    // ============= BUILD LITERAL ANSWERS FOR NOTIFICATIONS =============
+    
+    const literalAnswers: QuizAnswers = {
+      q1: PAIN_LITERAL_MAP[painParsed?.value || ''] || '',
+      q2: PROFESSION_LITERAL_MAP[professionParsed?.value || ''] || '',
+      q3: REVENUE_LITERAL_MAP[revenueParsed?.value || ''] || '',
+      q4: acquisitionParsed.values.map(v => ACQUISITION_LITERAL_MAP[v] || v),
+      q5: BUDGET_LITERAL_MAP[budgetParsed?.value || ''] || '',
+      q6: URGENCY_LITERAL_MAP[urgencyParsed?.value || ''] || '',
+      q7: AUTHORITY_LITERAL_MAP[authorityParsed?.value || ''] || '',
+    }
+
+    const contactData: ContactData = {
+      name: first_name || 'Lead',
+      email: email || '',
+      whatsapp: phone || ''
+    }
+
+    // Generate all notifications
+    const brechaNotification = generateBrechaNotification(isQualified, first_name || 'Lead', tier, brechaUrl, hardstopReason)
+    const closerNotification = generateCloserNotification(contactData, literalAnswers, score, tags.toApply)
+    const internalNotification = generateInternalNotification(contactData, literalAnswers, score, tags.toApply)
+    const clientNotification = generateClientNotification(first_name || 'Lead', literalAnswers, score)
+    const clientPostBookingNotification = generateClientPostBookingNotification(first_name || 'Lead', literalAnswers, score)
+    const closerPreCallNotification = generateCloserPreCallNotification(contactData, literalAnswers, score)
+    const followUp1 = generateFollowUp1(first_name || 'Lead', literalAnswers, score)
+    const followUp2 = generateFollowUp2(first_name || 'Lead', literalAnswers, score)
+    const followUp3 = generateFollowUp3(first_name || 'Lead', literalAnswers, score)
+    const followUp4 = generateFollowUp4(first_name || 'Lead', literalAnswers, score)
+    const followUp5 = generateFollowUp5(first_name || 'Lead', literalAnswers)
+
+    // ============= UPDATE GHL CONTACT DIRECTLY =============
+    
+    const updatePayload = {
+      tags: tags.toApply,
+      customFields: [
+        // Brecha-specific fields
+        { key: 'brecha_notification', field_value: brechaNotification },
+        { key: 'brecha_url', field_value: brechaUrl || '' },
+        { key: 'brecha_tier', field_value: tier },
+        { key: 'brecha_score', field_value: score.toString() },
+        { key: 'brecha_qualified', field_value: isQualified ? 'Sí' : 'No' },
+        { key: 'brecha_hardstop', field_value: hardstopReason || '' },
+        
+        // Quiz answers (raw values for segmentation)
+        { key: 'brecha_pain', field_value: painParsed?.value || '' },
+        { key: 'brecha_profession', field_value: professionParsed?.value || '' },
+        { key: 'brecha_revenue', field_value: revenueParsed?.value || '' },
+        { key: 'brecha_budget', field_value: budgetParsed?.value || '' },
+        { key: 'brecha_urgency', field_value: urgencyParsed?.value || '' },
+        { key: 'brecha_authority', field_value: authorityParsed?.value || '' },
+        
+        // Shared notification fields (same as submit-lead-to-ghl)
+        { key: 'notification_closer', field_value: closerNotification },
+        { key: 'notification_internal', field_value: internalNotification },
+        { key: 'notification_client', field_value: clientNotification },
+        { key: 'notification_client_post_booking', field_value: clientPostBookingNotification },
+        { key: 'notification_closer_pre_call', field_value: closerPreCallNotification },
+        { key: 'notification_followup_1', field_value: followUp1 },
+        { key: 'notification_followup_2', field_value: followUp2 },
+        { key: 'notification_followup_3', field_value: followUp3 },
+        { key: 'notification_followup_4', field_value: followUp4 },
+        { key: 'notification_followup_5', field_value: followUp5 },
+      ]
+    }
+
+    console.log('=== UPDATING GHL CONTACT ===')
+    console.log('Contact ID:', ghl_contact_id)
+    console.log('Tags to apply:', tags.toApply)
+
+    const updateUrl = `https://services.leadconnectorhq.com/contacts/${ghl_contact_id}`
+    const ghlResponse = await fetch(updateUrl, {
+      method: 'PUT',
+      headers: ghlHeaders,
+      body: JSON.stringify(updatePayload)
+    })
+
+    if (!ghlResponse.ok) {
+      const errorText = await ghlResponse.text()
+      console.error('GHL update failed:', ghlResponse.status, errorText)
+      // Don't fail the whole request, just log the error
+      console.error('Continuing despite GHL error...')
+    } else {
+      console.log('✅ GHL contact updated successfully')
+    }
+
     const response = {
       success: true,
       qualified: isQualified,
@@ -285,11 +981,7 @@ Deno.serve(async (req) => {
       score,
       url: brechaUrl,
       hardstop_reason: hardstopReason,
-      tags_to_apply: tags.toApply,
-      tags_to_remove: tags.toRemove,
-      notification: isQualified 
-        ? `✅ ${first_name || 'Lead'} calificado para La Brecha (${tier})`
-        : `🚫 ${first_name || 'Lead'} descartado: ${hardstopReason}`,
+      ghl_updated: ghlResponse.ok,
     }
 
     console.log('Response:', JSON.stringify(response, null, 2))
