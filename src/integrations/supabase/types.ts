@@ -47,6 +47,146 @@ export type Database = {
         }
         Relationships: []
       }
+      brecha_leads: {
+        Row: {
+          acquisition_answer: string | null
+          created_at: string
+          first_name: string | null
+          ghl_contact_id: string
+          id: string
+          revenue_answer: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          acquisition_answer?: string | null
+          created_at?: string
+          first_name?: string | null
+          ghl_contact_id: string
+          id?: string
+          revenue_answer?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          acquisition_answer?: string | null
+          created_at?: string
+          first_name?: string | null
+          ghl_contact_id?: string
+          id?: string
+          revenue_answer?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      brecha_progress: {
+        Row: {
+          created_at: string | null
+          first_visit_at: string | null
+          frag1_assistant_opened: boolean | null
+          frag1_assistant_unlocked: boolean | null
+          frag1_drops_captured: string[] | null
+          frag1_drops_missed: string[] | null
+          frag1_ritual_accepted: boolean | null
+          frag1_ritual_accepted_at: string | null
+          frag1_sequence_completed: boolean | null
+          frag1_sequence_failed_attempts: number | null
+          frag1_video_progress: number | null
+          frag1_video_started: boolean | null
+          frag2_assistant_opened: boolean | null
+          frag2_assistant_unlocked: boolean | null
+          frag2_drops_captured: string[] | null
+          frag2_drops_missed: string[] | null
+          frag2_ritual_accepted: boolean | null
+          frag2_ritual_accepted_at: string | null
+          frag2_sequence_completed: boolean | null
+          frag2_sequence_failed_attempts: number | null
+          frag2_video_progress: number | null
+          frag2_video_started: boolean | null
+          id: string
+          journey_completed: boolean | null
+          journey_completed_at: string | null
+          last_activity_at: string | null
+          portal_traversed: boolean | null
+          portal_traversed_at: string | null
+          token: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          first_visit_at?: string | null
+          frag1_assistant_opened?: boolean | null
+          frag1_assistant_unlocked?: boolean | null
+          frag1_drops_captured?: string[] | null
+          frag1_drops_missed?: string[] | null
+          frag1_ritual_accepted?: boolean | null
+          frag1_ritual_accepted_at?: string | null
+          frag1_sequence_completed?: boolean | null
+          frag1_sequence_failed_attempts?: number | null
+          frag1_video_progress?: number | null
+          frag1_video_started?: boolean | null
+          frag2_assistant_opened?: boolean | null
+          frag2_assistant_unlocked?: boolean | null
+          frag2_drops_captured?: string[] | null
+          frag2_drops_missed?: string[] | null
+          frag2_ritual_accepted?: boolean | null
+          frag2_ritual_accepted_at?: string | null
+          frag2_sequence_completed?: boolean | null
+          frag2_sequence_failed_attempts?: number | null
+          frag2_video_progress?: number | null
+          frag2_video_started?: boolean | null
+          id?: string
+          journey_completed?: boolean | null
+          journey_completed_at?: string | null
+          last_activity_at?: string | null
+          portal_traversed?: boolean | null
+          portal_traversed_at?: string | null
+          token: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          first_visit_at?: string | null
+          frag1_assistant_opened?: boolean | null
+          frag1_assistant_unlocked?: boolean | null
+          frag1_drops_captured?: string[] | null
+          frag1_drops_missed?: string[] | null
+          frag1_ritual_accepted?: boolean | null
+          frag1_ritual_accepted_at?: string | null
+          frag1_sequence_completed?: boolean | null
+          frag1_sequence_failed_attempts?: number | null
+          frag1_video_progress?: number | null
+          frag1_video_started?: boolean | null
+          frag2_assistant_opened?: boolean | null
+          frag2_assistant_unlocked?: boolean | null
+          frag2_drops_captured?: string[] | null
+          frag2_drops_missed?: string[] | null
+          frag2_ritual_accepted?: boolean | null
+          frag2_ritual_accepted_at?: string | null
+          frag2_sequence_completed?: boolean | null
+          frag2_sequence_failed_attempts?: number | null
+          frag2_video_progress?: number | null
+          frag2_video_started?: boolean | null
+          id?: string
+          journey_completed?: boolean | null
+          journey_completed_at?: string | null
+          last_activity_at?: string | null
+          portal_traversed?: boolean | null
+          portal_traversed_at?: string | null
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brecha_progress_token_fkey"
+            columns: ["token"]
+            isOneToOne: true
+            referencedRelation: "brecha_leads"
+            referencedColumns: ["token"]
+          },
+        ]
+      }
       meta_pixel_events: {
         Row: {
           content_category: string | null
