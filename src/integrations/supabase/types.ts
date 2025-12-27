@@ -50,33 +50,60 @@ export type Database = {
       brecha_leads: {
         Row: {
           acquisition_answer: string | null
+          authority_answer: string | null
+          budget_answer: string | null
           created_at: string
           first_name: string | null
           ghl_contact_id: string
+          hardstop_reason: string | null
           id: string
+          is_qualified: boolean | null
+          pain_answer: string | null
+          profession_answer: string | null
+          qualification_score: number | null
           revenue_answer: string | null
+          tier: string | null
           token: string
           updated_at: string
+          urgency_answer: string | null
         }
         Insert: {
           acquisition_answer?: string | null
+          authority_answer?: string | null
+          budget_answer?: string | null
           created_at?: string
           first_name?: string | null
           ghl_contact_id: string
+          hardstop_reason?: string | null
           id?: string
+          is_qualified?: boolean | null
+          pain_answer?: string | null
+          profession_answer?: string | null
+          qualification_score?: number | null
           revenue_answer?: string | null
+          tier?: string | null
           token?: string
           updated_at?: string
+          urgency_answer?: string | null
         }
         Update: {
           acquisition_answer?: string | null
+          authority_answer?: string | null
+          budget_answer?: string | null
           created_at?: string
           first_name?: string | null
           ghl_contact_id?: string
+          hardstop_reason?: string | null
           id?: string
+          is_qualified?: boolean | null
+          pain_answer?: string | null
+          profession_answer?: string | null
+          qualification_score?: number | null
           revenue_answer?: string | null
+          tier?: string | null
           token?: string
           updated_at?: string
+          urgency_answer?: string | null
         }
         Relationships: []
       }

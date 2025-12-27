@@ -6,6 +6,15 @@ interface BrechaLead {
   first_name: string | null;
   revenue_answer: string | null;
   acquisition_answer: string | null;
+  pain_answer: string | null;
+  profession_answer: string | null;
+  budget_answer: string | null;
+  urgency_answer: string | null;
+  authority_answer: string | null;
+  qualification_score: number | null;
+  is_qualified: boolean | null;
+  tier: string | null;
+  hardstop_reason: string | null;
   token: string;
   created_at: string;
 }

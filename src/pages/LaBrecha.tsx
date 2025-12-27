@@ -21,8 +21,12 @@ const VIDEO_FRAG2 = "https://example.com/fragmento2.mp4";
 const LaBrecha = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
+  const tierFromUrl = searchParams.get('tier');
 
   const { isValid, isLoading: accessLoading, lead, error } = useBrechaAccess(token);
+  
+  // Determine effective tier (from URL param or lead data)
+  const effectiveTier = tierFromUrl || lead?.tier || 'full_access';
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
 
   // Loading state

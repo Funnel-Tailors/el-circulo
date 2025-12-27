@@ -6,7 +6,29 @@ interface BrechaLead {
   first_name: string | null;
   revenue_answer: string | null;
   acquisition_answer: string | null;
+  pain_answer?: string | null;
+  profession_answer?: string | null;
+  budget_answer?: string | null;
+  urgency_answer?: string | null;
+  authority_answer?: string | null;
+  tier?: string | null;
 }
+
+// Pain point messages based on Q1 answer
+const PAIN_MESSAGES: Record<string, string> = {
+  low_budget_clients: "tus clientes no pagan lo que vales",
+  overworked_underpaid: "trabajas demasiado para lo que ganas",
+  no_clients: "el vacío te consume — pero eso cambia hoy",
+  cant_sell_high_ticket: "tienes el arte, pero no las palabras para venderlo",
+  all_above: "el peso de todo te aplasta — pero ya no más",
+};
+
+// Tier-specific intro messages
+const TIER_MESSAGES: Record<string, string> = {
+  premium: "Has demostrado ser un iniciado de alto calibre.",
+  full_access: "Los sellos se han roto para ti.",
+  offer_only: "Tu camino está listo, pero limitado.",
+};
 
 // Generate personalized subtitle based on DM responses
 export const getPersonalizedSubtitle = (lead: BrechaLead | null): string => {
@@ -16,9 +38,13 @@ export const getPersonalizedSubtitle = (lead: BrechaLead | null): string => {
 
   const name = lead.first_name || "Iniciado";
   
-  // Revenue-based personalization
-  const revenueMsg = getRevenueMessage(lead.revenue_answer);
+  // Pain-based personalization first
+  if (lead.pain_answer && PAIN_MESSAGES[lead.pain_answer]) {
+    return `${name}, ${PAIN_MESSAGES[lead.pain_answer]}.`;
+  }
   
+  // Revenue-based fallback
+  const revenueMsg = getRevenueMessage(lead.revenue_answer);
   return `${name}, ${revenueMsg}`;
 };
 
@@ -27,25 +53,67 @@ const getRevenueMessage = (revenue: string | null): string => {
     return "los sellos se han roto para ti.";
   }
   
-  const lower = revenue.toLowerCase();
-  
-  if (lower.includes("menos de 1k") || lower.includes("<1k") || lower.includes("0")) {
-    return "el primer paso es cobrar lo que vales.";
+  switch (revenue) {
+    case 'menos_500':
+    case '500_1500':
+      return "el primer paso es cobrar lo que vales.";
+    case '1500_3000':
+      return "ya has demostrado que puedes cobrar. Ahora: escala.";
+    case '3000_6000':
+      return "estás cerca del umbral. La brecha te llevará más allá.";
+    case 'mas_6000':
+      return "ya conoces el juego. Ahora domínalo.";
+    default:
+      return "los sellos se han roto para ti.";
   }
-  
-  if (lower.includes("1k") || lower.includes("2k")) {
-    return "ya has demostrado que puedes cobrar. Ahora: escala.";
+};
+
+// Get tier-specific welcome message
+export const getTierWelcome = (lead: BrechaLead | null): string => {
+  if (!lead?.tier || !TIER_MESSAGES[lead.tier]) {
+    return "Bienvenido a La Brecha.";
   }
-  
-  if (lower.includes("3k") || lower.includes("4k") || lower.includes("5k")) {
-    return "estás cerca del umbral. La brecha te llevará más allá.";
+  return TIER_MESSAGES[lead.tier];
+};
+
+// Get profession-specific context
+export const getProfessionContext = (profession: string | null): string => {
+  switch (profession) {
+    case 'designer':
+      return "diseñadores que cobran €5K+ por proyecto";
+    case 'photographer':
+      return "fotógrafos que cobran €3K+ por sesión";
+    case 'automation':
+      return "automatizadores que cobran €10K+ por implementación";
+    case 'other_creative':
+      return "creativos que cobran lo que realmente valen";
+    default:
+      return "creativos que cobran premium";
   }
-  
-  if (lower.includes("más de 5k") || lower.includes(">5k") || lower.includes("10k")) {
-    return "ya conoces el juego. Ahora domínalo.";
+};
+
+// Get urgency-specific CTA
+export const getUrgencyCTA = (urgency: string | null): string => {
+  switch (urgency) {
+    case 'fast':
+      return "Empieza tu Ascenso Rápido ahora";
+    case 'gradual':
+      return "Comienza tu transformación gradual";
+    default:
+      return "Cruza la brecha";
   }
-  
-  return "los sellos se han roto para ti.";
+};
+
+// Check if lead should see full content
+export const hasFullAccess = (lead: BrechaLead | null): boolean => {
+  if (!lead) return false;
+  return lead.tier === 'full_access' || lead.tier === 'premium';
+};
+
+// Check if lead is premium tier
+export const isPremium = (lead: BrechaLead | null): boolean => {
+  if (!lead) return false;
+  return lead.tier === 'premium';
 };
 
 // Get urgency message based on event date
