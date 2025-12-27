@@ -18,9 +18,9 @@ import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import type { QuizState } from "@/types/quiz";
 
-// Feature flag - Módulo 3 activo, Módulo 4 pendiente
+// Feature flags - Módulos 3 y 4 activos
 const ENABLE_MODULE_3 = true;
-const ENABLE_MODULE_4 = false;
+const ENABLE_MODULE_4 = true;
 
 const Senda = () => {
   const { 
