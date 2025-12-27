@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface VideoRitualOverlayProps {
   token: string | null;
-  classNumber: 1 | 2 | 3 | 4;
+  classNumber: 1 | 2 | 3 | 4 | 5 | 6; // 5-6 = La Brecha
   onAccept: () => void;
   initialAccepted?: boolean; // From DB via useSendaProgress
 }
 
-const COPY: Record<1 | 2 | 3 | 4, {
+const COPY: Record<1 | 2 | 3 | 4 | 5 | 6, {
   title: string;
   lines: string[];
   mobileLines: string[];
@@ -95,11 +95,50 @@ const COPY: Record<1 | 2 | 3 | 4, {
     eventName: "senda_seal4_ritual_accepted",
     storageKey: "senda_seal4_ritual_accepted",
   },
+  // La Brecha - Fragmento 1: El Precio
+  5: {
+    title: "PRIMER FRAGMENTO: EL PRECIO",
+    lines: [
+      "Los cuatro sellos se han roto.",
+      "Has encontrado la brecha.",
+      "",
+      "Tres fragmentos aparecerán a lo largo del vídeo.",
+      "Tienes 4 segundos para capturar cada uno.",
+    ],
+    mobileLines: [
+      "Los sellos se han roto.",
+      "Tres fragmentos. 4 segundos cada uno.",
+    ],
+    warning: "Si los pierdes, los pierdes para siempre. No hay segunda oportunidad.",
+    mobileWarning: "No hay segunda oportunidad.",
+    cta: "ENTRAR EN LA BRECHA",
+    eventName: "brecha_frag1_ritual_accepted",
+    storageKey: "brecha_frag1_ritual_accepted",
+  },
+  // La Brecha - Fragmento 2: El Espejo
+  6: {
+    title: "SEGUNDO FRAGMENTO: EL ESPEJO",
+    lines: [
+      "El primer fragmento está completo.",
+      "El espejo te mostrará lo que aún no ves.",
+      "",
+      "Cinco fragmentos. Más rápidos. Más esquivos.",
+    ],
+    mobileLines: [
+      "El primer fragmento está completo.",
+      "Cinco fragmentos. Más rápidos.",
+    ],
+    warning: "Algunos fragmentos ya no volverán.",
+    mobileWarning: "Algunos ya no volverán.",
+    cta: "ATRAVESAR EL ESPEJO",
+    eventName: "brecha_frag2_ritual_accepted",
+    storageKey: "brecha_frag2_ritual_accepted",
+  },
 };
 
 export const VideoRitualOverlay = ({ token, classNumber, onAccept, initialAccepted }: VideoRitualOverlayProps) => {
-  // Ensure classNumber is valid (1-4)
-  const validClassNumber = (classNumber >= 1 && classNumber <= 4 ? classNumber : 1) as 1 | 2 | 3 | 4;
+  // Ensure classNumber is valid (1-6)
+  const validClassNumber = (classNumber >= 1 && classNumber <= 6 ? classNumber : 1) as 1 | 2 | 3 | 4 | 5 | 6;
   const [hasAccepted, setHasAccepted] = useState(initialAccepted ?? false);
   const copy = COPY[validClassNumber];
 

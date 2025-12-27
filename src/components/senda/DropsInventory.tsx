@@ -6,7 +6,8 @@ interface DropsInventoryProps {
   capturedDrops: Drop[];
   totalDrops: number;
   allCaptured: boolean;
-  classNumber?: 1 | 2;
+  classNumber?: 1 | 2 | 5 | 6; // 5-6 = La Brecha
+  missedDrops?: string[]; // IDs of missed drops (for La Brecha)
 }
 
 // Class 1 messages (3 drops)
@@ -23,6 +24,22 @@ const CLASS_2_MESSAGES: Record<number, string> = {
   3: "Tres. Sigue atento.",
   4: "Cuatro. Solo uno más.",
   5: "✦ Arquitecto de Avatares desbloqueado.",
+};
+
+// La Brecha - Fragmento 1 messages (3 drops)
+const CLASS_5_MESSAGES: Record<number, string> = {
+  1: "Un fragmento. Solo una vez. Solo ahora.",
+  2: "Dos. El patrón se forma.",
+  3: "✦ Fragmento completo. Ritual disponible.",
+};
+
+// La Brecha - Fragmento 2 messages (5 drops)
+const CLASS_6_MESSAGES: Record<number, string> = {
+  1: "Uno. El espejo empieza a reflejarte.",
+  2: "Dos. Más rápidos que antes.",
+  3: "Tres. No bajes la guardia.",
+  4: "Cuatro. Casi lo tienes.",
+  5: "✦ Fragmento completo. El espejo te espera.",
 };
 
 // Hint only for Class 1
@@ -47,15 +64,38 @@ const Beam = ({ connected }: { connected: boolean }) => (
   />
 );
 
-export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNumber = 1 }: DropsInventoryProps) => {
-  const messages = classNumber === 2 ? CLASS_2_MESSAGES : CLASS_1_MESSAGES;
+export const DropsInventory = ({ 
+  capturedDrops, 
+  totalDrops, 
+  allCaptured, 
+  classNumber = 1,
+  missedDrops = []
+}: DropsInventoryProps) => {
+  const getMessages = () => {
+    switch (classNumber) {
+      case 5: return CLASS_5_MESSAGES;
+      case 6: return CLASS_6_MESSAGES;
+      case 2: return CLASS_2_MESSAGES;
+      default: return CLASS_1_MESSAGES;
+    }
+  };
   
-  const getMessage = () => {
-    return messages[capturedDrops.length] || "";
+  const messages = getMessages();
+  const isBrecha = classNumber === 5 || classNumber === 6;
+  const hasMissedDrops = missedDrops.length > 0;
+  
+  // For La Brecha: we need to track which slot indices are missed
+  // This requires knowing the drop IDs that correspond to each slot
+  const getMissedSlotIndex = (index: number): boolean => {
+    if (!isBrecha || missedDrops.length === 0) return false;
+    // Check if drop at this index was missed (by checking the drop ID pattern)
+    const prefix = classNumber === 5 ? 'b1_drop' : 'b2_drop';
+    const dropId = `${prefix}${index + 1}`;
+    return missedDrops.includes(dropId);
   };
 
-  // Don't render until first drop captured
-  if (capturedDrops.length === 0) return null;
+  // Don't render until first drop captured OR first drop missed (for La Brecha)
+  if (capturedDrops.length === 0 && missedDrops.length === 0) return null;
 
   return (
     <motion.div
@@ -69,6 +109,7 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNu
         {Array.from({ length: totalDrops }).map((_, index) => {
           const drop = capturedDrops[index];
           const isCaptured = !!drop;
+          const isMissed = getMissedSlotIndex(index);
           const previousCaptured = index > 0 && !!capturedDrops[index - 1];
           
           return (
@@ -101,6 +142,21 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNu
                   />
                 )}
                 
+                {/* Red glow for missed (La Brecha only) */}
+                {isMissed && (
+                  <motion.div
+                    className="absolute inset-[-4px] rounded-full"
+                    style={{ 
+                      background: 'radial-gradient(circle, hsl(var(--destructive) / 0.3) 0%, transparent 70%)',
+                      filter: 'blur(6px)'
+                    }}
+                    animate={{ 
+                      opacity: [0.3, 0.5, 0.3],
+                    }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                )}
+                
                 <motion.div
                   className={`
                     relative w-10 h-10 md:w-12 md:h-12 rounded-full border
@@ -108,13 +164,17 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNu
                     transition-colors duration-500
                     ${isCaptured 
                       ? 'border-primary/50 bg-primary/5 text-primary' 
-                      : 'border-primary/15 bg-black/20 text-primary/20'
+                      : isMissed
+                        ? 'border-destructive/50 bg-destructive/10 text-destructive/70'
+                        : 'border-primary/15 bg-black/20 text-primary/20'
                     }
                   `}
                   style={{
                     boxShadow: isCaptured 
                       ? '0 0 12px hsl(var(--primary) / 0.4), inset 0 0 8px hsl(var(--primary) / 0.1)'
-                      : 'inset 0 0 10px rgba(0,0,0,0.3)'
+                      : isMissed
+                        ? '0 0 12px hsl(var(--destructive) / 0.3), inset 0 0 8px hsl(var(--destructive) / 0.1)'
+                        : 'inset 0 0 10px rgba(0,0,0,0.3)'
                   }}
                   animate={isCaptured ? { 
                     y: [0, -2, 0]
@@ -136,6 +196,15 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNu
                         className="select-none drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]"
                       >
                         {drop.symbol}
+                      </motion.span>
+                    ) : isMissed ? (
+                      <motion.span 
+                        className="text-destructive/70 text-lg font-bold"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        ✕
                       </motion.span>
                     ) : (
                       <motion.span 
@@ -170,7 +239,7 @@ export const DropsInventory = ({ capturedDrops, totalDrops, allCaptured, classNu
             }
           `}
         >
-          {getMessage()}
+          {messages[capturedDrops.length] || ""}
         </motion.p>
       </AnimatePresence>
 
