@@ -82,7 +82,7 @@ export type Database = {
           qualification_score?: number | null
           revenue_answer?: string | null
           tier?: string | null
-          token?: string
+          token: string
           updated_at?: string
           urgency_answer?: string | null
         }

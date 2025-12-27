@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { EndlessTools3D } from "@/components/senda/EndlessTools3D";
+import VortexEffect from "@/components/senda/VortexEffect";
 import { getPersonalizedSubtitle } from "@/lib/brecha-personalization";
 
 interface BrechaHeroSectionProps {
@@ -18,34 +18,47 @@ interface BrechaHeroSectionProps {
 
 export const BrechaHeroSection = ({ lead }: BrechaHeroSectionProps) => {
   const subtitle = getPersonalizedSubtitle(lead);
+  const firstName = lead?.first_name?.split(' ')[0] || '';
 
   return (
-    <section className="relative min-h-[60vh] flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
+    <section className="relative min-h-[70vh] flex flex-col items-center justify-center px-4 py-16 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
       
-      {/* 3D Element */}
+      {/* Runic divider - same as Senda */}
+      <motion.div 
+        className="relative z-10 flex items-center justify-center gap-4 mb-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+        aria-hidden="true"
+      >
+        <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
+        <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
+        <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
+      </motion.div>
+
+      {/* VortexEffect - same as VaultPortal */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1, ease: "easeOut" }}
         className="relative z-10 mb-8"
       >
-        <EndlessTools3D 
-          embedId="c8e0bf24-8bf5-4f09-9db5-3c20da31cf6a"
-          size="lg"
-          showGlow
-          floatAnimation
+        <VortexEffect 
+          size="md"
+          rotationSpeed={20}
         />
       </motion.div>
 
-      {/* Title */}
+      {/* Title - matching Senda styles exactly */}
       <motion.h1
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3 }}
-        className="relative z-10 text-4xl md:text-6xl font-display font-bold text-center tracking-tight"
+        className="relative z-10 text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em] text-center"
       >
+        {firstName ? `${firstName.toUpperCase()}, ` : ''}
         <span className="text-foreground">LA </span>
         <span className="text-primary drop-shadow-[0_0_20px_hsl(var(--primary)/0.5)]">
           BRECHA
@@ -57,7 +70,7 @@ export const BrechaHeroSection = ({ lead }: BrechaHeroSectionProps) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
-        className="relative z-10 mt-6 text-lg md:text-xl text-muted-foreground text-center max-w-xl"
+        className="relative z-10 mt-6 text-xl md:text-2xl text-foreground font-semibold text-center max-w-3xl"
       >
         {subtitle}
       </motion.p>
