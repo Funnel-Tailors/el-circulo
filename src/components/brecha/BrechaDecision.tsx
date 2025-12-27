@@ -17,14 +17,15 @@ export const BrechaDecision = ({
   const bothCompleted = frag1Completed && frag2Completed;
 
   return (
-    <section className="relative py-16 px-4">
-      <div className="max-w-2xl mx-auto text-center">
+    <div className="space-y-8 mb-16">
+      {/* Glass card for decision - same as Senda */}
+      <div className="glass-card-dark p-8 max-w-2xl mx-auto text-center">
         {/* Status indicator */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className={`text-5xl mb-6 ${bothCompleted ? 'text-primary' : 'text-muted-foreground/50'}`}
+          className={`text-5xl mb-6 ${bothCompleted ? 'glow' : ''}`}
         >
           {bothCompleted ? '✦' : '◇'}
         </motion.div>
@@ -88,7 +89,7 @@ export const BrechaDecision = ({
           />
         </motion.div>
       </div>
-    </section>
+    </div>
   );
 };
 

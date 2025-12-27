@@ -12,29 +12,28 @@ export const BrechaPortal = ({ isUnlocked, onTraverse, hasTraversed }: BrechaPor
 
   if (hasTraversed) {
     return (
-      <section className="py-8 px-4">
+      <div className="mb-16 text-center">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="max-w-md mx-auto text-center"
         >
           <span className="text-primary/50 text-3xl">✦</span>
           <p className="text-muted-foreground/60 text-sm mt-2 italic">
             Has atravesado el portal
           </p>
         </motion.div>
-      </section>
+      </div>
     );
   }
 
   if (!isUnlocked) {
     return (
-      <section className="py-16 px-4">
+      <div className="mb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-md mx-auto text-center"
+          className="max-w-md mx-auto text-center glass-card-dark p-8"
         >
           <div className="w-20 h-20 mx-auto rounded-full border-2 border-primary/20 flex items-center justify-center mb-4">
             <span className="text-3xl text-primary/30">◇</span>
@@ -43,7 +42,7 @@ export const BrechaPortal = ({ isUnlocked, onTraverse, hasTraversed }: BrechaPor
             Completa el primer fragmento para desbloquear el portal
           </p>
         </motion.div>
-      </section>
+      </div>
     );
   }
 
@@ -56,7 +55,7 @@ export const BrechaPortal = ({ isUnlocked, onTraverse, hasTraversed }: BrechaPor
   };
 
   return (
-    <section className="py-20 px-4">
+    <div className="mb-16">
       <AnimatePresence>
         {isTransitioning && (
           <motion.div
@@ -72,7 +71,7 @@ export const BrechaPortal = ({ isUnlocked, onTraverse, hasTraversed }: BrechaPor
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="max-w-md mx-auto text-center"
+        className="max-w-md mx-auto text-center glass-card-dark p-8"
       >
         {/* Portal glow */}
         <motion.div
@@ -88,7 +87,7 @@ export const BrechaPortal = ({ isUnlocked, onTraverse, hasTraversed }: BrechaPor
         >
           <div className="absolute inset-0 rounded-full border-2 border-primary/50 bg-primary/10 flex items-center justify-center">
             <motion.span
-              className="text-5xl text-primary"
+              className="text-5xl text-primary glow"
               animate={{ 
                 rotate: [0, 360],
                 scale: [1, 1.1, 1],
@@ -115,11 +114,11 @@ export const BrechaPortal = ({ isUnlocked, onTraverse, hasTraversed }: BrechaPor
           whileTap={{ scale: 0.95 }}
           onClick={handleTraverse}
           disabled={isTransitioning}
-          className="px-8 py-3 rounded-lg bg-primary/10 border border-primary/30 text-primary font-semibold hover:bg-primary/20 transition-colors disabled:opacity-50"
+          className="px-8 py-3 rounded-lg bg-primary/10 border border-primary/30 text-primary font-semibold hover:bg-primary/20 hover:border-primary/50 transition-colors disabled:opacity-50"
         >
           ATRAVESAR →
         </motion.button>
       </motion.div>
-    </section>
+    </div>
   );
 };

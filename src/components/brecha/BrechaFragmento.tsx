@@ -52,7 +52,6 @@ export const BrechaFragmento = ({
   const totalDrops = fragmentNumber === 1 ? 3 : 5;
 
   const {
-    drops,
     capturedDrops,
     activeDrop,
     checkForDrop,
@@ -106,7 +105,7 @@ export const BrechaFragmento = ({
     : "El segundo fragmento te mostrará a quién debes servir.";
 
   return (
-    <section className="relative py-12 px-4">
+    <div className="space-y-8 mb-16">
       <div className="max-w-4xl mx-auto">
         {/* Fragment header */}
         <motion.div
@@ -115,10 +114,10 @@ export const BrechaFragmento = ({
           viewport={{ once: true }}
           className="text-center mb-8"
         >
-          <span className="text-primary/60 text-sm tracking-[0.3em]">
-            FRAGMENTO {fragmentNumber}
+          <span className="text-primary/60 text-sm tracking-[0.3em] uppercase">
+            Fragmento {fragmentNumber}
           </span>
-          <h2 className="text-2xl md:text-4xl font-display font-bold mt-2">
+          <h2 className="text-2xl md:text-4xl font-display font-bold mt-2 glow">
             {fragmentTitle}
           </h2>
           <p className="text-muted-foreground mt-3 max-w-md mx-auto">
@@ -126,35 +125,37 @@ export const BrechaFragmento = ({
           </p>
         </motion.div>
 
-        {/* Video container */}
+        {/* Video container - glass-card-dark like Senda */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative rounded-xl overflow-hidden bg-black/50 border border-primary/10"
+          className="glass-card-dark p-4 rounded-xl overflow-hidden"
         >
-          {/* Ritual overlay (before video starts) */}
-          <VideoRitualOverlay
-            token={token}
-            classNumber={classNumber as 1 | 2 | 3 | 4 | 5 | 6}
-            onAccept={onRitualAccepted}
-            initialAccepted={progress.ritual_accepted}
-          />
+          <div className="relative rounded-lg overflow-hidden video-glow">
+            {/* Ritual overlay (before video starts) */}
+            <VideoRitualOverlay
+              token={token}
+              classNumber={classNumber as 1 | 2 | 3 | 4 | 5 | 6}
+              onAccept={onRitualAccepted}
+              initialAccepted={progress.ritual_accepted}
+            />
 
-          {/* Video */}
-          <video
-            ref={videoRef}
-            src={videoUrl}
-            className="w-full aspect-video"
-            controls
-            playsInline
-          />
+            {/* Video */}
+            <video
+              ref={videoRef}
+              src={videoUrl}
+              className="w-full aspect-video"
+              controls
+              playsInline
+            />
 
-          {/* Drop overlay */}
-          <VideoDropOverlay
-            activeDrop={activeDrop}
-            onCapture={captureDrop}
-          />
+            {/* Drop overlay */}
+            <VideoDropOverlay
+              activeDrop={activeDrop}
+              onCapture={captureDrop}
+            />
+          </div>
         </motion.div>
 
         {/* Progress bar */}
@@ -210,14 +211,14 @@ export const BrechaFragmento = ({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onAssistantOpened}
-                className="w-full p-6 rounded-xl border border-primary/30 bg-primary/5 hover:bg-primary/10 transition-colors"
+                className="w-full p-6 rounded-xl glass-card-dark border-primary/30 hover:border-primary/50 transition-colors"
               >
                 <span className="text-primary font-semibold">
                   Abrir Asistente →
                 </span>
               </motion.button>
             ) : (
-              <div className="w-full p-6 rounded-xl border border-primary/10 bg-black/20 opacity-50 cursor-not-allowed">
+              <div className="w-full p-6 rounded-xl glass-card-dark opacity-50 cursor-not-allowed">
                 <span className="text-muted-foreground">
                   Completa el ritual para desbloquear
                 </span>
@@ -235,6 +236,6 @@ export const BrechaFragmento = ({
           onClose={() => setShowSequenceModal(false)}
         />
       </div>
-    </section>
+    </div>
   );
 };

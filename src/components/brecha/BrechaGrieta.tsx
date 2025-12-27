@@ -21,8 +21,9 @@ export const BrechaGrieta = ({ eventDate }: BrechaGrietaProps) => {
                     timeRemaining.minutes === 0 && timeRemaining.seconds === 0;
 
   return (
-    <section className="relative py-16 px-4">
-      <div className="max-w-2xl mx-auto text-center">
+    <div className="space-y-8 mb-16">
+      {/* Glass card for countdown - same as Senda */}
+      <div className="glass-card-dark p-8 max-w-2xl mx-auto text-center">
         {/* Warning icon */}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
@@ -38,7 +39,7 @@ export const BrechaGrieta = ({ eventDate }: BrechaGrietaProps) => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-2xl md:text-3xl font-display font-bold text-foreground mb-4"
+          className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6"
         >
           {isExpired ? "La brecha se ha cerrado" : "La brecha se cierra en"}
         </motion.h2>
@@ -73,7 +74,7 @@ export const BrechaGrieta = ({ eventDate }: BrechaGrietaProps) => {
           }
         </motion.p>
       </div>
-    </section>
+    </div>
   );
 };
 
@@ -83,10 +84,7 @@ const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
       key={value}
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="text-3xl md:text-5xl font-display font-bold text-primary tabular-nums"
-      style={{ 
-        textShadow: '0 0 20px hsl(var(--primary) / 0.4)',
-      }}
+      className="text-3xl md:text-5xl font-display font-bold text-primary tabular-nums glow"
     >
       {String(value).padStart(2, '0')}
     </motion.span>
