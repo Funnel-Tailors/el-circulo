@@ -935,10 +935,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Generate URL
+    // Generate URL - token is now ghl_contact_id (shorter), tier fetched from DB
     const baseUrl = Deno.env.get('BRECHA_BASE_URL') || 'https://artefacto.tech'
     const brechaUrl = isQualified 
-      ? `${baseUrl}/la-brecha?token=${leadData.token}&tier=${tier}`
+      ? `${baseUrl}/la-brecha?token=${ghl_contact_id}`
       : null
 
     // Generate tags
