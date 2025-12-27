@@ -2,3 +2,9 @@ project_id = "yewfryggiinoebnobbuq"
 
 [functions.submit-lead-to-ghl]
 verify_jwt = false
+
+[functions.generate-analytics-insights]
+verify_jwt = false
+
+[functions.submit-brecha-lead]
+verify_jwt = false

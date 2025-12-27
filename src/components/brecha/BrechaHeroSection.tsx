@@ -7,6 +7,12 @@ interface BrechaHeroSectionProps {
     first_name: string | null;
     revenue_answer: string | null;
     acquisition_answer: string | null;
+    pain_answer?: string | null;
+    profession_answer?: string | null;
+    budget_answer?: string | null;
+    urgency_answer?: string | null;
+    authority_answer?: string | null;
+    tier?: string | null;
   } | null;
 }
 
