@@ -14,13 +14,42 @@ interface BrechaLead {
   tier?: string | null;
 }
 
-// Pain point messages based on Q1 answer
-const PAIN_MESSAGES: Record<string, string> = {
-  low_budget_clients: "tus clientes no pagan lo que vales",
-  overworked_underpaid: "trabajas demasiado para lo que ganas",
-  no_clients: "el vacío te consume — pero eso cambia hoy",
-  cant_sell_high_ticket: "tienes el arte, pero no las palabras para venderlo",
-  all_above: "el peso de todo te aplasta — pero ya no más",
+// Personalization structure - similar to Senda
+interface BrechaPersonalization {
+  heroSubtitle: string;  // Sin nombre, tono místico/irreverente
+}
+
+// Generate personalized copy based on pain - SIN repetir nombre
+// Tono: místico + irreverente (reciclado de ClientBubble, PainSection, etc.)
+export const generateBrechaPersonalization = (lead: BrechaLead | null): BrechaPersonalization => {
+  const pain = lead?.pain_answer;
+  
+  switch (pain) {
+    case 'low_budget_clients':
+      return {
+        heroSubtitle: "Tus clientes te regatean 100€. Los del Círculo ni pestañean pagando 3.000."
+      };
+    case 'overworked_underpaid':
+      return {
+        heroSubtitle: "Trabajas hasta las 23:47 por cuatro duros. Aquí se invierte la ecuación."
+      };
+    case 'no_clients':
+      return {
+        heroSubtitle: "El vacío te consume. Lo que hay detrás de este sello lo llena."
+      };
+    case 'cant_sell_high_ticket':
+      return {
+        heroSubtitle: "Tienes el arte. Te faltan las palabras. Están aquí."
+      };
+    case 'all_above':
+      return {
+        heroSubtitle: "Crisis total. El caos termina cuando entiendes el sistema."
+      };
+    default:
+      return {
+        heroSubtitle: "Los sellos se han roto. Lo que buscas está al otro lado."
+      };
+  }
 };
 
 // Tier-specific intro messages
@@ -28,44 +57,6 @@ const TIER_MESSAGES: Record<string, string> = {
   premium: "Has demostrado ser un iniciado de alto calibre.",
   full_access: "Los sellos se han roto para ti.",
   offer_only: "Tu camino está listo, pero limitado.",
-};
-
-// Generate personalized subtitle based on DM responses
-export const getPersonalizedSubtitle = (lead: BrechaLead | null): string => {
-  if (!lead) {
-    return "Los cuatro sellos se han roto. Has encontrado la brecha.";
-  }
-
-  const name = lead.first_name || "Iniciado";
-  
-  // Pain-based personalization first
-  if (lead.pain_answer && PAIN_MESSAGES[lead.pain_answer]) {
-    return `${name}, ${PAIN_MESSAGES[lead.pain_answer]}.`;
-  }
-  
-  // Revenue-based fallback
-  const revenueMsg = getRevenueMessage(lead.revenue_answer);
-  return `${name}, ${revenueMsg}`;
-};
-
-const getRevenueMessage = (revenue: string | null): string => {
-  if (!revenue) {
-    return "los sellos se han roto para ti.";
-  }
-  
-  switch (revenue) {
-    case 'menos_500':
-    case '500_1500':
-      return "el primer paso es cobrar lo que vales.";
-    case '1500_3000':
-      return "ya has demostrado que puedes cobrar. Ahora: escala.";
-    case '3000_6000':
-      return "estás cerca del umbral. La brecha te llevará más allá.";
-    case 'mas_6000':
-      return "ya conoces el juego. Ahora domínalo.";
-    default:
-      return "los sellos se han roto para ti.";
-  }
 };
 
 // Get tier-specific welcome message

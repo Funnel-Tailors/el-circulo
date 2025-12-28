@@ -181,20 +181,14 @@ const LaBrecha = () => {
       <ShootingStars />
       <Starfield />
       
-      {/* Main content container - same structure as Senda */}
-      <div className="relative z-10 container mx-auto px-4 py-12 md:py-20">
+      {/* Main content container - compact for mobile */}
+      <div className="relative z-10 container mx-auto px-4 py-8 md:py-16">
         {/* Hero */}
         <BrechaHeroSection lead={lead} />
 
-        <RunicDivider symbol="✦" />
-
-        {/* Countdown warning */}
-        <BrechaGrieta eventDate={EVENT_DATE} />
-
-        <RunicDivider />
-
-        {/* Fragmento 1: El Precio */}
-        <BrechaFragmento
+        {/* Fragmento 1: El Precio - immediately after hero for above-the-fold */}
+        <div id="first-fragment" className="mt-8">
+          <BrechaFragmento
           token={token}
           fragmentNumber={1}
           videoUrl={VIDEO_FRAG1}
@@ -213,8 +207,14 @@ const LaBrecha = () => {
           onSequenceFailed={handleFrag1SequenceFailed}
           onAssistantOpened={handleFrag1AssistantOpened}
           onVideoProgress={handleFrag1VideoProgress}
-          assistantEmbedId="assistant-frag1"
-        />
+            assistantEmbedId="assistant-frag1"
+          />
+        </div>
+
+        {/* Countdown - after first fragment, more subtle */}
+        <div className="my-12">
+          <BrechaGrieta eventDate={EVENT_DATE} />
+        </div>
 
         <RunicDivider symbol="◇" />
 
