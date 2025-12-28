@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -10,7 +11,7 @@ import { BrechaFragmento3 } from "@/components/brecha/BrechaFragmento3";
 import { BrechaFragmento4 } from "@/components/brecha/BrechaFragmento4";
 import { BrechaDecision } from "@/components/brecha/BrechaDecision";
 import { BrechaFooter } from "@/components/brecha/BrechaFooter";
-import { BrechaPortal } from "@/components/brecha/BrechaPortal";
+import BrechaPortalModal from "@/components/brecha/BrechaPortalModal";
 import VortexEffect from "@/components/senda/VortexEffect";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
@@ -35,6 +36,16 @@ const LaBrecha = () => {
 
   const { isValid, isLoading: accessLoading, lead, error } = useBrechaAccess(token);
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
+
+  // Portal modal states
+  const [showPortal1, setShowPortal1] = useState(false);
+  const [showPortal2, setShowPortal2] = useState(false);
+  const [showPortal3, setShowPortal3] = useState(false);
+
+  // Refs for auto-scroll
+  const frag2Ref = useRef<HTMLDivElement>(null);
+  const frag3Ref = useRef<HTMLDivElement>(null);
+  const frag4Ref = useRef<HTMLDivElement>(null);
 
   // Epic expired state with VortexEffect
   if (isExpired()) {
@@ -123,6 +134,8 @@ const LaBrecha = () => {
 
   const handleFrag1SequenceCompleted = () => {
     updateProgress({ frag1_sequence_completed: true, frag1_assistant_unlocked: true });
+    // Show portal 1 after sequence completion
+    setTimeout(() => setShowPortal1(true), 500);
   };
 
   const handleFrag1SequenceFailed = () => {
@@ -154,6 +167,8 @@ const LaBrecha = () => {
 
   const handleFrag2SequenceCompleted = () => {
     updateProgress({ frag2_sequence_completed: true, frag2_assistant_unlocked: true });
+    // Show portal 2 after sequence completion
+    setTimeout(() => setShowPortal2(true), 500);
   };
 
   const handleFrag2SequenceFailed = () => {
@@ -205,6 +220,10 @@ const LaBrecha = () => {
     if (assistantNumber === 3) updateProgress({ frag3_assistant3_opened: true });
   };
 
+  const handleShowPortal3 = () => {
+    setTimeout(() => setShowPortal3(true), 500);
+  };
+
   // ===== FRAGMENTO 4 HANDLERS =====
   const handleFrag4VideoProgress = (progressValue: number) => {
     if (progressValue > progress.frag4_video_progress) {
@@ -239,17 +258,32 @@ const LaBrecha = () => {
     updateProgress({ journey_completed: true });
   };
 
-  // ===== PORTAL HANDLERS =====
-  const handlePortal1Traversed = () => {
+  // ===== PORTAL UNLOCK HANDLERS (with auto-scroll) =====
+  const handlePortal1Unlock = () => {
     updateProgress({ portal_traversed: true });
+    setShowPortal1(false);
+    // Auto-scroll to fragment 2 after portal closes
+    setTimeout(() => {
+      frag2Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
   };
 
-  const handlePortal2Traversed = () => {
+  const handlePortal2Unlock = () => {
     updateProgress({ portal2_traversed: true });
+    setShowPortal2(false);
+    // Auto-scroll to fragment 3 after portal closes
+    setTimeout(() => {
+      frag3Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
   };
 
-  const handlePortal3Traversed = () => {
+  const handlePortal3Unlock = () => {
     updateProgress({ portal3_traversed: true });
+    setShowPortal3(false);
+    // Auto-scroll to fragment 4 after portal closes
+    setTimeout(() => {
+      frag4Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 600);
   };
 
   // Check completion status
@@ -298,20 +332,9 @@ const LaBrecha = () => {
           />
         </div>
 
-        {/* ===== PORTAL 1 → FRAGMENTO 2 ===== */}
-        {progress.frag1_sequence_completed && (
-          <div className="mt-16">
-            <BrechaPortal
-              isUnlocked={progress.frag1_sequence_completed}
-              onTraverse={handlePortal1Traversed}
-              hasTraversed={progress.portal_traversed}
-            />
-          </div>
-        )}
-
         {/* ===== FRAGMENTO 2: EL ESPEJO ===== */}
         {progress.portal_traversed && (
-          <div className="mt-16">
+          <div ref={frag2Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento
               token={token}
               fragmentNumber={2}
@@ -336,20 +359,9 @@ const LaBrecha = () => {
           </div>
         )}
 
-        {/* ===== PORTAL 2 → FRAGMENTO 3 ===== */}
-        {progress.frag2_sequence_completed && (
-          <div className="mt-16">
-            <BrechaPortal
-              isUnlocked={progress.frag2_sequence_completed}
-              onTraverse={handlePortal2Traversed}
-              hasTraversed={progress.portal2_traversed}
-            />
-          </div>
-        )}
-
         {/* ===== FRAGMENTO 3: LA VOZ ===== */}
         {progress.portal2_traversed && (
-          <div className="mt-16">
+          <div ref={frag3Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento3
               token={token}
               progress={{
@@ -372,24 +384,14 @@ const LaBrecha = () => {
               onSequenceCompleted={handleFrag3SequenceCompleted}
               onSequenceFailed={handleFrag3SequenceFailed}
               onAssistantOpened={handleFrag3AssistantOpened}
-            />
-          </div>
-        )}
-
-        {/* ===== PORTAL 3 → FRAGMENTO 4 ===== */}
-        {progress.frag3_sequence_completed && (
-          <div className="mt-16">
-            <BrechaPortal
-              isUnlocked={progress.frag3_sequence_completed}
-              onTraverse={handlePortal3Traversed}
-              hasTraversed={progress.portal3_traversed}
+              onShowPortal={handleShowPortal3}
             />
           </div>
         )}
 
         {/* ===== FRAGMENTO 4: EL CIERRE ===== */}
         {progress.portal3_traversed && (
-          <div className="mt-16">
+          <div ref={frag4Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento4
               token={token}
               progress={{
@@ -426,6 +428,28 @@ const LaBrecha = () => {
           </div>
         )}
       </div>
+
+      {/* Portal Modals */}
+      <BrechaPortalModal
+        isOpen={showPortal1 && !progress.portal_traversed}
+        onClose={() => setShowPortal1(false)}
+        onUnlock={handlePortal1Unlock}
+        fragmentNumber={1}
+      />
+
+      <BrechaPortalModal
+        isOpen={showPortal2 && !progress.portal2_traversed}
+        onClose={() => setShowPortal2(false)}
+        onUnlock={handlePortal2Unlock}
+        fragmentNumber={2}
+      />
+
+      <BrechaPortalModal
+        isOpen={showPortal3 && !progress.portal3_traversed}
+        onClose={() => setShowPortal3(false)}
+        onUnlock={handlePortal3Unlock}
+        fragmentNumber={3}
+      />
 
       {/* Footer with CTA - only visible after completing all fragments */}
       {allFragmentsCompleted && (

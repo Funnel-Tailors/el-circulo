@@ -2,10 +2,10 @@
  * BrechaFragmento4 - Cuarto Fragmento: El Cierre
  * 
  * Estructura: 1 video largo, 5 drops SIN auto-captura (3s window - más difícil), roleplay condicional
- * Similar a Module4Section pero para La Brecha
+ * Con animaciones idénticas a Module4Section de Senda
  */
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Lock, ExternalLink, Play, CheckCircle } from "lucide-react";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
@@ -128,46 +128,62 @@ export const BrechaFragmento4 = ({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
-            ⟡ Cuarto Fragmento ⟡
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground glow mb-4">
-            EL CIERRE
-          </h2>
-          <p className="text-foreground/60 max-w-xl mx-auto">
-            Cierra sin bajar el precio. Sin suplicar.
-          </p>
-          
-          {/* Warning about 3s window */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/30"
-          >
-            <AlertTriangle className="w-4 h-4 text-destructive" />
-            <span className="text-sm text-destructive/80">
-              Los resquicios aparecen por {windowMs / 1000}s. Si no los capturas, se pierden para siempre.
-            </span>
-          </motion.div>
-        </motion.div>
-      </div>
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: 1,
+        clipPath: "circle(150% at 50% 0%)"
+      }}
+      transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+      className="relative z-20 pt-16 pb-24"
+    >
+      {/* Decorative top glow */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center top, hsl(var(--foreground) / 0.1) 0%, transparent 70%)'
+        }}
+      />
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
+              ⟡ Cuarto Fragmento ⟡
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground glow mb-4">
+              EL CIERRE
+            </h2>
+            <p className="text-foreground/60 max-w-xl mx-auto">
+              Cierra sin bajar el precio. Sin suplicar.
+            </p>
+            
+            {/* Warning about 3s window */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/30"
+            >
+              <AlertTriangle className="w-4 h-4 text-destructive" />
+              <span className="text-sm text-destructive/80">
+                Los resquicios aparecen por {windowMs / 1000}s. Si no los capturas, se pierden para siempre.
+              </span>
+            </motion.div>
+          </motion.div>
+        </div>
+
         {/* Video Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="glass-card-dark p-6"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8 }}
+          className="glass-card-dark p-6 mb-8"
         >
           <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
             <Play className="w-5 h-5 text-primary" />
@@ -202,20 +218,27 @@ export const BrechaFragmento4 = ({
         </motion.div>
         
         {/* Drops Inventory */}
-        <DropsInventory 
-          capturedDrops={capturedDrops}
-          totalDrops={drops.length}
-          allCaptured={allCaptured}
-          classNumber={8}
-          missedDrops={progress.drops_missed}
-        />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+        >
+          <DropsInventory 
+            capturedDrops={capturedDrops}
+            totalDrops={drops.length}
+            allCaptured={allCaptured}
+            classNumber={8}
+            missedDrops={progress.drops_missed}
+          />
+        </motion.div>
         
         {/* Missed drops warning */}
         {roleplayPermanentlyLocked && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="glass-card-dark p-6 border-destructive/30 border-2"
+            transition={{ delay: 1.4 }}
+            className="mt-8 glass-card-dark p-6 border-destructive/30 border-2"
           >
             <div className="flex items-start gap-4">
               <div className="p-3 rounded-full bg-destructive/20">
@@ -239,10 +262,10 @@ export const BrechaFragmento4 = ({
         
         {/* Roleplay GPT Section */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className={`glass-card-dark p-6 relative ${
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6, duration: 0.8 }}
+          className={`mt-8 glass-card-dark p-6 relative ${
             roleplayPermanentlyLocked ? 'opacity-50 pointer-events-none' : ''
           }`}
         >
@@ -316,7 +339,7 @@ export const BrechaFragmento4 = ({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="text-center py-8"
+            className="text-center py-8 mt-8"
           >
             <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 border border-primary/30">
               <CheckCircle className="w-5 h-5 text-primary" />
@@ -339,6 +362,6 @@ export const BrechaFragmento4 = ({
         onSequenceFailed={onSequenceFailed}
         onClose={() => setShowRitualModal(false)}
       />
-    </div>
+    </motion.section>
   );
 };
