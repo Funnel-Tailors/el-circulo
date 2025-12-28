@@ -131,12 +131,39 @@ export type Database = {
           frag2_sequence_failed_attempts: number | null
           frag2_video_progress: number | null
           frag2_video_started: boolean | null
+          frag3_assistant1_opened: boolean | null
+          frag3_assistant2_opened: boolean | null
+          frag3_assistant3_opened: boolean | null
+          frag3_drops_captured: string[] | null
+          frag3_drops_missed: string[] | null
+          frag3_ritual_accepted: boolean | null
+          frag3_ritual_accepted_at: string | null
+          frag3_sequence_completed: boolean | null
+          frag3_sequence_failed_attempts: number | null
+          frag3_video1_progress: number | null
+          frag3_video1_started: boolean | null
+          frag3_video2_progress: number | null
+          frag3_video2_started: boolean | null
+          frag4_drops_captured: string[] | null
+          frag4_drops_missed: string[] | null
+          frag4_ritual_accepted: boolean | null
+          frag4_ritual_accepted_at: string | null
+          frag4_roleplay_opened: boolean | null
+          frag4_roleplay_unlocked: boolean | null
+          frag4_sequence_completed: boolean | null
+          frag4_sequence_failed_attempts: number | null
+          frag4_video_progress: number | null
+          frag4_video_started: boolean | null
           id: string
           journey_completed: boolean | null
           journey_completed_at: string | null
           last_activity_at: string | null
           portal_traversed: boolean | null
           portal_traversed_at: string | null
+          portal2_traversed: boolean | null
+          portal2_traversed_at: string | null
+          portal3_traversed: boolean | null
+          portal3_traversed_at: string | null
           token: string
           updated_at: string | null
         }
@@ -163,12 +190,39 @@ export type Database = {
           frag2_sequence_failed_attempts?: number | null
           frag2_video_progress?: number | null
           frag2_video_started?: boolean | null
+          frag3_assistant1_opened?: boolean | null
+          frag3_assistant2_opened?: boolean | null
+          frag3_assistant3_opened?: boolean | null
+          frag3_drops_captured?: string[] | null
+          frag3_drops_missed?: string[] | null
+          frag3_ritual_accepted?: boolean | null
+          frag3_ritual_accepted_at?: string | null
+          frag3_sequence_completed?: boolean | null
+          frag3_sequence_failed_attempts?: number | null
+          frag3_video1_progress?: number | null
+          frag3_video1_started?: boolean | null
+          frag3_video2_progress?: number | null
+          frag3_video2_started?: boolean | null
+          frag4_drops_captured?: string[] | null
+          frag4_drops_missed?: string[] | null
+          frag4_ritual_accepted?: boolean | null
+          frag4_ritual_accepted_at?: string | null
+          frag4_roleplay_opened?: boolean | null
+          frag4_roleplay_unlocked?: boolean | null
+          frag4_sequence_completed?: boolean | null
+          frag4_sequence_failed_attempts?: number | null
+          frag4_video_progress?: number | null
+          frag4_video_started?: boolean | null
           id?: string
           journey_completed?: boolean | null
           journey_completed_at?: string | null
           last_activity_at?: string | null
           portal_traversed?: boolean | null
           portal_traversed_at?: string | null
+          portal2_traversed?: boolean | null
+          portal2_traversed_at?: string | null
+          portal3_traversed?: boolean | null
+          portal3_traversed_at?: string | null
           token: string
           updated_at?: string | null
         }
@@ -195,12 +249,39 @@ export type Database = {
           frag2_sequence_failed_attempts?: number | null
           frag2_video_progress?: number | null
           frag2_video_started?: boolean | null
+          frag3_assistant1_opened?: boolean | null
+          frag3_assistant2_opened?: boolean | null
+          frag3_assistant3_opened?: boolean | null
+          frag3_drops_captured?: string[] | null
+          frag3_drops_missed?: string[] | null
+          frag3_ritual_accepted?: boolean | null
+          frag3_ritual_accepted_at?: string | null
+          frag3_sequence_completed?: boolean | null
+          frag3_sequence_failed_attempts?: number | null
+          frag3_video1_progress?: number | null
+          frag3_video1_started?: boolean | null
+          frag3_video2_progress?: number | null
+          frag3_video2_started?: boolean | null
+          frag4_drops_captured?: string[] | null
+          frag4_drops_missed?: string[] | null
+          frag4_ritual_accepted?: boolean | null
+          frag4_ritual_accepted_at?: string | null
+          frag4_roleplay_opened?: boolean | null
+          frag4_roleplay_unlocked?: boolean | null
+          frag4_sequence_completed?: boolean | null
+          frag4_sequence_failed_attempts?: number | null
+          frag4_video_progress?: number | null
+          frag4_video_started?: boolean | null
           id?: string
           journey_completed?: boolean | null
           journey_completed_at?: string | null
           last_activity_at?: string | null
           portal_traversed?: boolean | null
           portal_traversed_at?: string | null
+          portal2_traversed?: boolean | null
+          portal2_traversed_at?: string | null
+          portal3_traversed?: boolean | null
+          portal3_traversed_at?: string | null
           token?: string
           updated_at?: string | null
         }
