@@ -7,6 +7,8 @@ import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { ProtectedVideo } from "@/components/brecha/ProtectedVideo";
+import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 
 // Assistant configurations for fragments 1 and 2
 const FRAGMENT_ASSISTANTS: Record<1 | 2, GPTAssistant> = {
@@ -192,20 +194,24 @@ export const BrechaFragmento = ({
             initialAccepted={progress.ritual_accepted}
           />
 
-          {/* Video */}
-          <video
+          {/* Protected Video with custom controls */}
+          <ProtectedVideo
             ref={videoRef}
             src={videoUrl}
             className="w-full h-full object-cover"
-            controls
-            playsInline
-          />
-
-          {/* Drop overlay */}
-          <VideoDropOverlay
-            activeDrop={activeDrop}
-            onCapture={captureDrop}
-          />
+          >
+            {/* Drop overlay */}
+            <VideoDropOverlay
+              activeDrop={activeDrop}
+              onCapture={captureDrop}
+            />
+            
+            {/* Custom controls without seek bar */}
+            <VideoControlsLimited
+              videoRef={videoRef}
+              progress={videoProgress}
+            />
+          </ProtectedVideo>
         </motion.div>
 
         {/* Progress bar */}
