@@ -1,0 +1,344 @@
+/**
+ * BrechaFragmento4 - Cuarto Fragmento: El Cierre
+ * 
+ * Estructura: 1 video largo, 5 drops SIN auto-captura (3s window - más difícil), roleplay condicional
+ * Similar a Module4Section pero para La Brecha
+ */
+
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion } from "framer-motion";
+import { AlertTriangle, Lock, ExternalLink, Play, CheckCircle } from "lucide-react";
+import { useVideoDrops } from "@/hooks/useVideoDrops";
+import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
+import { DropsInventory } from "@/components/senda/DropsInventory";
+import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
+
+// Video URL (same as Module4)
+const VIDEO_MASTERCLASS = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68af36e8123b93670b1fc364.mp4";
+
+// Roleplay GPT (same as Module4)
+const GPT_ROLEPLAY = {
+  id: "cliente-circulo",
+  name: "Cliente del Círculo",
+  description: "Practica cierres reales con un cliente simulado",
+  url: "https://chatgpt.com/g/g-68a4634fe12c81918e514fb812f40fa8-cliente-del-circulo",
+  icon: "🎭"
+};
+
+interface BrechaFragmento4Props {
+  token: string;
+  progress: {
+    video_started: boolean;
+    video_progress: number;
+    drops_captured: string[];
+    drops_missed: string[];
+    ritual_accepted: boolean;
+    sequence_completed: boolean;
+    sequence_failed_attempts: number;
+    roleplay_unlocked: boolean;
+    roleplay_opened: boolean;
+  };
+  onVideoProgress: (progress: number) => void;
+  onDropCaptured: (dropId: string) => void;
+  onDropMissed: (dropId: string) => void;
+  onSequenceCompleted: () => void;
+  onSequenceFailed: () => void;
+  onRoleplayOpened: () => void;
+  onJourneyCompleted: () => void;
+}
+
+export const BrechaFragmento4 = ({
+  token,
+  progress,
+  onVideoProgress,
+  onDropCaptured,
+  onDropMissed,
+  onSequenceCompleted,
+  onSequenceFailed,
+  onRoleplayOpened,
+  onJourneyCompleted,
+}: BrechaFragmento4Props) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoProgress, setVideoProgress] = useState(progress.video_progress || 0);
+  const [showRitualModal, setShowRitualModal] = useState(false);
+  
+  const lastUpdate = useRef(0);
+
+  // Roleplay state - PERMANENTLY LOCKED if any drops missed
+  const roleplayPermanentlyLocked = progress.drops_missed.length > 0;
+  const allDropsCapturedNoMisses = progress.sequence_completed && !roleplayPermanentlyLocked;
+
+  // Drops hook for class 8 (5 drops, 3s window - HARDEST)
+  const {
+    drops,
+    capturedDrops,
+    activeDrop,
+    checkForDrop,
+    captureDrop,
+    allCaptured,
+    windowMs
+  } = useVideoDrops({
+    sessionId: token,
+    classNumber: 8,
+    onCapture: (drop) => onDropCaptured(drop.id),
+    onMiss: (drop) => onDropMissed(drop.id),
+    onAllCaptured: () => {
+      if (!progress.sequence_completed) {
+        setTimeout(() => setShowRitualModal(true), 500);
+      }
+    },
+  });
+
+  // Video handlers
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      const currentProgress = video.duration > 0 
+        ? (video.currentTime / video.duration) * 100 
+        : 0;
+      
+      checkForDrop(video.currentTime / video.duration);
+      
+      if (Math.abs(currentProgress - lastUpdate.current) >= 5) {
+        lastUpdate.current = currentProgress;
+        setVideoProgress(Math.round(currentProgress));
+        onVideoProgress(Math.round(currentProgress));
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, [checkForDrop, onVideoProgress]);
+
+  const handleRitualComplete = () => {
+    setShowRitualModal(false);
+    onSequenceCompleted();
+    
+    // If no drops missed, journey is complete
+    if (!roleplayPermanentlyLocked) {
+      onJourneyCompleted();
+    }
+  };
+
+  const handleRoleplayClick = () => {
+    onRoleplayOpened();
+    window.open(GPT_ROLEPLAY.url, '_blank');
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
+            ⟡ Cuarto Fragmento ⟡
+          </span>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground glow mb-4">
+            EL CIERRE
+          </h2>
+          <p className="text-foreground/60 max-w-xl mx-auto">
+            Cierra sin bajar el precio. Sin suplicar.
+          </p>
+          
+          {/* Warning about 3s window */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/30"
+          >
+            <AlertTriangle className="w-4 h-4 text-destructive" />
+            <span className="text-sm text-destructive/80">
+              Los resquicios aparecen por {windowMs / 1000}s. Si no los capturas, se pierden para siempre.
+            </span>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Video Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="glass-card-dark p-6"
+        >
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Play className="w-5 h-5 text-primary" />
+            Masterclass: Cierres de Venta
+          </h3>
+          
+          <div className="relative rounded-lg overflow-hidden bg-black/50">
+            <video
+              ref={videoRef}
+              src={VIDEO_MASTERCLASS}
+              controls
+              className="w-full aspect-video"
+              playsInline
+            />
+            
+            <VideoDropOverlay 
+              activeDrop={activeDrop}
+              onCapture={captureDrop}
+            />
+          </div>
+          
+          <div className="mt-4 h-1 bg-foreground/10 rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-primary"
+              animate={{ width: `${videoProgress}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+          <p className="text-xs text-foreground/40 mt-2 text-right">
+            Progreso: {videoProgress}%
+          </p>
+        </motion.div>
+        
+        {/* Drops Inventory */}
+        <DropsInventory 
+          capturedDrops={capturedDrops}
+          totalDrops={drops.length}
+          allCaptured={allCaptured}
+          classNumber={8}
+          missedDrops={progress.drops_missed}
+        />
+        
+        {/* Missed drops warning */}
+        {roleplayPermanentlyLocked && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="glass-card-dark p-6 border-destructive/30 border-2"
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-full bg-destructive/20">
+                <Lock className="w-6 h-6 text-destructive" />
+              </div>
+              <div>
+                <h4 className="text-lg font-semibold text-destructive mb-2">
+                  Resquicios Perdidos
+                </h4>
+                <p className="text-foreground/60 text-sm">
+                  Has perdido {progress.drops_missed.length} resquicio(s). 
+                  El Cliente del Círculo no te recibirá para practicar.
+                </p>
+                <p className="text-foreground/40 text-xs mt-2">
+                  Aún puedes completar el contenido, pero el roleplay está bloqueado permanentemente.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Roleplay GPT Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className={`glass-card-dark p-6 relative ${
+            roleplayPermanentlyLocked ? 'opacity-50 pointer-events-none' : ''
+          }`}
+        >
+          {roleplayPermanentlyLocked && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+              <div className="text-center p-6">
+                <Lock className="w-12 h-12 text-destructive mx-auto mb-4" />
+                <p className="text-destructive font-semibold">Roleplay Bloqueado</p>
+                <p className="text-foreground/40 text-sm mt-1">
+                  Perdiste resquicios durante el video
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {!allDropsCapturedNoMisses && !roleplayPermanentlyLocked && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
+              <div className="text-center p-6">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🎭</span>
+                </div>
+                <p className="text-foreground/80 font-semibold">Roleplay Bloqueado</p>
+                <p className="text-foreground/40 text-sm mt-1">
+                  Captura todos los resquicios y completa el ritual para desbloquear
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-2xl bg-primary/10 text-4xl">
+              {GPT_ROLEPLAY.icon}
+            </div>
+            <div className="flex-1">
+              <h4 className="text-lg font-semibold text-foreground mb-1">
+                {GPT_ROLEPLAY.name}
+              </h4>
+              <p className="text-foreground/60 text-sm">
+                {GPT_ROLEPLAY.description}
+              </p>
+            </div>
+            <button
+              onClick={handleRoleplayClick}
+              disabled={!allDropsCapturedNoMisses}
+              className="dark-button-primary px-6 py-3 flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Practicar
+            </button>
+          </div>
+          
+          {allDropsCapturedNoMisses && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mt-4 pt-4 border-t border-foreground/10"
+            >
+              <div className="flex items-center gap-2 text-primary">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  Roleplay desbloqueado - Practica tu cierre con un cliente simulado
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+        
+        {/* Journey complete message */}
+        {allDropsCapturedNoMisses && progress.roleplay_opened && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-center py-8"
+          >
+            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 border border-primary/30">
+              <CheckCircle className="w-5 h-5 text-primary" />
+              <span className="text-primary font-medium">
+                Has completado La Brecha
+              </span>
+            </div>
+            <p className="text-foreground/40 text-sm mt-4">
+              Los cuatro sellos están rotos. Tu próximo cliente te espera.
+            </p>
+          </motion.div>
+        )}
+      </div>
+
+      {/* Ritual Sequence Modal */}
+      <RitualSequenceModal
+        isOpen={showRitualModal}
+        capturedDrops={capturedDrops}
+        onSequenceComplete={handleRitualComplete}
+        onSequenceFailed={onSequenceFailed}
+        onClose={() => setShowRitualModal(false)}
+      />
+    </div>
+  );
+};

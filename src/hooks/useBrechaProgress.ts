@@ -24,8 +24,35 @@ interface BrechaProgress {
   frag2_assistant_unlocked: boolean;
   frag2_assistant_opened: boolean;
   
-  // Portal & Journey
+  // Fragmento 3 (2 videos like Module3)
+  frag3_video1_started: boolean;
+  frag3_video1_progress: number;
+  frag3_video2_started: boolean;
+  frag3_video2_progress: number;
+  frag3_drops_captured: string[];
+  frag3_drops_missed: string[];
+  frag3_ritual_accepted: boolean;
+  frag3_sequence_completed: boolean;
+  frag3_sequence_failed_attempts: number;
+  frag3_assistant1_opened: boolean;
+  frag3_assistant2_opened: boolean;
+  frag3_assistant3_opened: boolean;
+  
+  // Fragmento 4 (1 video + roleplay like Module4)
+  frag4_video_started: boolean;
+  frag4_video_progress: number;
+  frag4_drops_captured: string[];
+  frag4_drops_missed: string[];
+  frag4_ritual_accepted: boolean;
+  frag4_sequence_completed: boolean;
+  frag4_sequence_failed_attempts: number;
+  frag4_roleplay_unlocked: boolean;
+  frag4_roleplay_opened: boolean;
+  
+  // Portals & Journey
   portal_traversed: boolean;
+  portal2_traversed: boolean;
+  portal3_traversed: boolean;
   journey_completed: boolean;
 }
 
@@ -50,7 +77,32 @@ const DEFAULT_PROGRESS: BrechaProgress = {
   frag2_assistant_unlocked: false,
   frag2_assistant_opened: false,
   
+  frag3_video1_started: false,
+  frag3_video1_progress: 0,
+  frag3_video2_started: false,
+  frag3_video2_progress: 0,
+  frag3_drops_captured: [],
+  frag3_drops_missed: [],
+  frag3_ritual_accepted: false,
+  frag3_sequence_completed: false,
+  frag3_sequence_failed_attempts: 0,
+  frag3_assistant1_opened: false,
+  frag3_assistant2_opened: false,
+  frag3_assistant3_opened: false,
+  
+  frag4_video_started: false,
+  frag4_video_progress: 0,
+  frag4_drops_captured: [],
+  frag4_drops_missed: [],
+  frag4_ritual_accepted: false,
+  frag4_sequence_completed: false,
+  frag4_sequence_failed_attempts: 0,
+  frag4_roleplay_unlocked: false,
+  frag4_roleplay_opened: false,
+  
   portal_traversed: false,
+  portal2_traversed: false,
+  portal3_traversed: false,
   journey_completed: false,
 };
 
@@ -98,6 +150,10 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
             frag1_drops_missed: newData.frag1_drops_missed || [],
             frag2_drops_captured: newData.frag2_drops_captured || [],
             frag2_drops_missed: newData.frag2_drops_missed || [],
+            frag3_drops_captured: newData.frag3_drops_captured || [],
+            frag3_drops_missed: newData.frag3_drops_missed || [],
+            frag4_drops_captured: newData.frag4_drops_captured || [],
+            frag4_drops_missed: newData.frag4_drops_missed || [],
           });
         }
       } else if (data) {
@@ -108,6 +164,10 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
           frag1_drops_missed: data.frag1_drops_missed || [],
           frag2_drops_captured: data.frag2_drops_captured || [],
           frag2_drops_missed: data.frag2_drops_missed || [],
+          frag3_drops_captured: data.frag3_drops_captured || [],
+          frag3_drops_missed: data.frag3_drops_missed || [],
+          frag4_drops_captured: data.frag4_drops_captured || [],
+          frag4_drops_missed: data.frag4_drops_missed || [],
         });
       }
     } catch (err) {
