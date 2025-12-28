@@ -61,7 +61,7 @@ export const BrechaHeroSection = ({ lead }: BrechaHeroSectionProps) => {
 
       {/* Copy compartido - promesa universal */}
       <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-        Los cuatro sellos romperán cuatro de tus limitaciones. Al final de este viaje está tu próximo cliente, iniciado.
+        Los cuatro sellos romperán cuatro de tus limitaciones. Al final de este viaje está tu próximo cliente, <span className="text-primary glow">iniciado</span>.
       </p>
 
       {/* Personalized subtitle - cierre según pain */}
