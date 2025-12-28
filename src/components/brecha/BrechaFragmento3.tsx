@@ -14,6 +14,8 @@ import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { ProtectedVideo } from "@/components/brecha/ProtectedVideo";
+import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 
 // Video URLs (same as Module3)
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
@@ -264,13 +266,16 @@ export const BrechaFragmento3 = ({
           </div>
           
           <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
-            <video
+            <ProtectedVideo
               ref={video1Ref}
               src={VIDEO_1_URL}
-              controls
               className="w-full h-full"
-              playsInline
-            />
+            >
+              <VideoControlsLimited
+                videoRef={video1Ref}
+                progress={video1Progress}
+              />
+            </ProtectedVideo>
           </div>
 
           {/* Progress bar */}
@@ -338,21 +343,27 @@ export const BrechaFragmento3 = ({
               </div>
             )}
             
-            <video
+            <ProtectedVideo
               ref={video2Ref}
               src={VIDEO_2_URL}
-              controls={video1Completed}
               className="w-full h-full"
-              playsInline
-            />
-            
-            {/* Drop overlay - only active when video 1 is complete */}
-            {video1Completed && (
-              <VideoDropOverlay 
-                activeDrop={activeDrop} 
-                onCapture={captureDrop} 
-              />
-            )}
+            >
+              {/* Drop overlay - only active when video 1 is complete */}
+              {video1Completed && (
+                <VideoDropOverlay 
+                  activeDrop={activeDrop} 
+                  onCapture={captureDrop} 
+                />
+              )}
+              
+              {/* Custom controls - only when video 1 complete */}
+              {video1Completed && (
+                <VideoControlsLimited
+                  videoRef={video2Ref}
+                  progress={video2Progress}
+                />
+              )}
+            </ProtectedVideo>
           </div>
 
           {/* Progress bar */}

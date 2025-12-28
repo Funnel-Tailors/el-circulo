@@ -14,6 +14,8 @@ import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { GPTRoleplayCard } from "@/components/shared/GPTRoleplayCard";
+import { ProtectedVideo } from "@/components/brecha/ProtectedVideo";
+import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 
 // Video URL (same as Module4)
 const VIDEO_MASTERCLASS = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68af36e8123b93670b1fc364.mp4";
@@ -214,18 +216,21 @@ export const BrechaFragmento4 = ({
           </h3>
           
           <div className="relative rounded-lg overflow-hidden bg-black/50">
-            <video
+            <ProtectedVideo
               ref={videoRef}
               src={VIDEO_MASTERCLASS}
-              controls
               className="w-full aspect-video"
-              playsInline
-            />
-            
-            <VideoDropOverlay 
-              activeDrop={activeDrop}
-              onCapture={captureDrop}
-            />
+            >
+              <VideoDropOverlay 
+                activeDrop={activeDrop}
+                onCapture={captureDrop}
+              />
+              
+              <VideoControlsLimited
+                videoRef={videoRef}
+                progress={videoProgress}
+              />
+            </ProtectedVideo>
           </div>
           
           <div className="mt-4 h-1 bg-foreground/10 rounded-full overflow-hidden">

@@ -19,6 +19,7 @@ interface DropsConfig {
   drops: Drop[];
   windowMs: number;
   autoCapture: boolean;
+  persistUntilNext?: boolean; // For F1 only: drop stays until next one appears
 }
 
 // Class 1: 3 drops (original)
@@ -93,7 +94,7 @@ const DROPS_CONFIG_MAP: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, DropsConfig> = {
   2: { drops: CLASS_2_DROPS, windowMs: 8000, autoCapture: true },
   3: { drops: CLASS_3_DROPS, windowMs: 7000, autoCapture: true },
   4: { drops: CLASS_4_DROPS, windowMs: 4000, autoCapture: false },
-  5: { drops: CLASS_5_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F1 - 4s, no autocapture
+  5: { drops: CLASS_5_DROPS, windowMs: Infinity, autoCapture: false, persistUntilNext: true }, // La Brecha F1 - drops persist until next appears
   6: { drops: CLASS_6_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F2 - 4s, no autocapture
   7: { drops: CLASS_7_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F3 - 4s, no autocapture
   8: { drops: CLASS_8_DROPS, windowMs: 3000, autoCapture: false }, // La Brecha F4 - 3s, MÁS DIFÍCIL
@@ -178,7 +179,50 @@ export const useVideoDrops = ({
     if (now - lastCheckRef.current < 500) return;
     lastCheckRef.current = now;
     
-    if (activeDrop) return; // Already showing a drop
+    // For persistUntilNext mode: check if we should auto-capture the current drop
+    // because the next one is about to appear
+    if (config.persistUntilNext && activeDrop) {
+      const currentDropIndex = config.drops.findIndex(d => d.id === activeDrop.id);
+      const nextDrop = config.drops[currentDropIndex + 1];
+      
+      // If there's a next drop and we've reached its timestamp, auto-capture current
+      if (nextDrop && progress >= nextDrop.timestamp) {
+        // Auto-capture the current drop
+        setCapturedDrops(prev => {
+          const newCaptured = [...prev, activeDrop];
+          if (newCaptured.length === config.drops.length && !allCapturedFiredRef.current) {
+            allCapturedFiredRef.current = true;
+            setTimeout(() => onAllCapturedRef.current?.(), 100);
+          }
+          return newCaptured;
+        });
+        onCaptureRef.current?.(activeDrop);
+        setActiveDrop(null);
+        // Clear any timeout just in case
+        if (dropTimeoutRef.current) {
+          clearTimeout(dropTimeoutRef.current);
+          dropTimeoutRef.current = null;
+        }
+      }
+      
+      // If we're at the end of video (>98%), auto-capture any remaining drop
+      if (progress >= 0.98 && !capturedDrops.some(d => d.id === activeDrop.id)) {
+        setCapturedDrops(prev => {
+          const newCaptured = [...prev, activeDrop];
+          if (newCaptured.length === config.drops.length && !allCapturedFiredRef.current) {
+            allCapturedFiredRef.current = true;
+            setTimeout(() => onAllCapturedRef.current?.(), 100);
+          }
+          return newCaptured;
+        });
+        onCaptureRef.current?.(activeDrop);
+        setActiveDrop(null);
+      }
+      
+      return; // Don't show another drop while one is active
+    }
+    
+    if (activeDrop) return; // Already showing a drop (non-persist mode)
     
     for (const drop of config.drops) {
       const alreadyShown = shownDropIds.has(drop.id);
@@ -189,7 +233,13 @@ export const useVideoDrops = ({
         setActiveDrop(drop);
         setShownDropIds(prev => new Set([...prev, drop.id]));
         
-        // Handle timeout based on autoCapture setting
+        // For persistUntilNext mode: no timeout, drop stays until next appears or user clicks
+        if (config.persistUntilNext) {
+          // No timeout - drop persists
+          break;
+        }
+        
+        // Handle timeout based on autoCapture setting (normal mode)
         dropTimeoutRef.current = setTimeout(() => {
           setActiveDrop(currentDrop => {
             if (currentDrop?.id === drop.id) {
