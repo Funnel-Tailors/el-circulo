@@ -2,10 +2,10 @@
  * BrechaFragmento3 - Tercer Fragmento: La Voz
  * 
  * Estructura: 2 videos secuenciales, 4 drops (en video 2), 3 asistentes GPT
- * Similar a Module3Section pero para La Brecha
+ * Con animaciones idénticas a Module3Section de Senda
  */
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play, Lock, Check, ExternalLink } from "lucide-react";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
@@ -64,6 +64,7 @@ interface BrechaFragmento3Props {
   onSequenceCompleted: () => void;
   onSequenceFailed: () => void;
   onAssistantOpened: (assistantNumber: 1 | 2 | 3) => void;
+  onShowPortal?: () => void;
 }
 
 export const BrechaFragmento3 = ({
@@ -76,6 +77,7 @@ export const BrechaFragmento3 = ({
   onSequenceCompleted,
   onSequenceFailed,
   onAssistantOpened,
+  onShowPortal,
 }: BrechaFragmento3Props) => {
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
@@ -163,37 +165,58 @@ export const BrechaFragmento3 = ({
   const handleRitualComplete = () => {
     setShowRitualModal(false);
     onSequenceCompleted();
+    // Trigger portal after a brief delay
+    if (onShowPortal) {
+      setTimeout(() => onShowPortal(), 500);
+    }
   };
 
   const assistantsUnlocked = progress.sequence_completed;
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
-            ⟡ Tercer Fragmento ⟡
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground glow mb-4">
-            LA VOZ
-          </h2>
-          <p className="text-foreground/60 max-w-xl mx-auto">
-            Oferta clara. Avatar definido. Ahora atrae sin rogar.
-          </p>
-        </motion.div>
-      </div>
+    <motion.section
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: 1,
+        clipPath: "circle(150% at 50% 0%)"
+      }}
+      transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+      className="relative z-20 pt-16 pb-24"
+    >
+      {/* Decorative top glow */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at center top, hsl(var(--foreground) / 0.1) 0%, transparent 70%)'
+        }}
+      />
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
+              ⟡ Tercer Fragmento ⟡
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground glow mb-4">
+              LA VOZ
+            </h2>
+            <p className="text-foreground/60 max-w-xl mx-auto">
+              Oferta clara. Avatar definido. Ahora atrae sin rogar.
+            </p>
+          </motion.div>
+        </div>
+
         {/* Video 1: Cualificación */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="mb-12"
         >
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -223,6 +246,7 @@ export const BrechaFragmento3 = ({
             />
           </div>
 
+          {/* Progress bar */}
           <div className="mt-4">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-foreground/50">Tu progreso</span>
@@ -238,21 +262,26 @@ export const BrechaFragmento3 = ({
           </div>
         </motion.div>
 
-        {/* Separator */}
-        <div className="flex items-center justify-center gap-4">
+        {/* Separator with unlock message */}
+        <motion.div 
+          className="flex items-center justify-center gap-4 mb-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1, duration: 0.6 }}
+        >
           <div className="h-px w-24 bg-gradient-to-r from-transparent to-foreground/20" />
           <span className="text-foreground/30 text-xs">
             {video1Completed ? '⟡ Video 2 Desbloqueado ⟡' : '🔒 Completa Video 1'}
           </span>
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
-        </div>
+        </motion.div>
 
-        {/* Video 2: Tu Primera Campaña */}
+        {/* Video 2: Tu Primera Campaña (locked until video 1 complete) */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className={!video1Completed ? 'opacity-50 pointer-events-none' : ''}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className={`mb-12 ${!video1Completed ? 'opacity-50 pointer-events-none' : ''}`}
         >
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -290,6 +319,7 @@ export const BrechaFragmento3 = ({
               playsInline
             />
             
+            {/* Drop overlay - only active when video 1 is complete */}
             {video1Completed && (
               <VideoDropOverlay 
                 activeDrop={activeDrop} 
@@ -298,51 +328,69 @@ export const BrechaFragmento3 = ({
             )}
           </div>
 
+          {/* Progress bar */}
           {video1Completed && (
-            <>
-              <div className="mt-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-foreground/50">Tu progreso</span>
-                  <span className="text-foreground/70">{video2Progress}%</span>
-                </div>
-                <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-foreground/40"
-                    animate={{ width: `${video2Progress}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
+            <div className="mt-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-foreground/50">Tu progreso</span>
+                <span className="text-foreground/70">{video2Progress}%</span>
               </div>
-
-              <DropsInventory 
-                capturedDrops={capturedDrops}
-                totalDrops={drops.length}
-                allCaptured={allCaptured}
-                classNumber={7}
-                missedDrops={progress.drops_missed}
-              />
-            </>
+              <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-foreground/40"
+                  animate={{ width: `${video2Progress}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+            </div>
           )}
+
+          {/* Drops inventory */}
+          {video1Completed && (
+            <DropsInventory 
+              capturedDrops={capturedDrops}
+              totalDrops={drops.length}
+              allCaptured={allCaptured}
+              classNumber={7}
+              missedDrops={progress.drops_missed}
+            />
+          )}
+        </motion.div>
+
+        {/* Separator */}
+        <motion.div 
+          className="flex items-center justify-center gap-4 mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4, duration: 0.6 }}
+        >
+          <div className="h-px w-24 bg-gradient-to-r from-transparent to-foreground/20" />
+          <span className="text-foreground/30 text-xs">⟡</span>
+          <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
         {/* 3 GPT Assistants */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6, duration: 0.8 }}
         >
           <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
             Asistentes IA Exclusivos
           </h3>
           
           <div className="grid md:grid-cols-3 gap-4">
-            {ASSISTANTS.map((assistant) => (
-              <div 
+            {ASSISTANTS.map((assistant, index) => (
+              <motion.div 
                 key={assistant.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.8 + index * 0.2, duration: 0.6 }}
                 className={`glass-card-dark p-6 transition-all duration-700 relative ${
                   !assistantsUnlocked ? 'opacity-40 grayscale blur-[1px]' : ''
                 }`}
               >
+                {/* Lock overlay when not unlocked */}
                 {!assistantsUnlocked && (
                   <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
                     <div className="text-center">
@@ -380,7 +428,7 @@ export const BrechaFragmento3 = ({
                     Abrir
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </motion.div>
@@ -394,6 +442,6 @@ export const BrechaFragmento3 = ({
         onSequenceFailed={onSequenceFailed}
         onClose={() => setShowRitualModal(false)}
       />
-    </div>
+    </motion.section>
   );
 };
