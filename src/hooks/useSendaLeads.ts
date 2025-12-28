@@ -7,7 +7,7 @@ export interface SendaLead {
   name: string;
   phone: string;
   submittedAt: string;
-  sendaStatus: 'no_access' | 'visited' | 'watching' | 'portal_shown' | 'vault_revealed' | 'completed' | 'revoked';
+  sendaStatus: 'no_access' | 'visited' | 'watching' | 'portal_shown' | 'vault_revealed' | 'module3' | 'module4' | 'completed' | 'revoked';
   videoProgress: number;
   isBlacklisted: boolean;
   blacklistReason: string | null;
@@ -97,6 +97,14 @@ export const useSendaLeads = () => {
           status = 'revoked';
         } else if (rawProgress?.journey_completed) {
           status = 'completed';
+        } else if (rawProgress?.module4_sequence_completed) {
+          status = 'completed';
+        } else if (rawProgress?.module4_unlocked) {
+          status = 'module4';
+          videoProgress = rawProgress?.module4_video_progress || 0;
+        } else if (rawProgress?.module3_unlocked) {
+          status = 'module3';
+          videoProgress = rawProgress?.module3_video1_progress || 0;
         } else if (rawProgress?.class2_sequence_completed || events.includes('senda_vault_ritual_sequence_complete')) {
           status = 'completed';
         } else if (rawProgress?.vault_unlocked || events.includes('senda_vault_revealed')) {
@@ -135,6 +143,29 @@ export const useSendaLeads = () => {
           class2_sequence_completed: rawProgress.class2_sequence_completed || false,
           assistant1_unlocked: rawProgress.assistant1_unlocked || false,
           assistant1_opened: rawProgress.assistant1_opened || false,
+          // Module 3
+          module3_unlocked: rawProgress.module3_unlocked || false,
+          module3_video1_started: rawProgress.module3_video1_started || false,
+          module3_video1_progress: rawProgress.module3_video1_progress || 0,
+          module3_video2_started: rawProgress.module3_video2_started || false,
+          module3_video2_progress: rawProgress.module3_video2_progress || 0,
+          module3_drops_captured: rawProgress.module3_drops_captured || [],
+          module3_drops_missed: rawProgress.module3_drops_missed || [],
+          module3_ritual_accepted: rawProgress.module3_ritual_accepted || false,
+          module3_sequence_completed: rawProgress.module3_sequence_completed || false,
+          module3_assistant1_opened: rawProgress.module3_assistant1_opened || false,
+          module3_assistant2_opened: rawProgress.module3_assistant2_opened || false,
+          module3_assistant3_opened: rawProgress.module3_assistant3_opened || false,
+          // Module 4
+          module4_unlocked: rawProgress.module4_unlocked || false,
+          module4_video_started: rawProgress.module4_video_started || false,
+          module4_video_progress: rawProgress.module4_video_progress || 0,
+          module4_drops_captured: rawProgress.module4_drops_captured || [],
+          module4_drops_missed: rawProgress.module4_drops_missed || [],
+          module4_ritual_accepted: rawProgress.module4_ritual_accepted || false,
+          module4_sequence_completed: rawProgress.module4_sequence_completed || false,
+          module4_roleplay_unlocked: rawProgress.module4_roleplay_unlocked || false,
+          module4_roleplay_opened: rawProgress.module4_roleplay_opened || false,
           journey_completed: rawProgress.journey_completed || false,
         } : null;
 
@@ -247,6 +278,39 @@ export const useSendaLeads = () => {
       case 'assistant':
         updates.assistant1_unlocked = true;
         break;
+      // Module 3
+      case 'module3':
+        updates.module3_unlocked = true;
+        updates.module3_unlocked_at = new Date().toISOString();
+        break;
+      case 'module3_all_drops':
+        updates.module3_drops_captured = ['m3_drop1', 'm3_drop2', 'm3_drop3', 'm3_drop4'];
+        break;
+      case 'module3_ritual':
+        updates.module3_ritual_accepted = true;
+        updates.module3_ritual_accepted_at = new Date().toISOString();
+        break;
+      case 'module3_sequence':
+        updates.module3_sequence_completed = true;
+        break;
+      // Module 4
+      case 'module4':
+        updates.module4_unlocked = true;
+        updates.module4_unlocked_at = new Date().toISOString();
+        break;
+      case 'module4_all_drops':
+        updates.module4_drops_captured = ['m4_drop1', 'm4_drop2', 'm4_drop3', 'm4_drop4', 'm4_drop5'];
+        break;
+      case 'module4_ritual':
+        updates.module4_ritual_accepted = true;
+        updates.module4_ritual_accepted_at = new Date().toISOString();
+        break;
+      case 'module4_sequence':
+        updates.module4_sequence_completed = true;
+        break;
+      case 'module4_roleplay':
+        updates.module4_roleplay_unlocked = true;
+        break;
       // Push actions - cascade unlocks
       case 'push_to_vault':
         updates.class1_video_started = true;
@@ -256,7 +320,7 @@ export const useSendaLeads = () => {
         updates.class1_sequence_completed = true;
         updates.class1_ritual_accepted = true;
         updates.class1_ritual_accepted_at = new Date().toISOString();
-        updates.class1_assistant_opened = true; // Desbloquear asistente clase 1
+        updates.class1_assistant_opened = true;
         updates.vault_unlocked = true;
         updates.vault_unlocked_at = new Date().toISOString();
         break;
@@ -277,6 +341,61 @@ export const useSendaLeads = () => {
         updates.class2_sequence_completed = true;
         updates.class2_ritual_accepted = true;
         updates.class2_ritual_accepted_at = new Date().toISOString();
+        break;
+      case 'push_to_module3_complete':
+        // Complete class1, vault, class2
+        updates.class1_video_started = true;
+        updates.class1_video_progress = 100;
+        updates.class1_drops_captured = ['c1_drop1', 'c1_drop2', 'c1_drop3'];
+        updates.class1_sequence_completed = true;
+        updates.class1_ritual_accepted = true;
+        updates.vault_unlocked = true;
+        updates.class2_video_started = true;
+        updates.class2_video_progress = 100;
+        updates.class2_drops_captured = ['c2_drop1', 'c2_drop2', 'c2_drop3', 'c2_drop4', 'c2_drop5'];
+        updates.class2_sequence_completed = true;
+        updates.class2_ritual_accepted = true;
+        updates.assistant1_unlocked = true;
+        // Complete module3
+        updates.module3_unlocked = true;
+        updates.module3_unlocked_at = new Date().toISOString();
+        updates.module3_video1_started = true;
+        updates.module3_video1_progress = 100;
+        updates.module3_video2_started = true;
+        updates.module3_video2_progress = 100;
+        updates.module3_drops_captured = ['m3_drop1', 'm3_drop2', 'm3_drop3', 'm3_drop4'];
+        updates.module3_sequence_completed = true;
+        updates.module3_ritual_accepted = true;
+        break;
+      case 'push_to_module4_complete':
+        // Complete all previous
+        updates.class1_video_started = true;
+        updates.class1_video_progress = 100;
+        updates.class1_drops_captured = ['c1_drop1', 'c1_drop2', 'c1_drop3'];
+        updates.class1_sequence_completed = true;
+        updates.class1_ritual_accepted = true;
+        updates.vault_unlocked = true;
+        updates.class2_video_started = true;
+        updates.class2_video_progress = 100;
+        updates.class2_drops_captured = ['c2_drop1', 'c2_drop2', 'c2_drop3', 'c2_drop4', 'c2_drop5'];
+        updates.class2_sequence_completed = true;
+        updates.class2_ritual_accepted = true;
+        updates.assistant1_unlocked = true;
+        updates.module3_unlocked = true;
+        updates.module3_video1_progress = 100;
+        updates.module3_video2_progress = 100;
+        updates.module3_drops_captured = ['m3_drop1', 'm3_drop2', 'm3_drop3', 'm3_drop4'];
+        updates.module3_sequence_completed = true;
+        updates.module3_ritual_accepted = true;
+        // Complete module4
+        updates.module4_unlocked = true;
+        updates.module4_unlocked_at = new Date().toISOString();
+        updates.module4_video_started = true;
+        updates.module4_video_progress = 100;
+        updates.module4_drops_captured = ['m4_drop1', 'm4_drop2', 'm4_drop3', 'm4_drop4', 'm4_drop5'];
+        updates.module4_sequence_completed = true;
+        updates.module4_ritual_accepted = true;
+        updates.module4_roleplay_unlocked = true;
         break;
       case 'complete_journey':
         updates.journey_completed = true;
@@ -320,6 +439,22 @@ export const useSendaLeads = () => {
         updates.vault_unlocked = false;
         updates.vault_unlocked_at = null;
         break;
+      case 'module3_sequence':
+        updates.module3_sequence_completed = false;
+        updates.module3_sequence_failed_attempts = 0;
+        break;
+      case 'module3_drops':
+        updates.module3_drops_captured = [];
+        updates.module3_drops_missed = [];
+        break;
+      case 'module4_sequence':
+        updates.module4_sequence_completed = false;
+        updates.module4_sequence_failed_attempts = 0;
+        break;
+      case 'module4_drops':
+        updates.module4_drops_captured = [];
+        updates.module4_drops_missed = [];
+        break;
       case 'journey':
         updates.journey_completed = false;
         updates.journey_completed_at = null;
@@ -350,6 +485,36 @@ export const useSendaLeads = () => {
         updates.class2_sequence_failed_attempts = 0;
         updates.assistant1_unlocked = false;
         updates.assistant1_opened = false;
+        // Module 3
+        updates.module3_unlocked = false;
+        updates.module3_unlocked_at = null;
+        updates.module3_video1_started = false;
+        updates.module3_video1_progress = 0;
+        updates.module3_video2_started = false;
+        updates.module3_video2_progress = 0;
+        updates.module3_drops_captured = [];
+        updates.module3_drops_missed = [];
+        updates.module3_ritual_accepted = false;
+        updates.module3_ritual_accepted_at = null;
+        updates.module3_sequence_completed = false;
+        updates.module3_sequence_failed_attempts = 0;
+        updates.module3_assistant1_opened = false;
+        updates.module3_assistant2_opened = false;
+        updates.module3_assistant3_opened = false;
+        // Module 4
+        updates.module4_unlocked = false;
+        updates.module4_unlocked_at = null;
+        updates.module4_video_started = false;
+        updates.module4_video_progress = 0;
+        updates.module4_drops_captured = [];
+        updates.module4_drops_missed = [];
+        updates.module4_ritual_accepted = false;
+        updates.module4_ritual_accepted_at = null;
+        updates.module4_sequence_completed = false;
+        updates.module4_sequence_failed_attempts = 0;
+        updates.module4_roleplay_unlocked = false;
+        updates.module4_roleplay_opened = false;
+        // Journey
         updates.journey_completed = false;
         updates.journey_completed_at = null;
         break;
