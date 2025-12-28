@@ -29,7 +29,7 @@ export const BrechaHeroSection = ({ lead }: BrechaHeroSectionProps) => {
   };
 
   return (
-    <div className="text-center space-y-6 mb-8 animate-fade-in">
+    <div className="text-center space-y-4 md:space-y-6 mb-8 animate-fade-in">
       {/* Runic divider */}
       <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
         <div className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
@@ -42,7 +42,7 @@ export const BrechaHeroSection = ({ lead }: BrechaHeroSectionProps) => {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 1, ease: "easeOut" }}
-        className="flex justify-center mb-6"
+        className="flex justify-center mb-2 md:mb-6"
       >
         <VortexEffect 
           size="md"
