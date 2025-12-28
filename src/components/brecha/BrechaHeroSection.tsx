@@ -59,7 +59,12 @@ export const BrechaHeroSection = ({ lead }: BrechaHeroSectionProps) => {
         </span>
       </h1>
 
-      {/* Personalized subtitle - SIN repetir nombre */}
+      {/* Copy compartido - promesa universal */}
+      <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+        Los cuatro sellos romperán cuatro de tus limitaciones. Al final de este viaje está tu próximo cliente, iniciado.
+      </p>
+
+      {/* Personalized subtitle - cierre según pain */}
       <p className="text-lg md:text-xl lg:text-2xl text-foreground font-semibold max-w-2xl mx-auto">
         {personalization.heroSubtitle}
       </p>
