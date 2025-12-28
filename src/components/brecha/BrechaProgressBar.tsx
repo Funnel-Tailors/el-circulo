@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Video, Target, Sparkles, Bot, Lock, Unlock, RotateCcw, MessageSquare } from 'lucide-react';
+import { ChevronDown, ChevronUp, Video, Target, Sparkles, Bot, Unlock, RotateCcw, MessageSquare, Zap } from 'lucide-react';
 
-// Modular milestone configuration - easy to extend
-const SENDA_MODULES = [
+// Modular milestone configuration for La Brecha (4 Fragmentos + 3 Portals)
+const BRECHA_MODULES = [
   {
-    id: 'class1',
-    name: 'Clase 1: La Oferta',
-    icon: '🎬',
+    id: 'frag1',
+    name: 'F1: El Precio',
+    icon: '💰',
     milestones: [
       { id: 'video', icon: Video, label: 'Video' },
       { id: 'drops', icon: Target, label: 'Drops' },
@@ -17,17 +17,17 @@ const SENDA_MODULES = [
     ]
   },
   {
-    id: 'vault',
-    name: 'La Bóveda',
-    icon: '🔮',
+    id: 'portal1',
+    name: 'Portal 1',
+    icon: '🌀',
     milestones: [
-      { id: 'unlocked', icon: Unlock, label: 'Vault' },
+      { id: 'traversed', icon: Zap, label: 'Portal' },
     ]
   },
   {
-    id: 'class2',
-    name: 'Clase 2: El Avatar',
-    icon: '🎭',
+    id: 'frag2',
+    name: 'F2: El Espejo',
+    icon: '🪞',
     milestones: [
       { id: 'video', icon: Video, label: 'Video' },
       { id: 'drops', icon: Target, label: 'Drops' },
@@ -36,9 +36,17 @@ const SENDA_MODULES = [
     ]
   },
   {
-    id: 'module3',
-    name: 'Módulo 3: El Sistema',
-    icon: '⚙️',
+    id: 'portal2',
+    name: 'Portal 2',
+    icon: '🌀',
+    milestones: [
+      { id: 'traversed', icon: Zap, label: 'Portal' },
+    ]
+  },
+  {
+    id: 'frag3',
+    name: 'F3: La Voz',
+    icon: '🗣️',
     milestones: [
       { id: 'video1', icon: Video, label: 'Video 1' },
       { id: 'video2', icon: Video, label: 'Video 2' },
@@ -50,8 +58,16 @@ const SENDA_MODULES = [
     ]
   },
   {
-    id: 'module4',
-    name: 'Módulo 4: El Cierre',
+    id: 'portal3',
+    name: 'Portal 3',
+    icon: '🌀',
+    milestones: [
+      { id: 'traversed', icon: Zap, label: 'Portal' },
+    ]
+  },
+  {
+    id: 'frag4',
+    name: 'F4: El Cierre',
     icon: '🎯',
     milestones: [
       { id: 'video', icon: Video, label: 'Video' },
@@ -62,55 +78,58 @@ const SENDA_MODULES = [
   },
 ] as const;
 
-export interface SendaProgress {
-  // Class 1
-  class1_video_started: boolean;
-  class1_video_progress: number;
-  class1_drops_captured: string[];
-  class1_drops_missed: string[];
-  class1_ritual_accepted: boolean;
-  class1_sequence_completed: boolean;
-  class1_assistant_opened: boolean;
-  // Vault
-  vault_unlocked: boolean;
-  // Class 2
-  class2_video_started: boolean;
-  class2_video_progress: number;
-  class2_drops_captured: string[];
-  class2_drops_missed: string[];
-  class2_ritual_accepted: boolean;
-  class2_sequence_completed: boolean;
-  assistant1_unlocked: boolean;
-  assistant1_opened: boolean;
-  // Module 3
-  module3_unlocked?: boolean;
-  module3_video1_started?: boolean;
-  module3_video1_progress?: number;
-  module3_video2_started?: boolean;
-  module3_video2_progress?: number;
-  module3_drops_captured?: string[];
-  module3_drops_missed?: string[];
-  module3_ritual_accepted?: boolean;
-  module3_sequence_completed?: boolean;
-  module3_assistant1_opened?: boolean;
-  module3_assistant2_opened?: boolean;
-  module3_assistant3_opened?: boolean;
-  // Module 4
-  module4_unlocked?: boolean;
-  module4_video_started?: boolean;
-  module4_video_progress?: number;
-  module4_drops_captured?: string[];
-  module4_drops_missed?: string[];
-  module4_ritual_accepted?: boolean;
-  module4_sequence_completed?: boolean;
-  module4_roleplay_unlocked?: boolean;
-  module4_roleplay_opened?: boolean;
+export interface BrechaProgress {
+  // Frag 1
+  frag1_video_started?: boolean;
+  frag1_video_progress?: number;
+  frag1_drops_captured?: string[];
+  frag1_drops_missed?: string[];
+  frag1_ritual_accepted?: boolean;
+  frag1_sequence_completed?: boolean;
+  frag1_assistant_unlocked?: boolean;
+  frag1_assistant_opened?: boolean;
+  // Portal 1
+  portal_traversed?: boolean;
+  // Frag 2
+  frag2_video_started?: boolean;
+  frag2_video_progress?: number;
+  frag2_drops_captured?: string[];
+  frag2_drops_missed?: string[];
+  frag2_ritual_accepted?: boolean;
+  frag2_sequence_completed?: boolean;
+  frag2_assistant_unlocked?: boolean;
+  frag2_assistant_opened?: boolean;
+  // Portal 2
+  portal2_traversed?: boolean;
+  // Frag 3
+  frag3_video1_started?: boolean;
+  frag3_video1_progress?: number;
+  frag3_video2_started?: boolean;
+  frag3_video2_progress?: number;
+  frag3_drops_captured?: string[];
+  frag3_drops_missed?: string[];
+  frag3_ritual_accepted?: boolean;
+  frag3_sequence_completed?: boolean;
+  frag3_assistant1_opened?: boolean;
+  frag3_assistant2_opened?: boolean;
+  frag3_assistant3_opened?: boolean;
+  // Portal 3
+  portal3_traversed?: boolean;
+  // Frag 4
+  frag4_video_started?: boolean;
+  frag4_video_progress?: number;
+  frag4_drops_captured?: string[];
+  frag4_drops_missed?: string[];
+  frag4_ritual_accepted?: boolean;
+  frag4_sequence_completed?: boolean;
+  frag4_roleplay_unlocked?: boolean;
+  frag4_roleplay_opened?: boolean;
   // Journey
-  journey_completed: boolean;
+  journey_completed?: boolean;
 }
 
-interface SendaProgressBarProps {
-  progress: SendaProgress | null;
+interface BrechaProgressBarProps {
+  progress: BrechaProgress | null;
   onUnlockMilestone: (milestone: string) => Promise<void>;
   onResetMilestone: (milestone: string) => Promise<void>;
   leadName: string;
@@ -121,128 +140,141 @@ type MilestoneStatus = 'completed' | 'partial' | 'locked';
 const getMilestoneStatus = (
   moduleId: string,
   milestoneId: string,
-  progress: SendaProgress | null
+  progress: BrechaProgress | null
 ): { status: MilestoneStatus; detail: string } => {
   if (!progress) return { status: 'locked', detail: 'Sin datos' };
 
-  // Class 1
-  if (moduleId === 'class1') {
+  // Frag 1
+  if (moduleId === 'frag1') {
     if (milestoneId === 'video') {
-      const pct = progress.class1_video_progress || 0;
+      const pct = progress.frag1_video_progress || 0;
       if (pct >= 100) return { status: 'completed', detail: '100%' };
       if (pct > 0) return { status: 'partial', detail: `${pct}%` };
       return { status: 'locked', detail: '0%' };
     }
     if (milestoneId === 'drops') {
-      const captured = progress.class1_drops_captured?.length || 0;
+      const captured = progress.frag1_drops_captured?.length || 0;
       if (captured >= 3) return { status: 'completed', detail: '3/3' };
       if (captured > 0) return { status: 'partial', detail: `${captured}/3` };
       return { status: 'locked', detail: '0/3' };
     }
     if (milestoneId === 'ritual') {
-      if (progress.class1_sequence_completed) return { status: 'completed', detail: 'Completado' };
-      if (progress.class1_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
+      if (progress.frag1_sequence_completed) return { status: 'completed', detail: 'Completado' };
+      if (progress.frag1_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
       return { status: 'locked', detail: 'Pendiente' };
     }
     if (milestoneId === 'assistant') {
-      if (progress.class1_assistant_opened) return { status: 'completed', detail: 'Abierto' };
-      return { status: 'locked', detail: 'Cerrado' };
+      if (progress.frag1_assistant_opened) return { status: 'completed', detail: 'Abierto' };
+      if (progress.frag1_assistant_unlocked) return { status: 'partial', detail: 'Desbloqueado' };
+      return { status: 'locked', detail: 'Bloqueado' };
     }
   }
 
-  // Vault
-  if (moduleId === 'vault' && milestoneId === 'unlocked') {
-    if (progress.vault_unlocked) return { status: 'completed', detail: 'Desbloqueado' };
-    return { status: 'locked', detail: 'Bloqueado' };
+  // Portal 1
+  if (moduleId === 'portal1' && milestoneId === 'traversed') {
+    if (progress.portal_traversed) return { status: 'completed', detail: 'Atravesado' };
+    return { status: 'locked', detail: 'Cerrado' };
   }
 
-  // Class 2
-  if (moduleId === 'class2') {
+  // Frag 2
+  if (moduleId === 'frag2') {
     if (milestoneId === 'video') {
-      const pct = progress.class2_video_progress || 0;
+      const pct = progress.frag2_video_progress || 0;
       if (pct >= 100) return { status: 'completed', detail: '100%' };
       if (pct > 0) return { status: 'partial', detail: `${pct}%` };
       return { status: 'locked', detail: '0%' };
     }
     if (milestoneId === 'drops') {
-      const captured = progress.class2_drops_captured?.length || 0;
+      const captured = progress.frag2_drops_captured?.length || 0;
       if (captured >= 5) return { status: 'completed', detail: '5/5' };
       if (captured > 0) return { status: 'partial', detail: `${captured}/5` };
       return { status: 'locked', detail: '0/5' };
     }
     if (milestoneId === 'ritual') {
-      if (progress.class2_sequence_completed) return { status: 'completed', detail: 'Completado' };
-      if (progress.class2_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
+      if (progress.frag2_sequence_completed) return { status: 'completed', detail: 'Completado' };
+      if (progress.frag2_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
       return { status: 'locked', detail: 'Pendiente' };
     }
     if (milestoneId === 'assistant') {
-      if (progress.assistant1_opened) return { status: 'completed', detail: 'Abierto' };
-      if (progress.assistant1_unlocked) return { status: 'partial', detail: 'Desbloqueado' };
+      if (progress.frag2_assistant_opened) return { status: 'completed', detail: 'Abierto' };
+      if (progress.frag2_assistant_unlocked) return { status: 'partial', detail: 'Desbloqueado' };
       return { status: 'locked', detail: 'Bloqueado' };
     }
   }
 
-  // Module 3
-  if (moduleId === 'module3') {
+  // Portal 2
+  if (moduleId === 'portal2' && milestoneId === 'traversed') {
+    if (progress.portal2_traversed) return { status: 'completed', detail: 'Atravesado' };
+    return { status: 'locked', detail: 'Cerrado' };
+  }
+
+  // Frag 3
+  if (moduleId === 'frag3') {
     if (milestoneId === 'video1') {
-      const pct = progress.module3_video1_progress || 0;
+      const pct = progress.frag3_video1_progress || 0;
       if (pct >= 100) return { status: 'completed', detail: '100%' };
       if (pct > 0) return { status: 'partial', detail: `${pct}%` };
       return { status: 'locked', detail: '0%' };
     }
     if (milestoneId === 'video2') {
-      const pct = progress.module3_video2_progress || 0;
+      const pct = progress.frag3_video2_progress || 0;
       if (pct >= 100) return { status: 'completed', detail: '100%' };
       if (pct > 0) return { status: 'partial', detail: `${pct}%` };
       return { status: 'locked', detail: '0%' };
     }
     if (milestoneId === 'drops') {
-      const captured = progress.module3_drops_captured?.length || 0;
+      const captured = progress.frag3_drops_captured?.length || 0;
       if (captured >= 4) return { status: 'completed', detail: '4/4' };
       if (captured > 0) return { status: 'partial', detail: `${captured}/4` };
       return { status: 'locked', detail: '0/4' };
     }
     if (milestoneId === 'ritual') {
-      if (progress.module3_sequence_completed) return { status: 'completed', detail: 'Completado' };
-      if (progress.module3_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
+      if (progress.frag3_sequence_completed) return { status: 'completed', detail: 'Completado' };
+      if (progress.frag3_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
       return { status: 'locked', detail: 'Pendiente' };
     }
     if (milestoneId === 'assistant1') {
-      if (progress.module3_assistant1_opened) return { status: 'completed', detail: 'Abierto' };
+      if (progress.frag3_assistant1_opened) return { status: 'completed', detail: 'Abierto' };
       return { status: 'locked', detail: 'Cerrado' };
     }
     if (milestoneId === 'assistant2') {
-      if (progress.module3_assistant2_opened) return { status: 'completed', detail: 'Abierto' };
+      if (progress.frag3_assistant2_opened) return { status: 'completed', detail: 'Abierto' };
       return { status: 'locked', detail: 'Cerrado' };
     }
     if (milestoneId === 'assistant3') {
-      if (progress.module3_assistant3_opened) return { status: 'completed', detail: 'Abierto' };
+      if (progress.frag3_assistant3_opened) return { status: 'completed', detail: 'Abierto' };
       return { status: 'locked', detail: 'Cerrado' };
     }
   }
 
-  // Module 4
-  if (moduleId === 'module4') {
+  // Portal 3
+  if (moduleId === 'portal3' && milestoneId === 'traversed') {
+    if (progress.portal3_traversed) return { status: 'completed', detail: 'Atravesado' };
+    return { status: 'locked', detail: 'Cerrado' };
+  }
+
+  // Frag 4
+  if (moduleId === 'frag4') {
     if (milestoneId === 'video') {
-      const pct = progress.module4_video_progress || 0;
+      const pct = progress.frag4_video_progress || 0;
       if (pct >= 100) return { status: 'completed', detail: '100%' };
       if (pct > 0) return { status: 'partial', detail: `${pct}%` };
       return { status: 'locked', detail: '0%' };
     }
     if (milestoneId === 'drops') {
-      const captured = progress.module4_drops_captured?.length || 0;
+      const captured = progress.frag4_drops_captured?.length || 0;
       if (captured >= 5) return { status: 'completed', detail: '5/5' };
       if (captured > 0) return { status: 'partial', detail: `${captured}/5` };
       return { status: 'locked', detail: '0/5' };
     }
     if (milestoneId === 'ritual') {
-      if (progress.module4_sequence_completed) return { status: 'completed', detail: 'Completado' };
-      if (progress.module4_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
+      if (progress.frag4_sequence_completed) return { status: 'completed', detail: 'Completado' };
+      if (progress.frag4_ritual_accepted) return { status: 'partial', detail: 'Aceptado' };
       return { status: 'locked', detail: 'Pendiente' };
     }
     if (milestoneId === 'roleplay') {
-      if (progress.module4_roleplay_opened) return { status: 'completed', detail: 'Abierto' };
-      if (progress.module4_roleplay_unlocked) return { status: 'partial', detail: 'Desbloqueado' };
+      if (progress.frag4_roleplay_opened) return { status: 'completed', detail: 'Abierto' };
+      if (progress.frag4_roleplay_unlocked) return { status: 'partial', detail: 'Desbloqueado' };
       return { status: 'locked', detail: 'Bloqueado' };
     }
   }
@@ -262,18 +294,18 @@ const statusIcons: Record<MilestoneStatus, string> = {
   locked: '🔒',
 };
 
-export const SendaProgressBar = ({
+export const BrechaProgressBar = ({
   progress,
   onUnlockMilestone,
   onResetMilestone,
   leadName,
-}: SendaProgressBarProps) => {
+}: BrechaProgressBarProps) => {
   const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState<string | null>(null);
 
   // Calculate overall progress percentage
-  const totalMilestones = SENDA_MODULES.reduce((acc, mod) => acc + mod.milestones.length, 0);
-  const completedMilestones = SENDA_MODULES.reduce((acc, mod) => {
+  const totalMilestones = BRECHA_MODULES.reduce((acc, mod) => acc + mod.milestones.length, 0);
+  const completedMilestones = BRECHA_MODULES.reduce((acc, mod) => {
     return acc + mod.milestones.filter(m => 
       getMilestoneStatus(mod.id, m.id, progress).status === 'completed'
     ).length;
@@ -298,7 +330,7 @@ export const SendaProgressBar = ({
       >
         {/* Mini progress icons */}
         <div className="flex items-center gap-1 flex-wrap">
-          {SENDA_MODULES.map((mod, idx) => (
+          {BRECHA_MODULES.map((mod, idx) => (
             <div key={mod.id} className="flex items-center gap-0.5">
               {mod.milestones.map((m) => {
                 const { status } = getMilestoneStatus(mod.id, m.id, progress);
@@ -308,7 +340,7 @@ export const SendaProgressBar = ({
                   </span>
                 );
               })}
-              {idx < SENDA_MODULES.length - 1 && <span className="text-foreground/20 mx-1">│</span>}
+              {idx < BRECHA_MODULES.length - 1 && <span className="text-foreground/20 mx-0.5">│</span>}
             </div>
           ))}
         </div>
@@ -316,7 +348,7 @@ export const SendaProgressBar = ({
         {/* Progress bar */}
         <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden min-w-[60px]">
           <motion.div
-            className="h-full bg-gradient-to-r from-purple-500 to-emerald-500"
+            className="h-full bg-gradient-to-r from-red-500 via-orange-500 to-amber-500"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5 }}
@@ -344,17 +376,11 @@ export const SendaProgressBar = ({
             className="overflow-hidden"
           >
             <div className="p-4 border-t border-foreground/10 space-y-4">
-              {SENDA_MODULES.map((mod) => (
+              {BRECHA_MODULES.map((mod) => (
                 <div key={mod.id} className="space-y-2">
                   <h4 className="text-sm font-medium text-foreground/70 flex items-center gap-2">
                     <span>{mod.icon}</span>
                     {mod.name}
-                    {mod.id === 'module3' && !progress?.module3_unlocked && (
-                      <span className="text-xs text-foreground/40">(Bloqueado)</span>
-                    )}
-                    {mod.id === 'module4' && !progress?.module4_unlocked && (
-                      <span className="text-xs text-foreground/40">(Bloqueado)</span>
-                    )}
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {mod.milestones.map((m) => {
@@ -375,138 +401,133 @@ export const SendaProgressBar = ({
 
                   {/* Module actions */}
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {mod.id === 'class1' && (
+                    {mod.id === 'frag1' && (
                       <>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-xs h-7 text-purple-400 hover:text-purple-300"
                           disabled={loading !== null}
-                          onClick={() => handleAction(() => onUnlockMilestone('class1_all_drops'), 'c1drops')}
+                          onClick={() => handleAction(() => onUnlockMilestone('frag1_all_drops'), 'f1drops')}
                         >
-                          {loading === 'c1drops' ? '...' : '🎯 Dar todos los drops'}
+                          {loading === 'f1drops' ? '...' : '🎯 Dar todos los drops'}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-xs h-7 text-amber-400 hover:text-amber-300"
                           disabled={loading !== null}
-                          onClick={() => handleAction(() => onResetMilestone('class1_sequence'), 'c1seq')}
+                          onClick={() => handleAction(() => onResetMilestone('frag1_sequence'), 'f1seq')}
                         >
-                          {loading === 'c1seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
+                          {loading === 'f1seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
                         </Button>
                       </>
                     )}
-                    {mod.id === 'vault' && (
+                    {mod.id === 'portal1' && (
                       <Button
                         variant="ghost"
                         size="sm"
                         className="text-xs h-7 text-indigo-400 hover:text-indigo-300"
-                        disabled={loading !== null || progress?.vault_unlocked}
-                        onClick={() => handleAction(() => onUnlockMilestone('vault'), 'vault')}
+                        disabled={loading !== null || progress?.portal_traversed}
+                        onClick={() => handleAction(() => onUnlockMilestone('portal1'), 'portal1')}
                       >
-                        {loading === 'vault' ? '...' : <><Unlock className="w-3 h-3 mr-1" /> Desbloquear Vault</>}
+                        {loading === 'portal1' ? '...' : <><Unlock className="w-3 h-3 mr-1" /> Abrir Portal</>}
                       </Button>
                     )}
-                    {mod.id === 'class2' && (
+                    {mod.id === 'frag2' && (
                       <>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-xs h-7 text-purple-400 hover:text-purple-300"
                           disabled={loading !== null}
-                          onClick={() => handleAction(() => onUnlockMilestone('class2_all_drops'), 'c2drops')}
+                          onClick={() => handleAction(() => onUnlockMilestone('frag2_all_drops'), 'f2drops')}
                         >
-                          {loading === 'c2drops' ? '...' : '🎯 Dar todos los drops'}
+                          {loading === 'f2drops' ? '...' : '🎯 Dar todos los drops'}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-xs h-7 text-amber-400 hover:text-amber-300"
                           disabled={loading !== null}
-                          onClick={() => handleAction(() => onResetMilestone('class2_sequence'), 'c2seq')}
+                          onClick={() => handleAction(() => onResetMilestone('frag2_sequence'), 'f2seq')}
                         >
-                          {loading === 'c2seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
+                          {loading === 'f2seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
+                        </Button>
+                      </>
+                    )}
+                    {mod.id === 'portal2' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7 text-indigo-400 hover:text-indigo-300"
+                        disabled={loading !== null || progress?.portal2_traversed}
+                        onClick={() => handleAction(() => onUnlockMilestone('portal2'), 'portal2')}
+                      >
+                        {loading === 'portal2' ? '...' : <><Unlock className="w-3 h-3 mr-1" /> Abrir Portal</>}
+                      </Button>
+                    )}
+                    {mod.id === 'frag3' && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7 text-purple-400 hover:text-purple-300"
+                          disabled={loading !== null}
+                          onClick={() => handleAction(() => onUnlockMilestone('frag3_all_drops'), 'f3drops')}
+                        >
+                          {loading === 'f3drops' ? '...' : '🎯 Dar todos los drops'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7 text-amber-400 hover:text-amber-300"
+                          disabled={loading !== null}
+                          onClick={() => handleAction(() => onResetMilestone('frag3_sequence'), 'f3seq')}
+                        >
+                          {loading === 'f3seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
+                        </Button>
+                      </>
+                    )}
+                    {mod.id === 'portal3' && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7 text-indigo-400 hover:text-indigo-300"
+                        disabled={loading !== null || progress?.portal3_traversed}
+                        onClick={() => handleAction(() => onUnlockMilestone('portal3'), 'portal3')}
+                      >
+                        {loading === 'portal3' ? '...' : <><Unlock className="w-3 h-3 mr-1" /> Abrir Portal</>}
+                      </Button>
+                    )}
+                    {mod.id === 'frag4' && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7 text-purple-400 hover:text-purple-300"
+                          disabled={loading !== null}
+                          onClick={() => handleAction(() => onUnlockMilestone('frag4_all_drops'), 'f4drops')}
+                        >
+                          {loading === 'f4drops' ? '...' : '🎯 Dar todos los drops'}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-xs h-7 text-amber-400 hover:text-amber-300"
+                          disabled={loading !== null}
+                          onClick={() => handleAction(() => onResetMilestone('frag4_sequence'), 'f4seq')}
+                        >
+                          {loading === 'f4seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-xs h-7 text-emerald-400 hover:text-emerald-300"
-                          disabled={loading !== null || progress?.assistant1_unlocked}
-                          onClick={() => handleAction(() => onUnlockMilestone('assistant'), 'assistant')}
+                          disabled={loading !== null || progress?.frag4_roleplay_unlocked}
+                          onClick={() => handleAction(() => onUnlockMilestone('frag4_roleplay'), 'f4roleplay')}
                         >
-                          {loading === 'assistant' ? '...' : <><Bot className="w-3 h-3 mr-1" /> Unlock Asistente</>}
-                        </Button>
-                      </>
-                    )}
-                    {mod.id === 'module3' && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-indigo-400 hover:text-indigo-300"
-                          disabled={loading !== null || progress?.module3_unlocked}
-                          onClick={() => handleAction(() => onUnlockMilestone('module3'), 'm3unlock')}
-                        >
-                          {loading === 'm3unlock' ? '...' : <><Unlock className="w-3 h-3 mr-1" /> Desbloquear Módulo 3</>}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-purple-400 hover:text-purple-300"
-                          disabled={loading !== null}
-                          onClick={() => handleAction(() => onUnlockMilestone('module3_all_drops'), 'm3drops')}
-                        >
-                          {loading === 'm3drops' ? '...' : '🎯 Dar todos los drops'}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-amber-400 hover:text-amber-300"
-                          disabled={loading !== null}
-                          onClick={() => handleAction(() => onResetMilestone('module3_sequence'), 'm3seq')}
-                        >
-                          {loading === 'm3seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
-                        </Button>
-                      </>
-                    )}
-                    {mod.id === 'module4' && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-indigo-400 hover:text-indigo-300"
-                          disabled={loading !== null || progress?.module4_unlocked}
-                          onClick={() => handleAction(() => onUnlockMilestone('module4'), 'm4unlock')}
-                        >
-                          {loading === 'm4unlock' ? '...' : <><Unlock className="w-3 h-3 mr-1" /> Desbloquear Módulo 4</>}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-purple-400 hover:text-purple-300"
-                          disabled={loading !== null}
-                          onClick={() => handleAction(() => onUnlockMilestone('module4_all_drops'), 'm4drops')}
-                        >
-                          {loading === 'm4drops' ? '...' : '🎯 Dar todos los drops'}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-amber-400 hover:text-amber-300"
-                          disabled={loading !== null}
-                          onClick={() => handleAction(() => onResetMilestone('module4_sequence'), 'm4seq')}
-                        >
-                          {loading === 'm4seq' ? '...' : <><RotateCcw className="w-3 h-3 mr-1" /> Reset secuencia</>}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-xs h-7 text-emerald-400 hover:text-emerald-300"
-                          disabled={loading !== null || progress?.module4_roleplay_unlocked}
-                          onClick={() => handleAction(() => onUnlockMilestone('module4_roleplay'), 'm4roleplay')}
-                        >
-                          {loading === 'm4roleplay' ? '...' : <><MessageSquare className="w-3 h-3 mr-1" /> Unlock Roleplay</>}
+                          {loading === 'f4roleplay' ? '...' : <><MessageSquare className="w-3 h-3 mr-1" /> Unlock Roleplay</>}
                         </Button>
                       </>
                     )}
@@ -529,37 +550,28 @@ export const SendaProgressBar = ({
                     size="sm" 
                     variant="outline"
                     className="text-xs"
-                    disabled={loading !== null || progress?.vault_unlocked}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_vault'), 'pushVault')}
+                    disabled={loading !== null || progress?.portal_traversed}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_frag2'), 'pushF2')}
                   >
-                    {loading === 'pushVault' ? '...' : '🔮 Empujar hasta Vault'}
+                    {loading === 'pushF2' ? '...' : '🌀 Empujar hasta F2'}
                   </Button>
                   <Button 
                     size="sm" 
                     variant="outline"
                     className="text-xs"
-                    disabled={loading !== null || progress?.class2_sequence_completed}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_class2_complete'), 'pushC2')}
+                    disabled={loading !== null || progress?.portal2_traversed}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_frag3'), 'pushF3')}
                   >
-                    {loading === 'pushC2' ? '...' : '🎭 Empujar hasta Clase 2'}
+                    {loading === 'pushF3' ? '...' : '🌀 Empujar hasta F3'}
                   </Button>
                   <Button 
                     size="sm" 
                     variant="outline"
                     className="text-xs"
-                    disabled={loading !== null || progress?.module3_sequence_completed}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_module3_complete'), 'pushM3')}
+                    disabled={loading !== null || progress?.portal3_traversed}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_frag4'), 'pushF4')}
                   >
-                    {loading === 'pushM3' ? '...' : '⚙️ Empujar hasta Módulo 3'}
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    className="text-xs"
-                    disabled={loading !== null || progress?.module4_sequence_completed}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_module4_complete'), 'pushM4')}
-                  >
-                    {loading === 'pushM4' ? '...' : '🎯 Empujar hasta Módulo 4'}
+                    {loading === 'pushF4' ? '...' : '🌀 Empujar hasta F4'}
                   </Button>
                   <Button 
                     size="sm" 
@@ -589,4 +601,4 @@ export const SendaProgressBar = ({
   );
 };
 
-export default SendaProgressBar;
+export default BrechaProgressBar;

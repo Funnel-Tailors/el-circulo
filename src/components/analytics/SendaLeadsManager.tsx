@@ -33,6 +33,8 @@ const statusLabels: Record<SendaLead['sendaStatus'], { label: string; color: str
   watching: { label: '🟢 Viendo clase', color: 'bg-emerald-950/50 text-emerald-400 border-emerald-500/30' },
   portal_shown: { label: '✨ Portal desbloqueado', color: 'bg-purple-950/50 text-purple-400 border-purple-500/30' },
   vault_revealed: { label: '🔮 En La Bóveda', color: 'bg-indigo-950/50 text-indigo-400 border-indigo-500/30' },
+  module3: { label: '⚙️ Módulo 3', color: 'bg-cyan-950/50 text-cyan-400 border-cyan-500/30' },
+  module4: { label: '🎯 Módulo 4', color: 'bg-orange-950/50 text-orange-400 border-orange-500/30' },
   completed: { label: '✅ Completado', color: 'bg-emerald-950/50 text-emerald-300 border-emerald-400/30' },
   revoked: { label: '🔴 Revocado', color: 'bg-red-950/50 text-red-400 border-red-500/30' },
 };

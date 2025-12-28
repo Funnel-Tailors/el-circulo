@@ -47,6 +47,33 @@ export type Database = {
         }
         Relationships: []
       }
+      brecha_blacklist: {
+        Row: {
+          banned_at: string | null
+          banned_by: string | null
+          contact_name: string | null
+          id: string
+          reason: string
+          token: string
+        }
+        Insert: {
+          banned_at?: string | null
+          banned_by?: string | null
+          contact_name?: string | null
+          id?: string
+          reason: string
+          token: string
+        }
+        Update: {
+          banned_at?: string | null
+          banned_by?: string | null
+          contact_name?: string | null
+          id?: string
+          reason?: string
+          token?: string
+        }
+        Relationships: []
+      }
       brecha_leads: {
         Row: {
           acquisition_answer: string | null
@@ -109,6 +136,7 @@ export type Database = {
       }
       brecha_progress: {
         Row: {
+          call_scheduled_at: string | null
           created_at: string | null
           first_visit_at: string | null
           frag1_assistant_opened: boolean | null
@@ -168,6 +196,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          call_scheduled_at?: string | null
           created_at?: string | null
           first_visit_at?: string | null
           frag1_assistant_opened?: boolean | null
@@ -227,6 +256,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          call_scheduled_at?: string | null
           created_at?: string | null
           first_visit_at?: string | null
           frag1_assistant_opened?: boolean | null
