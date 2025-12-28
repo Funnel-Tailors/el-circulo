@@ -862,6 +862,10 @@ export type Database = {
               step_index: number
             }[]
           }
+      get_brecha_journey_metrics: {
+        Args: { interval_days?: number }
+        Returns: Json
+      }
       get_daily_trends: {
         Args: { interval_days: number }
         Returns: {
