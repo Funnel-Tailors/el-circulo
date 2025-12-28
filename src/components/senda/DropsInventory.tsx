@@ -6,7 +6,7 @@ interface DropsInventoryProps {
   capturedDrops: Drop[];
   totalDrops: number;
   allCaptured: boolean;
-  classNumber?: 1 | 2 | 3 | 4 | 5 | 6; // 4 = Module 4 (El Cierre), 5-6 = La Brecha
+  classNumber?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // 4 = Module 4, 5-6 = Brecha F1-F2, 7-8 = Brecha F3-F4
   missedDrops?: string[]; // IDs of missed drops
 }
 

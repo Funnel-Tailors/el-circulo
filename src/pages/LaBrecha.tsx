@@ -6,6 +6,8 @@ import { useBrechaProgress } from "@/hooks/useBrechaProgress";
 import { BrechaHeroSection } from "@/components/brecha/BrechaHeroSection";
 import { BrechaCountdownSticky } from "@/components/brecha/BrechaCountdownSticky";
 import { BrechaFragmento } from "@/components/brecha/BrechaFragmento";
+import { BrechaFragmento3 } from "@/components/brecha/BrechaFragmento3";
+import { BrechaFragmento4 } from "@/components/brecha/BrechaFragmento4";
 import { BrechaDecision } from "@/components/brecha/BrechaDecision";
 import { BrechaFooter } from "@/components/brecha/BrechaFooter";
 import { BrechaPortal } from "@/components/brecha/BrechaPortal";
@@ -17,7 +19,7 @@ import ShootingStars from "@/components/roadmap/ShootingStars";
 const BRECHA_OPENS = new Date('2025-12-28T11:00:00');
 const BRECHA_CLOSES = new Date('2025-12-30T19:00:00');
 
-// Video URLs - same as Senda classes 1 & 2
+// Video URLs - same as Senda classes
 const VIDEO_FRAG1 = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a5a72e44d0ded5ced1e47e.mp4";
 const VIDEO_FRAG2 = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c61440c5b7ed66facfc.mp4";
 
@@ -32,11 +34,9 @@ const LaBrecha = () => {
   const token = searchParams.get('token');
 
   const { isValid, isLoading: accessLoading, lead, error } = useBrechaAccess(token);
-  
-  // Tier is fetched from DB, not URL
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
 
-  // Epic expired state with VortexEffect - differentiate "not yet open" vs "closed"
+  // Epic expired state with VortexEffect
   if (isExpired()) {
     const now = new Date();
     const notYetOpen = now < BRECHA_OPENS;
@@ -108,36 +108,25 @@ const LaBrecha = () => {
     );
   }
 
-  // Handlers for Fragmento 1
+  // ===== FRAGMENTO 1 HANDLERS =====
   const handleFrag1RitualAccepted = () => {
-    updateProgress({ 
-      frag1_ritual_accepted: true,
-    });
+    updateProgress({ frag1_ritual_accepted: true });
   };
 
   const handleFrag1DropCaptured = (dropId: string) => {
-    updateProgress({ 
-      frag1_drops_captured: [...progress.frag1_drops_captured, dropId],
-    });
+    updateProgress({ frag1_drops_captured: [...progress.frag1_drops_captured, dropId] });
   };
 
   const handleFrag1DropMissed = (dropId: string) => {
-    updateProgress({ 
-      frag1_drops_missed: [...progress.frag1_drops_missed, dropId],
-    });
+    updateProgress({ frag1_drops_missed: [...progress.frag1_drops_missed, dropId] });
   };
 
   const handleFrag1SequenceCompleted = () => {
-    updateProgress({ 
-      frag1_sequence_completed: true,
-      frag1_assistant_unlocked: true,
-    });
+    updateProgress({ frag1_sequence_completed: true, frag1_assistant_unlocked: true });
   };
 
   const handleFrag1SequenceFailed = () => {
-    updateProgress({ 
-      frag1_sequence_failed_attempts: progress.frag1_sequence_failed_attempts + 1,
-    });
+    updateProgress({ frag1_sequence_failed_attempts: progress.frag1_sequence_failed_attempts + 1 });
   };
 
   const handleFrag1AssistantOpened = () => {
@@ -146,42 +135,29 @@ const LaBrecha = () => {
 
   const handleFrag1VideoProgress = (progressValue: number) => {
     if (progressValue > progress.frag1_video_progress) {
-      updateProgress({ 
-        frag1_video_progress: progressValue,
-        frag1_video_started: true,
-      });
+      updateProgress({ frag1_video_progress: progressValue, frag1_video_started: true });
     }
   };
 
-  // Handlers for Fragmento 2
+  // ===== FRAGMENTO 2 HANDLERS =====
   const handleFrag2RitualAccepted = () => {
     updateProgress({ frag2_ritual_accepted: true });
   };
 
   const handleFrag2DropCaptured = (dropId: string) => {
-    updateProgress({ 
-      frag2_drops_captured: [...progress.frag2_drops_captured, dropId],
-    });
+    updateProgress({ frag2_drops_captured: [...progress.frag2_drops_captured, dropId] });
   };
 
   const handleFrag2DropMissed = (dropId: string) => {
-    updateProgress({ 
-      frag2_drops_missed: [...progress.frag2_drops_missed, dropId],
-    });
+    updateProgress({ frag2_drops_missed: [...progress.frag2_drops_missed, dropId] });
   };
 
   const handleFrag2SequenceCompleted = () => {
-    updateProgress({ 
-      frag2_sequence_completed: true,
-      frag2_assistant_unlocked: true,
-      journey_completed: true,
-    });
+    updateProgress({ frag2_sequence_completed: true, frag2_assistant_unlocked: true });
   };
 
   const handleFrag2SequenceFailed = () => {
-    updateProgress({ 
-      frag2_sequence_failed_attempts: progress.frag2_sequence_failed_attempts + 1,
-    });
+    updateProgress({ frag2_sequence_failed_attempts: progress.frag2_sequence_failed_attempts + 1 });
   };
 
   const handleFrag2AssistantOpened = () => {
@@ -190,36 +166,114 @@ const LaBrecha = () => {
 
   const handleFrag2VideoProgress = (progressValue: number) => {
     if (progressValue > progress.frag2_video_progress) {
-      updateProgress({ 
-        frag2_video_progress: progressValue,
-        frag2_video_started: true,
-      });
+      updateProgress({ frag2_video_progress: progressValue, frag2_video_started: true });
     }
   };
 
-  // Portal handler
-  const handlePortalTraversed = () => {
+  // ===== FRAGMENTO 3 HANDLERS =====
+  const handleFrag3Video1Progress = (progressValue: number) => {
+    if (progressValue > progress.frag3_video1_progress) {
+      updateProgress({ frag3_video1_progress: progressValue, frag3_video1_started: true });
+    }
+  };
+
+  const handleFrag3Video2Progress = (progressValue: number) => {
+    if (progressValue > progress.frag3_video2_progress) {
+      updateProgress({ frag3_video2_progress: progressValue, frag3_video2_started: true });
+    }
+  };
+
+  const handleFrag3DropCaptured = (dropId: string) => {
+    updateProgress({ frag3_drops_captured: [...progress.frag3_drops_captured, dropId] });
+  };
+
+  const handleFrag3DropMissed = (dropId: string) => {
+    updateProgress({ frag3_drops_missed: [...progress.frag3_drops_missed, dropId] });
+  };
+
+  const handleFrag3SequenceCompleted = () => {
+    updateProgress({ frag3_sequence_completed: true });
+  };
+
+  const handleFrag3SequenceFailed = () => {
+    updateProgress({ frag3_sequence_failed_attempts: progress.frag3_sequence_failed_attempts + 1 });
+  };
+
+  const handleFrag3AssistantOpened = (assistantNumber: 1 | 2 | 3) => {
+    if (assistantNumber === 1) updateProgress({ frag3_assistant1_opened: true });
+    if (assistantNumber === 2) updateProgress({ frag3_assistant2_opened: true });
+    if (assistantNumber === 3) updateProgress({ frag3_assistant3_opened: true });
+  };
+
+  // ===== FRAGMENTO 4 HANDLERS =====
+  const handleFrag4VideoProgress = (progressValue: number) => {
+    if (progressValue > progress.frag4_video_progress) {
+      updateProgress({ frag4_video_progress: progressValue, frag4_video_started: true });
+    }
+  };
+
+  const handleFrag4DropCaptured = (dropId: string) => {
+    updateProgress({ frag4_drops_captured: [...progress.frag4_drops_captured, dropId] });
+  };
+
+  const handleFrag4DropMissed = (dropId: string) => {
+    updateProgress({ frag4_drops_missed: [...progress.frag4_drops_missed, dropId] });
+  };
+
+  const handleFrag4SequenceCompleted = () => {
+    updateProgress({ 
+      frag4_sequence_completed: true, 
+      frag4_roleplay_unlocked: progress.frag4_drops_missed.length === 0 
+    });
+  };
+
+  const handleFrag4SequenceFailed = () => {
+    updateProgress({ frag4_sequence_failed_attempts: progress.frag4_sequence_failed_attempts + 1 });
+  };
+
+  const handleFrag4RoleplayOpened = () => {
+    updateProgress({ frag4_roleplay_opened: true });
+  };
+
+  const handleJourneyCompleted = () => {
+    updateProgress({ journey_completed: true });
+  };
+
+  // ===== PORTAL HANDLERS =====
+  const handlePortal1Traversed = () => {
     updateProgress({ portal_traversed: true });
   };
 
+  const handlePortal2Traversed = () => {
+    updateProgress({ portal2_traversed: true });
+  };
+
+  const handlePortal3Traversed = () => {
+    updateProgress({ portal3_traversed: true });
+  };
+
   // Check completion status
-  const bothCompleted = progress.frag1_sequence_completed && progress.frag2_sequence_completed;
+  const allFragmentsCompleted = 
+    progress.frag1_sequence_completed && 
+    progress.frag2_sequence_completed && 
+    progress.frag3_sequence_completed && 
+    progress.frag4_sequence_completed;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Sticky countdown - fixed at top */}
+      {/* Sticky countdown */}
       <BrechaCountdownSticky closeDate={BRECHA_CLOSES} />
       
-      {/* Dual layer background */}
+      {/* Background */}
       <ShootingStars />
       <Starfield />
       
-      {/* Main content container - pt-12 to account for sticky header */}
+      {/* Main content */}
       <div className="relative z-10 container mx-auto px-4 pt-14 pb-8 md:pt-16 md:pb-16">
         {/* Hero */}
         <BrechaHeroSection lead={lead} />
 
-        {/* Fragmento 1: El Precio - immediately after hero */}
+        {/* ===== FRAGMENTO 1: EL PRECIO ===== */}
         <div id="first-fragment" className="mt-8">
           <BrechaFragmento
             token={token}
@@ -244,18 +298,18 @@ const LaBrecha = () => {
           />
         </div>
 
-        {/* Portal to Fragmento 2 - only visible after completing Fragment 1 */}
+        {/* ===== PORTAL 1 → FRAGMENTO 2 ===== */}
         {progress.frag1_sequence_completed && (
           <div className="mt-16">
             <BrechaPortal
               isUnlocked={progress.frag1_sequence_completed}
-              onTraverse={handlePortalTraversed}
+              onTraverse={handlePortal1Traversed}
               hasTraversed={progress.portal_traversed}
             />
           </div>
         )}
 
-        {/* Fragmento 2: El Espejo (only visible after portal traversal) */}
+        {/* ===== FRAGMENTO 2: EL ESPEJO ===== */}
         {progress.portal_traversed && (
           <div className="mt-16">
             <BrechaFragmento
@@ -282,8 +336,86 @@ const LaBrecha = () => {
           </div>
         )}
 
-        {/* Decision section - only visible after portal traversal */}
-        {progress.portal_traversed && (
+        {/* ===== PORTAL 2 → FRAGMENTO 3 ===== */}
+        {progress.frag2_sequence_completed && (
+          <div className="mt-16">
+            <BrechaPortal
+              isUnlocked={progress.frag2_sequence_completed}
+              onTraverse={handlePortal2Traversed}
+              hasTraversed={progress.portal2_traversed}
+            />
+          </div>
+        )}
+
+        {/* ===== FRAGMENTO 3: LA VOZ ===== */}
+        {progress.portal2_traversed && (
+          <div className="mt-16">
+            <BrechaFragmento3
+              token={token}
+              progress={{
+                video1_started: progress.frag3_video1_started,
+                video1_progress: progress.frag3_video1_progress,
+                video2_started: progress.frag3_video2_started,
+                video2_progress: progress.frag3_video2_progress,
+                drops_captured: progress.frag3_drops_captured,
+                drops_missed: progress.frag3_drops_missed,
+                ritual_accepted: progress.frag3_ritual_accepted,
+                sequence_completed: progress.frag3_sequence_completed,
+                assistant1_opened: progress.frag3_assistant1_opened,
+                assistant2_opened: progress.frag3_assistant2_opened,
+                assistant3_opened: progress.frag3_assistant3_opened,
+              }}
+              onVideo1Progress={handleFrag3Video1Progress}
+              onVideo2Progress={handleFrag3Video2Progress}
+              onDropCaptured={handleFrag3DropCaptured}
+              onDropMissed={handleFrag3DropMissed}
+              onSequenceCompleted={handleFrag3SequenceCompleted}
+              onSequenceFailed={handleFrag3SequenceFailed}
+              onAssistantOpened={handleFrag3AssistantOpened}
+            />
+          </div>
+        )}
+
+        {/* ===== PORTAL 3 → FRAGMENTO 4 ===== */}
+        {progress.frag3_sequence_completed && (
+          <div className="mt-16">
+            <BrechaPortal
+              isUnlocked={progress.frag3_sequence_completed}
+              onTraverse={handlePortal3Traversed}
+              hasTraversed={progress.portal3_traversed}
+            />
+          </div>
+        )}
+
+        {/* ===== FRAGMENTO 4: EL CIERRE ===== */}
+        {progress.portal3_traversed && (
+          <div className="mt-16">
+            <BrechaFragmento4
+              token={token}
+              progress={{
+                video_started: progress.frag4_video_started,
+                video_progress: progress.frag4_video_progress,
+                drops_captured: progress.frag4_drops_captured,
+                drops_missed: progress.frag4_drops_missed,
+                ritual_accepted: progress.frag4_ritual_accepted,
+                sequence_completed: progress.frag4_sequence_completed,
+                sequence_failed_attempts: progress.frag4_sequence_failed_attempts,
+                roleplay_unlocked: progress.frag4_roleplay_unlocked,
+                roleplay_opened: progress.frag4_roleplay_opened,
+              }}
+              onVideoProgress={handleFrag4VideoProgress}
+              onDropCaptured={handleFrag4DropCaptured}
+              onDropMissed={handleFrag4DropMissed}
+              onSequenceCompleted={handleFrag4SequenceCompleted}
+              onSequenceFailed={handleFrag4SequenceFailed}
+              onRoleplayOpened={handleFrag4RoleplayOpened}
+              onJourneyCompleted={handleJourneyCompleted}
+            />
+          </div>
+        )}
+
+        {/* Decision section - visible after portal 2 */}
+        {progress.portal2_traversed && (
           <div className="mt-16">
             <BrechaDecision
               frag1Completed={progress.frag1_sequence_completed}
@@ -295,10 +427,10 @@ const LaBrecha = () => {
         )}
       </div>
 
-      {/* Footer with CTA - only visible after completing both fragments */}
-      {bothCompleted && (
+      {/* Footer with CTA - only visible after completing all fragments */}
+      {allFragmentsCompleted && (
         <BrechaFooter
-          showCalendar={bothCompleted}
+          showCalendar={allFragmentsCompleted}
           firstName={lead?.first_name || undefined}
           eventDate={BRECHA_CLOSES}
         />
