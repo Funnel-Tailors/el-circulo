@@ -8,7 +8,7 @@ export interface Drop {
 
 interface UseVideoDropsOptions {
   sessionId: string | null;
-  classNumber?: 1 | 2 | 3 | 4 | 5 | 6; // Which class (1-6, 5-6 = La Brecha)
+  classNumber?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // 1-4 = Senda, 5-8 = La Brecha
   onCapture?: (drop: Drop) => void;
   onMiss?: (drop: Drop) => void;
   onAllCaptured?: () => void;
@@ -70,14 +70,33 @@ const CLASS_6_DROPS: Drop[] = [
   { id: 'b2_drop5', symbol: '✦', timestamp: 0.84 },
 ];
 
+// Class 7: 4 drops (La Brecha - Fragmento 3: La Voz)
+const CLASS_7_DROPS: Drop[] = [
+  { id: 'b3_drop1', symbol: '◆', timestamp: 0.20 },
+  { id: 'b3_drop2', symbol: '⬢', timestamp: 0.45 },
+  { id: 'b3_drop3', symbol: '✧', timestamp: 0.70 },
+  { id: 'b3_drop4', symbol: '◇', timestamp: 0.90 },
+];
+
+// Class 8: 5 drops (La Brecha - Fragmento 4: El Cierre - MÁS DIFÍCIL)
+const CLASS_8_DROPS: Drop[] = [
+  { id: 'b4_drop1', symbol: '⌬', timestamp: 0.12 },
+  { id: 'b4_drop2', symbol: '⏣', timestamp: 0.28 },
+  { id: 'b4_drop3', symbol: '⬡', timestamp: 0.48 },
+  { id: 'b4_drop4', symbol: '◈', timestamp: 0.68 },
+  { id: 'b4_drop5', symbol: '✦', timestamp: 0.88 },
+];
+
 // Drops configuration per class
-const DROPS_CONFIG_MAP: Record<1 | 2 | 3 | 4 | 5 | 6, DropsConfig> = {
+const DROPS_CONFIG_MAP: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, DropsConfig> = {
   1: { drops: CLASS_1_DROPS, windowMs: 10000, autoCapture: true },
   2: { drops: CLASS_2_DROPS, windowMs: 8000, autoCapture: true },
   3: { drops: CLASS_3_DROPS, windowMs: 7000, autoCapture: true },
   4: { drops: CLASS_4_DROPS, windowMs: 4000, autoCapture: false },
   5: { drops: CLASS_5_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F1 - 4s, no autocapture
   6: { drops: CLASS_6_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F2 - 4s, no autocapture
+  7: { drops: CLASS_7_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F3 - 4s, no autocapture
+  8: { drops: CLASS_8_DROPS, windowMs: 3000, autoCapture: false }, // La Brecha F4 - 3s, MÁS DIFÍCIL
 };
 
 const getStorageKey = (sessionId: string, classNumber: number) => 
@@ -90,8 +109,8 @@ export const useVideoDrops = ({
   onMiss, 
   onAllCaptured 
 }: UseVideoDropsOptions) => {
-  // Validate and get config for this class (1-6)
-  const validClass = (classNumber >= 1 && classNumber <= 6 ? classNumber : 1) as 1 | 2 | 3 | 4 | 5 | 6;
+  // Validate and get config for this class (1-8)
+  const validClass = (classNumber >= 1 && classNumber <= 8 ? classNumber : 1) as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   const config = DROPS_CONFIG_MAP[validClass];
   const [capturedDrops, setCapturedDrops] = useState<Drop[]>([]);
   const [activeDrop, setActiveDrop] = useState<Drop | null>(null);
