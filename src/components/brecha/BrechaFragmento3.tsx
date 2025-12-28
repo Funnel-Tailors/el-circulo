@@ -19,28 +19,28 @@ import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistant
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
 const VIDEO_2_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c742e6d103270ef1685.mp4";
 
-// GPT Assistants
+// GPT Assistants - Acólitos de la Voz del Espejo
 const ASSISTANTS: GPTAssistant[] = [
   {
     id: 1,
-    name: "Anuncios Express",
-    description: "Crea anuncios que capturan atención y generan clics",
+    name: "Acólito del Reclamo",
+    description: "Las palabras exactas para llegar a tu cliente",
     url: "https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo",
     icon: "📢",
   },
   {
     id: 2,
-    name: "Formularios Express",
-    description: "Diseña formularios que cualifican sin espantar",
+    name: "Acólito del Muro",
+    description: "Formularios que filtran a quien no va a pagar",
     url: "https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo",
-    icon: "📋",
+    icon: "🧱",
   },
   {
     id: 3,
-    name: "Guiones de Venta",
-    description: "Escribe guiones que cierran sin presionar",
+    name: "Acólito de Clausura",
+    description: "Guiones que cierran ventas sin rogar",
     url: "https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo",
-    icon: "🎯",
+    icon: "🔐",
   },
 ];
 
@@ -403,7 +403,7 @@ export const BrechaFragmento3 = ({
           transition={{ delay: 1.6, duration: 0.8 }}
         >
           <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
-            Asistentes IA Exclusivos
+            Acólitos de la Voz del Espejo
           </h3>
           
           <div className="grid md:grid-cols-3 gap-4">
@@ -412,7 +412,7 @@ export const BrechaFragmento3 = ({
                 key={assistant.id}
                 assistant={assistant}
                 isUnlocked={assistantsUnlocked}
-                lockMessage="Captura los 4 resquicios"
+                lockMessage="La Voz aún no te reconoce"
                 variant="grid"
                 animationDelay={1.8 + index * 0.2}
                 onOpen={() => handleAssistantOpen(assistant.id as 1 | 2 | 3)}

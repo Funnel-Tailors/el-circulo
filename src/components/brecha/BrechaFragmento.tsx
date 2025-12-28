@@ -12,15 +12,15 @@ import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistant
 const FRAGMENT_ASSISTANTS: Record<1 | 2, GPTAssistant> = {
   1: {
     id: "frag1-assistant",
-    name: "Asistente del Precio",
-    description: "GPT entrenado para ayudarte a definir tu precio premium",
+    name: "Acólito del Tributo",
+    description: "Define una oferta por la que cobrar 5 cifras",
     url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
     icon: "💰",
   },
   2: {
     id: "frag2-assistant",
-    name: "Asistente del Espejo",
-    description: "GPT entrenado para ayudarte a definir tu avatar ideal",
+    name: "Acólito de la Voz",
+    description: "Encuentra a quien pague esas 5 cifras por tu trabajo",
     url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
     icon: "🪞",
   },
@@ -238,14 +238,14 @@ export const BrechaFragmento = ({
           >
             <div className="text-center mb-6">
               <h3 className="text-foreground/50 text-sm tracking-[0.2em] uppercase">
-                Asistente IA Exclusivo
+                Acólito de la Voz del Espejo
               </h3>
             </div>
 
             <GPTAssistantCard
               assistant={assistant}
               isUnlocked={progress.sequence_completed}
-              lockMessage="Captura todos los fragmentos y completa el ritual para desbloquear"
+              lockMessage="La Voz aún no te reconoce. Completa el ritual."
               variant="single"
               onOpen={handleAssistantOpen}
             />
