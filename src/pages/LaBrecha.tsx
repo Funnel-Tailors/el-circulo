@@ -293,6 +293,9 @@ const LaBrecha = () => {
     progress.frag3_sequence_completed && 
     progress.frag4_sequence_completed;
 
+  // Check if user has full access (qualified) or limited access (disqualified)
+  const hasFullAccess = lead?.is_qualified === true;
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Sticky countdown */}
@@ -332,8 +335,29 @@ const LaBrecha = () => {
           />
         </div>
 
+        {/* Limited access message for disqualified users after Fragment 1 */}
+        {!hasFullAccess && progress.frag1_sequence_completed && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-16 max-w-2xl mx-auto text-center glass-card-dark p-8"
+          >
+            <span className="text-4xl mb-4 block">⟡</span>
+            <h3 className="text-2xl font-display font-bold mb-4">
+              Has completado el Primer Fragmento
+            </h3>
+            <p className="text-muted-foreground mb-6">
+              Hay 3 Fragmentos más esperando al otro lado. 
+              Si quieres cruzar el resto de La Brecha, responde al mensaje que te envié.
+            </p>
+            <p className="text-primary font-semibold">
+              La grieta se cierra en menos de 48 horas.
+            </p>
+          </motion.div>
+        )}
+
         {/* ===== FRAGMENTO 2: EL ESPEJO ===== */}
-        {progress.portal_traversed && (
+        {hasFullAccess && progress.portal_traversed && (
           <div ref={frag2Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento
               token={token}
@@ -360,7 +384,7 @@ const LaBrecha = () => {
         )}
 
         {/* ===== FRAGMENTO 3: LA VOZ ===== */}
-        {progress.portal2_traversed && (
+        {hasFullAccess && progress.portal2_traversed && (
           <div ref={frag3Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento3
               token={token}
@@ -390,7 +414,7 @@ const LaBrecha = () => {
         )}
 
         {/* ===== FRAGMENTO 4: EL CIERRE ===== */}
-        {progress.portal3_traversed && (
+        {hasFullAccess && progress.portal3_traversed && (
           <div ref={frag4Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento4
               token={token}
@@ -416,8 +440,8 @@ const LaBrecha = () => {
           </div>
         )}
 
-        {/* Decision section - visible after portal 2 */}
-        {progress.portal2_traversed && (
+        {/* Decision section - visible after portal 2 (only for full access users) */}
+        {hasFullAccess && progress.portal2_traversed && (
           <div className="mt-16">
             <BrechaDecision
               frag1Completed={progress.frag1_sequence_completed}

@@ -715,21 +715,30 @@ function generateBrechaNotification(
 
 ${dailyReality}
 
-Sé lo que es eso.
-
 ${contrastStatement}
 
 Has superado las siete pruebas.
 
 La Brecha se abre para ti.
 
+Dentro hay 4 Fragmentos. Cada uno con pruebas.
+
+Presta atención. Anota todo. 
+Hay resquicios de magia escondidos.
+No dejes que se te escape ninguno.
+
+Vas a aprender a definir una oferta por la que alguien pagaría 5 cifras.
+A encontrar a ese alguien.
+Y a cerrarle.
+
 ${url}
 
-Intransferible. Personal. Caduca.
+48 horas para cambiar tu negocio para siempre.
 
 ${fearCall}`
   }
   
+  // For disqualified - still get URL to Fragment 1 only
   if (hardstopReason === 'low_revenue') {
     return `${firstName}.
 
@@ -737,15 +746,22 @@ ${dailyReality}
 
 Facturas ${revenueLiteral}.
 
-Las siete pruebas existen por algo.
+Me jodería no venderte nada con lo calentito que vienes 😂
 
-No es que no merezcas cruzar. Es que aún no has construido los cimientos para sostener lo que hay dentro.
+Pero las siete pruebas existen por algo.
 
-La Brecha no se abre para ti. Todavía.
+No vas a ver toda La Brecha. 
+Pero te abro el Primer Fragmento.
 
-Pero hay otros caminos.
+Un video. 30 minutos. Cómo definir una oferta por la que alguien pague 5 cifras.
 
-¿Cuánto pondrías sobre la mesa HOY por algo que te acerque al umbral?`
+Presta atención. Anota todo. Hay resquicios de magia escondidos.
+
+${url}
+
+Si después de verlo quieres cruzar el resto de La Brecha...
+
+Responde diciéndome cuánto pondrías sobre la mesa HOY.`
   }
   
   if (hardstopReason === 'low_budget') {
@@ -759,15 +775,22 @@ Y cuando te pregunto qué invertirías en solucionarlo...
 
 "${budgetLiteral}"
 
-Tus clientes hacen lo mismo contigo.
+Tus clientes hacen lo mismo contigo 😂
 
 Las siete pruebas existen por algo.
 
-La Brecha no se abre para quien no está dispuesto a pagar el precio.
+No vas a ver toda La Brecha.
+Pero te abro el Primer Fragmento.
 
-Pero hay otras grietas.
+Un video. 30 minutos. Cómo definir una oferta por la que alguien pague 5 cifras.
 
-¿Cuánto pondrías REALMENTE sobre la mesa?`
+Presta atención. Anota todo. Hay resquicios de magia escondidos.
+
+${url}
+
+Si después de verlo quieres cruzar el resto...
+
+Responde diciéndome cuánto pondrías REALMENTE sobre la mesa.`
   }
   
   return ''
@@ -936,10 +959,9 @@ Deno.serve(async (req) => {
     }
 
     // Generate URL - token is now ghl_contact_id (shorter), tier fetched from DB
-    const baseUrl = Deno.env.get('BRECHA_BASE_URL') || 'https://artefacto.tech'
-    const brechaUrl = isQualified 
-      ? `${baseUrl}/la-brecha?token=${ghl_contact_id}`
-      : null
+    // ALL leads get URL now (disqualified get access to Fragment 1 only)
+    const baseUrl = Deno.env.get('BRECHA_BASE_URL') || 'https://vendenautomatico.com'
+    const brechaUrl = `${baseUrl}/la-brecha?token=${ghl_contact_id}`
 
     // Generate tags
     const tags = generateTags(
