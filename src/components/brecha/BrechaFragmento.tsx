@@ -29,6 +29,18 @@ interface BrechaFragmentoProps {
   assistantEmbedId?: string;
 }
 
+// Fragment info with epic titles - like La Senda
+const FRAGMENTO_INFO = {
+  1: {
+    sello: "⟡ Primer Fragmento ⟡",
+    title: "EL PRECIO",
+  },
+  2: {
+    sello: "⟡ Segundo Fragmento ⟡",
+    title: "EL ESPEJO",
+  },
+} as const;
+
 export const BrechaFragmento = ({
   token,
   fragmentNumber,
@@ -50,6 +62,7 @@ export const BrechaFragmento = ({
   // Class 5 = Fragmento 1 (3 drops), Class 6 = Fragmento 2 (5 drops)
   const classNumber = fragmentNumber === 1 ? 5 : 6;
   const totalDrops = fragmentNumber === 1 ? 3 : 5;
+  const fragmentInfo = FRAGMENTO_INFO[fragmentNumber];
 
   const {
     capturedDrops,
@@ -99,63 +112,54 @@ export const BrechaFragmento = ({
     onSequenceFailed();
   };
 
-  const fragmentTitle = fragmentNumber === 1 ? "EL PRECIO" : "EL ESPEJO";
-  const fragmentDescription = fragmentNumber === 1 
-    ? "El primer fragmento te enseñará a cobrar lo que vales."
-    : "El segundo fragmento te mostrará a quién debes servir.";
+  // Show DropsInventory only after ritual accepted AND has drops
+  const showDropsInventory = progress.ritual_accepted && 
+    (capturedDrops.length > 0 || progress.drops_missed.length > 0);
 
   return (
-    <div className="space-y-8 mb-16">
+    <div className="space-y-6 mb-16">
       <div className="max-w-4xl mx-auto">
-        {/* Fragment header */}
+        {/* Small sello indicator - no duplicate header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-center mb-8"
+          className="text-center mb-4"
         >
-          <span className="text-primary/60 text-sm tracking-[0.3em] uppercase">
-            Fragmento {fragmentNumber}
+          <span className="text-foreground/40 text-xs tracking-[0.3em] uppercase">
+            {fragmentInfo.sello}
           </span>
-          <h2 className="text-2xl md:text-4xl font-display font-bold mt-2 glow">
-            {fragmentTitle}
-          </h2>
-          <p className="text-muted-foreground mt-3 max-w-md mx-auto">
-            {fragmentDescription}
-          </p>
         </motion.div>
 
-        {/* Video container - glass-card-dark like Senda */}
+        {/* Video container - clean, no glass-card-dark wrapper */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="glass-card-dark p-4 rounded-xl overflow-hidden"
+          className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl"
         >
-          <div className="relative rounded-lg overflow-hidden video-glow">
-            {/* Ritual overlay (before video starts) */}
-            <VideoRitualOverlay
-              token={token}
-              classNumber={classNumber as 1 | 2 | 3 | 4 | 5 | 6}
-              onAccept={onRitualAccepted}
-              initialAccepted={progress.ritual_accepted}
-            />
+          {/* Ritual overlay (before video starts) */}
+          <VideoRitualOverlay
+            token={token}
+            classNumber={classNumber as 1 | 2 | 3 | 4 | 5 | 6}
+            onAccept={onRitualAccepted}
+            initialAccepted={progress.ritual_accepted}
+          />
 
-            {/* Video */}
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              className="w-full aspect-video"
-              controls
-              playsInline
-            />
+          {/* Video */}
+          <video
+            ref={videoRef}
+            src={videoUrl}
+            className="w-full h-full object-cover"
+            controls
+            playsInline
+          />
 
-            {/* Drop overlay */}
-            <VideoDropOverlay
-              activeDrop={activeDrop}
-              onCapture={captureDrop}
-            />
-          </div>
+          {/* Drop overlay */}
+          <VideoDropOverlay
+            activeDrop={activeDrop}
+            onCapture={captureDrop}
+          />
         </motion.div>
 
         {/* Progress bar */}
@@ -167,14 +171,16 @@ export const BrechaFragmento = ({
           />
         </div>
 
-        {/* Drops inventory */}
-        <DropsInventory
-          capturedDrops={capturedDrops}
-          totalDrops={totalDrops}
-          allCaptured={allCaptured}
-          classNumber={classNumber as 1 | 2 | 5 | 6}
-          missedDrops={progress.drops_missed}
-        />
+        {/* Drops inventory - only show after ritual + first drop */}
+        {showDropsInventory && (
+          <DropsInventory
+            capturedDrops={capturedDrops}
+            totalDrops={totalDrops}
+            allCaptured={allCaptured}
+            classNumber={classNumber as 1 | 2 | 5 | 6}
+            missedDrops={progress.drops_missed}
+          />
+        )}
 
         {/* AI Assistant (locked until sequence completed) */}
         {assistantEmbedId && (

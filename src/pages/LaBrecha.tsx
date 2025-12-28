@@ -9,6 +9,7 @@ import { BrechaFragmento } from "@/components/brecha/BrechaFragmento";
 import { BrechaDecision } from "@/components/brecha/BrechaDecision";
 import { BrechaFooter } from "@/components/brecha/BrechaFooter";
 import { BrechaPortal } from "@/components/brecha/BrechaPortal";
+import VortexEffect from "@/components/senda/VortexEffect";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 
@@ -28,6 +29,9 @@ const RunicDivider = ({ symbol = "⟡" }: { symbol?: string }) => (
   </div>
 );
 
+// Check if event has expired
+const isExpired = () => new Date() > EVENT_DATE;
+
 const LaBrecha = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
@@ -36,6 +40,33 @@ const LaBrecha = () => {
   
   // Tier is fetched from DB, not URL
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
+
+  // Epic expired state with VortexEffect - single source of truth
+  if (isExpired()) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
+        <ShootingStars />
+        <Starfield />
+        <VortexEffect size="lg" isClosing={true} rotationSpeed={30} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="relative z-20 text-center max-w-xl px-4"
+        >
+          <span className="text-6xl mb-6 block">⟡</span>
+          <h1 className="text-4xl md:text-6xl font-display font-bold glow mb-4">
+            LA BRECHA SE HA CERRADO
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Has llegado cuando la grieta ya se sellaba.
+            <br />
+            La próxima oportunidad no tiene fecha.
+          </p>
+        </motion.div>
+      </div>
+    );
+  }
 
   // Loading state
   if (accessLoading || progressLoading) {

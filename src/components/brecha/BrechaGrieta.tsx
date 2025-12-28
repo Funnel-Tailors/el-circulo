@@ -20,6 +20,9 @@ export const BrechaGrieta = ({ eventDate }: BrechaGrietaProps) => {
   const isExpired = timeRemaining.days === 0 && timeRemaining.hours === 0 && 
                     timeRemaining.minutes === 0 && timeRemaining.seconds === 0;
 
+  // Don't render if expired - LaBrecha.tsx handles the epic expired state
+  if (isExpired) return null;
+
   return (
     <div className="space-y-8 mb-16">
       {/* Glass card for countdown - same as Senda */}

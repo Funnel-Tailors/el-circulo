@@ -26,6 +26,7 @@ export const BrechaFooter = ({
       </div>
 
       <div className="container mx-auto px-4 pb-12">
+        {/* Calendar shown when both fragments completed - expired state handled by LaBrecha.tsx */}
         {showCalendar && !isExpired ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -42,7 +43,7 @@ export const BrechaFooter = ({
               </p>
             </div>
 
-            {/* Calendar - glass-card-dark like Senda */}
+            {/* Calendar */}
             <div className="glass-card-dark p-4 max-w-4xl mx-auto rounded-xl overflow-hidden">
               <GHLCalendarIframe 
                 calendarId={calendarId}
@@ -50,21 +51,7 @@ export const BrechaFooter = ({
               />
             </div>
           </motion.div>
-        ) : isExpired ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center glass-card-dark p-8 max-w-md mx-auto"
-          >
-            <h2 className="text-2xl font-display font-bold text-muted-foreground">
-              La brecha se ha cerrado
-            </h2>
-            <p className="text-muted-foreground/70 mt-3">
-              La próxima oportunidad no tiene fecha.
-            </p>
-          </motion.div>
-        ) : (
+        ) : !isExpired ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -78,7 +65,7 @@ export const BrechaFooter = ({
               La llamada se desbloquea cuando demuestres tu compromiso.
             </p>
           </motion.div>
-        )}
+        ) : null}
 
         {/* Footer links */}
         <div className="mt-12 pt-8 text-center">
