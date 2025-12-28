@@ -10,14 +10,15 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { SendaProgress } from "@/hooks/useSendaProgress";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
 import { useSendaProgress } from "@/hooks/useSendaProgress";
-import { AlertTriangle, Lock, ExternalLink, Play, CheckCircle } from "lucide-react";
+import { GPTRoleplayCard } from "@/components/shared/GPTRoleplayCard";
+import { AlertTriangle, Lock, Play, CheckCircle } from "lucide-react";
 
 // Video URL for Masterclass de Ventas
 const VIDEO_MASTERCLASS = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68af36e8123b93670b1fc364.mp4";
@@ -267,80 +268,16 @@ const Module4Section = ({
         )}
         
         {/* Roleplay GPT Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className={`glass-card-dark p-6 relative ${
-            roleplayPermanentlyLocked ? 'opacity-50 pointer-events-none' : ''
-          }`}
-        >
-          {/* Lock overlay if roleplay is locked */}
-          {roleplayPermanentlyLocked && (
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
-              <div className="text-center p-6">
-                <Lock className="w-12 h-12 text-destructive mx-auto mb-4" />
-                <p className="text-destructive font-semibold">Roleplay Bloqueado</p>
-                <p className="text-foreground/40 text-sm mt-1">
-                  Perdiste resquicios durante el video
-                </p>
-              </div>
-            </div>
-          )}
-          
-          {/* Unlock condition message */}
-          {!allDropsCapturedNoMisses && !roleplayPermanentlyLocked && (
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm rounded-2xl flex items-center justify-center z-10">
-              <div className="text-center p-6">
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🎭</span>
-                </div>
-                <p className="text-foreground/80 font-semibold">Roleplay Bloqueado</p>
-                <p className="text-foreground/40 text-sm mt-1">
-                  Captura todos los resquicios y completa el ritual para desbloquear
-                </p>
-              </div>
-            </div>
-          )}
-          
-          <div className="flex items-center gap-4">
-            <div className="p-4 rounded-2xl bg-primary/10 text-4xl">
-              {GPT_ROLEPLAY.icon}
-            </div>
-            <div className="flex-1">
-              <h4 className="text-lg font-semibold text-foreground mb-1">
-                {GPT_ROLEPLAY.name}
-              </h4>
-              <p className="text-foreground/60 text-sm">
-                {GPT_ROLEPLAY.description}
-              </p>
-            </div>
-            <button
-              onClick={handleRoleplayClick}
-              disabled={!allDropsCapturedNoMisses}
-              className="dark-button-primary px-6 py-3 flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
-            >
-              <ExternalLink className="w-4 h-4" />
-              Practicar
-            </button>
-          </div>
-          
-          {/* Success message when unlocked */}
-          {allDropsCapturedNoMisses && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-4 pt-4 border-t border-foreground/10"
-            >
-              <div className="flex items-center gap-2 text-primary">
-                <CheckCircle className="w-5 h-5" />
-                <span className="text-sm font-medium">
-                  Roleplay desbloqueado - Practica tu cierre con un cliente simulado
-                </span>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
+        <GPTRoleplayCard
+          roleplay={GPT_ROLEPLAY}
+          isUnlocked={allDropsCapturedNoMisses}
+          isPermanentlyLocked={roleplayPermanentlyLocked}
+          pendingMessage="Captura todos los resquicios y completa el ritual para desbloquear"
+          lockedMessage="Perdiste resquicios durante el video"
+          successMessage="Roleplay desbloqueado - Practica tu cierre con un cliente simulado"
+          onOpen={handleRoleplayClick}
+          animationDelay={0.3}
+        />
         
         {/* Journey complete message */}
         {allDropsCapturedNoMisses && progress?.module4RoleplayOpened && (

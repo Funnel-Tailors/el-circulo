@@ -6,7 +6,21 @@ import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
 import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
+import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
 
+// Assistant configuration
+const PREPARATION_ASSISTANT: GPTAssistant = {
+  id: "ofertas",
+  name: "Asistente IA Exclusivo",
+  description: "GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso",
+  url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
+  icon: "🤖",
+  features: [
+    "Analiza tu modelo actual",
+    "Diseña tu oferta premium",
+    "Prepara tus preguntas clave",
+  ],
+};
 interface PreparationCardsProps {
   token: string | null;
   onSequenceComplete?: () => void;
@@ -238,45 +252,13 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
 
       {/* AI Assistant - Locked until all drops captured */}
       <div className="max-w-2xl mx-auto">
-        <div className={`glass-card-dark p-6 space-y-4 relative transition-all duration-500 ${
-          allCaptured ? 'opacity-100' : 'opacity-40 pointer-events-none'
-        }`}>
-          {/* Lock overlay */}
-          {!allCaptured && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-              <div className="text-center px-4">
-                <span className="text-3xl mb-3 block">🔒</span>
-                <p className="text-sm text-muted-foreground">
-                  Captura los 3 resquicios para desbloquear
-                </p>
-              </div>
-            </div>
-          )}
-          
-          <div className="text-center space-y-3">
-            <div className="text-4xl">🤖</div>
-            <h3 className="text-xl font-bold text-foreground">Asistente IA Exclusivo</h3>
-            <p className="text-sm text-muted-foreground">
-              GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso
-            </p>
-          </div>
-
-          <ul className="text-sm text-muted-foreground space-y-2">
-            <li>• Analiza tu modelo actual</li>
-            <li>• Diseña tu oferta premium</li>
-            <li>• Prepara tus preguntas clave</li>
-          </ul>
-
-          <a
-            href="https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleAIAssistantOpen}
-            className="block w-full dark-button-primary px-6 py-3 rounded-lg font-medium text-center transition-all"
-          >
-            Abrir Asistente →
-          </a>
-        </div>
+        <GPTAssistantCard
+          assistant={PREPARATION_ASSISTANT}
+          isUnlocked={allCaptured}
+          lockMessage="Captura los 3 resquicios para desbloquear"
+          variant="single"
+          onOpen={handleAIAssistantOpen}
+        />
       </div>
 
       {/* Bottom separator */}
