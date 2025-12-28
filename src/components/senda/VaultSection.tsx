@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Play, Bot } from "lucide-react";
+import { motion } from "framer-motion";
+import { Play } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useVaultTracking } from "@/hooks/useVaultTracking";
 import { useSendaProgress, SendaProgress } from "@/hooks/useSendaProgress";
@@ -8,6 +8,17 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
+import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+
+// Assistant configuration
+const AVATAR_ASSISTANT: GPTAssistant = {
+  id: "avatar",
+  name: "El Arquitecto de Avatares",
+  description: "Diseña el cliente que mereces con precisión quirúrgica",
+  url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
+  icon: "bot",
+  poeticMessage: '"El Arquitecto de Avatares reconoce tu valía.<br />Ahora, diseña el cliente que mereces."',
+};
 
 interface VaultSectionProps {
   isVisible: boolean;
@@ -309,72 +320,13 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
             Asistente IA Exclusivo
           </h3>
           
-          <div className={`glass-card-dark p-8 transition-all duration-700 max-w-xl mx-auto relative ${
-            !allCaptured ? 'opacity-40 grayscale blur-[1px]' : ''
-          }`}>
-            {/* Lock overlay when not all captured */}
-            {!allCaptured && (
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-                <div className="text-center">
-                  <span className="text-2xl mb-2 block">🔒</span>
-                  <p className="text-sm text-muted-foreground">
-                    Captura los 5 resquicios para desbloquear
-                  </p>
-                </div>
-              </div>
-            )}
-            
-            <div className="flex flex-col items-center text-center gap-4">
-              <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 ${
-                allCaptured 
-                  ? 'bg-foreground/10' 
-                  : 'bg-foreground/5'
-              }`}>
-                {allCaptured ? (
-                  <Bot className="w-8 h-8 text-foreground" />
-                ) : (
-                  <Lock className="w-7 h-7 text-foreground/40" />
-                )}
-              </div>
-              
-              <div>
-                <h4 className="text-xl font-bold text-foreground mb-2">
-                  El Arquitecto de Avatares
-                </h4>
-                <p className="text-foreground/50 text-sm mb-4">
-                  Diseña el cliente que mereces con precisión quirúrgica
-                </p>
-                
-                {!allCaptured ? (
-                  <div className="space-y-2">
-                    <span className="text-foreground/30 text-sm block">
-                      🔒 Captura los 5 resquicios para desbloquear
-                    </span>
-                  </div>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                  >
-                    <p className="text-foreground/60 text-sm mb-4 italic">
-                      "El Arquitecto de Avatares reconoce tu valía.<br />
-                      Ahora, diseña el cliente que mereces."
-                    </p>
-                    <a
-                      href="https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={handleAssistantOpen}
-                      className="inline-block dark-button-primary text-base py-3 px-8"
-                    >
-                      Abrir Asistente →
-                    </a>
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </div>
+          <GPTAssistantCard
+            assistant={AVATAR_ASSISTANT}
+            isUnlocked={allCaptured}
+            lockMessage="Captura los 5 resquicios para desbloquear"
+            variant="single"
+            onOpen={handleAssistantOpen}
+          />
         </motion.div>
 
         {/* Footer separator */}

@@ -5,20 +5,22 @@
  * Con animaciones idénticas a Module3Section de Senda
  */
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Play, Lock, Check, ExternalLink } from "lucide-react";
+import { Play, Lock, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
+import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
 
 // Video URLs (same as Module3)
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
 const VIDEO_2_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c742e6d103270ef1685.mp4";
 
-// GPT Assistants (same as Module3)
-const ASSISTANTS = [
+// GPT Assistants
+const ASSISTANTS: GPTAssistant[] = [
   {
     id: 1,
     name: "Anuncios Express",
@@ -90,6 +92,18 @@ export const BrechaFragmento3 = ({
   const lastV1Update = useRef(0);
   const lastV2Update = useRef(0);
 
+  // Fire-and-forget tracking
+  const trackEvent = useCallback((eventType: string) => {
+    if (!token) return;
+    supabase.from('quiz_analytics').insert({
+      session_id: token,
+      event_type: eventType,
+      quiz_version: 'brecha_v1'
+    }).then(({ error }) => {
+      if (error) console.error(`❌ Supabase error [${eventType}]:`, error.message);
+    });
+  }, [token]);
+
   // Video 2 drops system (Class 7 = 4 drops, 4s window, NO auto-capture)
   const {
     drops,
@@ -101,9 +115,16 @@ export const BrechaFragmento3 = ({
   } = useVideoDrops({
     sessionId: token,
     classNumber: 7,
-    onCapture: (drop) => onDropCaptured(drop.id),
-    onMiss: (drop) => onDropMissed(drop.id),
+    onCapture: (drop) => {
+      onDropCaptured(drop.id);
+      trackEvent(`brecha_frag3_drop_captured_${drop.id}`);
+    },
+    onMiss: (drop) => {
+      onDropMissed(drop.id);
+      trackEvent(`brecha_frag3_drop_missed_${drop.id}`);
+    },
     onAllCaptured: () => {
+      trackEvent('brecha_frag3_all_drops_captured');
       if (!progress.sequence_completed) {
         setTimeout(() => setShowRitualModal(true), 500);
       }
@@ -165,10 +186,16 @@ export const BrechaFragmento3 = ({
   const handleRitualComplete = () => {
     setShowRitualModal(false);
     onSequenceCompleted();
+    trackEvent('brecha_frag3_ritual_completed');
     // Trigger portal after a brief delay
     if (onShowPortal) {
       setTimeout(() => onShowPortal(), 500);
     }
+  };
+
+  const handleAssistantOpen = (assistantId: 1 | 2 | 3) => {
+    onAssistantOpened(assistantId);
+    trackEvent(`brecha_frag3_assistant${assistantId}_opened`);
   };
 
   const assistantsUnlocked = progress.sequence_completed;
@@ -381,56 +408,46 @@ export const BrechaFragmento3 = ({
           
           <div className="grid md:grid-cols-3 gap-4">
             {ASSISTANTS.map((assistant, index) => (
-              <motion.div 
+              <GPTAssistantCard
                 key={assistant.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.8 + index * 0.2, duration: 0.6 }}
-                className={`glass-card-dark p-6 transition-all duration-700 relative ${
-                  !assistantsUnlocked ? 'opacity-40 grayscale blur-[1px]' : ''
-                }`}
-              >
-                {/* Lock overlay when not unlocked */}
-                {!assistantsUnlocked && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-                    <div className="text-center">
-                      <span className="text-2xl mb-2 block">🔒</span>
-                      <p className="text-xs text-muted-foreground">
-                        Captura los 4 resquicios
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex flex-col items-center text-center gap-3">
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${
-                    assistantsUnlocked ? 'bg-foreground/10' : 'bg-foreground/5'
-                  }`}>
-                    {assistant.icon}
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold text-foreground mb-1">{assistant.name}</h4>
-                    <p className="text-xs text-foreground/50">{assistant.description}</p>
-                  </div>
-                  
-                  <button
-                    onClick={() => {
-                      if (assistantsUnlocked) {
-                        onAssistantOpened(assistant.id as 1 | 2 | 3);
-                        window.open(assistant.url, '_blank');
-                      }
-                    }}
-                    disabled={!assistantsUnlocked}
-                    className="dark-button-primary px-4 py-2 text-sm flex items-center gap-2 disabled:opacity-50 disabled:pointer-events-none"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    Abrir
-                  </button>
-                </div>
-              </motion.div>
+                assistant={assistant}
+                isUnlocked={assistantsUnlocked}
+                lockMessage="Captura los 4 resquicios"
+                variant="grid"
+                animationDelay={1.8 + index * 0.2}
+                onOpen={() => handleAssistantOpen(assistant.id as 1 | 2 | 3)}
+              />
             ))}
           </div>
+        </motion.div>
+
+        {/* Continue button */}
+        {assistantsUnlocked && onShowPortal && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="mt-16 text-center"
+          >
+            <button
+              onClick={onShowPortal}
+              className="dark-button-primary text-lg py-4 px-10"
+            >
+              Continuar al Siguiente Fragmento →
+            </button>
+          </motion.div>
+        )}
+
+        {/* Footer separator */}
+        <motion.div 
+          className="flex items-center justify-center gap-4 mt-16"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8, duration: 0.6 }}
+        >
+          <div className="h-px w-32 bg-gradient-to-r from-transparent to-foreground/10" />
+          <span className="text-foreground/20 text-xs">✦ ⟡ ✦</span>
+          <div className="h-px w-32 bg-gradient-to-l from-transparent to-foreground/10" />
         </motion.div>
       </div>
 

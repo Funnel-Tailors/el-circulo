@@ -13,8 +13,8 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Lock, Bot, Check, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { Play, Lock, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SendaProgress } from "@/hooks/useSendaProgress";
 import { useSendaProgress } from "@/hooks/useSendaProgress";
@@ -22,13 +22,14 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
+import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
 
 // Video URLs
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
 const VIDEO_2_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c742e6d103270ef1685.mp4";
 
-// GPT Assistant URLs
-const ASSISTANTS = [
+// GPT Assistant configurations
+const ASSISTANTS: GPTAssistant[] = [
   {
     id: 1,
     name: "Anuncios Express",
@@ -456,53 +457,15 @@ const Module3Section = ({
           
           <div className="grid md:grid-cols-3 gap-4">
             {ASSISTANTS.map((assistant, index) => (
-              <div 
+              <GPTAssistantCard
                 key={assistant.id}
-                className={`glass-card-dark p-6 transition-all duration-700 relative ${
-                  !assistantsUnlocked ? 'opacity-40 grayscale blur-[1px]' : ''
-                }`}
-              >
-                {/* Lock overlay when not unlocked */}
-                {!assistantsUnlocked && (
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
-                    <div className="text-center">
-                      <span className="text-2xl mb-2 block">🔒</span>
-                      <p className="text-xs text-muted-foreground">
-                        Captura los 4 resquicios
-                      </p>
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex flex-col items-center text-center gap-3">
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl ${
-                    assistantsUnlocked ? 'bg-foreground/10' : 'bg-foreground/5'
-                  }`}>
-                    {assistant.icon}
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-lg font-bold text-foreground mb-1">
-                      {assistant.name}
-                    </h4>
-                    <p className="text-foreground/50 text-sm mb-4">
-                      {assistant.description}
-                    </p>
-                    
-                    {assistantsUnlocked && (
-                      <a
-                        href={assistant.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => handleAssistantOpen(assistant.id as 1 | 2 | 3)}
-                        className="inline-flex items-center gap-2 dark-button-primary text-sm py-2 px-4"
-                      >
-                        Abrir <ChevronRight className="w-4 h-4" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
+                assistant={assistant}
+                isUnlocked={assistantsUnlocked}
+                lockMessage="Captura los 4 resquicios"
+                variant="grid"
+                animationDelay={1.8 + index * 0.2}
+                onOpen={() => handleAssistantOpen(assistant.id as 1 | 2 | 3)}
+              />
             ))}
           </div>
         </motion.div>

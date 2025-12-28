@@ -1,11 +1,30 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import { VideoRitualOverlay } from "@/components/senda/VideoRitualOverlay";
 import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
-import { Lock, Sparkles } from "lucide-react";
+import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+
+// Assistant configurations for fragments 1 and 2
+const FRAGMENT_ASSISTANTS: Record<1 | 2, GPTAssistant> = {
+  1: {
+    id: "frag1-assistant",
+    name: "Asistente del Precio",
+    description: "GPT entrenado para ayudarte a definir tu precio premium",
+    url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
+    icon: "💰",
+  },
+  2: {
+    id: "frag2-assistant",
+    name: "Asistente del Espejo",
+    description: "GPT entrenado para ayudarte a definir tu avatar ideal",
+    url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
+    icon: "🪞",
+  },
+};
 
 interface BrechaFragmentoProps {
   token: string;
@@ -63,6 +82,19 @@ export const BrechaFragmento = ({
   const classNumber = fragmentNumber === 1 ? 5 : 6;
   const totalDrops = fragmentNumber === 1 ? 3 : 5;
   const fragmentInfo = FRAGMENTO_INFO[fragmentNumber];
+  const assistant = FRAGMENT_ASSISTANTS[fragmentNumber];
+
+  // Fire-and-forget tracking
+  const trackEvent = useCallback((eventType: string) => {
+    if (!token) return;
+    supabase.from('quiz_analytics').insert({
+      session_id: token,
+      event_type: eventType,
+      quiz_version: 'brecha_v1'
+    }).then(({ error }) => {
+      if (error) console.error(`❌ Supabase error [${eventType}]:`, error.message);
+    });
+  }, [token]);
 
   const {
     capturedDrops,
@@ -73,9 +105,16 @@ export const BrechaFragmento = ({
   } = useVideoDrops({
     sessionId: token,
     classNumber: classNumber as 1 | 2 | 3 | 4 | 5 | 6,
-    onCapture: (drop) => onDropCaptured(drop.id),
-    onMiss: (drop) => onDropMissed(drop.id),
+    onCapture: (drop) => {
+      onDropCaptured(drop.id);
+      trackEvent(`brecha_frag${fragmentNumber}_drop_captured_${drop.id}`);
+    },
+    onMiss: (drop) => {
+      onDropMissed(drop.id);
+      trackEvent(`brecha_frag${fragmentNumber}_drop_missed_${drop.id}`);
+    },
     onAllCaptured: () => {
+      trackEvent(`brecha_frag${fragmentNumber}_all_drops_captured`);
       // When all drops captured, unlock assistant and show sequence modal after delay
       setTimeout(() => setShowSequenceModal(true), 1500);
     },
@@ -106,10 +145,17 @@ export const BrechaFragmento = ({
   const handleSequenceComplete = () => {
     setShowSequenceModal(false);
     onSequenceCompleted();
+    trackEvent(`brecha_frag${fragmentNumber}_ritual_completed`);
   };
 
   const handleSequenceFailed = () => {
     onSequenceFailed();
+    trackEvent(`brecha_frag${fragmentNumber}_ritual_failed`);
+  };
+
+  const handleAssistantOpen = () => {
+    onAssistantOpened();
+    trackEvent(`brecha_frag${fragmentNumber}_assistant_opened`);
   };
 
   // Show DropsInventory only after ritual accepted AND has drops
@@ -191,45 +237,18 @@ export const BrechaFragmento = ({
             className="mt-12"
           >
             <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
-                {progress.sequence_completed ? (
-                  <>
-                    <Sparkles className="w-5 h-5 text-primary" />
-                    Asistente Desbloqueado
-                  </>
-                ) : (
-                  <>
-                    <Lock className="w-5 h-5 text-muted-foreground" />
-                    Asistente Bloqueado
-                  </>
-                )}
+              <h3 className="text-foreground/50 text-sm tracking-[0.2em] uppercase">
+                Asistente IA Exclusivo
               </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {progress.sequence_completed 
-                  ? "Haz clic para abrir el asistente."
-                  : "Captura todos los fragmentos y completa el ritual para desbloquear."
-                }
-              </p>
             </div>
 
-            {progress.sequence_completed ? (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onAssistantOpened}
-                className="w-full p-6 rounded-xl glass-card-dark border-primary/30 hover:border-primary/50 transition-colors"
-              >
-                <span className="text-primary font-semibold">
-                  Abrir Asistente →
-                </span>
-              </motion.button>
-            ) : (
-              <div className="w-full p-6 rounded-xl glass-card-dark opacity-50 cursor-not-allowed">
-                <span className="text-muted-foreground">
-                  Completa el ritual para desbloquear
-                </span>
-              </div>
-            )}
+            <GPTAssistantCard
+              assistant={assistant}
+              isUnlocked={progress.sequence_completed}
+              lockMessage="Captura todos los fragmentos y completa el ritual para desbloquear"
+              variant="single"
+              onOpen={handleAssistantOpen}
+            />
           </motion.div>
         )}
 
