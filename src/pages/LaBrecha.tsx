@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { useBrechaAccess } from "@/hooks/useBrechaAccess";
 import { useBrechaProgress } from "@/hooks/useBrechaProgress";
 import { BrechaHeroSection } from "@/components/brecha/BrechaHeroSection";
-import { BrechaGrieta } from "@/components/brecha/BrechaGrieta";
+import { BrechaCountdownSticky } from "@/components/brecha/BrechaCountdownSticky";
 import { BrechaFragmento } from "@/components/brecha/BrechaFragmento";
 import { BrechaDecision } from "@/components/brecha/BrechaDecision";
 import { BrechaFooter } from "@/components/brecha/BrechaFooter";
@@ -13,24 +13,19 @@ import VortexEffect from "@/components/senda/VortexEffect";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 
-// TODO: Set actual event date
-const EVENT_DATE = new Date('2025-02-15T23:59:59');
+// Rango de apertura de La Brecha
+const BRECHA_OPENS = new Date('2025-12-28T11:00:00');
+const BRECHA_CLOSES = new Date('2025-12-30T19:00:00');
 
 // Placeholder video URLs - replace with actual
 const VIDEO_FRAG1 = "https://example.com/fragmento1.mp4";
 const VIDEO_FRAG2 = "https://example.com/fragmento2.mp4";
 
-// Runic divider component - same as Senda
-const RunicDivider = ({ symbol = "⟡" }: { symbol?: string }) => (
-  <div className="flex items-center justify-center gap-4 my-16">
-    <div className="h-px w-16 bg-gradient-to-r from-transparent to-border" />
-    <span className="text-muted-foreground/50 text-sm">{symbol}</span>
-    <div className="h-px w-16 bg-gradient-to-l from-transparent to-border" />
-  </div>
-);
-
-// Check if event has expired
-const isExpired = () => new Date() > EVENT_DATE;
+// Check if La Brecha is outside valid range
+const isExpired = () => {
+  const now = new Date();
+  return now < BRECHA_OPENS || now > BRECHA_CLOSES;
+};
 
 const LaBrecha = () => {
   const [searchParams] = useSearchParams();
@@ -41,13 +36,16 @@ const LaBrecha = () => {
   // Tier is fetched from DB, not URL
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
 
-  // Epic expired state with VortexEffect - single source of truth
+  // Epic expired state with VortexEffect - differentiate "not yet open" vs "closed"
   if (isExpired()) {
+    const now = new Date();
+    const notYetOpen = now < BRECHA_OPENS;
+    
     return (
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
         <ShootingStars />
         <Starfield />
-        <VortexEffect size="lg" isClosing={true} rotationSpeed={30} />
+        <VortexEffect size="lg" isClosing={!notYetOpen} rotationSpeed={30} />
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -56,12 +54,13 @@ const LaBrecha = () => {
         >
           <span className="text-6xl mb-6 block">⟡</span>
           <h1 className="text-4xl md:text-6xl font-display font-bold glow mb-4">
-            LA BRECHA SE HA CERRADO
+            {notYetOpen ? "LA BRECHA AÚN NO SE HA ABIERTO" : "LA BRECHA SE HA CERRADO"}
           </h1>
           <p className="text-xl text-muted-foreground">
-            Has llegado cuando la grieta ya se sellaba.
-            <br />
-            La próxima oportunidad no tiene fecha.
+            {notYetOpen 
+              ? "La grieta comenzará a abrirse pronto. Mantente alerta."
+              : "Has llegado cuando la grieta ya se sellaba. La próxima oportunidad no tiene fecha."
+            }
           </p>
         </motion.div>
       </div>
@@ -203,63 +202,62 @@ const LaBrecha = () => {
     updateProgress({ portal_traversed: true });
   };
 
-  // Check if user can access Fragmento 2
+  // Check completion status
   const bothCompleted = progress.frag1_sequence_completed && progress.frag2_sequence_completed;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Dual layer background - same as Senda */}
+      {/* Sticky countdown - fixed at top */}
+      <BrechaCountdownSticky closeDate={BRECHA_CLOSES} />
+      
+      {/* Dual layer background */}
       <ShootingStars />
       <Starfield />
       
-      {/* Main content container - compact for mobile */}
-      <div className="relative z-10 container mx-auto px-4 py-8 md:py-16">
+      {/* Main content container - pt-12 to account for sticky header */}
+      <div className="relative z-10 container mx-auto px-4 pt-14 pb-8 md:pt-16 md:pb-16">
         {/* Hero */}
         <BrechaHeroSection lead={lead} />
 
-        {/* Fragmento 1: El Precio - immediately after hero for above-the-fold */}
+        {/* Fragmento 1: El Precio - immediately after hero */}
         <div id="first-fragment" className="mt-8">
           <BrechaFragmento
-          token={token}
-          fragmentNumber={1}
-          videoUrl={VIDEO_FRAG1}
-          progress={{
-            ritual_accepted: progress.frag1_ritual_accepted,
-            drops_captured: progress.frag1_drops_captured,
-            drops_missed: progress.frag1_drops_missed,
-            sequence_completed: progress.frag1_sequence_completed,
-            assistant_unlocked: progress.frag1_assistant_unlocked,
-            assistant_opened: progress.frag1_assistant_opened,
-          }}
-          onRitualAccepted={handleFrag1RitualAccepted}
-          onDropCaptured={handleFrag1DropCaptured}
-          onDropMissed={handleFrag1DropMissed}
-          onSequenceCompleted={handleFrag1SequenceCompleted}
-          onSequenceFailed={handleFrag1SequenceFailed}
-          onAssistantOpened={handleFrag1AssistantOpened}
-          onVideoProgress={handleFrag1VideoProgress}
+            token={token}
+            fragmentNumber={1}
+            videoUrl={VIDEO_FRAG1}
+            progress={{
+              ritual_accepted: progress.frag1_ritual_accepted,
+              drops_captured: progress.frag1_drops_captured,
+              drops_missed: progress.frag1_drops_missed,
+              sequence_completed: progress.frag1_sequence_completed,
+              assistant_unlocked: progress.frag1_assistant_unlocked,
+              assistant_opened: progress.frag1_assistant_opened,
+            }}
+            onRitualAccepted={handleFrag1RitualAccepted}
+            onDropCaptured={handleFrag1DropCaptured}
+            onDropMissed={handleFrag1DropMissed}
+            onSequenceCompleted={handleFrag1SequenceCompleted}
+            onSequenceFailed={handleFrag1SequenceFailed}
+            onAssistantOpened={handleFrag1AssistantOpened}
+            onVideoProgress={handleFrag1VideoProgress}
             assistantEmbedId="assistant-frag1"
           />
         </div>
 
-        {/* Countdown - after first fragment, more subtle */}
-        <div className="my-12">
-          <BrechaGrieta eventDate={EVENT_DATE} />
-        </div>
+        {/* Portal to Fragmento 2 - only visible after completing Fragment 1 */}
+        {progress.frag1_sequence_completed && (
+          <div className="mt-16">
+            <BrechaPortal
+              isUnlocked={progress.frag1_sequence_completed}
+              onTraverse={handlePortalTraversed}
+              hasTraversed={progress.portal_traversed}
+            />
+          </div>
+        )}
 
-        <RunicDivider symbol="◇" />
-
-        {/* Portal to Fragmento 2 */}
-        <BrechaPortal
-          isUnlocked={progress.frag1_sequence_completed}
-          onTraverse={handlePortalTraversed}
-          hasTraversed={progress.portal_traversed}
-        />
-
-        {/* Fragmento 2: El Espejo (only visible after portal) */}
+        {/* Fragmento 2: El Espejo (only visible after portal traversal) */}
         {progress.portal_traversed && (
-          <>
-            <RunicDivider />
+          <div className="mt-16">
             <BrechaFragmento
               token={token}
               fragmentNumber={2}
@@ -281,26 +279,30 @@ const LaBrecha = () => {
               onVideoProgress={handleFrag2VideoProgress}
               assistantEmbedId="assistant-frag2"
             />
-          </>
+          </div>
         )}
 
-        <RunicDivider symbol="✦" />
-
-        {/* Decision section */}
-        <BrechaDecision
-          frag1Completed={progress.frag1_sequence_completed}
-          frag2Completed={progress.frag2_sequence_completed}
-          frag1MissedCount={progress.frag1_drops_missed.length}
-          frag2MissedCount={progress.frag2_drops_missed.length}
-        />
+        {/* Decision section - only visible after portal traversal */}
+        {progress.portal_traversed && (
+          <div className="mt-16">
+            <BrechaDecision
+              frag1Completed={progress.frag1_sequence_completed}
+              frag2Completed={progress.frag2_sequence_completed}
+              frag1MissedCount={progress.frag1_drops_missed.length}
+              frag2MissedCount={progress.frag2_drops_missed.length}
+            />
+          </div>
+        )}
       </div>
 
-      {/* Footer with CTA - outside container for full width */}
-      <BrechaFooter
-        showCalendar={bothCompleted}
-        firstName={lead?.first_name || undefined}
-        eventDate={EVENT_DATE}
-      />
+      {/* Footer with CTA - only visible after completing both fragments */}
+      {bothCompleted && (
+        <BrechaFooter
+          showCalendar={bothCompleted}
+          firstName={lead?.first_name || undefined}
+          eventDate={BRECHA_CLOSES}
+        />
+      )}
     </div>
   );
 };
