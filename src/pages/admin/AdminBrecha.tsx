@@ -1,34 +1,51 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Construction } from "lucide-react";
+import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BrechaJourneyMetrics from "@/components/brecha/BrechaJourneyMetrics";
+import BrechaLeadsManager from "@/components/brecha/BrechaLeadsManager";
 
 export default function AdminBrecha() {
+  const [dateRange, setDateRange] = useState("30");
+
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">La Brecha</h1>
-        <p className="text-muted-foreground">Journey metrics y gestión de leads (Fase 2)</p>
+        <p className="text-muted-foreground">Journey metrics y gestión de leads</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Construction className="h-5 w-5" />
-            En desarrollo
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            El sistema de tracking y gestión de leads para La Brecha se implementará en la Fase 2.
-            Incluirá:
-          </p>
-          <ul className="list-disc list-inside mt-4 space-y-2 text-muted-foreground">
-            <li>BrechaLeadsManager - Gestión de leads con tier/cualificación</li>
-            <li>BrechaJourneyMetrics - Métricas por fragmento</li>
-            <li>Tracking de drops capturados vs perdidos</li>
-            <li>Estado de rituales y portales</li>
-          </ul>
-        </CardContent>
-      </Card>
+      {/* Controls */}
+      <div className="flex flex-wrap items-center gap-4 bg-card p-4 rounded-lg border">
+        <div className="flex items-center gap-2">
+          <Label htmlFor="date-range">Período:</Label>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger id="date-range" className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Últimos 7 días</SelectItem>
+              <SelectItem value="30">Últimos 30 días</SelectItem>
+              <SelectItem value="90">Últimos 90 días</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <Tabs defaultValue="journey" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="journey">Journey Metrics</TabsTrigger>
+          <TabsTrigger value="leads">Gestión Leads</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="journey" className="space-y-6">
+          <BrechaJourneyMetrics intervalDays={parseFloat(dateRange)} />
+        </TabsContent>
+
+        <TabsContent value="leads" className="space-y-6">
+          <BrechaLeadsManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
