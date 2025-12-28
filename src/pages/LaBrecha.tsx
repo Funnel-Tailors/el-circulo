@@ -46,6 +46,32 @@ const LaBrecha = () => {
   const frag2Ref = useRef<HTMLDivElement>(null);
   const frag3Ref = useRef<HTMLDivElement>(null);
   const frag4Ref = useRef<HTMLDivElement>(null);
+  const footerRef = useRef<HTMLDivElement>(null);
+
+  // Track if all fragments are completed (live check)
+  const allFragmentsCompleted = 
+    progress.frag1_sequence_completed && 
+    progress.frag2_sequence_completed && 
+    progress.frag3_sequence_completed && 
+    progress.frag4_sequence_completed;
+
+  // BLOQUEO ESTRICTO: Marcar journey_completed al cerrar pestaña
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (allFragmentsCompleted && !progress.journey_completed && token) {
+        // Usar sendBeacon para garantizar que se envíe antes de cerrar
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/brecha_progress?token=eq.${token}`;
+        const body = JSON.stringify({ 
+          journey_completed: true, 
+          journey_completed_at: new Date().toISOString() 
+        });
+        navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }));
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [allFragmentsCompleted, progress.journey_completed, token]);
 
   // Epic expired state with VortexEffect
   if (isExpired()) {
@@ -114,6 +140,40 @@ const LaBrecha = () => {
           <p className="text-muted-foreground">
             {error || "No tienes permiso para acceder a la brecha. Contacta con nosotros si crees que es un error."}
           </p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // BLOQUEO ESTRICTO: Si journey_completed = true, mostrar pantalla de cierre
+  if (progress.journey_completed) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
+        <ShootingStars />
+        <Starfield />
+        <VortexEffect size="lg" isClosing={true} rotationSpeed={25} />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.8 }}
+          className="relative z-20 text-center max-w-xl px-4"
+        >
+          <span className="text-6xl mb-6 block">⟡</span>
+          <h1 className="text-4xl md:text-5xl font-display font-bold glow mb-4">
+            TU VIAJE HA CONCLUIDO
+          </h1>
+          <p className="text-xl text-muted-foreground mb-6">
+            Ya cruzaste La Brecha. Si no agendaste tu llamada de iniciación, 
+            contáctanos directamente para tu próximo paso.
+          </p>
+          <a 
+            href="https://wa.me/34684024700?text=Hola%2C%20complet%C3%A9%20La%20Brecha%20pero%20no%20pude%20agendar%20mi%20llamada"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+          >
+            Contactar por WhatsApp
+          </a>
         </motion.div>
       </div>
     );
@@ -285,13 +345,6 @@ const LaBrecha = () => {
       frag4Ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 600);
   };
-
-  // Check completion status
-  const allFragmentsCompleted = 
-    progress.frag1_sequence_completed && 
-    progress.frag2_sequence_completed && 
-    progress.frag3_sequence_completed && 
-    progress.frag4_sequence_completed;
 
   // Check if user has full access (qualified) or limited access (disqualified)
   const hasFullAccess = lead?.is_qualified === true;
@@ -477,11 +530,13 @@ const LaBrecha = () => {
 
       {/* Footer with CTA - only visible after completing all fragments */}
       {allFragmentsCompleted && (
-        <BrechaFooter
-          showCalendar={allFragmentsCompleted}
-          firstName={lead?.first_name || undefined}
-          eventDate={BRECHA_CLOSES}
-        />
+        <div ref={footerRef}>
+          <BrechaFooter
+            showCalendar={allFragmentsCompleted}
+            firstName={lead?.first_name || undefined}
+            eventDate={BRECHA_CLOSES}
+          />
+        </div>
       )}
     </div>
   );
