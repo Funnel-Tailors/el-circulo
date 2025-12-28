@@ -18,11 +18,11 @@ import { GPTRoleplayCard } from "@/components/shared/GPTRoleplayCard";
 // Video URL (same as Module4)
 const VIDEO_MASTERCLASS = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68af36e8123b93670b1fc364.mp4";
 
-// Roleplay GPT
+// Roleplay GPT - El Eco del Cliente
 const GPT_ROLEPLAY = {
-  id: "cliente-circulo",
-  name: "Cliente del Círculo",
-  description: "Practica cierres reales con un cliente simulado",
+  id: "eco-cliente",
+  name: "El Eco del Cliente",
+  description: "Practica cierres con un reflejo del que te comprará",
   url: "https://chatgpt.com/g/g-68a4634fe12c81918e514fb812f40fa8-cliente-del-circulo",
   icon: "🎭"
 };
@@ -288,9 +288,9 @@ export const BrechaFragmento4 = ({
           roleplay={GPT_ROLEPLAY}
           isUnlocked={allDropsCapturedNoMisses}
           isPermanentlyLocked={roleplayPermanentlyLocked}
-          pendingMessage="Captura todos los resquicios y completa el ritual para desbloquear"
+          pendingMessage="La Voz aún no te reconoce. Completa el ritual."
           lockedMessage="Perdiste resquicios durante el video"
-          successMessage="Roleplay desbloqueado - Practica tu cierre con un cliente simulado"
+          successMessage="El Eco te espera. Practica tu cierre."
           onOpen={handleRoleplayClick}
           animationDelay={1.6}
           className="mt-8"
