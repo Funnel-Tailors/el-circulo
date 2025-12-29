@@ -136,9 +136,9 @@ export default function AdminDevTools() {
           </div>
         </div>
 
-        {/* SKIP THE LINE OTO PREVIEW */}
-        <div className="glass-card-dark p-6 max-w-2xl mx-auto text-center mt-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">💰 Skip the Line OTO Preview</h2>
+        {/* BRECHA FOOTER PREVIEW - Full section with calendar + OTO */}
+        <div className="glass-card-dark p-6 max-w-4xl mx-auto text-center mt-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">💰 Brecha Footer Preview (Calendario + OTO)</h2>
           
           {/* Device selector */}
           <div className="flex justify-center gap-2 mb-6">
@@ -160,10 +160,49 @@ export default function AdminDevTools() {
             </button>
           </div>
           
-          {/* Preview container */}
-          <div className={`mx-auto transition-all duration-300 ${
-            otoPreviewMode === "mobile" ? "max-w-sm" : "max-w-lg"
+          {/* Full footer preview container */}
+          <div className={`mx-auto transition-all duration-300 text-left ${
+            otoPreviewMode === "mobile" ? "max-w-sm" : "max-w-2xl"
           }`}>
+            {/* Value Stack Preview */}
+            <div className="glass-card-dark p-4 mb-6 rounded-xl">
+              <p className="text-foreground/60 text-xs uppercase tracking-wider mb-3 text-center">
+                ADEMÁS de todo lo que has visto:
+              </p>
+              <div className="space-y-1.5 text-sm text-foreground/80">
+                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>Onboarding 1-1 de bienvenida</p>
+                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>Directos cada semana</p>
+                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>Chat 24/7</p>
+                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>El Artefacto — 20 días gratis</p>
+                <p className="flex items-start gap-2 text-muted-foreground/60"><span className="mt-0.5">✦</span>Y mucho más...</p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-foreground/10 text-center">
+                <p className="text-muted-foreground text-sm">
+                  <span className="line-through opacity-60">€3,500</span>
+                  <span className="text-foreground font-bold text-lg mx-2">→ €3,000</span>
+                  <span className="text-foreground/60 text-xs">(con tu beca)</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Calendar placeholder */}
+            <div className="text-center mb-3">
+              <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
+            </div>
+            <div className="glass-card-dark p-4 rounded-xl mb-6">
+              <div className="bg-black/30 rounded-lg h-40 flex items-center justify-center border border-foreground/5">
+                <span className="text-foreground/30 text-sm">[Calendario GHL]</span>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="flex items-center gap-4 my-6">
+              <div className="flex-1 h-px bg-foreground/10" />
+              <span className="text-muted-foreground/40 text-sm">✦ O ✦</span>
+              <div className="flex-1 h-px bg-foreground/10" />
+            </div>
+
+            {/* Skip the Line CTA */}
             <SkipTheLineOffer 
               ghlPaymentUrl="#preview"
               firstName="Test"
@@ -173,8 +212,8 @@ export default function AdminDevTools() {
             />
           </div>
           
-          <p className="text-muted-foreground/50 text-xs mt-4">
-            Preview mode - el botón no redirige. Necesitas configurar el Payment Link de GHL.
+          <p className="text-muted-foreground/50 text-xs mt-6">
+            Preview mode - el botón no redirige. Esto es exactamente lo que verá el usuario en La Brecha.
           </p>
         </div>
 
