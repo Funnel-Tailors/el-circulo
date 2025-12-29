@@ -249,10 +249,10 @@ export const BrechaFragmento3 = ({
         >
           <div className="flex items-center gap-3 mb-4">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              video1Completed ? 'bg-green-500/20' : 'bg-foreground/10'
+              video1Completed ? 'bg-foreground/20' : 'bg-foreground/10'
             }`}>
               {video1Completed ? (
-                <Check className="w-5 h-5 text-green-400" />
+                <Check className="w-5 h-5 text-foreground glow" />
               ) : (
                 <Play className="w-5 h-5 text-foreground" />
               )}
@@ -286,7 +286,7 @@ export const BrechaFragmento3 = ({
             </div>
             <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
               <motion.div 
-                className={`h-full ${video1Completed ? 'bg-green-500/60' : 'bg-foreground/40'}`}
+                className={`h-full ${video1Completed ? 'bg-foreground/60' : 'bg-foreground/40'}`}
                 animate={{ width: `${video1Progress}%` }}
                 transition={{ duration: 0.5 }}
               />

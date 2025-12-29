@@ -283,15 +283,15 @@ const getMilestoneStatus = (
 };
 
 const statusColors: Record<MilestoneStatus, string> = {
-  completed: 'text-emerald-400 bg-emerald-950/50 border-emerald-500/30',
-  partial: 'text-amber-400 bg-amber-950/50 border-amber-500/30',
+  completed: 'text-foreground glow bg-foreground/10 border-foreground/30',
+  partial: 'text-foreground/70 bg-foreground/5 border-foreground/20',
   locked: 'text-foreground/30 bg-foreground/5 border-foreground/10',
 };
 
 const statusIcons: Record<MilestoneStatus, string> = {
-  completed: '✅',
-  partial: '⚠️',
-  locked: '🔒',
+  completed: '✓',
+  partial: '◇',
+  locked: '○',
 };
 
 export const BrechaProgressBar = ({
@@ -348,7 +348,7 @@ export const BrechaProgressBar = ({
         {/* Progress bar */}
         <div className="flex-1 h-2 bg-foreground/10 rounded-full overflow-hidden min-w-[60px]">
           <motion.div
-            className="h-full bg-gradient-to-r from-red-500 via-orange-500 to-amber-500"
+            className="h-full bg-gradient-to-r from-foreground/40 via-foreground/60 to-foreground/80"
             initial={{ width: 0 }}
             animate={{ width: `${progressPercent}%` }}
             transition={{ duration: 0.5 }}

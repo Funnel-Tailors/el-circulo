@@ -192,6 +192,9 @@ export type Database = {
           portal2_traversed_at: string | null
           portal3_traversed: boolean | null
           portal3_traversed_at: string | null
+          skip_the_line_clicked: boolean | null
+          skip_the_line_clicked_at: string | null
+          skip_the_line_shown: boolean | null
           token: string
           updated_at: string | null
         }
@@ -252,6 +255,9 @@ export type Database = {
           portal2_traversed_at?: string | null
           portal3_traversed?: boolean | null
           portal3_traversed_at?: string | null
+          skip_the_line_clicked?: boolean | null
+          skip_the_line_clicked_at?: string | null
+          skip_the_line_shown?: boolean | null
           token: string
           updated_at?: string | null
         }
@@ -312,6 +318,9 @@ export type Database = {
           portal2_traversed_at?: string | null
           portal3_traversed?: boolean | null
           portal3_traversed_at?: string | null
+          skip_the_line_clicked?: boolean | null
+          skip_the_line_clicked_at?: string | null
+          skip_the_line_shown?: boolean | null
           token?: string
           updated_at?: string | null
         }
