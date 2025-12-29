@@ -7,6 +7,7 @@
 
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
+import { useMemo } from "react";
 
 interface SkipTheLineOfferProps {
   ghlPaymentUrl?: string;
@@ -18,6 +19,18 @@ interface SkipTheLineOfferProps {
   isPreview?: boolean;
 }
 
+// Generate random positions for particles
+const generateParticles = (count: number) => {
+  return Array.from({ length: count }).map((_, i) => ({
+    id: i,
+    startX: Math.random() * 100, // % position along button width
+    delay: Math.random() * 2.5, // staggered start
+    duration: 2 + Math.random() * 1.5, // 2-3.5s
+    driftX: (Math.random() - 0.5) * 30, // slight horizontal drift
+    size: 6 + Math.random() * 4, // 6-10px
+  }));
+};
+
 export const SkipTheLineOffer = ({
   ghlPaymentUrl = "https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2",
   firstName,
@@ -27,6 +40,9 @@ export const SkipTheLineOffer = ({
   onCtaClick,
   isPreview = false,
 }: SkipTheLineOfferProps) => {
+  // Memoize particles so they don't regenerate on every render
+  const particles = useMemo(() => generateParticles(14), []);
+
   // Build payment URL with pre-populated data
   const buildPaymentUrl = () => {
     if (!ghlPaymentUrl || ghlPaymentUrl === "#") return "#";
@@ -80,22 +96,49 @@ export const SkipTheLineOffer = ({
         <span className="text-foreground font-semibold">6 cuotas de €500/mes</span>
       </p>
 
-      {/* Mega CTA Button */}
-      <motion.button
-        onClick={handleClick}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full max-w-md mx-auto py-4 px-8 rounded-lg font-bold transition-all
-                   bg-foreground text-background hover:bg-foreground/90
-                   shadow-[0_0_40px_-5px_hsl(var(--foreground)/0.5)]
-                   animate-[pulse_3s_ease-in-out_infinite]"
-        style={{
-          animationTimingFunction: 'ease-in-out',
-        }}
-      >
-        <span className="block text-lg">ENTRA POR €500 HOY</span>
-        <span className="block text-xs opacity-70 mt-0.5">(Sólo aquí, solo ahora)</span>
-      </motion.button>
+      {/* Mega CTA Button with particles */}
+      <div className="relative w-full max-w-md mx-auto">
+        {/* Floating particles */}
+        {particles.map((particle) => (
+          <motion.div
+            key={particle.id}
+            className="absolute pointer-events-none text-foreground/70 z-10"
+            style={{
+              left: `${particle.startX}%`,
+              bottom: 0,
+              fontSize: `${particle.size}px`,
+            }}
+            initial={{ y: 0, x: 0, opacity: 0 }}
+            animate={{
+              y: [-10, -80],
+              x: [0, particle.driftX],
+              opacity: [0, 0.9, 0.6, 0],
+            }}
+            transition={{
+              duration: particle.duration,
+              delay: particle.delay,
+              repeat: Infinity,
+              ease: "easeOut",
+            }}
+          >
+            ✦
+          </motion.div>
+        ))}
+
+        {/* Button with intense glow */}
+        <motion.button
+          onClick={handleClick}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="relative w-full py-4 px-8 rounded-lg font-bold transition-colors
+                     bg-foreground text-background hover:bg-foreground/90
+                     ring-1 ring-foreground/60
+                     animate-glow-pulse-intense"
+        >
+          <span className="block text-lg">ENTRA POR €500 HOY</span>
+          <span className="block text-xs opacity-70 mt-0.5">(Sólo aquí, solo ahora)</span>
+        </motion.button>
+      </div>
 
       {/* Disclaimer */}
       <p className="text-muted-foreground/40 text-xs mt-3">
