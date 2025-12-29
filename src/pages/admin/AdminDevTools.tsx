@@ -7,8 +7,8 @@ import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { EndlessTools3D } from "@/components/senda/EndlessTools3D";
+import { SkipTheLineOffer } from "@/components/brecha/SkipTheLineOffer";
 import { toast } from "@/hooks/use-toast";
-import { AlertTriangle } from "lucide-react";
 
 // Drops config info for display
 const DROPS_INFO: Record<number, { count: number; windowMs: number; autoCapture: boolean }> = {
@@ -36,6 +36,9 @@ export default function AdminDevTools() {
   const [element3DSize, setElement3DSize] = useState<"sm" | "md" | "lg" | "xl">("md");
   const [showGlow, setShowGlow] = useState(true);
   const [showFloat, setShowFloat] = useState(true);
+
+  // OTO Preview state
+  const [otoPreviewMode, setOtoPreviewMode] = useState<"mobile" | "desktop">("desktop");
 
   const {
     drops,
@@ -133,6 +136,48 @@ export default function AdminDevTools() {
           </div>
         </div>
 
+        {/* SKIP THE LINE OTO PREVIEW */}
+        <div className="glass-card-dark p-6 max-w-2xl mx-auto text-center mt-6">
+          <h2 className="text-lg font-semibold text-foreground mb-4">💰 Skip the Line OTO Preview</h2>
+          
+          {/* Device selector */}
+          <div className="flex justify-center gap-2 mb-6">
+            <button
+              onClick={() => setOtoPreviewMode("mobile")}
+              className={`px-4 py-2 rounded text-sm ${
+                otoPreviewMode === "mobile" ? "bg-primary text-primary-foreground" : "dark-button"
+              }`}
+            >
+              📱 Mobile
+            </button>
+            <button
+              onClick={() => setOtoPreviewMode("desktop")}
+              className={`px-4 py-2 rounded text-sm ${
+                otoPreviewMode === "desktop" ? "bg-primary text-primary-foreground" : "dark-button"
+              }`}
+            >
+              💻 Desktop
+            </button>
+          </div>
+          
+          {/* Preview container */}
+          <div className={`mx-auto transition-all duration-300 ${
+            otoPreviewMode === "mobile" ? "max-w-sm" : "max-w-lg"
+          }`}>
+            <SkipTheLineOffer 
+              ghlPaymentUrl="#preview"
+              firstName="Test"
+              email="test@example.com"
+              isPreview={true}
+              onCtaClick={() => toast({ title: "CTA clicked!", description: "En producción redirigirá al Payment Link de GHL" })}
+            />
+          </div>
+          
+          <p className="text-muted-foreground/50 text-xs mt-4">
+            Preview mode - el botón no redirige. Necesitas configurar el Payment Link de GHL.
+          </p>
+        </div>
+
         {/* ENDLESS TOOLS 3D TEST SECTION */}
         <div className="glass-card-dark p-6 max-w-lg mx-auto text-center mt-6">
           <h2 className="text-lg font-semibold text-foreground mb-4">✦ Elemento 3D Endless Tools</h2>
@@ -197,7 +242,7 @@ export default function AdminDevTools() {
                 >
                   <span>{classNum <= 4 ? `Clase ${classNum}` : `Brecha F${classNum - 4}`}</span>
                   <span className="opacity-70">({info.count})</span>
-                  {!info.autoCapture && <AlertTriangle className="w-3 h-3 text-destructive" />}
+                  {!info.autoCapture && <span className="text-muted-foreground">◇</span>}
                 </button>
               );
             })}
@@ -210,8 +255,8 @@ export default function AdminDevTools() {
               <span className="text-foreground/50">|</span>
               <span className="text-foreground/70">Window: {currentConfig.windowMs / 1000}s</span>
               <span className="text-foreground/50">|</span>
-              <span className={!currentConfig.autoCapture ? "text-destructive" : "text-primary"}>
-                {currentConfig.autoCapture ? "✅ Auto" : "⚠️ Manual"}
+              <span className={!currentConfig.autoCapture ? "text-muted-foreground" : "text-primary"}>
+                {currentConfig.autoCapture ? "✓ Auto" : "◇ Manual"}
               </span>
             </div>
           </div>

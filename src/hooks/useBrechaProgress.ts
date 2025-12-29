@@ -54,6 +54,11 @@ interface BrechaProgress {
   portal2_traversed: boolean;
   portal3_traversed: boolean;
   journey_completed: boolean;
+  
+  // Skip the Line OTO
+  skip_the_line_shown: boolean;
+  skip_the_line_clicked: boolean;
+  skip_the_line_clicked_at: string | null;
 }
 
 const DEFAULT_PROGRESS: BrechaProgress = {
@@ -104,6 +109,10 @@ const DEFAULT_PROGRESS: BrechaProgress = {
   portal2_traversed: false,
   portal3_traversed: false,
   journey_completed: false,
+  
+  skip_the_line_shown: false,
+  skip_the_line_clicked: false,
+  skip_the_line_clicked_at: null,
 };
 
 interface UseBrechaProgressReturn {

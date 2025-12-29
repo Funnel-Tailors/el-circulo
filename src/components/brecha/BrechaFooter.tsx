@@ -1,19 +1,29 @@
 import { motion } from "framer-motion";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
-import { AlertTriangle } from "lucide-react";
+import { SkipTheLineOffer } from "./SkipTheLineOffer";
 
 interface BrechaFooterProps {
   showCalendar: boolean;
   calendarId?: string;
   firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
   eventDate: Date;
+  ghlPaymentUrl?: string;
+  onSkipTheLineClick?: () => void;
 }
 
 export const BrechaFooter = ({ 
   showCalendar, 
   calendarId = "8C2kck4NCnEihznxvL29",
   firstName,
+  lastName,
+  email,
+  phone,
   eventDate,
+  ghlPaymentUrl,
+  onSkipTheLineClick,
 }: BrechaFooterProps) => {
   const isExpired = eventDate.getTime() < Date.now();
 
@@ -107,45 +117,62 @@ export const BrechaFooter = ({
               </motion.div>
             </div>
 
-            {/* Calendar Header */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              className="text-center mb-6"
-            >
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
-                <span className="text-muted-foreground text-sm">Agenda tu ritual de iniciación</span>
-                <div className="h-px w-12 bg-gradient-to-l from-transparent to-border" />
+            {/* ===== DUAL LAYOUT: OTO + CALENDAR ===== */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {/* Skip the Line OTO - First on mobile, second on desktop */}
+              <div className="order-first lg:order-last">
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.2 }}
+                  className="text-center mb-4"
+                >
+                  <span className="text-muted-foreground text-sm">¿Ya lo tienes claro?</span>
+                </motion.div>
+                <SkipTheLineOffer
+                  ghlPaymentUrl={ghlPaymentUrl}
+                  firstName={firstName}
+                  lastName={lastName}
+                  email={email}
+                  phone={phone}
+                  onCtaClick={onSkipTheLineClick}
+                />
               </div>
-              <p className="text-muted-foreground/70 text-sm">
-                El último paso para verificar tu compromiso
-              </p>
-            </motion.div>
 
-            {/* Calendar */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 }}
-              className="glass-card-dark p-4 max-w-4xl mx-auto rounded-xl overflow-hidden"
-            >
-              <GHLCalendarIframe 
-                calendarId={calendarId}
-                firstName={firstName}
-              />
-            </motion.div>
+              {/* Calendar Section */}
+              <div>
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1 }}
+                  className="text-center mb-4"
+                >
+                  <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
+                </motion.div>
 
-            {/* ⚠️ Advertencia de única oportunidad */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.2 }}
+                  className="glass-card-dark p-4 rounded-xl overflow-hidden"
+                >
+                  <GHLCalendarIframe 
+                    calendarId={calendarId}
+                    firstName={firstName}
+                  />
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Disclaimer */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.5 }}
               className="mt-8 max-w-md mx-auto"
             >
-              <div className="flex items-center justify-center gap-2 text-amber-500/80 text-sm">
-                <AlertTriangle className="w-4 h-4" />
+              <div className="flex items-center justify-center gap-2 text-muted-foreground/60 text-sm">
+                <span className="text-foreground/40">✦</span>
                 <span>Esta es tu única oportunidad. Al cerrar esta pestaña, La Brecha se sella.</span>
               </div>
             </motion.div>

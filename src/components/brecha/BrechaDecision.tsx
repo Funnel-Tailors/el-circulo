@@ -55,7 +55,7 @@ export const BrechaDecision = ({
             totalMissed > 0 ? (
               <>
                 Has completado ambos fragmentos, aunque{' '}
-                <span className="text-destructive/80">
+                <span className="text-muted-foreground/70">
                   {totalMissed} fragmento{totalMissed > 1 ? 's' : ''} se perdió para siempre
                 </span>.
                 <br />
@@ -116,7 +116,7 @@ const FragmentStatus = ({
       Fragmento {number}
     </span>
     {missedCount > 0 && (
-      <span className="text-xs text-destructive/70 mt-1">
+      <span className="text-xs text-muted-foreground/50 mt-1">
         {missedCount} perdido{missedCount > 1 ? 's' : ''}
       </span>
     )}

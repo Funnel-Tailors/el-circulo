@@ -193,10 +193,10 @@ export const BrechaFragmento4 = ({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/30"
+              className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-foreground/5 border border-foreground/20"
             >
-              <AlertTriangle className="w-4 h-4 text-destructive" />
-              <span className="text-sm text-destructive/80">
+              <span className="text-foreground/60">◇</span>
+              <span className="text-sm text-muted-foreground">
                 Los resquicios aparecen por {windowMs / 1000}s. Si no los capturas, se pierden para siempre.
               </span>
             </motion.div>
@@ -266,21 +266,21 @@ export const BrechaFragmento4 = ({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.4 }}
-            className="mt-8 glass-card-dark p-6 border-destructive/30 border-2"
+            className="mt-8 glass-card-dark p-6 border-foreground/20 border"
           >
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-full bg-destructive/20">
-                <Lock className="w-6 h-6 text-destructive" />
+              <div className="p-3 rounded-full bg-foreground/10">
+                <Lock className="w-6 h-6 text-muted-foreground" />
               </div>
               <div>
-                <h4 className="text-lg font-semibold text-destructive mb-2">
+                <h4 className="text-lg font-semibold text-foreground/70 mb-2">
                   Resquicios Perdidos
                 </h4>
-                <p className="text-foreground/60 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Has perdido {progress.drops_missed.length} resquicio(s). 
                   El Cliente del Círculo no te recibirá para practicar.
                 </p>
-                <p className="text-foreground/40 text-xs mt-2">
+                <p className="text-muted-foreground/60 text-xs mt-2">
                   Aún puedes completar el contenido, pero el roleplay está bloqueado permanentemente.
                 </p>
               </div>
