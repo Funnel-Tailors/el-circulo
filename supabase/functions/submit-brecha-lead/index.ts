@@ -1046,12 +1046,20 @@ Deno.serve(async (req) => {
     // Check for hardstops
     let hardstopReason: string | null = null
     
-    if (revenueParsed?.hardstop) {
+    // Budget 1500+ bypasa hardstop de low_revenue (pueden pagar la OTO de €500)
+    const hasSufficientBudget = budgetParsed?.value && 
+      ['1500_3000', '3000_5000', 'mas_5000'].includes(budgetParsed.value)
+    
+    if (revenueParsed?.hardstop && !hasSufficientBudget) {
       hardstopReason = 'low_revenue'
-      console.log('HARDSTOP: Low revenue detected')
+      console.log('HARDSTOP: Low revenue + low budget detected')
     } else if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
       console.log('HARDSTOP: Low budget detected')
+    }
+    
+    if (revenueParsed?.hardstop && hasSufficientBudget) {
+      console.log('LOW REVENUE but BUDGET 1500+ - bypassing hardstop, showing full journey')
     }
 
     // Calculate qualification score
