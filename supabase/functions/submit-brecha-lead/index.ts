@@ -545,6 +545,158 @@ ${closingStrategy}
   `.trim()
 }
 
+// ============= BRECHA FOLLOW-UPS (Empujan a completar el journey) =============
+
+function generateBrechaFollowUp1(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const randomReality = realities[Math.floor(Math.random() * realities.length)]
+  
+  return `
+${firstName}.
+
+${randomReality}
+
+Hay algo esperándote al final del cuarto fragmento.
+
+Algo que solo unos pocos elegidos verán.
+
+No es para turistas.
+Es para los que terminan lo que empiezan.
+
+${brechaUrl}
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateBrechaFollowUp2(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior']
+  
+  return `
+${firstName}.
+
+${contrast}
+
+Misma semana.
+Mismo talento.
+Distinta decisión.
+
+La diferencia entre los que cambian y los que siguen igual...
+
+Es que unos terminan La Brecha.
+Y otros la abandonan a mitad.
+
+Al final del cuarto fragmento hay algo que no puedo contarte aquí.
+
+${brechaUrl}
+
+¿Vas a verlo o no?
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateBrechaFollowUp3(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
+  const firstName = name.split(' ')[0]
+  const profession = answers.q2 || 'Otro servicio creativo'
+  const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo']
+  const pain = answers.q1 || ''
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const randomReality = realities[Math.floor(Math.random() * realities.length)]
+  
+  return `
+${firstName}.
+
+${randomReality}
+
+Nico. Felipe. Dani. Cris.
+
+Todos estaban exactamente donde tú estás ahora.
+
+${successStory}
+
+La diferencia no era el talento.
+Era que terminaron lo que empezaron.
+
+Al final del cuarto fragmento se revela algo que cambia todo.
+
+${brechaUrl}
+
+Pero solo para los que llegan.
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateBrechaFollowUp4(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
+  const firstName = name.split(' ')[0]
+  const pain = answers.q1 || ''
+  const level = getAgitationLevel(score)
+  const fears = fearCalls[level]
+  const randomFear = fears[Math.floor(Math.random() * fears.length)]
+  
+  return `
+Prefiero ser pesado que ser pobre.
+
+${firstName}.
+
+${randomFear}
+
+Llevas días (¿semanas?) con La Brecha a medias.
+
+Los fragmentos no se van a ver solos.
+Y lo que hay al final del cuarto...
+
+Solo los que terminan lo ven.
+
+${brechaUrl}
+
+No voy a seguir insistiendo mucho más.
+
+—
+El Círculo
+  `.trim()
+}
+
+function generateBrechaFollowUp5(name: string, answers: QuizAnswers, brechaUrl: string): string {
+  const firstName = name.split(' ')[0]
+  
+  return `
+${firstName}.
+
+Último aviso.
+
+No voy a escribirte más sobre La Brecha.
+
+Si no la terminas, no pasa nada.
+Seguirás cobrando lo mismo.
+Trabajando las mismas horas.
+Con los mismos clientes de siempre.
+
+Y dentro de 6 meses estarás exactamente igual.
+
+Los que terminan los 4 fragmentos ven algo que cambia todo.
+
+Los que abandonan a mitad... bueno.
+
+${brechaUrl}
+
+Tú decides.
+
+—
+El Círculo
+  `.trim()
+}
+
+// ============= LEGACY FOLLOW-UPS (Keep for backwards compatibility) =============
+
 function generateFollowUp1(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0]
   const pain = answers.q1 || ''
@@ -1020,11 +1172,11 @@ Deno.serve(async (req) => {
     const clientNotification = generateClientNotification(first_name || 'Lead', literalAnswers, score)
     const clientPostBookingNotification = generateClientPostBookingNotification(first_name || 'Lead', literalAnswers, score)
     const closerPreCallNotification = generateCloserPreCallNotification(contactData, literalAnswers, score)
-    const followUp1 = generateFollowUp1(first_name || 'Lead', literalAnswers, score)
-    const followUp2 = generateFollowUp2(first_name || 'Lead', literalAnswers, score)
-    const followUp3 = generateFollowUp3(first_name || 'Lead', literalAnswers, score)
-    const followUp4 = generateFollowUp4(first_name || 'Lead', literalAnswers, score)
-    const followUp5 = generateFollowUp5(first_name || 'Lead', literalAnswers)
+    const followUp1 = generateBrechaFollowUp1(first_name || 'Lead', literalAnswers, score, brechaUrl)
+    const followUp2 = generateBrechaFollowUp2(first_name || 'Lead', literalAnswers, score, brechaUrl)
+    const followUp3 = generateBrechaFollowUp3(first_name || 'Lead', literalAnswers, score, brechaUrl)
+    const followUp4 = generateBrechaFollowUp4(first_name || 'Lead', literalAnswers, score, brechaUrl)
+    const followUp5 = generateBrechaFollowUp5(first_name || 'Lead', literalAnswers, brechaUrl)
 
     // ============= UPDATE GHL CONTACT DIRECTLY =============
     
