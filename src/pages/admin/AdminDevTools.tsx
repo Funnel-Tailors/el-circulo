@@ -164,18 +164,18 @@ export default function AdminDevTools() {
               {/* Badge */}
               <div className="inline-block mb-4">
                 <div className="glass-card-dark px-5 py-1.5 rounded-full border border-primary/30">
-                  <span className="text-primary text-xs font-medium">✦ ARTEFACTO DESBLOQUEADO ✦</span>
+                  <span className="text-primary text-xs font-medium">✦ EL CONSEJO HA HABLADO ✦</span>
                 </div>
               </div>
               
               <h2 className="text-2xl md:text-4xl font-display font-black glow mb-3">
-                ACCESO A EL CÍRCULO
+                Viajero, has demostrado ser digno.
               </h2>
               
               <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">
                 Tu viaje por La Brecha te ha otorgado una{" "}
                 <span className="text-foreground font-semibold">Beca Parcial de €500</span>. 
-                En principio eres digno, pero necesitamos verificarlo en una última llamada de iniciación.
+                Ahora tienes acceso exclusivo a El Círculo.
               </p>
 
               {/* Value Stack COMPLETO */}
@@ -204,15 +204,12 @@ export default function AdminDevTools() {
               </div>
             </div>
 
-            {/* ===== CALENDAR PLACEHOLDER ===== */}
-            <div className="text-center mb-2">
-              <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
-            </div>
-            <div className="glass-card-dark p-4 rounded-xl mb-6">
-              <div className="bg-black/30 rounded-lg h-48 flex items-center justify-center">
-                <span className="text-foreground/30 text-sm">[Calendario GHL]</span>
-              </div>
-            </div>
+            {/* ===== SKIP THE LINE CTA - PRIMERO ===== */}
+            <SkipTheLineOffer
+              ghlPaymentUrl="https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2"
+              isPreview={true}
+              onCtaClick={() => console.log("Skip the line clicked (preview)")}
+            />
 
             {/* Divider */}
             <div className="flex items-center gap-4 my-6">
@@ -221,12 +218,15 @@ export default function AdminDevTools() {
               <div className="flex-1 h-px bg-foreground/10" />
             </div>
 
-            {/* ===== SKIP THE LINE CTA ===== */}
-            <SkipTheLineOffer
-              ghlPaymentUrl="https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2"
-              isPreview={true}
-              onCtaClick={() => console.log("Skip the line clicked (preview)")}
-            />
+            {/* ===== CALENDAR PLACEHOLDER - DESPUÉS ===== */}
+            <div className="text-center mb-2">
+              <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
+            </div>
+            <div className="glass-card-dark p-4 rounded-xl mb-6">
+              <div className="bg-black/30 rounded-lg h-48 flex items-center justify-center">
+                <span className="text-foreground/30 text-sm">[Calendario GHL]</span>
+              </div>
+            </div>
 
             {/* Disclaimer */}
             <div className="mt-6 text-center">
