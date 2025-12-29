@@ -98,19 +98,19 @@ export const SkipTheLineOffer = ({
 
       {/* Mega CTA Button with particles */}
       <div className="relative w-full max-w-md mx-auto">
-        {/* Floating particles */}
+        {/* Floating particles - spawn from top edge, float upward outside the button */}
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="absolute pointer-events-none text-foreground/70 z-10"
+            className="absolute pointer-events-none text-foreground/70 z-20"
             style={{
               left: `${particle.startX}%`,
-              bottom: 0,
+              top: 0,
               fontSize: `${particle.size}px`,
             }}
             initial={{ y: 0, x: 0, opacity: 0 }}
             animate={{
-              y: [-10, -80],
+              y: [0, -80],
               x: [0, particle.driftX],
               opacity: [0, 0.9, 0.6, 0],
             }}
