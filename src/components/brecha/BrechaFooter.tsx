@@ -117,18 +117,48 @@ export const BrechaFooter = ({
               </motion.div>
             </div>
 
-            {/* ===== DUAL LAYOUT: OTO + CALENDAR ===== */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
-              {/* Skip the Line OTO - First on mobile, second on desktop */}
-              <div className="order-first lg:order-last">
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 }}
-                  className="text-center mb-4"
-                >
-                  <span className="text-muted-foreground text-sm">¿Ya lo tienes claro?</span>
-                </motion.div>
+            {/* ===== UNIFIED VERTICAL LAYOUT ===== */}
+            <div className="max-w-2xl mx-auto">
+              {/* Calendar Section */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="text-center mb-3"
+              >
+                <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
+              </motion.div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 }}
+                className="glass-card-dark p-4 rounded-xl overflow-hidden"
+              >
+                <GHLCalendarIframe 
+                  calendarId={calendarId}
+                  firstName={firstName}
+                />
+              </motion.div>
+
+              {/* Divider */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.4 }}
+                className="flex items-center gap-4 my-8"
+              >
+                <div className="flex-1 h-px bg-foreground/10" />
+                <span className="text-muted-foreground/40 text-sm">✦ O ✦</span>
+                <div className="flex-1 h-px bg-foreground/10" />
+              </motion.div>
+
+              {/* Skip the Line CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.6 }}
+              >
                 <SkipTheLineOffer
                   ghlPaymentUrl={ghlPaymentUrl}
                   firstName={firstName}
@@ -137,31 +167,7 @@ export const BrechaFooter = ({
                   phone={phone}
                   onCtaClick={onSkipTheLineClick}
                 />
-              </div>
-
-              {/* Calendar Section */}
-              <div>
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1 }}
-                  className="text-center mb-4"
-                >
-                  <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
-                </motion.div>
-
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.2 }}
-                  className="glass-card-dark p-4 rounded-xl overflow-hidden"
-                >
-                  <GHLCalendarIframe 
-                    calendarId={calendarId}
-                    firstName={firstName}
-                  />
-                </motion.div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Disclaimer */}
