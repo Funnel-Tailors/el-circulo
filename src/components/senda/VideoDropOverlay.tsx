@@ -59,9 +59,9 @@ export const VideoDropOverlay = ({ activeDrop, onCapture }: VideoDropOverlayProp
             className="relative"
             animate={{
               filter: [
-                "drop-shadow(0 0 12px rgba(147, 51, 234, 0.6))",
-                "drop-shadow(0 0 18px rgba(147, 51, 234, 0.8))",
-                "drop-shadow(0 0 12px rgba(147, 51, 234, 0.6))",
+                "drop-shadow(0 0 12px rgba(255, 255, 255, 0.4))",
+                "drop-shadow(0 0 18px rgba(255, 255, 255, 0.6))",
+                "drop-shadow(0 0 12px rgba(255, 255, 255, 0.4))",
               ],
             }}
             transition={{

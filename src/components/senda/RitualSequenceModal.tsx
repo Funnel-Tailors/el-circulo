@@ -33,8 +33,8 @@ const Beam = ({ connected, success, error }: { connected: boolean; success?: boo
         : error 
           ? 'rgba(239, 68, 68, 0.6)'
           : connected 
-            ? 'rgba(147, 51, 234, 0.6)' 
-            : 'rgba(147, 51, 234, 0.15)'
+            ? 'rgba(255, 255, 255, 0.5)' 
+            : 'rgba(255, 255, 255, 0.15)'
     }}
     style={{ 
       originX: 0,
@@ -43,7 +43,7 @@ const Beam = ({ connected, success, error }: { connected: boolean; success?: boo
           ? '0 0 8px rgba(34, 197, 94, 0.4)'
           : error
             ? '0 0 8px rgba(239, 68, 68, 0.4)'
-            : '0 0 8px rgba(147, 51, 234, 0.4)' 
+            : '0 0 8px rgba(255, 255, 255, 0.3)'
         : 'none'
     }}
     transition={{ duration: 0.3, ease: "easeOut" }}
