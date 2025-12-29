@@ -148,6 +148,27 @@ const Senda = () => {
     return <PortalFinalState variant="scheduled" callDate={callScheduledAt} />;
   }
 
+  // No token or invalid token - access denied
+  if (!token || !quizState) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Starfield />
+        <div className="relative z-10 glass-card-dark p-8 md:p-12 max-w-lg mx-4 text-center space-y-6">
+          <div className="text-6xl mb-4">🚫</div>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+            Acceso Denegado
+          </h1>
+          <p className="text-muted-foreground leading-relaxed">
+            No has demostrado ser digno de acceder a La Senda.
+          </p>
+          <p className="text-sm text-muted-foreground/70">
+            Si crees que esto es un error, contacta con quien te envió el enlace.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background effects - ShootingStars first (has gradient bg), then Starfield on top */}
