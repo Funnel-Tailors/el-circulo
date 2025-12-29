@@ -136,61 +136,80 @@ export default function AdminDevTools() {
           </div>
         </div>
 
-        {/* BRECHA FOOTER PREVIEW - Full section with calendar + OTO */}
-        <div className="glass-card-dark p-6 max-w-4xl mx-auto text-center mt-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">💰 Brecha Footer Preview (Calendario + OTO)</h2>
-          
-          {/* Device selector */}
-          <div className="flex justify-center gap-2 mb-6">
-            <button
-              onClick={() => setOtoPreviewMode("mobile")}
-              className={`px-4 py-2 rounded text-sm ${
-                otoPreviewMode === "mobile" ? "bg-primary text-primary-foreground" : "dark-button"
-              }`}
-            >
-              📱 Mobile
-            </button>
-            <button
-              onClick={() => setOtoPreviewMode("desktop")}
-              className={`px-4 py-2 rounded text-sm ${
-                otoPreviewMode === "desktop" ? "bg-primary text-primary-foreground" : "dark-button"
-              }`}
-            >
-              💻 Desktop
-            </button>
+        {/* ===== BRECHA FOOTER COMPLETO (Preview) ===== */}
+        <div className="glass-card-dark p-6 rounded-xl max-w-4xl mx-auto mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-foreground">Footer Completo — El Círculo</h3>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setOtoPreviewMode("mobile")}
+                className={`px-3 py-1 rounded text-sm ${otoPreviewMode === "mobile" ? "bg-foreground text-background" : "bg-foreground/10 text-foreground/70"}`}
+              >
+                Mobile
+              </button>
+              <button
+                onClick={() => setOtoPreviewMode("desktop")}
+                className={`px-3 py-1 rounded text-sm ${otoPreviewMode === "desktop" ? "bg-foreground text-background" : "bg-foreground/10 text-foreground/70"}`}
+              >
+                Desktop
+              </button>
+            </div>
           </div>
-          
-          {/* Full footer preview container */}
-          <div className={`mx-auto transition-all duration-300 text-left ${
-            otoPreviewMode === "mobile" ? "max-w-sm" : "max-w-2xl"
-          }`}>
-            {/* Value Stack Preview */}
-            <div className="glass-card-dark p-4 mb-6 rounded-xl">
-              <p className="text-foreground/60 text-xs uppercase tracking-wider mb-3 text-center">
-                ADEMÁS de todo lo que has visto:
-              </p>
-              <div className="space-y-1.5 text-sm text-foreground/80">
-                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>Onboarding 1-1 de bienvenida</p>
-                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>Directos cada semana</p>
-                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>Chat 24/7</p>
-                <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span>El Artefacto — 20 días gratis</p>
-                <p className="flex items-start gap-2 text-muted-foreground/60"><span className="mt-0.5">✦</span>Y mucho más...</p>
+
+          {/* PREVIEW CONTAINER */}
+          <div className={`mx-auto ${otoPreviewMode === "mobile" ? "max-w-sm" : "max-w-2xl"}`}>
+            
+            {/* ===== REVEAL ÉPICO ===== */}
+            <div className="text-center mb-8">
+              {/* Badge */}
+              <div className="inline-block mb-4">
+                <div className="glass-card-dark px-5 py-1.5 rounded-full border border-primary/30">
+                  <span className="text-primary text-xs font-medium">✦ ARTEFACTO DESBLOQUEADO ✦</span>
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-foreground/10 text-center">
-                <p className="text-muted-foreground text-sm">
-                  <span className="line-through opacity-60">€3,500</span>
-                  <span className="text-foreground font-bold text-lg mx-2">→ €3,000</span>
-                  <span className="text-foreground/60 text-xs">(con tu beca)</span>
+              
+              <h2 className="text-2xl md:text-4xl font-display font-black glow mb-3">
+                ACCESO A EL CÍRCULO
+              </h2>
+              
+              <p className="text-muted-foreground text-sm max-w-md mx-auto mb-6">
+                Tu viaje por La Brecha te ha otorgado una{" "}
+                <span className="text-foreground font-semibold">Beca Parcial de €500</span>. 
+                En principio eres digno, pero necesitamos verificarlo en una última llamada de iniciación.
+              </p>
+
+              {/* Value Stack COMPLETO */}
+              <div className="glass-card-dark p-5 rounded-xl mb-8 text-left">
+                <p className="text-foreground/60 text-xs uppercase tracking-wider mb-3 text-center">
+                  ADEMÁS de todo lo que has visto:
                 </p>
+                <div className="space-y-1.5 text-sm text-foreground/80">
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Onboarding 1-1 de bienvenida conmigo</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Directos cada semana</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Chat 24/7</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Hoja de ruta: crear y lanzar en 3 días</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>El embudo de los 70.000€</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Clases: Automatizaciones, Social Funnels, Landings, VSLs validados</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Creación de asistentes IA + IA generativa para creativos</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>El Artefacto — 20 días gratis</span></p>
+                  <p className="flex items-start gap-2"><span className="text-primary mt-0.5">✦</span><span>Y mucho más cada semana</span></p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-foreground/10 text-center">
+                  <p className="text-muted-foreground text-sm">
+                    <span className="line-through opacity-60">€3,500</span>
+                    <span className="text-foreground font-bold text-lg mx-2">→ €3,000</span>
+                  </p>
+                  <p className="text-foreground/50 text-xs mt-1">Beca Parcial de €500 desbloqueada</p>
+                </div>
               </div>
             </div>
 
-            {/* Calendar placeholder */}
-            <div className="text-center mb-3">
+            {/* ===== CALENDAR PLACEHOLDER ===== */}
+            <div className="text-center mb-2">
               <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
             </div>
             <div className="glass-card-dark p-4 rounded-xl mb-6">
-              <div className="bg-black/30 rounded-lg h-40 flex items-center justify-center border border-foreground/5">
+              <div className="bg-black/30 rounded-lg h-48 flex items-center justify-center">
                 <span className="text-foreground/30 text-sm">[Calendario GHL]</span>
               </div>
             </div>
@@ -202,19 +221,21 @@ export default function AdminDevTools() {
               <div className="flex-1 h-px bg-foreground/10" />
             </div>
 
-            {/* Skip the Line CTA */}
-            <SkipTheLineOffer 
-              ghlPaymentUrl="#preview"
-              firstName="Test"
-              email="test@example.com"
+            {/* ===== SKIP THE LINE CTA ===== */}
+            <SkipTheLineOffer
+              ghlPaymentUrl="https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2"
               isPreview={true}
-              onCtaClick={() => toast({ title: "CTA clicked!", description: "En producción redirigirá al Payment Link de GHL" })}
+              onCtaClick={() => console.log("Skip the line clicked (preview)")}
             />
+
+            {/* Disclaimer */}
+            <div className="mt-6 text-center">
+              <div className="flex items-center justify-center gap-2 text-muted-foreground/60 text-xs">
+                <span className="text-foreground/40">✦</span>
+                <span>Esta es tu única oportunidad. Al cerrar esta pestaña, La Brecha se sella.</span>
+              </div>
+            </div>
           </div>
-          
-          <p className="text-muted-foreground/50 text-xs mt-6">
-            Preview mode - el botón no redirige. Esto es exactamente lo que verá el usuario en La Brecha.
-          </p>
         </div>
 
         {/* ENDLESS TOOLS 3D TEST SECTION */}
