@@ -19,7 +19,7 @@ interface SkipTheLineOfferProps {
 }
 
 export const SkipTheLineOffer = ({
-  ghlPaymentUrl = "#",
+  ghlPaymentUrl = "https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2",
   firstName,
   lastName,
   email,
@@ -85,7 +85,7 @@ export const SkipTheLineOffer = ({
         onClick={handleClick}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full max-w-md mx-auto py-4 px-8 rounded-lg font-bold text-lg transition-all
+        className="w-full max-w-md mx-auto py-4 px-8 rounded-lg font-bold transition-all
                    bg-foreground text-background hover:bg-foreground/90
                    shadow-[0_0_40px_-5px_hsl(var(--foreground)/0.5)]
                    animate-[pulse_3s_ease-in-out_infinite]"
@@ -93,7 +93,8 @@ export const SkipTheLineOffer = ({
           animationTimingFunction: 'ease-in-out',
         }}
       >
-        ENTRA AHORA — €500/mes
+        <span className="block text-lg">ENTRA POR €500 HOY</span>
+        <span className="block text-xs opacity-70 mt-0.5">(Sólo aquí, solo ahora)</span>
       </motion.button>
 
       {/* Disclaimer */}

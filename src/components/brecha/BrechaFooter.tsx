@@ -111,8 +111,8 @@ export const BrechaFooter = ({
                   <p className="text-muted-foreground text-sm">
                     <span className="line-through opacity-60">€3,500</span>
                     <span className="text-foreground font-bold text-lg mx-2">→ €3,000</span>
-                    <span className="text-foreground/60 text-xs">(con tu beca)</span>
                   </p>
+                  <p className="text-foreground/50 text-xs mt-1">Beca Parcial de €500 desbloqueada</p>
                 </div>
               </motion.div>
             </div>
