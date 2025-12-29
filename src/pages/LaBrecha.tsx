@@ -18,7 +18,7 @@ import ShootingStars from "@/components/roadmap/ShootingStars";
 
 // Rango de apertura de La Brecha
 const BRECHA_OPENS = new Date('2025-12-28T11:00:00');
-const BRECHA_CLOSES = new Date('2025-12-30T19:00:00');
+const BRECHA_CLOSES = new Date('2025-12-31T18:00:00');
 
 // Video URLs - same as Senda classes
 const VIDEO_FRAG1 = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a5a72e44d0ded5ced1e47e.mp4";
