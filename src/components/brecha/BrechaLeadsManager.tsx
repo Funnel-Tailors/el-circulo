@@ -76,12 +76,24 @@ const blacklistMessages: Record<string, { title: string; subtitle: string; messa
   },
 };
 
-const getTierBadge = (tier: string | null, isQualified: boolean | null) => {
-  if (tier === "premium") return <Badge className="bg-amber-500 hover:bg-amber-500/80">Premium</Badge>;
-  if (tier === "full_access") return <Badge className="bg-green-500 hover:bg-green-500/80">Full Access</Badge>;
-  if (tier === "offer_only") return <Badge variant="secondary">Solo Oferta</Badge>;
-  if (isQualified === false) return <Badge variant="destructive">Descualificado</Badge>;
-  return <Badge variant="outline">Pendiente</Badge>;
+const accessTierOptions = [
+  { value: 'qualified', label: 'Cualificado', color: 'bg-green-600' },
+  { value: 'premium', label: 'Premium', color: 'bg-amber-500' },
+  { value: 'full_access', label: 'Full Access', color: 'bg-green-500' },
+  { value: 'disqualified_hot', label: 'Descualificado Hot 🔥', color: 'bg-orange-500' },
+  { value: 'disqualified', label: 'Descualificado', color: 'bg-red-500' },
+  { value: 'offer_only', label: 'Solo Oferta', color: 'bg-gray-500' },
+  { value: 'pending', label: 'Pendiente', color: 'bg-gray-400' },
+];
+
+const getCurrentAccessTier = (lead: BrechaLeadWithProgress): string => {
+  if (lead.access_override === 'grant_full_access') return 'disqualified_hot';
+  if (lead.tier === 'premium') return 'premium';
+  if (lead.tier === 'full_access') return 'full_access';
+  if (lead.tier === 'offer_only') return 'offer_only';
+  if (lead.is_qualified === true) return 'qualified';
+  if (lead.is_qualified === false) return 'disqualified';
+  return 'pending';
 };
 
 const renderExpirationInfo = (lead: BrechaLeadWithProgress) => {
@@ -111,7 +123,8 @@ export default function BrechaLeadsManager() {
     scheduleCall, 
     markCompleted, 
     unlockMilestone, 
-    resetMilestone 
+    resetMilestone,
+    updateLeadAccess
   } = useBrechaLeads();
   
   const [selectedLead, setSelectedLead] = useState<BrechaLeadWithProgress | null>(null);
@@ -246,7 +259,25 @@ export default function BrechaLeadsManager() {
                       </div>
                     </td>
                     <td className="p-4">
-                      {getTierBadge(lead.tier, lead.is_qualified)}
+                      <Select 
+                        value={getCurrentAccessTier(lead)} 
+                        onValueChange={(value) => {
+                          updateLeadAccess(lead.token, value);
+                          toast({ title: 'Acceso actualizado' });
+                        }}
+                      >
+                        <SelectTrigger className="w-[160px] h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accessTierOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              <span className={`inline-block w-2 h-2 rounded-full mr-2 ${option.color}`}></span>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </td>
                     <td className="p-4 text-foreground/70 text-sm">
                       {formatDistanceToNow(new Date(lead.created_at), { addSuffix: true, locale: es })}

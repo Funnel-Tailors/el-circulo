@@ -17,6 +17,7 @@ interface BrechaLead {
   hardstop_reason: string | null;
   token: string;
   created_at: string;
+  access_override: string | null;
 }
 
 interface UseBrechaAccessReturn {
