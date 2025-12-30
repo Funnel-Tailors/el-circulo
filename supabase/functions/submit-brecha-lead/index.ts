@@ -39,10 +39,10 @@ const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const BUDGET_MAP: Record<string, { value: string; score: number; hardstop: boolean }> = {
-  '💧': { value: 'menos_1500', score: 0, hardstop: true },
-  '💎': { value: '1500_3000', score: 15, hardstop: false },
-  '⚡': { value: '3000_5000', score: 20, hardstop: false },
-  '🔮': { value: 'mas_5000', score: 25, hardstop: false },
+  '💧': { value: 'menos_500', score: 0, hardstop: true },
+  '💎': { value: '500_1500', score: 10, hardstop: false },
+  '⚡': { value: '1500_3000', score: 15, hardstop: false },
+  '🔮': { value: 'mas_3000', score: 25, hardstop: false },
 }
 
 const URGENCY_MAP: Record<string, { value: string; score: number }> = {
@@ -89,10 +89,10 @@ const ACQUISITION_LITERAL_MAP: Record<string, string> = {
 }
 
 const BUDGET_LITERAL_MAP: Record<string, string> = {
-  'menos_1500': 'Menos de €1.500',
+  'menos_500': 'Menos de €500',
+  '500_1500': '€500 - €1.500',
   '1500_3000': '€1.500 - €3.000',
-  '3000_5000': '€3.000 - €5.000',
-  'mas_5000': 'Más de €5.000',
+  'mas_3000': 'Más de €3.000',
 }
 
 const URGENCY_LITERAL_MAP: Record<string, string> = {
