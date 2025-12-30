@@ -551,7 +551,7 @@ export const BrechaProgressBar = ({
                     variant="outline"
                     className="text-xs"
                     disabled={loading !== null || progress?.portal_traversed}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_frag2'), 'pushF2')}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_portal1'), 'pushF2')}
                   >
                     {loading === 'pushF2' ? '...' : '🌀 Empujar hasta F2'}
                   </Button>
@@ -560,7 +560,7 @@ export const BrechaProgressBar = ({
                     variant="outline"
                     className="text-xs"
                     disabled={loading !== null || progress?.portal2_traversed}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_frag3'), 'pushF3')}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_portal2'), 'pushF3')}
                   >
                     {loading === 'pushF3' ? '...' : '🌀 Empujar hasta F3'}
                   </Button>
@@ -569,7 +569,7 @@ export const BrechaProgressBar = ({
                     variant="outline"
                     className="text-xs"
                     disabled={loading !== null || progress?.portal3_traversed}
-                    onClick={() => handleAction(() => onUnlockMilestone('push_to_frag4'), 'pushF4')}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_portal3'), 'pushF4')}
                   >
                     {loading === 'pushF4' ? '...' : '🌀 Empujar hasta F4'}
                   </Button>
@@ -578,7 +578,7 @@ export const BrechaProgressBar = ({
                     variant="default"
                     className="text-xs"
                     disabled={loading !== null || progress?.journey_completed}
-                    onClick={() => handleAction(() => onUnlockMilestone('complete_journey'), 'complete')}
+                    onClick={() => handleAction(() => onUnlockMilestone('push_to_complete'), 'complete')}
                   >
                     {loading === 'complete' ? '...' : '✅ Marcar Completado'}
                   </Button>
