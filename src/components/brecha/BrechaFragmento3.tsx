@@ -90,6 +90,7 @@ export const BrechaFragmento3 = ({
   const [video2Progress, setVideo2Progress] = useState(progress.video2_progress || 0);
   const [video1Completed, setVideo1Completed] = useState(progress.video1_progress >= 99);
   const [showRitualModal, setShowRitualModal] = useState(false);
+  const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
   
   const lastV1Update = useRef(0);
   const lastV2Update = useRef(0);
@@ -128,7 +129,10 @@ export const BrechaFragmento3 = ({
     onAllCaptured: () => {
       trackEvent('brecha_frag3_all_drops_captured');
       if (!progress.sequence_completed) {
-        setTimeout(() => setShowRitualModal(true), 500);
+        setTimeout(() => {
+          setShowRitualModal(true);
+          setModalHasBeenShown(true);
+        }, 500);
       }
     },
   });
@@ -184,6 +188,17 @@ export const BrechaFragmento3 = ({
     video.addEventListener('timeupdate', handleTimeUpdate);
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [video1Completed, checkForDrop, onVideo2Progress]);
+
+  // Auto-restore modal if user is stuck
+  useEffect(() => {
+    if (allCaptured && !progress.sequence_completed && !showRitualModal) {
+      const timer = setTimeout(() => {
+        setShowRitualModal(true);
+        setModalHasBeenShown(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [allCaptured, progress.sequence_completed, showRitualModal]);
 
   const handleRitualComplete = () => {
     setShowRitualModal(false);
@@ -385,13 +400,28 @@ export const BrechaFragmento3 = ({
 
           {/* Drops inventory */}
           {video1Completed && (
-            <DropsInventory 
-              capturedDrops={capturedDrops}
-              totalDrops={drops.length}
-              allCaptured={allCaptured}
-              classNumber={7}
-              missedDrops={progress.drops_missed}
-            />
+            <>
+              <DropsInventory 
+                capturedDrops={capturedDrops}
+                totalDrops={drops.length}
+                allCaptured={allCaptured}
+                classNumber={7}
+                missedDrops={progress.drops_missed}
+              />
+              
+              {/* Subtle fallback button if stuck */}
+              {modalHasBeenShown && allCaptured && !progress.sequence_completed && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.6 }}
+                  whileHover={{ opacity: 1 }}
+                  onClick={() => setShowRitualModal(true)}
+                  className="mt-4 text-xs text-foreground/40 hover:text-foreground/60 transition-colors underline underline-offset-4"
+                >
+                  Completar secuencia
+                </motion.button>
+              )}
+            </>
           )}
         </motion.div>
 

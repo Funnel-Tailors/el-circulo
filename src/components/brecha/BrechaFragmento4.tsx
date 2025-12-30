@@ -65,6 +65,7 @@ export const BrechaFragmento4 = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoProgress, setVideoProgress] = useState(progress.video_progress || 0);
   const [showRitualModal, setShowRitualModal] = useState(false);
+  const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
   
   const lastUpdate = useRef(0);
 
@@ -107,7 +108,10 @@ export const BrechaFragmento4 = ({
     onAllCaptured: () => {
       trackEvent('brecha_frag4_all_drops_captured');
       if (!progress.sequence_completed) {
-        setTimeout(() => setShowRitualModal(true), 500);
+        setTimeout(() => {
+          setShowRitualModal(true);
+          setModalHasBeenShown(true);
+        }, 500);
       }
     },
   });
@@ -134,6 +138,17 @@ export const BrechaFragmento4 = ({
     video.addEventListener('timeupdate', handleTimeUpdate);
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [checkForDrop, onVideoProgress]);
+
+  // Auto-restore modal if user is stuck
+  useEffect(() => {
+    if (allCaptured && !progress.sequence_completed && !showRitualModal) {
+      const timer = setTimeout(() => {
+        setShowRitualModal(true);
+        setModalHasBeenShown(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [allCaptured, progress.sequence_completed, showRitualModal]);
 
   const handleRitualComplete = () => {
     setShowRitualModal(false);
@@ -258,6 +273,19 @@ export const BrechaFragmento4 = ({
             classNumber={8}
             missedDrops={progress.drops_missed}
           />
+          
+          {/* Subtle fallback button if stuck */}
+          {modalHasBeenShown && allCaptured && !progress.sequence_completed && (
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              whileHover={{ opacity: 1 }}
+              onClick={() => setShowRitualModal(true)}
+              className="mt-4 text-xs text-foreground/40 hover:text-foreground/60 transition-colors underline underline-offset-4"
+            >
+              Completar secuencia
+            </motion.button>
+          )}
         </motion.div>
         
         {/* Missed drops warning */}
