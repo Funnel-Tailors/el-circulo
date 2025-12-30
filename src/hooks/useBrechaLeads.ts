@@ -14,7 +14,8 @@ export interface BrechaLead {
   pain_answer: string | null;
   budget_answer: string | null;
   created_at: string;
-  // New fields
+  access_override: string | null;
+  // Computed fields
   isBlacklisted: boolean;
   blacklistReason: string | null;
   brechaStatus: BrechaStatus;
@@ -535,6 +536,55 @@ export function useBrechaLeads() {
     await fetchLeads();
   }, [fetchLeads]);
 
+  const updateLeadAccess = useCallback(async (token: string, accessTier: string) => {
+    const updates: Record<string, any> = {};
+    
+    switch (accessTier) {
+      case 'qualified':
+        updates.is_qualified = true;
+        updates.tier = null;
+        updates.access_override = null;
+        break;
+      case 'premium':
+        updates.is_qualified = true;
+        updates.tier = 'premium';
+        updates.access_override = null;
+        break;
+      case 'full_access':
+        updates.is_qualified = true;
+        updates.tier = 'full_access';
+        updates.access_override = null;
+        break;
+      case 'disqualified_hot':
+        // Keep is_qualified = false but grant full access via override
+        updates.access_override = 'grant_full_access';
+        break;
+      case 'disqualified':
+        updates.is_qualified = false;
+        updates.tier = null;
+        updates.access_override = null;
+        break;
+      case 'offer_only':
+        updates.is_qualified = false;
+        updates.tier = 'offer_only';
+        updates.access_override = null;
+        break;
+      case 'pending':
+        updates.is_qualified = null;
+        updates.tier = null;
+        updates.access_override = null;
+        break;
+    }
+    
+    const { error } = await supabase
+      .from("brecha_leads")
+      .update(updates)
+      .eq("token", token);
+    
+    if (error) throw error;
+    await fetchLeads();
+  }, [fetchLeads]);
+
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
@@ -549,6 +599,7 @@ export function useBrechaLeads() {
     scheduleCall,
     markCompleted,
     unlockMilestone,
-    resetMilestone
+    resetMilestone,
+    updateLeadAccess
   };
 }

@@ -76,6 +76,7 @@ export type Database = {
       }
       brecha_leads: {
         Row: {
+          access_override: string | null
           acquisition_answer: string | null
           authority_answer: string | null
           budget_answer: string | null
@@ -95,6 +96,7 @@ export type Database = {
           urgency_answer: string | null
         }
         Insert: {
+          access_override?: string | null
           acquisition_answer?: string | null
           authority_answer?: string | null
           budget_answer?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           urgency_answer?: string | null
         }
         Update: {
+          access_override?: string | null
           acquisition_answer?: string | null
           authority_answer?: string | null
           budget_answer?: string | null

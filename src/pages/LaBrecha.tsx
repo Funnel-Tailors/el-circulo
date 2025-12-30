@@ -346,8 +346,8 @@ const LaBrecha = () => {
     }, 600);
   };
 
-  // Check if user has full access (qualified) or limited access (disqualified)
-  const hasFullAccess = lead?.is_qualified === true;
+  // Check if user has full access (qualified or admin override) or limited access (disqualified)
+  const hasFullAccess = lead?.is_qualified === true || lead?.access_override === 'grant_full_access';
 
   return (
     <div className="min-h-screen relative overflow-hidden">
