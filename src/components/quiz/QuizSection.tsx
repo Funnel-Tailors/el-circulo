@@ -781,10 +781,10 @@ const QuizSection = ({
     // HARDSTOP #0: Revenue demasiado bajo - No ICP (< €500/mes)
     if (state.q3 === "Menos de €500/mes") return true;
     
-    // HARDSTOP #0.5: Revenue marginal - No puede permitirse inversión (€500 - €1.500/mes)
-    if (state.q3 === "€500 - €1.500/mes") return true;
+    // HARDSTOP #0.5: Revenue marginal SIN presupuesto - Si €500-€1.500/mes PERO no tiene budget, descalifica
+    if (state.q3 === "€500 - €1.500/mes" && state.q5 === "Menos de €1.500") return true;
     
-    // HARDSTOP #1: Sin capacidad de inversión mínima
+    // HARDSTOP #1: Sin capacidad de inversión mínima (aplica a todos los rangos de revenue)
     if (state.q5 === "Menos de €1.500") return true;
     
     // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
