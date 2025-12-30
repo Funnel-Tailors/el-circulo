@@ -79,6 +79,7 @@ export const BrechaFragmento = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoProgress, setVideoProgress] = useState(0);
   const [showSequenceModal, setShowSequenceModal] = useState(false);
+  const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
 
   // Class 5 = Fragmento 1 (3 drops), Class 6 = Fragmento 2 (5 drops)
   const classNumber = fragmentNumber === 1 ? 5 : 6;
@@ -118,7 +119,10 @@ export const BrechaFragmento = ({
     onAllCaptured: () => {
       trackEvent(`brecha_frag${fragmentNumber}_all_drops_captured`);
       // When all drops captured, unlock assistant and show sequence modal after delay
-      setTimeout(() => setShowSequenceModal(true), 1500);
+      setTimeout(() => {
+        setShowSequenceModal(true);
+        setModalHasBeenShown(true);
+      }, 1500);
     },
   });
 
@@ -143,6 +147,17 @@ export const BrechaFragmento = ({
     video.addEventListener('timeupdate', handleTimeUpdate);
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [handleTimeUpdate]);
+
+  // Auto-restore modal if user is stuck (all drops captured but sequence not completed)
+  useEffect(() => {
+    if (allCaptured && !progress.sequence_completed && !showSequenceModal) {
+      const timer = setTimeout(() => {
+        setShowSequenceModal(true);
+        setModalHasBeenShown(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [allCaptured, progress.sequence_completed, showSequenceModal]);
 
   const handleSequenceComplete = () => {
     setShowSequenceModal(false);
@@ -225,13 +240,28 @@ export const BrechaFragmento = ({
 
         {/* Drops inventory - only show after ritual + first drop */}
         {showDropsInventory && (
-          <DropsInventory
-            capturedDrops={capturedDrops}
-            totalDrops={totalDrops}
-            allCaptured={allCaptured}
-            classNumber={classNumber as 1 | 2 | 5 | 6}
-            missedDrops={progress.drops_missed}
-          />
+          <>
+            <DropsInventory
+              capturedDrops={capturedDrops}
+              totalDrops={totalDrops}
+              allCaptured={allCaptured}
+              classNumber={classNumber as 1 | 2 | 5 | 6}
+              missedDrops={progress.drops_missed}
+            />
+            
+            {/* Subtle fallback button if stuck - only after modal has been shown */}
+            {modalHasBeenShown && allCaptured && !progress.sequence_completed && (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                whileHover={{ opacity: 1 }}
+                onClick={() => setShowSequenceModal(true)}
+                className="mt-4 text-xs text-foreground/40 hover:text-foreground/60 transition-colors underline underline-offset-4"
+              >
+                Completar secuencia
+              </motion.button>
+            )}
+          </>
         )}
 
         {/* AI Assistant (locked until sequence completed) */}
