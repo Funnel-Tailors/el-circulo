@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.submit-brecha-lead]
 verify_jwt = false
+
+[functions.sync-brecha-tags]
+verify_jwt = false
