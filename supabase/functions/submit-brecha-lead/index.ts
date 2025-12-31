@@ -911,9 +911,11 @@ Presta atención. Anota todo. Hay resquicios de magia escondidos.
 
 ${url}
 
-Si después de verlo quieres cruzar el resto de La Brecha...
+Si después de verlo quieres acceder a las profundidades de La Brecha...
 
-Responde diciéndome cuánto pondrías sobre la mesa HOY.`
+Deja un testimonio sobre lo que te ha parecido este fragmento y cómo lo vas a aplicar.
+
+Puede que El Consejo decida dejarte acceder.`
   }
   
   if (hardstopReason === 'low_budget') {
@@ -940,9 +942,11 @@ Presta atención. Anota todo. Hay resquicios de magia escondidos.
 
 ${url}
 
-Si después de verlo quieres cruzar el resto...
+Si después de verlo quieres acceder a las profundidades de La Brecha...
 
-Responde diciéndome cuánto pondrías REALMENTE sobre la mesa.`
+Deja un testimonio sobre lo que te ha parecido este fragmento y cómo lo vas a aplicar.
+
+Puede que El Consejo decida dejarte acceder.`
   }
   
   return ''
@@ -1046,9 +1050,9 @@ Deno.serve(async (req) => {
     // Check for hardstops
     let hardstopReason: string | null = null
     
-    // Budget 1500+ bypasa hardstop de low_revenue (pueden pagar la OTO de €500)
+    // Budget 500+ bypasa hardstop de low_revenue (pueden pagar split en 6 cuotas)
     const hasSufficientBudget = budgetParsed?.value && 
-      ['1500_3000', '3000_5000', 'mas_5000'].includes(budgetParsed.value)
+      ['500_1500', '1500_3000', '3000_5000', 'mas_5000'].includes(budgetParsed.value)
     
     if (revenueParsed?.hardstop && !hasSufficientBudget) {
       hardstopReason = 'low_revenue'
