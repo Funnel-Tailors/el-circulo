@@ -188,64 +188,71 @@ export default function BrechaSettings() {
           />
         </div>
 
-        {/* Launch Mode Settings */}
-        {settings.mode === "launch" && (
-          <div className="space-y-4 p-4 rounded-lg border border-dashed border-foreground/20">
-            <h4 className="font-medium flex items-center gap-2 text-foreground">
-              <Rocket className="h-4 w-4" />
-              Configuración de Lanzamiento
-            </h4>
-            
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="opens-at" className="text-foreground/80">Fecha de Apertura</Label>
-                <Input
-                  id="opens-at"
-                  type="datetime-local"
-                  value={opensAtInput}
-                  onChange={(e) => {
-                    setOpensAtInput(e.target.value);
-                    setLocalError(null);
-                  }}
-                  className="bg-background/30 border-foreground/20"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="closes-at" className="text-foreground/80">Fecha de Cierre</Label>
-                <Input
-                  id="closes-at"
-                  type="datetime-local"
-                  value={closesAtInput}
-                  onChange={(e) => {
-                    setClosesAtInput(e.target.value);
-                    setLocalError(null);
-                  }}
-                  className="bg-background/30 border-foreground/20"
-                />
-              </div>
+        {/* Launch Mode Settings - Siempre visible */}
+        <div className={`space-y-4 p-4 rounded-lg border ${
+          settings.mode === "launch" 
+            ? "border-dashed border-foreground/20" 
+            : "border-foreground/10 opacity-75"
+        }`}>
+          <h4 className="font-medium flex items-center gap-2 text-foreground">
+            <Rocket className="h-4 w-4" />
+            Configuración de Lanzamiento
+            {settings.mode === "evergreen" && (
+              <span className="text-xs text-foreground/50 font-normal ml-1">
+                (pre-configura para cuando desactives evergreen)
+              </span>
+            )}
+          </h4>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="opens-at" className="text-foreground/80">Fecha de Apertura</Label>
+              <Input
+                id="opens-at"
+                type="datetime-local"
+                value={opensAtInput}
+                onChange={(e) => {
+                  setOpensAtInput(e.target.value);
+                  setLocalError(null);
+                }}
+                className="bg-background/30 border-foreground/20"
+              />
             </div>
-
-            <Button 
-              onClick={handleSaveDates} 
-              disabled={isSaving}
-              className="w-full sm:w-auto"
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Guardando...
-                </>
-              ) : saveSuccess ? (
-                <>
-                  <Check className="mr-2 h-4 w-4" />
-                  Guardado
-                </>
-              ) : (
-                "Guardar Fechas"
-              )}
-            </Button>
+            <div className="space-y-2">
+              <Label htmlFor="closes-at" className="text-foreground/80">Fecha de Cierre</Label>
+              <Input
+                id="closes-at"
+                type="datetime-local"
+                value={closesAtInput}
+                onChange={(e) => {
+                  setClosesAtInput(e.target.value);
+                  setLocalError(null);
+                }}
+                className="bg-background/30 border-foreground/20"
+              />
+            </div>
           </div>
-        )}
+
+          <Button 
+            onClick={handleSaveDates} 
+            disabled={isSaving}
+            className="w-full sm:w-auto"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Guardando...
+              </>
+            ) : saveSuccess ? (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Guardado
+              </>
+            ) : (
+              "Guardar Fechas"
+            )}
+          </Button>
+        </div>
 
         {/* Error Display */}
         {(error || localError) && (
