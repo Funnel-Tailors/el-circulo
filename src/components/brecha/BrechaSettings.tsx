@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useBrechaSettings } from "@/hooks/useBrechaSettings";
 import { Loader2, Calendar, Clock, AlertCircle, Check, Zap, Rocket } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 export default function BrechaSettings() {
@@ -34,7 +32,6 @@ export default function BrechaSettings() {
     const newMode = checked ? "evergreen" : "launch";
     
     if (newMode === "launch") {
-      // Validate dates before switching
       if (!opensAtInput || !closesAtInput) {
         setLocalError("Configura las fechas antes de activar modo lanzamiento");
         return;
@@ -126,11 +123,9 @@ export default function BrechaSettings() {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </CardContent>
-      </Card>
+      <div className="glass-card-dark rounded-xl p-6 flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-foreground/40" />
+      </div>
     );
   }
 
@@ -139,124 +134,132 @@ export default function BrechaSettings() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <span className="text-foreground/30">⟡</span>
+            Configuración de Acceso
+            <span className="text-foreground/30">⟡</span>
+          </h2>
+          <p className="text-foreground/60 text-sm mt-1">
+            {settings.mode === "evergreen" 
+              ? "Modo Evergreen: cada lead tiene 48h" 
+              : "Modo Lanzamiento activo"}
+          </p>
+        </div>
+        <Badge variant={status.variant} className="text-sm">
+          {status.label}
+        </Badge>
+      </div>
+
       {/* Status Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+      <div className="glass-card-dark rounded-xl p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <StatusIcon className="h-6 w-6 text-primary" />
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <StatusIcon className="h-5 w-5" />
-                Estado Actual
-              </CardTitle>
-              <CardDescription>{status.description}</CardDescription>
+              <p className="font-medium text-foreground">{status.label}</p>
+              <p className="text-sm text-foreground/60">{status.description}</p>
             </div>
-            <Badge variant={status.variant} className="text-sm">
-              {status.label}
-            </Badge>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Mode Toggle */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Modo de Acceso</CardTitle>
-          <CardDescription>
-            Controla cómo se gestiona el acceso a La Brecha
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between p-4 rounded-lg border bg-card">
-            <div className="space-y-1">
-              <Label htmlFor="mode-toggle" className="text-base font-medium">
-                Modo Evergreen
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {settings.mode === "evergreen" 
-                  ? "Cada lead tiene 48h desde su primera visita" 
-                  : "Fechas globales para todos los leads"}
-              </p>
-            </div>
-            <Switch
-              id="mode-toggle"
-              checked={settings.mode === "evergreen"}
-              onCheckedChange={handleModeToggle}
-            />
+      <div className="glass-card-dark rounded-xl p-6 space-y-6">
+        <h3 className="text-lg font-semibold text-foreground">Modo de Acceso</h3>
+        
+        <div className="flex items-center justify-between p-4 rounded-lg border border-foreground/10 bg-background/20">
+          <div className="space-y-1">
+            <Label htmlFor="mode-toggle" className="text-base font-medium text-foreground">
+              Modo Evergreen
+            </Label>
+            <p className="text-sm text-foreground/60">
+              {settings.mode === "evergreen" 
+                ? "Cada lead tiene 48h desde su primera visita" 
+                : "Fechas globales para todos los leads"}
+            </p>
           </div>
+          <Switch
+            id="mode-toggle"
+            checked={settings.mode === "evergreen"}
+            onCheckedChange={handleModeToggle}
+          />
+        </div>
 
-          {/* Launch Mode Settings */}
-          {settings.mode === "launch" && (
-            <div className="space-y-4 p-4 rounded-lg border border-dashed">
-              <h4 className="font-medium flex items-center gap-2">
-                <Rocket className="h-4 w-4" />
-                Configuración de Lanzamiento
-              </h4>
-              
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="opens-at">Fecha de Apertura</Label>
-                  <Input
-                    id="opens-at"
-                    type="datetime-local"
-                    value={opensAtInput}
-                    onChange={(e) => {
-                      setOpensAtInput(e.target.value);
-                      setLocalError(null);
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="closes-at">Fecha de Cierre</Label>
-                  <Input
-                    id="closes-at"
-                    type="datetime-local"
-                    value={closesAtInput}
-                    onChange={(e) => {
-                      setClosesAtInput(e.target.value);
-                      setLocalError(null);
-                    }}
-                  />
-                </div>
+        {/* Launch Mode Settings */}
+        {settings.mode === "launch" && (
+          <div className="space-y-4 p-4 rounded-lg border border-dashed border-foreground/20">
+            <h4 className="font-medium flex items-center gap-2 text-foreground">
+              <Rocket className="h-4 w-4" />
+              Configuración de Lanzamiento
+            </h4>
+            
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="opens-at" className="text-foreground/80">Fecha de Apertura</Label>
+                <Input
+                  id="opens-at"
+                  type="datetime-local"
+                  value={opensAtInput}
+                  onChange={(e) => {
+                    setOpensAtInput(e.target.value);
+                    setLocalError(null);
+                  }}
+                  className="bg-background/30 border-foreground/20"
+                />
               </div>
-
-              <Button 
-                onClick={handleSaveDates} 
-                disabled={isSaving}
-                className="w-full sm:w-auto"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : saveSuccess ? (
-                  <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Guardado
-                  </>
-                ) : (
-                  "Guardar Fechas"
-                )}
-              </Button>
+              <div className="space-y-2">
+                <Label htmlFor="closes-at" className="text-foreground/80">Fecha de Cierre</Label>
+                <Input
+                  id="closes-at"
+                  type="datetime-local"
+                  value={closesAtInput}
+                  onChange={(e) => {
+                    setClosesAtInput(e.target.value);
+                    setLocalError(null);
+                  }}
+                  className="bg-background/30 border-foreground/20"
+                />
+              </div>
             </div>
-          )}
 
-          {/* Error Display */}
-          {(error || localError) && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error || localError}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+            <Button 
+              onClick={handleSaveDates} 
+              disabled={isSaving}
+              className="w-full sm:w-auto"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Guardando...
+                </>
+              ) : saveSuccess ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Guardado
+                </>
+              ) : (
+                "Guardar Fechas"
+              )}
+            </Button>
+          </div>
+        )}
+
+        {/* Error Display */}
+        {(error || localError) && (
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <p className="text-sm">{error || localError}</p>
+          </div>
+        )}
+      </div>
 
       {/* Info Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Cómo funciona cada modo</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 text-sm text-muted-foreground">
+      <div className="glass-card-dark rounded-xl p-6">
+        <h3 className="text-base font-medium text-foreground mb-4">Cómo funciona cada modo</h3>
+        <div className="space-y-4 text-sm text-foreground/60">
           <div className="flex gap-3">
             <Zap className="h-5 w-5 text-primary shrink-0 mt-0.5" />
             <div>
@@ -271,8 +274,8 @@ export default function BrechaSettings() {
               <p>Todos los leads comparten las mismas fechas de apertura y cierre. Ideal para eventos en vivo.</p>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
