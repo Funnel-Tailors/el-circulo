@@ -82,21 +82,30 @@ const LaBrecha = () => {
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
         <ShootingStars />
         <Starfield />
-        <VortexEffect size="lg" isClosing={!notYetOpen} rotationSpeed={30} />
+        
+        {/* Vortex centrado como fondo */}
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+          <VortexEffect 
+            size="lg" 
+            isClosing={!notYetOpen} 
+            rotationSpeed={30} 
+            className="scale-75 sm:scale-100"
+          />
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.8 }}
           className="relative z-20 text-center max-w-xl px-4"
         >
-          <span className="text-6xl mb-6 block">⟡</span>
-          <h1 className="text-4xl md:text-6xl font-display font-bold glow mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold glow mb-4">
             {notYetOpen ? "LA BRECHA AÚN NO SE HA ABIERTO" : "LA BRECHA SE HA CERRADO"}
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-lg sm:text-xl text-muted-foreground">
             {notYetOpen 
-              ? "La grieta comenzará a abrirse pronto. Mantente alerta."
-              : "Has llegado cuando la grieta ya se sellaba. La próxima oportunidad no tiene fecha."
+              ? "La leyenda cuenta que se revela ante unos pocos privilegiados... si son dignos."
+              : "La leyenda cuenta que se revela ante unos pocos privilegiados... si son dignos."
             }
           </p>
         </motion.div>
@@ -151,18 +160,27 @@ const LaBrecha = () => {
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
         <ShootingStars />
         <Starfield />
-        <VortexEffect size="lg" isClosing={true} rotationSpeed={25} />
+        
+        {/* Vortex centrado como fondo */}
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+          <VortexEffect 
+            size="lg" 
+            isClosing={true} 
+            rotationSpeed={25} 
+            className="scale-75 sm:scale-100"
+          />
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5, duration: 0.8 }}
           className="relative z-20 text-center max-w-xl px-4"
         >
-          <span className="text-6xl mb-6 block">⟡</span>
-          <h1 className="text-4xl md:text-5xl font-display font-bold glow mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold glow mb-4">
             TU VIAJE HA CONCLUIDO
           </h1>
-          <p className="text-xl text-muted-foreground mb-6">
+          <p className="text-lg sm:text-xl text-muted-foreground mb-6">
             Ya cruzaste La Brecha. Si no agendaste tu llamada de iniciación, 
             contáctanos directamente para tu próximo paso.
           </p>
@@ -170,7 +188,7 @@ const LaBrecha = () => {
             href="https://wa.me/34684024700?text=Hola%2C%20complet%C3%A9%20La%20Brecha%20pero%20no%20pude%20agendar%20mi%20llamada"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-3 sm:px-6 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
           >
             Contactar por WhatsApp
           </a>
