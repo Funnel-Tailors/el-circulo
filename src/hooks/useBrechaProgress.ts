@@ -194,6 +194,39 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
     }
   }, [token, loadProgress]);
 
+  // Check if update contains important milestones that should trigger tag sync
+  const shouldSyncTags = (updates: Partial<BrechaProgress>): boolean => {
+    const importantFields = [
+      'frag1_sequence_completed',
+      'frag2_sequence_completed',
+      'frag3_sequence_completed',
+      'frag4_sequence_completed',
+      'portal_traversed',
+      'portal2_traversed',
+      'portal3_traversed',
+      'journey_completed',
+      'skip_the_line_shown',
+      'skip_the_line_clicked',
+    ];
+    return importantFields.some(field => field in updates);
+  };
+
+  // Fire-and-forget sync to GHL (non-blocking)
+  const syncTagsToGHL = async (currentToken: string) => {
+    try {
+      const response = await supabase.functions.invoke('sync-brecha-tags', {
+        body: { token: currentToken },
+      });
+      if (response.error) {
+        console.warn("[useBrechaProgress] Tag sync failed:", response.error);
+      } else {
+        console.log("[useBrechaProgress] Tags synced:", response.data?.tags_synced);
+      }
+    } catch (err) {
+      console.warn("[useBrechaProgress] Tag sync error:", err);
+    }
+  };
+
   // Update progress in DB
   const updateProgress = useCallback(async (updates: Partial<BrechaProgress>) => {
     if (!token) return;
@@ -214,6 +247,12 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
         console.error("Error updating brecha_progress:", error);
         // Revert on error
         loadProgress();
+        return;
+      }
+
+      // If important milestone, sync tags to GHL (fire-and-forget)
+      if (shouldSyncTags(updates)) {
+        syncTagsToGHL(token);
       }
     } catch (err) {
       console.error("Error updating brecha progress:", err);
