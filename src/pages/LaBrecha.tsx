@@ -16,25 +16,25 @@ import VortexEffect from "@/components/senda/VortexEffect";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 
-// Rango de apertura de La Brecha
-const BRECHA_OPENS = new Date('2025-12-28T11:00:00');
-const BRECHA_CLOSES = new Date('2025-12-31T18:00:00');
-
 // Video URLs - same as Senda classes
 const VIDEO_FRAG1 = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a5a72e44d0ded5ced1e47e.mp4";
 const VIDEO_FRAG2 = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c61440c5b7ed66facfc.mp4";
-
-// Check if La Brecha is outside valid range
-const isExpired = () => {
-  const now = new Date();
-  return now < BRECHA_OPENS || now > BRECHA_CLOSES;
-};
 
 const LaBrecha = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
-  const { isValid, isLoading: accessLoading, lead, error } = useBrechaAccess(token);
+  // useBrechaAccess now handles expiration logic internally
+  const { 
+    isValid, 
+    isLoading: accessLoading, 
+    lead, 
+    error,
+    isExpired,
+    expiresAt,
+    notYetOpen 
+  } = useBrechaAccess(token);
+  
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
 
   // Portal modal states
@@ -73,11 +73,8 @@ const LaBrecha = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [allFragmentsCompleted, progress.journey_completed, token]);
 
-  // Epic expired state with VortexEffect
-  if (isExpired()) {
-    const now = new Date();
-    const notYetOpen = now < BRECHA_OPENS;
-    
+  // Epic expired state with VortexEffect (now uses hook values)
+  if (isExpired && !accessLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
         <ShootingStars />
@@ -370,7 +367,7 @@ const LaBrecha = () => {
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Sticky countdown */}
-      <BrechaCountdownSticky closeDate={BRECHA_CLOSES} />
+      <BrechaCountdownSticky closeDate={expiresAt || new Date()} />
       
       {/* Background */}
       <ShootingStars />
@@ -552,7 +549,7 @@ const LaBrecha = () => {
           <BrechaFooter
             showCalendar={allFragmentsCompleted}
             firstName={lead?.first_name || undefined}
-            eventDate={BRECHA_CLOSES}
+            eventDate={expiresAt || new Date()}
           />
         </div>
       )}

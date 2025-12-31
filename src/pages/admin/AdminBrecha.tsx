@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BrechaJourneyMetrics from "@/components/brecha/BrechaJourneyMetrics";
 import BrechaLeadsManager from "@/components/brecha/BrechaLeadsManager";
 import BrechaSyncManager from "@/components/brecha/BrechaSyncManager";
+import BrechaSettings from "@/components/brecha/BrechaSettings";
 
 export default function AdminBrecha() {
   const [dateRange, setDateRange] = useState("30");
@@ -38,6 +39,7 @@ export default function AdminBrecha() {
           <TabsTrigger value="journey">Journey Metrics</TabsTrigger>
           <TabsTrigger value="leads">Gestión Leads</TabsTrigger>
           <TabsTrigger value="sync">🔄 Sync Tags</TabsTrigger>
+          <TabsTrigger value="settings">⚙️ Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="journey" className="space-y-6">
@@ -50,6 +52,10 @@ export default function AdminBrecha() {
 
         <TabsContent value="sync" className="space-y-6">
           <BrechaSyncManager />
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <BrechaSettings />
         </TabsContent>
       </Tabs>
     </div>
