@@ -214,6 +214,19 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
   // Fire-and-forget sync to GHL (non-blocking)
   const syncTagsToGHL = async (currentToken: string) => {
     try {
+      // Check if sync is enabled before calling
+      const { data: setting } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'brecha_sync_enabled')
+        .maybeSingle();
+      
+      const syncEnabled = setting?.value === true || setting?.value === 'true';
+      if (!syncEnabled) {
+        console.log("[useBrechaProgress] Tag sync disabled, skipping");
+        return;
+      }
+
       const response = await supabase.functions.invoke('sync-brecha-tags', {
         body: { token: currentToken },
       });
