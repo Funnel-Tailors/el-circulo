@@ -883,6 +883,7 @@ Vas a aprender a definir una oferta por la que alguien pagaría 5 cifras.
 A encontrar a ese alguien.
 Y a cerrarle.
 
+⚡ ACCEDE AHORA ⚡
 ${url}
 
 48 horas para cambiar tu negocio para siempre.
@@ -890,34 +891,7 @@ ${url}
 ${fearCall}`
   }
   
-  // For disqualified - still get URL to Fragment 1 only
-  if (hardstopReason === 'low_revenue') {
-    return `${firstName}.
-
-${dailyReality}
-
-Facturas ${revenueLiteral}.
-
-Me jodería no venderte nada con lo calentito que vienes 😂
-
-Pero las siete pruebas existen por algo.
-
-No vas a ver toda La Brecha. 
-Pero te abro el Primer Fragmento.
-
-Un video. 30 minutos. Cómo definir una oferta por la que alguien pague 5 cifras.
-
-Presta atención. Anota todo. Hay resquicios de magia escondidos.
-
-${url}
-
-Si después de verlo quieres acceder a las profundidades de La Brecha...
-
-Deja un testimonio sobre lo que te ha parecido este fragmento y cómo lo vas a aplicar.
-
-Puede que El Consejo decida dejarte acceder.`
-  }
-  
+  // For disqualified (low_budget) - still get URL to Fragment 1 only
   if (hardstopReason === 'low_budget') {
     return `${firstName}.
 
@@ -940,6 +914,7 @@ Un video. 30 minutos. Cómo definir una oferta por la que alguien pague 5 cifras
 
 Presta atención. Anota todo. Hay resquicios de magia escondidos.
 
+⚡ ACCEDE AHORA ⚡
 ${url}
 
 Si después de verlo quieres acceder a las profundidades de La Brecha...
