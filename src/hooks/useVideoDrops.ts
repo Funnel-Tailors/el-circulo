@@ -95,7 +95,7 @@ const DROPS_CONFIG_MAP: Record<1 | 2 | 3 | 4 | 5 | 6 | 7 | 8, DropsConfig> = {
   3: { drops: CLASS_3_DROPS, windowMs: 7000, autoCapture: true },
   4: { drops: CLASS_4_DROPS, windowMs: 4000, autoCapture: false },
   5: { drops: CLASS_5_DROPS, windowMs: Infinity, autoCapture: false, persistUntilNext: true }, // La Brecha F1 - drops persist until next appears
-  6: { drops: CLASS_6_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F2 - 4s, no autocapture
+  6: { drops: CLASS_6_DROPS, windowMs: Infinity, autoCapture: false, persistUntilNext: true }, // La Brecha F2 - drops persist until next appears
   7: { drops: CLASS_7_DROPS, windowMs: 4000, autoCapture: false }, // La Brecha F3 - 4s, no autocapture
   8: { drops: CLASS_8_DROPS, windowMs: 3000, autoCapture: false }, // La Brecha F4 - 3s, MÁS DIFÍCIL
 };
