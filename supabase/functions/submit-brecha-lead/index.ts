@@ -22,12 +22,12 @@ const PROFESSION_MAP: Record<string, { value: string; score: number }> = {
   '✨': { value: 'other_creative', score: 10 },
 }
 
-const REVENUE_MAP: Record<string, { value: string; score: number; hardstop: boolean }> = {
-  '🌑': { value: 'menos_500', score: 0, hardstop: true },
-  '🌒': { value: '500_1500', score: 0, hardstop: true },
-  '🌓': { value: '1500_3000', score: 15, hardstop: false },
-  '🌔': { value: '3000_6000', score: 20, hardstop: false },
-  '🌕': { value: 'mas_6000', score: 25, hardstop: false },
+const REVENUE_MAP: Record<string, { value: string; score: number }> = {
+  '🌑': { value: 'menos_500', score: 0 },
+  '🌒': { value: '500_1500', score: 5 },
+  '🌓': { value: '1500_3000', score: 15 },
+  '🌔': { value: '3000_6000', score: 20 },
+  '🌕': { value: 'mas_6000', score: 25 },
 }
 
 const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
@@ -1047,23 +1047,12 @@ Deno.serve(async (req) => {
       authority: authorityParsed,
     })
 
-    // Check for hardstops
+    // Check for hardstops - SOLO budget menor a 500€ descalifica
     let hardstopReason: string | null = null
     
-    // Budget 500+ bypasa hardstop de low_revenue (pueden pagar split en 6 cuotas)
-    const hasSufficientBudget = budgetParsed?.value && 
-      ['500_1500', '1500_3000', '3000_5000', 'mas_5000'].includes(budgetParsed.value)
-    
-    if (revenueParsed?.hardstop && !hasSufficientBudget) {
-      hardstopReason = 'low_revenue'
-      console.log('HARDSTOP: Low revenue + low budget detected')
-    } else if (budgetParsed?.hardstop) {
+    if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
-      console.log('HARDSTOP: Low budget detected')
-    }
-    
-    if (revenueParsed?.hardstop && hasSufficientBudget) {
-      console.log('LOW REVENUE but BUDGET 1500+ - bypassing hardstop, showing full journey')
+      console.log('HARDSTOP: Budget menor a 500€ detectado')
     }
 
     // Calculate qualification score
