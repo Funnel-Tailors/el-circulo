@@ -294,6 +294,41 @@ const statusIcons: Record<MilestoneStatus, string> = {
   locked: '○',
 };
 
+// Helper to get unlock key for each milestone
+const getUnlockKey = (moduleId: string, milestoneId: string): string | null => {
+  // Videos
+  if (moduleId === 'frag1' && milestoneId === 'video') return 'frag1_video_complete';
+  if (moduleId === 'frag2' && milestoneId === 'video') return 'frag2_video_complete';
+  if (moduleId === 'frag3' && milestoneId === 'video1') return 'frag3_video1_complete';
+  if (moduleId === 'frag3' && milestoneId === 'video2') return 'frag3_video2_complete';
+  if (moduleId === 'frag4' && milestoneId === 'video') return 'frag4_video_complete';
+  
+  // Rituals
+  if (moduleId === 'frag1' && milestoneId === 'ritual') return 'frag1_ritual_complete';
+  if (moduleId === 'frag2' && milestoneId === 'ritual') return 'frag2_ritual_complete';
+  if (moduleId === 'frag3' && milestoneId === 'ritual') return 'frag3_ritual_complete';
+  if (moduleId === 'frag4' && milestoneId === 'ritual') return 'frag4_ritual_complete';
+  
+  // Assistants F1/F2
+  if (moduleId === 'frag1' && milestoneId === 'assistant') return 'frag1_assistant';
+  if (moduleId === 'frag2' && milestoneId === 'assistant') return 'frag2_assistant';
+  
+  // Assistants F3
+  if (moduleId === 'frag3' && milestoneId === 'assistant1') return 'frag3_assistant1';
+  if (moduleId === 'frag3' && milestoneId === 'assistant2') return 'frag3_assistant2';
+  if (moduleId === 'frag3' && milestoneId === 'assistant3') return 'frag3_assistant3';
+  
+  // Roleplay F4
+  if (moduleId === 'frag4' && milestoneId === 'roleplay') return 'frag4_roleplay';
+  
+  // Portals
+  if (moduleId === 'portal1' && milestoneId === 'traversed') return 'portal1';
+  if (moduleId === 'portal2' && milestoneId === 'traversed') return 'portal2';
+  if (moduleId === 'portal3' && milestoneId === 'traversed') return 'portal3';
+  
+  return null;
+};
+
 export const BrechaProgressBar = ({
   progress,
   onUnlockMilestone,
@@ -386,14 +421,34 @@ export const BrechaProgressBar = ({
                     {mod.milestones.map((m) => {
                       const { status, detail } = getMilestoneStatus(mod.id, m.id, progress);
                       const Icon = m.icon;
+                      const unlockKey = getUnlockKey(mod.id, m.id);
+                      const canUnlock = status !== 'completed' && unlockKey;
+                      
                       return (
                         <div
                           key={`${mod.id}-${m.id}`}
-                          className={`flex flex-col items-center p-2 rounded-lg border ${statusColors[status]}`}
+                          className={`flex flex-col items-center p-2 rounded-lg border ${statusColors[status]} relative group`}
                         >
                           <Icon className="w-4 h-4 mb-1" />
                           <span className="text-xs font-medium">{m.label}</span>
                           <span className="text-[10px] opacity-70">{detail}</span>
+                          
+                          {/* Inline unlock button */}
+                          {canUnlock && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute -top-1 -right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-600 hover:bg-emerald-500 text-white rounded-full"
+                              disabled={loading !== null}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAction(() => onUnlockMilestone(unlockKey), unlockKey);
+                              }}
+                              title="Desbloquear"
+                            >
+                              {loading === unlockKey ? '...' : <Unlock className="w-3 h-3" />}
+                            </Button>
+                          )}
                         </div>
                       );
                     })}

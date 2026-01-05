@@ -272,15 +272,36 @@ export function useBrechaLeads() {
   }, [fetchLeads]);
 
   const unlockMilestone = useCallback(async (token: string, milestone: string) => {
+    // First ensure progress record exists
+    const { data: existing } = await supabase
+      .from("brecha_progress")
+      .select("id")
+      .eq("token", token)
+      .maybeSingle();
+
+    if (!existing) {
+      // Create empty progress record first
+      const { error: insertError } = await supabase
+        .from("brecha_progress")
+        .insert({ token });
+      if (insertError) throw insertError;
+    }
+
     let updateData: Partial<BrechaProgress> = {};
     
     switch (milestone) {
       // Frag 1
+      case 'frag1_video_complete':
+        updateData = { frag1_video_progress: 100 };
+        break;
       case 'frag1_all_drops':
         updateData = { frag1_drops_captured: ['b1_drop1', 'b1_drop2', 'b1_drop3'] };
         break;
       case 'frag1_ritual':
         updateData = { frag1_ritual_accepted: true };
+        break;
+      case 'frag1_ritual_complete':
+        updateData = { frag1_ritual_accepted: true, frag1_sequence_completed: true };
         break;
       case 'frag1_sequence':
         updateData = { frag1_sequence_completed: true };
@@ -303,11 +324,17 @@ export function useBrechaLeads() {
         break;
         
       // Frag 2
+      case 'frag2_video_complete':
+        updateData = { frag2_video_progress: 100 };
+        break;
       case 'frag2_all_drops':
         updateData = { frag2_drops_captured: ['b2_drop1', 'b2_drop2', 'b2_drop3', 'b2_drop4', 'b2_drop5'] };
         break;
       case 'frag2_ritual':
         updateData = { frag2_ritual_accepted: true };
+        break;
+      case 'frag2_ritual_complete':
+        updateData = { frag2_ritual_accepted: true, frag2_sequence_completed: true };
         break;
       case 'frag2_sequence':
         updateData = { frag2_sequence_completed: true };
@@ -332,9 +359,11 @@ export function useBrechaLeads() {
         
       // Frag 3
       case 'frag3_video1':
+      case 'frag3_video1_complete':
         updateData = { frag3_video1_progress: 100 };
         break;
       case 'frag3_video2':
+      case 'frag3_video2_complete':
         updateData = { frag3_video2_progress: 100 };
         break;
       case 'frag3_all_drops':
@@ -342,6 +371,9 @@ export function useBrechaLeads() {
         break;
       case 'frag3_ritual':
         updateData = { frag3_ritual_accepted: true };
+        break;
+      case 'frag3_ritual_complete':
+        updateData = { frag3_ritual_accepted: true, frag3_sequence_completed: true };
         break;
       case 'frag3_sequence':
         updateData = { frag3_sequence_completed: true };
@@ -373,11 +405,17 @@ export function useBrechaLeads() {
         break;
         
       // Frag 4
+      case 'frag4_video_complete':
+        updateData = { frag4_video_progress: 100 };
+        break;
       case 'frag4_all_drops':
         updateData = { frag4_drops_captured: ['b4_drop1', 'b4_drop2', 'b4_drop3', 'b4_drop4', 'b4_drop5'] };
         break;
       case 'frag4_ritual':
         updateData = { frag4_ritual_accepted: true };
+        break;
+      case 'frag4_ritual_complete':
+        updateData = { frag4_ritual_accepted: true, frag4_sequence_completed: true };
         break;
       case 'frag4_sequence':
         updateData = { frag4_sequence_completed: true };
