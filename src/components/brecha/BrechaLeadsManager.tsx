@@ -383,8 +383,8 @@ export default function BrechaLeadsManager() {
                       </div>
                     </td>
                   </tr>
-                  {/* Progress bar row - only show for leads that have started */}
-                  {lead.progress && lead.brechaStatus !== 'no_access' && lead.brechaStatus !== 'revoked' && (
+                  {/* Progress bar row - always visible except for revoked leads */}
+                  {lead.brechaStatus !== 'revoked' && (
                     <tr key={`${lead.id}-progress`}>
                       <td colSpan={6} className="px-4 pb-4">
                         <BrechaProgressBar
