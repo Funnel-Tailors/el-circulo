@@ -157,6 +157,9 @@ export type Database = {
       }
       brecha_progress: {
         Row: {
+          access_expires_at: string | null
+          access_extended_by_hours: number | null
+          access_paused: boolean | null
           call_scheduled_at: string | null
           created_at: string | null
           first_visit_at: string | null
@@ -216,10 +219,14 @@ export type Database = {
           skip_the_line_clicked: boolean | null
           skip_the_line_clicked_at: string | null
           skip_the_line_shown: boolean | null
+          timer_reset_at: string | null
           token: string
           updated_at: string | null
         }
         Insert: {
+          access_expires_at?: string | null
+          access_extended_by_hours?: number | null
+          access_paused?: boolean | null
           call_scheduled_at?: string | null
           created_at?: string | null
           first_visit_at?: string | null
@@ -279,10 +286,14 @@ export type Database = {
           skip_the_line_clicked?: boolean | null
           skip_the_line_clicked_at?: string | null
           skip_the_line_shown?: boolean | null
+          timer_reset_at?: string | null
           token: string
           updated_at?: string | null
         }
         Update: {
+          access_expires_at?: string | null
+          access_extended_by_hours?: number | null
+          access_paused?: boolean | null
           call_scheduled_at?: string | null
           created_at?: string | null
           first_visit_at?: string | null
@@ -342,6 +353,7 @@ export type Database = {
           skip_the_line_clicked?: boolean | null
           skip_the_line_clicked_at?: string | null
           skip_the_line_shown?: boolean | null
+          timer_reset_at?: string | null
           token?: string
           updated_at?: string | null
         }

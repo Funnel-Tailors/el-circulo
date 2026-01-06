@@ -36,6 +36,7 @@ export type BrechaStatus =
 
 export interface BrechaProgress {
   token: string;
+  first_visit_at: string | null;
   frag1_video_progress: number | null;
   frag1_drops_captured: string[] | null;
   frag1_sequence_completed: boolean | null;
@@ -67,6 +68,11 @@ export interface BrechaProgress {
   frag4_roleplay_unlocked: boolean | null;
   journey_completed: boolean | null;
   call_scheduled_at: string | null;
+  // Timer control fields
+  access_expires_at: string | null;
+  access_extended_by_hours: number | null;
+  access_paused: boolean | null;
+  timer_reset_at: string | null;
 }
 
 export interface BrechaLeadWithProgress extends BrechaLead {
@@ -74,6 +80,10 @@ export interface BrechaLeadWithProgress extends BrechaLead {
   currentFragment: number;
   completionPercentage: number;
   journeyCompleted: boolean;
+  // Timer info
+  expiresAt: Date | null;
+  isPaused: boolean;
+  hoursExtended: number;
 }
 
 function calculateCurrentFragment(progress: BrechaProgress | null): number {
@@ -206,6 +216,16 @@ export function useBrechaLeads() {
         const isBlacklisted = !!blacklistMap[lead.token];
         const blacklistReason = blacklistMap[lead.token] || null;
         
+        // Calculate expiration
+        let expiresAt: Date | null = null;
+        if (progress?.access_expires_at) {
+          expiresAt = new Date(progress.access_expires_at);
+        } else if (progress?.timer_reset_at) {
+          expiresAt = new Date(new Date(progress.timer_reset_at).getTime() + 48 * 60 * 60 * 1000);
+        } else if (progress?.first_visit_at) {
+          expiresAt = new Date(new Date(progress.first_visit_at).getTime() + 48 * 60 * 60 * 1000);
+        }
+        
         return {
           ...lead,
           progress,
@@ -216,6 +236,9 @@ export function useBrechaLeads() {
           brechaStatus: determineBrechaStatus(progress, isBlacklisted),
           callScheduledAt: progress?.call_scheduled_at || null,
           journeyCompleted: progress?.journey_completed || false,
+          expiresAt,
+          isPaused: progress?.access_paused || false,
+          hoursExtended: progress?.access_extended_by_hours || 0,
         };
       });
 
@@ -623,6 +646,83 @@ export function useBrechaLeads() {
     await fetchLeads();
   }, [fetchLeads]);
 
+  // Timer control functions
+  const extendTimer = useCallback(async (token: string, hours: number) => {
+    // Get current progress to calculate new expiry
+    const { data: progress } = await supabase
+      .from("brecha_progress")
+      .select("access_expires_at, timer_reset_at, first_visit_at, access_extended_by_hours")
+      .eq("token", token)
+      .single();
+    
+    let currentExpiry: Date;
+    if (progress?.access_expires_at) {
+      currentExpiry = new Date(progress.access_expires_at);
+    } else if (progress?.timer_reset_at) {
+      currentExpiry = new Date(new Date(progress.timer_reset_at).getTime() + 48 * 60 * 60 * 1000);
+    } else if (progress?.first_visit_at) {
+      currentExpiry = new Date(new Date(progress.first_visit_at).getTime() + 48 * 60 * 60 * 1000);
+    } else {
+      currentExpiry = new Date();
+    }
+    
+    // If already expired, extend from now
+    const now = new Date();
+    if (currentExpiry < now) {
+      currentExpiry = now;
+    }
+    
+    const newExpiry = new Date(currentExpiry.getTime() + hours * 60 * 60 * 1000);
+    const totalExtended = (progress?.access_extended_by_hours || 0) + hours;
+    
+    const { error } = await supabase
+      .from("brecha_progress")
+      .update({ 
+        access_expires_at: newExpiry.toISOString(),
+        access_extended_by_hours: totalExtended
+      })
+      .eq("token", token);
+    
+    if (error) throw error;
+    await fetchLeads();
+  }, [fetchLeads]);
+
+  const resetTimer = useCallback(async (token: string) => {
+    const now = new Date();
+    const newExpiry = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    
+    const { error } = await supabase
+      .from("brecha_progress")
+      .update({ 
+        timer_reset_at: now.toISOString(),
+        access_expires_at: newExpiry.toISOString()
+      })
+      .eq("token", token);
+    
+    if (error) throw error;
+    await fetchLeads();
+  }, [fetchLeads]);
+
+  const togglePause = useCallback(async (token: string, paused: boolean) => {
+    const { error } = await supabase
+      .from("brecha_progress")
+      .update({ access_paused: paused })
+      .eq("token", token);
+    
+    if (error) throw error;
+    await fetchLeads();
+  }, [fetchLeads]);
+
+  const setCustomExpiry = useCallback(async (token: string, expiryDate: Date) => {
+    const { error } = await supabase
+      .from("brecha_progress")
+      .update({ access_expires_at: expiryDate.toISOString() })
+      .eq("token", token);
+    
+    if (error) throw error;
+    await fetchLeads();
+  }, [fetchLeads]);
+
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
@@ -638,6 +738,11 @@ export function useBrechaLeads() {
     markCompleted,
     unlockMilestone,
     resetMilestone,
-    updateLeadAccess
+    updateLeadAccess,
+    // Timer control
+    extendTimer,
+    resetTimer,
+    togglePause,
+    setCustomExpiry
   };
 }

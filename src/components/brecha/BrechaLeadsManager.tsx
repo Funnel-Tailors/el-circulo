@@ -26,6 +26,7 @@ import { RefreshCw, Eye, Ban, Undo2, CalendarIcon, Check } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useBrechaLeads, BrechaLeadWithProgress, BrechaStatus } from "@/hooks/useBrechaLeads";
 import { BrechaProgressBar } from "./BrechaProgressBar";
+import { TimerControlPanel } from "./TimerControlPanel";
 
 const statusLabels: Record<BrechaStatus, { label: string; color: string }> = {
   no_access: { label: '⚪ Sin acceso', color: 'bg-muted text-muted-foreground' },
@@ -124,7 +125,11 @@ export default function BrechaLeadsManager() {
     markCompleted, 
     unlockMilestone, 
     resetMilestone,
-    updateLeadAccess
+    updateLeadAccess,
+    extendTimer,
+    resetTimer,
+    togglePause,
+    setCustomExpiry
   } = useBrechaLeads();
   
   const [selectedLead, setSelectedLead] = useState<BrechaLeadWithProgress | null>(null);
@@ -392,6 +397,18 @@ export default function BrechaLeadsManager() {
                           leadName={lead.first_name || 'Lead'}
                           onUnlockMilestone={(milestone) => unlockMilestone(lead.token, milestone)}
                           onResetMilestone={handleResetWithConfirmation(lead.token, lead.first_name || 'Lead', lead.journeyCompleted)}
+                        />
+                        {/* Timer Control Panel */}
+                        <TimerControlPanel
+                          token={lead.token}
+                          expiresAt={lead.expiresAt}
+                          isPaused={lead.isPaused}
+                          hoursExtended={lead.hoursExtended}
+                          firstVisitAt={lead.progress?.first_visit_at || null}
+                          onExtendTimer={extendTimer}
+                          onResetTimer={resetTimer}
+                          onTogglePause={togglePause}
+                          onSetCustomExpiry={setCustomExpiry}
                         />
                       </td>
                     </tr>
