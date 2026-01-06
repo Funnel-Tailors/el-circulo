@@ -200,11 +200,15 @@ const LaBrecha = () => {
   };
 
   const handleFrag1DropCaptured = (dropId: string) => {
-    updateProgress({ frag1_drops_captured: [...progress.frag1_drops_captured, dropId] });
+    if (!progress.frag1_drops_captured.includes(dropId)) {
+      updateProgress({ frag1_drops_captured: [...progress.frag1_drops_captured, dropId] });
+    }
   };
 
   const handleFrag1DropMissed = (dropId: string) => {
-    updateProgress({ frag1_drops_missed: [...progress.frag1_drops_missed, dropId] });
+    if (!progress.frag1_drops_missed.includes(dropId)) {
+      updateProgress({ frag1_drops_missed: [...progress.frag1_drops_missed, dropId] });
+    }
   };
 
   const handleFrag1SequenceCompleted = () => {
@@ -233,11 +237,15 @@ const LaBrecha = () => {
   };
 
   const handleFrag2DropCaptured = (dropId: string) => {
-    updateProgress({ frag2_drops_captured: [...progress.frag2_drops_captured, dropId] });
+    if (!progress.frag2_drops_captured.includes(dropId)) {
+      updateProgress({ frag2_drops_captured: [...progress.frag2_drops_captured, dropId] });
+    }
   };
 
   const handleFrag2DropMissed = (dropId: string) => {
-    updateProgress({ frag2_drops_missed: [...progress.frag2_drops_missed, dropId] });
+    if (!progress.frag2_drops_missed.includes(dropId)) {
+      updateProgress({ frag2_drops_missed: [...progress.frag2_drops_missed, dropId] });
+    }
   };
 
   const handleFrag2SequenceCompleted = () => {
@@ -274,11 +282,15 @@ const LaBrecha = () => {
   };
 
   const handleFrag3DropCaptured = (dropId: string) => {
-    updateProgress({ frag3_drops_captured: [...progress.frag3_drops_captured, dropId] });
+    if (!progress.frag3_drops_captured.includes(dropId)) {
+      updateProgress({ frag3_drops_captured: [...progress.frag3_drops_captured, dropId] });
+    }
   };
 
   const handleFrag3DropMissed = (dropId: string) => {
-    updateProgress({ frag3_drops_missed: [...progress.frag3_drops_missed, dropId] });
+    if (!progress.frag3_drops_missed.includes(dropId)) {
+      updateProgress({ frag3_drops_missed: [...progress.frag3_drops_missed, dropId] });
+    }
   };
 
   const handleFrag3SequenceCompleted = () => {
@@ -307,11 +319,15 @@ const LaBrecha = () => {
   };
 
   const handleFrag4DropCaptured = (dropId: string) => {
-    updateProgress({ frag4_drops_captured: [...progress.frag4_drops_captured, dropId] });
+    if (!progress.frag4_drops_captured.includes(dropId)) {
+      updateProgress({ frag4_drops_captured: [...progress.frag4_drops_captured, dropId] });
+    }
   };
 
   const handleFrag4DropMissed = (dropId: string) => {
-    updateProgress({ frag4_drops_missed: [...progress.frag4_drops_missed, dropId] });
+    if (!progress.frag4_drops_missed.includes(dropId)) {
+      updateProgress({ frag4_drops_missed: [...progress.frag4_drops_missed, dropId] });
+    }
   };
 
   const handleFrag4SequenceCompleted = () => {
