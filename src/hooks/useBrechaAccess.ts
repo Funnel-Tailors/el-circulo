@@ -73,7 +73,7 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
             .single(),
           supabase
             .from('brecha_progress')
-            .select('first_visit_at')
+            .select('first_visit_at, access_expires_at, access_paused, timer_reset_at')
             .eq('token', token)
             .single()
         ]);
@@ -100,16 +100,34 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
         setBrechaMode(mode);
 
         const now = new Date();
+        const progressData = progressResult.data;
+
+        // Check if access is paused first
+        if (progressData?.access_paused) {
+          setIsExpired(true);
+          setExpiresAt(null);
+          setNotYetOpen(false);
+          setBrechaMode(mode);
+          setIsLoading(false);
+          return;
+        }
 
         if (mode === "evergreen") {
-          // Evergreen mode: 48h from first_visit_at
-          const firstVisit = progressResult.data?.first_visit_at 
-            ? new Date(progressResult.data.first_visit_at)
-            : null;
+          // Evergreen mode: Check override first, then timer_reset, then first_visit
+          let expireDate: Date | null = null;
+          
+          if (progressData?.access_expires_at) {
+            // Direct override takes priority
+            expireDate = new Date(progressData.access_expires_at);
+          } else if (progressData?.timer_reset_at) {
+            // Timer was reset - calculate from reset time
+            expireDate = new Date(new Date(progressData.timer_reset_at).getTime() + 48 * 60 * 60 * 1000);
+          } else if (progressData?.first_visit_at) {
+            // Original behavior: 48h from first visit
+            expireDate = new Date(new Date(progressData.first_visit_at).getTime() + 48 * 60 * 60 * 1000);
+          }
 
-          if (firstVisit) {
-            const expireDate = new Date(firstVisit);
-            expireDate.setHours(expireDate.getHours() + 48);
+          if (expireDate) {
             setExpiresAt(expireDate);
             setIsExpired(now > expireDate);
           } else {
