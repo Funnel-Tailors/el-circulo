@@ -189,16 +189,24 @@ export const BrechaFragmento3 = ({
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [video1Completed, checkForDrop, onVideo2Progress]);
 
-  // Auto-restore modal if user is stuck
+  // Auto-restore modal if user is stuck (allCaptured OR all drops shown/missed)
   useEffect(() => {
-    if (allCaptured && !progress.sequence_completed && !showRitualModal) {
+    // Count total drops that have been shown (captured + missed)
+    const totalDropsHandled = capturedDrops.length + progress.drops_missed.length;
+    const allDropsHandled = totalDropsHandled >= drops.length;
+    const videoNearComplete = video2Progress >= 90;
+    
+    // Show modal if: all captured OR (video near end AND all drops have been handled)
+    const shouldShowModal = allCaptured || (videoNearComplete && allDropsHandled);
+    
+    if (shouldShowModal && !progress.sequence_completed && !showRitualModal) {
       const timer = setTimeout(() => {
         setShowRitualModal(true);
         setModalHasBeenShown(true);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [allCaptured, progress.sequence_completed, showRitualModal]);
+  }, [allCaptured, progress.sequence_completed, showRitualModal, capturedDrops.length, progress.drops_missed.length, drops.length, video2Progress]);
 
   const handleRitualComplete = () => {
     setShowRitualModal(false);
