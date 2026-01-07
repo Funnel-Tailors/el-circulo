@@ -6,7 +6,7 @@ import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import TimelineDay from "@/components/roadmap/TimelineDay";
 import BonusCard from "@/components/roadmap/BonusCard";
-import TestimonialStack from "@/components/roadmap/TestimonialStack";
+import SuccessCase from "@/components/roadmap/SuccessCase";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
@@ -129,8 +129,10 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Stack isométrico 3D de testimonios */}
-            <TestimonialStack cases={successCases} />
+            {/* Grid de casos con animación staggered */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {successCases.map((case_, index) => <SuccessCase key={case_.name} name={case_.name} role={case_.role} offer={case_.offer} highlight={case_.highlight} videoUrl={case_.videoUrl} results={case_.results} index={index} />)}
+            </div>
 
             {/* CTA con link animado */}
             <div className="text-center mt-10 animate-fade-in" style={{
