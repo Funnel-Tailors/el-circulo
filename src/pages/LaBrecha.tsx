@@ -151,45 +151,27 @@ const LaBrecha = () => {
     );
   }
 
-  // BLOQUEO ESTRICTO: Si journey_completed = true, mostrar pantalla de cierre
+  // Si journey_completed = true, mostrar OTO + Calendario (igual que el footer)
   if (progress.journey_completed) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-background relative overflow-hidden">
         <ShootingStars />
         <Starfield />
         
-        {/* Vortex centrado como fondo */}
-        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-          <VortexEffect 
-            size="lg" 
-            isClosing={true} 
-            rotationSpeed={25} 
-            className="scale-75 sm:scale-100"
+        <div className="relative z-10 container mx-auto px-4 py-16">
+          <BrechaFooter
+            showCalendar={true}
+            calendarId="8C2kck4NCnEihznxvL29"
+            firstName={lead?.first_name || undefined}
+            email={undefined}
+            phone={undefined}
+            eventDate={expiresAt || new Date(Date.now() + 48 * 60 * 60 * 1000)}
+            ghlPaymentUrl="https://checkout.chfranco.com/circulo-beca"
+            onSkipTheLineClick={() => {
+              updateProgress({ skip_the_line_clicked: true });
+            }}
           />
         </div>
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="relative z-20 text-center max-w-xl px-4"
-        >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold glow mb-4">
-            TU VIAJE HA CONCLUIDO
-          </h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mb-6">
-            Ya cruzaste La Brecha. Si no agendaste tu llamada de iniciación, 
-            contáctanos directamente para tu próximo paso.
-          </p>
-          <a 
-            href="https://wa.me/34684024700?text=Hola%2C%20complet%C3%A9%20La%20Brecha%20pero%20no%20pude%20agendar%20mi%20llamada"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 sm:px-6 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Contactar por WhatsApp
-          </a>
-        </motion.div>
       </div>
     );
   }
@@ -377,8 +359,11 @@ const LaBrecha = () => {
     }, 600);
   };
 
-  // Check if user has full access (qualified or admin override) or limited access (disqualified)
-  const hasFullAccess = lead?.is_qualified === true || lead?.access_override === 'grant_full_access';
+  // Check if user has full access based on tier or admin override
+  const hasFullAccess = 
+    lead?.tier === 'full_access' || 
+    lead?.tier === 'premium' || 
+    lead?.access_override === 'grant_full_access';
 
   return (
     <div className="min-h-screen relative overflow-hidden">
