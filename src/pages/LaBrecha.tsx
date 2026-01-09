@@ -359,11 +359,8 @@ const LaBrecha = () => {
     }, 600);
   };
 
-  // Check if user has full access based on tier or admin override
-  const hasFullAccess = 
-    lead?.tier === 'full_access' || 
-    lead?.tier === 'premium' || 
-    lead?.access_override === 'grant_full_access';
+  // Check if user has full access (qualified or admin override) or limited access (disqualified)
+  const hasFullAccess = lead?.is_qualified === true || lead?.access_override === 'grant_full_access';
 
   return (
     <div className="min-h-screen relative overflow-hidden">
