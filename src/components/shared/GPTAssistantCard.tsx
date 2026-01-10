@@ -47,9 +47,7 @@ export const GPTAssistantCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: animationDelay, duration: 0.6 }}
-      className={`glass-card-dark transition-all duration-700 relative ${
-        !isUnlocked ? 'opacity-40 grayscale blur-[1px]' : ''
-      } ${isSingle ? 'p-8 max-w-xl mx-auto' : 'p-6'} ${className}`}
+      className={`glass-card-dark transition-all duration-700 relative ${isSingle ? 'p-8 max-w-xl mx-auto' : 'p-6'} ${className}`}
     >
       {/* Lock overlay when not unlocked */}
       {!isUnlocked && (
