@@ -211,7 +211,7 @@ const SendaLeadsManager = () => {
       </div>
 
       {/* Table */}
-      <div className="glass-card-dark rounded-xl overflow-hidden">
+      <div className="glass-card-dark glass-card-dark-static rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>

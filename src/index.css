@@ -98,6 +98,11 @@ All colors MUST be HSL.
     transform: scale(1.02);
   }
   
+  /* Static variant without hover scale for admin tables */
+  .glass-card-dark-static:hover {
+    transform: none;
+  }
+  
   @supports not (backdrop-filter: blur(12px)) {
     .glass-card-dark {
       background: rgba(0, 0, 0, 0.85);
