@@ -452,7 +452,7 @@ export const BrechaFragmento3 = ({
           transition={{ delay: 1.6, duration: 0.8 }}
         >
           <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
-            Acólitos de la Voz del Espejo
+            Acólitos
           </h3>
           
           <div className="grid md:grid-cols-3 gap-4">
