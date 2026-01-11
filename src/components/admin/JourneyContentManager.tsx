@@ -2,7 +2,8 @@
  * JourneyContentManager - Panel de gestión de contenido de journeys
  * 
  * Vista principal que muestra el contenido por módulo con tabs.
- * Permite editar videos, asistentes, roleplays y configuración de drops.
+ * Usa módulos dinámicos desde la base de datos.
+ * Permite editar videos, asistentes y configuración de drops.
  */
 
 import { useState } from 'react';
@@ -10,7 +11,6 @@ import { motion } from 'framer-motion';
 import { 
   Video, 
   Bot, 
-  Drama, 
   Settings2, 
   Plus, 
   AlertCircle, 
@@ -18,24 +18,28 @@ import {
   Loader2,
   ExternalLink,
   Copy,
-  Check
+  Pencil
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import {
   useJourneyContent,
   useJourneyDropsConfig,
+  useJourneyModules,
   useMigrateDefaults,
   groupContentByModule,
   type JourneyType,
   type JourneyContentRow,
   type JourneyDropsConfigRow,
+  type JourneyModuleRow,
 } from '@/hooks/useJourneyContentAdmin';
-import { MODULE_LABELS, getModuleIds, JOURNEY_DEFAULTS } from '@/config/journey-defaults';
+import { JOURNEY_DEFAULTS } from '@/config/journey-defaults';
 import { ContentEditModal } from './ContentEditModal';
 import { DropsConfigEditor } from './DropsConfigEditor';
+import { ModuleEditModal } from './ModuleEditModal';
 
 interface JourneyContentManagerProps {
   journeyType: JourneyType;
@@ -44,23 +48,28 @@ interface JourneyContentManagerProps {
 export function JourneyContentManager({ journeyType }: JourneyContentManagerProps) {
   const { data: content, isLoading: contentLoading } = useJourneyContent(journeyType);
   const { data: dropsConfig, isLoading: dropsLoading } = useJourneyDropsConfig(journeyType);
+  const { data: modules, isLoading: modulesLoading } = useJourneyModules(journeyType);
   const migrateDefaults = useMigrateDefaults();
   
-  const [selectedModule, setSelectedModule] = useState(getModuleIds(journeyType)[0]);
+  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState<JourneyContentRow | null>(null);
   const [editingDrops, setEditingDrops] = useState<JourneyDropsConfigRow | null>(null);
-  const [addingContentType, setAddingContentType] = useState<'video' | 'assistant' | 'roleplay' | null>(null);
+  const [editingModule, setEditingModule] = useState<JourneyModuleRow | null>(null);
+  const [addingModule, setAddingModule] = useState(false);
+  const [addingContentType, setAddingContentType] = useState<'video' | 'assistant' | null>(null);
   
-  const isLoading = contentLoading || dropsLoading;
+  const isLoading = contentLoading || dropsLoading || modulesLoading;
   const hasDbContent = (content?.length ?? 0) > 0;
   const groupedContent = groupContentByModule(content);
-  const moduleIds = getModuleIds(journeyType);
-
-  // Get drops config for selected module
-  const selectedDropsConfig = dropsConfig?.find(d => d.module_id === selectedModule);
   
-  // Get default content for reference
-  const defaultModuleContent = JOURNEY_DEFAULTS[journeyType][selectedModule];
+  // Use first module if none selected
+  const currentModule = selectedModule || modules?.[0]?.module_id || '';
+  
+  // Get drops config for selected module
+  const selectedDropsConfig = dropsConfig?.find(d => d.module_id === currentModule);
+  
+  // Get default content for reference (fallback)
+  const defaultModuleContent = JOURNEY_DEFAULTS[journeyType]?.[currentModule];
 
   const handleCopyUrl = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -71,6 +80,42 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // No modules yet - prompt to use defaults or add
+  if (!modules?.length) {
+    return (
+      <div className="space-y-6">
+        <Alert className="border-amber-500/50 bg-amber-500/10">
+          <AlertCircle className="h-4 w-4 text-amber-500" />
+          <AlertDescription className="flex items-center justify-between">
+            <div>
+              <strong className="text-foreground">No hay módulos configurados.</strong>
+              <span className="text-muted-foreground ml-2">
+                Añade módulos para organizar el contenido del journey.
+              </span>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setAddingModule(true)}
+              className="ml-4"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Añadir Módulo
+            </Button>
+          </AlertDescription>
+        </Alert>
+
+        {addingModule && (
+          <ModuleEditModal
+            module={null}
+            journeyType={journeyType}
+            nextSortOrder={1}
+            onClose={() => setAddingModule(false)}
+          />
+        )}
       </div>
     );
   }
@@ -115,21 +160,46 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
       </Alert>
 
       {/* Module tabs */}
-      <Tabs value={selectedModule} onValueChange={setSelectedModule}>
-        <TabsList className="w-full justify-start">
-          {moduleIds.map((moduleId) => (
-            <TabsTrigger key={moduleId} value={moduleId} className="flex-1 max-w-[200px]">
-              {MODULE_LABELS[journeyType][moduleId]?.split(':')[0] || moduleId}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs value={currentModule} onValueChange={setSelectedModule}>
+        <div className="flex items-center gap-2">
+          <TabsList className="flex-1 justify-start">
+            {modules.map((mod) => (
+              <TabsTrigger 
+                key={mod.module_id} 
+                value={mod.module_id} 
+                className="flex items-center gap-2 max-w-[200px]"
+              >
+                <span>{mod.short_label || mod.label.split(':')[0]}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 opacity-50 hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingModule(mod);
+                  }}
+                >
+                  <Pencil className="w-3 h-3" />
+                </Button>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAddingModule(true)}
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Módulo
+          </Button>
+        </div>
 
-        {moduleIds.map((moduleId) => (
-          <TabsContent key={moduleId} value={moduleId} className="space-y-8 mt-6">
+        {modules.map((mod) => (
+          <TabsContent key={mod.module_id} value={mod.module_id} className="space-y-8 mt-6">
             {/* Module header */}
             <div className="border-b border-border pb-4">
               <h3 className="text-xl font-semibold text-foreground">
-                {MODULE_LABELS[journeyType][moduleId]}
+                {mod.label}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 Gestiona el contenido de este módulo
@@ -140,7 +210,7 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
             <ContentSection
               title="Videos"
               icon={<Video className="w-5 h-5" />}
-              items={hasDbContent ? groupedContent[moduleId]?.videos || [] : []}
+              items={hasDbContent ? groupedContent[mod.module_id]?.videos || [] : []}
               defaultItems={defaultModuleContent?.videos || []}
               hasDbContent={hasDbContent}
               onEdit={(item) => setEditingContent(item)}
@@ -164,7 +234,7 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
             <ContentSection
               title="Asistentes GPT"
               icon={<Bot className="w-5 h-5" />}
-              items={hasDbContent ? groupedContent[moduleId]?.assistants || [] : []}
+              items={hasDbContent ? groupedContent[mod.module_id]?.assistants || [] : []}
               defaultItems={defaultModuleContent?.assistants || []}
               hasDbContent={hasDbContent}
               onEdit={(item) => setEditingContent(item)}
@@ -175,37 +245,18 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
                   <span className="text-2xl">
                     {isDefault ? (item as any).icon : item.assistant_icon}
                   </span>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {isDefault ? (item as any).name : item.assistant_name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {isDefault ? (item as any).description : item.assistant_description}
-                    </p>
-                  </div>
-                </div>
-              )}
-            />
-
-            {/* Roleplays section */}
-            <ContentSection
-              title="Roleplays"
-              icon={<Drama className="w-5 h-5" />}
-              items={hasDbContent ? groupedContent[moduleId]?.roleplays || [] : []}
-              defaultItems={defaultModuleContent?.roleplays || []}
-              hasDbContent={hasDbContent}
-              onEdit={(item) => setEditingContent(item)}
-              onAdd={() => setAddingContentType('roleplay')}
-              onCopyUrl={handleCopyUrl}
-              renderItem={(item, isDefault) => (
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">
-                    {isDefault ? (item as any).icon : item.assistant_icon}
-                  </span>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {isDefault ? (item as any).name : item.assistant_name}
-                    </p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">
+                        {isDefault ? (item as any).name : item.assistant_name}
+                      </p>
+                      {/* Show sub_type badge */}
+                      {(isDefault ? (item as any).subType : item.sub_type) === 'roleplay' && (
+                        <Badge variant="secondary" className="text-xs">
+                          Roleplay
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {isDefault ? (item as any).description : item.assistant_description}
                     </p>
@@ -256,7 +307,7 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
         ))}
       </Tabs>
 
-      {/* Edit Modal */}
+      {/* Edit Content Modal */}
       {editingContent && (
         <ContentEditModal
           content={editingContent}
@@ -265,12 +316,12 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
         />
       )}
 
-      {/* Add Modal */}
+      {/* Add Content Modal */}
       {addingContentType && (
         <ContentEditModal
           content={null}
           journeyType={journeyType}
-          moduleId={selectedModule}
+          moduleId={currentModule}
           contentType={addingContentType}
           onClose={() => setAddingContentType(null)}
         />
@@ -282,6 +333,25 @@ export function JourneyContentManager({ journeyType }: JourneyContentManagerProp
           config={editingDrops}
           journeyType={journeyType}
           onClose={() => setEditingDrops(null)}
+        />
+      )}
+
+      {/* Module Edit Modal */}
+      {editingModule && (
+        <ModuleEditModal
+          module={editingModule}
+          journeyType={journeyType}
+          onClose={() => setEditingModule(null)}
+        />
+      )}
+
+      {/* Add Module Modal */}
+      {addingModule && (
+        <ModuleEditModal
+          module={null}
+          journeyType={journeyType}
+          nextSortOrder={(modules?.length || 0) + 1}
+          onClose={() => setAddingModule(false)}
         />
       )}
     </div>

@@ -26,15 +26,7 @@ export interface AssistantContent {
   icon: string;
   poeticMessage?: string;
   features?: string[];
-}
-
-export interface RoleplayContent {
-  key: string;
-  id: string;
-  name: string;
-  description: string;
-  url: string;
-  icon: string;
+  subType?: 'standard' | 'roleplay'; // Differentiates assistant types
 }
 
 export interface DropConfig {
@@ -52,8 +44,7 @@ export interface DropsSettings {
 
 export interface ModuleContent {
   videos: VideoContent[];
-  assistants: AssistantContent[];
-  roleplays: RoleplayContent[];
+  assistants: AssistantContent[]; // Includes both standard assistants and roleplays
   drops: DropsSettings;
 }
 
@@ -82,6 +73,7 @@ const SENDA_CLASS1: ModuleContent = {
       description: 'GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso',
       url: 'https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas',
       icon: '🤖',
+      subType: 'standard',
       features: [
         'Analiza tu modelo actual',
         'Diseña tu oferta premium',
@@ -89,7 +81,6 @@ const SENDA_CLASS1: ModuleContent = {
       ],
     },
   ],
-  roleplays: [],
   drops: {
     drops: [
       { id: 'c1_drop1', symbol: '✦', timestamp: 0.15 },
@@ -110,7 +101,6 @@ const SENDA_CLASS2: ModuleContent = {
     },
   ],
   assistants: [],
-  roleplays: [],
   drops: {
     drops: [
       { id: 'c2_drop1', symbol: '◇', timestamp: 0.10 },
@@ -145,6 +135,7 @@ const SENDA_MODULE3: ModuleContent = {
       description: 'Crea anuncios que capturan atención y generan clics',
       url: 'https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo',
       icon: '📢',
+      subType: 'standard',
     },
     {
       key: 'assistant_2',
@@ -153,6 +144,7 @@ const SENDA_MODULE3: ModuleContent = {
       description: 'Diseña formularios que cualifican sin espantar',
       url: 'https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo',
       icon: '📋',
+      subType: 'standard',
     },
     {
       key: 'assistant_3',
@@ -161,9 +153,9 @@ const SENDA_MODULE3: ModuleContent = {
       description: 'Escribe guiones que cierran sin presionar',
       url: 'https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo',
       icon: '🎯',
+      subType: 'standard',
     },
   ],
-  roleplays: [],
   drops: {
     drops: [
       { id: 'c3_drop1', symbol: '◆', timestamp: 0.20 },
@@ -184,8 +176,7 @@ const SENDA_MODULE4: ModuleContent = {
       title: 'Masterclass: Cierres de Venta',
     },
   ],
-  assistants: [],
-  roleplays: [
+  assistants: [
     {
       key: 'roleplay_main',
       id: 'cliente-circulo',
@@ -193,6 +184,7 @@ const SENDA_MODULE4: ModuleContent = {
       description: 'Practica cierres reales con un cliente simulado',
       url: 'https://chatgpt.com/g/g-68a4634fe12c81918e514fb812f40fa8-cliente-del-circulo',
       icon: '🎭',
+      subType: 'roleplay',
     },
   ],
   drops: {
@@ -228,9 +220,9 @@ const BRECHA_FRAG1: ModuleContent = {
       description: 'Define una oferta por la que cobrar 5 cifras',
       url: 'https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas',
       icon: '💰',
+      subType: 'standard',
     },
   ],
-  roleplays: [],
   drops: {
     drops: [
       { id: 'b1_drop1', symbol: '◆', timestamp: 0.20 },
@@ -259,9 +251,9 @@ const BRECHA_FRAG2: ModuleContent = {
       description: 'Encuentra a quien pague esas 5 cifras por tu trabajo',
       url: 'https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar',
       icon: '🪞',
+      subType: 'standard',
     },
   ],
-  roleplays: [],
   drops: {
     drops: [
       { id: 'b2_drop1', symbol: '⌬', timestamp: 0.12 },
@@ -297,6 +289,7 @@ const BRECHA_FRAG3: ModuleContent = {
       description: 'Las palabras exactas para llegar a tu cliente',
       url: 'https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo',
       icon: '📢',
+      subType: 'standard',
     },
     {
       key: 'assistant_2',
@@ -305,6 +298,7 @@ const BRECHA_FRAG3: ModuleContent = {
       description: 'Formularios que filtran a quien no va a pagar',
       url: 'https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo',
       icon: '🧱',
+      subType: 'standard',
     },
     {
       key: 'assistant_3',
@@ -313,9 +307,9 @@ const BRECHA_FRAG3: ModuleContent = {
       description: 'Guiones que cierran ventas sin rogar',
       url: 'https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo',
       icon: '🔐',
+      subType: 'standard',
     },
   ],
-  roleplays: [],
   drops: {
     drops: [
       { id: 'b3_drop1', symbol: '◆', timestamp: 0.20 },
@@ -337,8 +331,7 @@ const BRECHA_FRAG4: ModuleContent = {
       title: 'El Cierre',
     },
   ],
-  assistants: [],
-  roleplays: [
+  assistants: [
     {
       key: 'roleplay_main',
       id: 'eco-cliente',
@@ -346,6 +339,7 @@ const BRECHA_FRAG4: ModuleContent = {
       description: 'Practica cierres con un reflejo del que te comprará',
       url: 'https://chatgpt.com/g/g-68a4634fe12c81918e514fb812f40fa8-cliente-del-circulo',
       icon: '🎭',
+      subType: 'roleplay',
     },
   ],
   drops: {
@@ -379,25 +373,4 @@ export const JOURNEY_DEFAULTS: JourneyDefaults = {
     frag3: BRECHA_FRAG3,
     frag4: BRECHA_FRAG4,
   },
-};
-
-// Helper para obtener etiquetas legibles de los módulos
-export const MODULE_LABELS: Record<string, Record<string, string>> = {
-  senda: {
-    class1: 'Clase 1: Preparación',
-    class2: 'Clase 2: El Vault',
-    module3: 'Módulo 3: La Voz',
-    module4: 'Módulo 4: El Cierre',
-  },
-  brecha: {
-    frag1: 'Fragmento 1: El Precio',
-    frag2: 'Fragmento 2: El Espejo',
-    frag3: 'Fragmento 3: La Voz',
-    frag4: 'Fragmento 4: El Cierre',
-  },
-};
-
-// Helper para obtener todos los módulos de un journey
-export const getModuleIds = (journeyType: 'senda' | 'brecha'): string[] => {
-  return Object.keys(JOURNEY_DEFAULTS[journeyType]);
 };
