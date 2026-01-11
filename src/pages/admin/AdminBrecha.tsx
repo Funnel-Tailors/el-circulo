@@ -6,6 +6,7 @@ import BrechaJourneyMetrics from "@/components/brecha/BrechaJourneyMetrics";
 import BrechaLeadsManager from "@/components/brecha/BrechaLeadsManager";
 import BrechaSyncManager from "@/components/brecha/BrechaSyncManager";
 import BrechaSettings from "@/components/brecha/BrechaSettings";
+import { JourneyContentManager } from "@/components/admin/JourneyContentManager";
 
 export default function AdminBrecha() {
   const [dateRange, setDateRange] = useState("30");
@@ -38,6 +39,7 @@ export default function AdminBrecha() {
         <TabsList>
           <TabsTrigger value="journey">Journey Metrics</TabsTrigger>
           <TabsTrigger value="leads">Gestión Leads</TabsTrigger>
+          <TabsTrigger value="content">📝 Contenido</TabsTrigger>
           <TabsTrigger value="sync">🔄 Sync Tags</TabsTrigger>
           <TabsTrigger value="settings">⚙️ Settings</TabsTrigger>
         </TabsList>
@@ -48,6 +50,10 @@ export default function AdminBrecha() {
 
         <TabsContent value="leads" className="space-y-6">
           <BrechaLeadsManager />
+        </TabsContent>
+
+        <TabsContent value="content" className="space-y-6">
+          <JourneyContentManager journeyType="brecha" />
         </TabsContent>
 
         <TabsContent value="sync" className="space-y-6">
