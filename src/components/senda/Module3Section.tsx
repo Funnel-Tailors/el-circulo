@@ -87,11 +87,17 @@ const Module3Section = ({
   const [showRitualModal, setShowRitualModal] = useState(false);
   const [ritualCompleted, setRitualCompleted] = useState(initialProgress.module3SequenceCompleted);
   
+  // Resume indicator states
+  const [showResumeIndicatorV1, setShowResumeIndicatorV1] = useState(false);
+  const [showResumeIndicatorV2, setShowResumeIndicatorV2] = useState(false);
+  
   // Tracking refs
   const tracked1Start = useRef(false);
   const tracked2Start = useRef(false);
   const lastV1Update = useRef(0);
   const lastV2Update = useRef(0);
+  const hasRestoredV1 = useRef(false);
+  const hasRestoredV2 = useRef(false);
 
   // Video 2 drops system (Class 3 = 4 drops)
   const {
@@ -142,6 +148,54 @@ const Module3Section = ({
       setRitualCompleted(true);
     }
   }, [initialProgress]);
+
+  // Restore video 1 progress on load
+  useEffect(() => {
+    const video = video1Ref.current;
+    const savedProgress = initialProgress.module3Video1Progress || 0;
+    
+    if (!video || hasRestoredV1.current || savedProgress < 2 || !isVisible) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && savedProgress < 98) {
+        video.currentTime = (savedProgress / 100) * video.duration;
+        hasRestoredV1.current = true;
+        setShowResumeIndicatorV1(true);
+        setTimeout(() => setShowResumeIndicatorV1(false), 2500);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialProgress.module3Video1Progress, isVisible]);
+
+  // Restore video 2 progress on load
+  useEffect(() => {
+    const video = video2Ref.current;
+    const savedProgress = initialProgress.module3Video2Progress || 0;
+    
+    if (!video || hasRestoredV2.current || savedProgress < 2 || !video1Completed || !isVisible) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && savedProgress < 98) {
+        video.currentTime = (savedProgress / 100) * video.duration;
+        hasRestoredV2.current = true;
+        setShowResumeIndicatorV2(true);
+        setTimeout(() => setShowResumeIndicatorV2(false), 2500);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialProgress.module3Video2Progress, video1Completed, isVisible]);
 
   // Video 1 handlers
   useEffect(() => {
@@ -312,6 +366,23 @@ const Module3Section = ({
           </div>
           
           <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
+            {/* Resume indicator V1 */}
+            {showResumeIndicatorV1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
+            )}
+
             <video
               ref={video1Ref}
               src={VIDEO_1_URL}
@@ -385,6 +456,23 @@ const Module3Section = ({
                   <p className="text-foreground/50 text-sm">Completa el video anterior para desbloquear</p>
                 </div>
               </div>
+            )}
+
+            {/* Resume indicator V2 */}
+            {showResumeIndicatorV2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
             )}
             
             <video

@@ -46,6 +46,10 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
   const tracked100 = useRef(false);
   const trackedStart = useRef(false);
   const lastProgressUpdate = useRef(0);
+  const hasRestoredProgress = useRef(false);
+
+  // State for resume indicator
+  const [showResumeIndicator, setShowResumeIndicator] = useState(false);
 
   // State for ritual
   const [ritualAccepted, setRitualAccepted] = useState(false);
@@ -61,6 +65,31 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
       setRitualAccepted(hasAcceptedFromStorage);
     }
   }, [hasAcceptedFromStorage, progress.class2RitualAccepted]);
+
+  // Restore video progress on load
+  useEffect(() => {
+    const video = videoRef.current;
+    const savedProgress = initialProgress?.class2VideoProgress || 0;
+    
+    if (!video || hasRestoredProgress.current || savedProgress < 2 || !isVisible) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && savedProgress < 98) {
+        const targetTime = (savedProgress / 100) * video.duration;
+        video.currentTime = targetTime;
+        hasRestoredProgress.current = true;
+        setShowResumeIndicator(true);
+        setTimeout(() => setShowResumeIndicator(false), 2500);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialProgress?.class2VideoProgress, isVisible]);
 
   // Fire-and-forget tracking
   const trackEvent = useCallback((eventType: string) => {
@@ -244,6 +273,23 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           
           {/* Video with ritual + drop overlay */}
           <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
+            {/* Resume indicator */}
+            {showResumeIndicator && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
+            )}
+
             <video
               ref={videoRef}
               src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c61440c5b7ed66facfc.mp4"

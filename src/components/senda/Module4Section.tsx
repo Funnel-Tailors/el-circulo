@@ -46,10 +46,12 @@ const Module4Section = ({
   onJourneyComplete
 }: Module4SectionProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoProgress, setVideoProgress] = useState(initialProgress.module4VideoProgress || 0);
   const [videoStarted, setVideoStarted] = useState(false);
   const [showRitualModal, setShowRitualModal] = useState(false);
   const [ritualCompleted, setRitualCompleted] = useState(false);
+  const [showResumeIndicator, setShowResumeIndicator] = useState(false);
+  const hasRestoredProgress = useRef(false);
   
   const {
     updateVideoProgress,
@@ -94,6 +96,30 @@ const Module4Section = ({
       setTimeout(() => setShowRitualModal(true), 500);
     }
   });
+
+  // Restore video progress on load
+  useEffect(() => {
+    const video = videoRef.current;
+    const savedProgress = initialProgress.module4VideoProgress || 0;
+    
+    if (!video || hasRestoredProgress.current || savedProgress < 2 || !isVisible) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && savedProgress < 98) {
+        video.currentTime = (savedProgress / 100) * video.duration;
+        hasRestoredProgress.current = true;
+        setShowResumeIndicator(true);
+        setTimeout(() => setShowResumeIndicator(false), 2500);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialProgress.module4VideoProgress, isVisible]);
 
   // Handle video time updates
   const handleTimeUpdate = useCallback(() => {
@@ -201,6 +227,23 @@ const Module4Section = ({
           </h3>
           
           <div className="relative rounded-lg overflow-hidden bg-black/50">
+            {/* Resume indicator */}
+            {showResumeIndicator && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
+            )}
+
             <video
               ref={videoRef}
               src={VIDEO_MASTERCLASS}

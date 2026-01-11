@@ -83,6 +83,7 @@ export const BrechaFragmento = ({
   const [showSequenceModal, setShowSequenceModal] = useState(false);
   const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
+  const [showResumeIndicator, setShowResumeIndicator] = useState(false);
 
   // Class 5 = Fragmento 1 (3 drops), Class 6 = Fragmento 2 (5 drops)
   const classNumber = fragmentNumber === 1 ? 5 : 6;
@@ -161,6 +162,9 @@ export const BrechaFragmento = ({
         const targetTime = (initialVideoProgress / 100) * video.duration;
         video.currentTime = targetTime;
         setHasRestoredProgress(true);
+        // Show resume indicator
+        setShowResumeIndicator(true);
+        setTimeout(() => setShowResumeIndicator(false), 2500);
       }
     };
 
@@ -232,6 +236,23 @@ export const BrechaFragmento = ({
             onAccept={onRitualAccepted}
             initialAccepted={progress.ritual_accepted}
           />
+
+          {/* Resume indicator */}
+          {showResumeIndicator && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                         px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                         border border-foreground/20 shadow-lg pointer-events-none"
+            >
+              <span className="text-foreground/80 text-sm flex items-center gap-2">
+                <span className="text-foreground/60">⟡</span>
+                Continuando donde lo dejaste...
+              </span>
+            </motion.div>
+          )}
 
           {/* Protected Video with custom controls */}
           <ProtectedVideo
