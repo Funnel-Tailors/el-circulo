@@ -13,12 +13,11 @@ import {
   type ModuleContent, 
   type VideoContent, 
   type AssistantContent, 
-  type RoleplayContent,
   type DropsSettings 
 } from '@/config/journey-defaults';
 
 export type JourneyType = 'senda' | 'brecha';
-export type ContentType = 'video' | 'assistant' | 'roleplay';
+export type ContentType = 'video' | 'assistant';
 
 export interface JourneyContentRow {
   id: string;
@@ -34,6 +33,7 @@ export interface JourneyContentRow {
   assistant_icon: string | null;
   assistant_poetic_message: string | null;
   assistant_features: string[] | null;
+  sub_type: string | null; // 'standard', 'roleplay', etc.
   sort_order: number;
   is_active: boolean;
   created_at: string;
@@ -52,6 +52,133 @@ export interface JourneyDropsConfigRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface JourneyModuleRow {
+  id: string;
+  journey_type: string;
+  module_id: string;
+  label: string;
+  short_label: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface JourneyRow {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+// =====================================================
+// JOURNEYS & MODULES HOOKS
+// =====================================================
+
+// Fetch all journeys
+export function useJourneys() {
+  return useQuery({
+    queryKey: ['journeys'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('journeys')
+        .select('*')
+        .order('sort_order');
+
+      if (error) throw error;
+      return data as JourneyRow[];
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
+}
+
+// Fetch modules for a journey type
+export function useJourneyModules(journeyType: JourneyType) {
+  return useQuery({
+    queryKey: ['journey-modules', journeyType],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('journey_modules')
+        .select('*')
+        .eq('journey_type', journeyType)
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+      return data as JourneyModuleRow[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+// Save module
+export function useSaveModule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (module: Partial<JourneyModuleRow> & { 
+      journey_type: string; 
+      module_id: string;
+      label: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('journey_modules')
+        .upsert(module, { 
+          onConflict: 'journey_type,module_id' 
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['journey-modules', variables.journey_type] 
+      });
+      toast.success('Módulo guardado');
+    },
+    onError: (error) => {
+      console.error('Error saving module:', error);
+      toast.error('Error al guardar el módulo');
+    },
+  });
+}
+
+// Delete module
+export function useDeleteModule() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, journeyType }: { id: string; journeyType: string }) => {
+      const { error } = await supabase
+        .from('journey_modules')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return { journeyType };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ 
+        queryKey: ['journey-modules', result.journeyType] 
+      });
+      toast.success('Módulo eliminado');
+    },
+    onError: (error) => {
+      console.error('Error deleting module:', error);
+      toast.error('Error al eliminar el módulo');
+    },
+  });
+}
+
+// =====================================================
+// CONTENT HOOKS
+// =====================================================
 
 // Fetch all content for a journey type
 export function useJourneyContent(journeyType: JourneyType) {
@@ -185,6 +312,10 @@ export function useDeleteContent() {
   });
 }
 
+// =====================================================
+// MIGRATION HOOKS
+// =====================================================
+
 // Migrate defaults to database
 export function useMigrateDefaults() {
   const queryClient = useQueryClient();
@@ -205,6 +336,7 @@ export function useMigrateDefaults() {
         assistant_icon?: string | null;
         assistant_poetic_message?: string | null;
         assistant_features?: string[] | null;
+        sub_type?: string | null;
         sort_order: number;
         is_active: boolean;
       }> = [];
@@ -233,7 +365,7 @@ export function useMigrateDefaults() {
           });
         });
 
-        // Assistants
+        // Assistants (includes roleplays with sub_type)
         moduleContent.assistants.forEach((assistant, index) => {
           contentRows.push({
             journey_type: journeyType,
@@ -246,22 +378,7 @@ export function useMigrateDefaults() {
             assistant_icon: assistant.icon,
             assistant_poetic_message: assistant.poeticMessage || null,
             assistant_features: assistant.features || null,
-            sort_order: index,
-            is_active: true,
-          });
-        });
-
-        // Roleplays
-        moduleContent.roleplays.forEach((roleplay, index) => {
-          contentRows.push({
-            journey_type: journeyType,
-            module_id: moduleId,
-            content_type: 'roleplay',
-            content_key: roleplay.key,
-            assistant_name: roleplay.name,
-            assistant_description: roleplay.description,
-            assistant_url: roleplay.url,
-            assistant_icon: roleplay.icon,
+            sub_type: assistant.subType || 'standard',
             sort_order: index,
             is_active: true,
           });
@@ -319,6 +436,10 @@ export function useHasDbContent(journeyType: JourneyType) {
   return (content?.length ?? 0) > 0;
 }
 
+// =====================================================
+// HELPERS
+// =====================================================
+
 // Group content by module
 export function groupContentByModule(content: JourneyContentRow[] | undefined) {
   if (!content) return {};
@@ -328,7 +449,6 @@ export function groupContentByModule(content: JourneyContentRow[] | undefined) {
       acc[item.module_id] = {
         videos: [],
         assistants: [],
-        roleplays: [],
       };
     }
     
@@ -336,10 +456,8 @@ export function groupContentByModule(content: JourneyContentRow[] | undefined) {
       acc[item.module_id].videos.push(item);
     } else if (item.content_type === 'assistant') {
       acc[item.module_id].assistants.push(item);
-    } else if (item.content_type === 'roleplay') {
-      acc[item.module_id].roleplays.push(item);
     }
     
     return acc;
-  }, {} as Record<string, { videos: JourneyContentRow[]; assistants: JourneyContentRow[]; roleplays: JourneyContentRow[] }>);
+  }, {} as Record<string, { videos: JourneyContentRow[]; assistants: JourneyContentRow[] }>);
 }

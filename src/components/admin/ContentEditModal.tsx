@@ -1,15 +1,22 @@
 /**
  * ContentEditModal - Modal para editar contenido individual
+ * Soporta videos y asistentes (con sub_type para distinguir roleplays)
  */
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
 import { X, Save, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -55,30 +62,33 @@ export function ContentEditModal({
     assistant_url: content?.assistant_url || '',
     assistant_icon: content?.assistant_icon || '🤖',
     assistant_poetic_message: content?.assistant_poetic_message || '',
+    sub_type: content?.sub_type || 'standard',
     is_active: content?.is_active ?? true,
   });
 
   const handleSave = async () => {
-    const saveData = {
+    const saveData: any = {
       journey_type: content?.journey_type || journeyType,
       module_id: content?.module_id || moduleId || '',
       content_type: type,
       content_key: formData.content_key || `${type}_${Date.now()}`,
-      ...(type === 'video' ? {
-        video_url: formData.video_url,
-        video_title: formData.video_title,
-      } : {
-        assistant_name: formData.assistant_name,
-        assistant_description: formData.assistant_description,
-        assistant_url: formData.assistant_url,
-        assistant_icon: formData.assistant_icon,
-        assistant_poetic_message: formData.assistant_poetic_message || null,
-      }),
       is_active: formData.is_active,
     };
 
+    if (type === 'video') {
+      saveData.video_url = formData.video_url;
+      saveData.video_title = formData.video_title;
+    } else {
+      saveData.assistant_name = formData.assistant_name;
+      saveData.assistant_description = formData.assistant_description;
+      saveData.assistant_url = formData.assistant_url;
+      saveData.assistant_icon = formData.assistant_icon;
+      saveData.assistant_poetic_message = formData.assistant_poetic_message || null;
+      saveData.sub_type = formData.sub_type;
+    }
+
     if (content?.id) {
-      (saveData as any).id = content.id;
+      saveData.id = content.id;
     }
 
     await saveContent.mutateAsync(saveData);
@@ -98,17 +108,9 @@ export function ContentEditModal({
 
   const getTitle = () => {
     if (isNew) {
-      switch (type) {
-        case 'video': return 'Añadir Video';
-        case 'assistant': return 'Añadir Asistente GPT';
-        case 'roleplay': return 'Añadir Roleplay';
-      }
+      return type === 'video' ? 'Añadir Video' : 'Añadir Asistente GPT';
     }
-    switch (type) {
-      case 'video': return 'Editar Video';
-      case 'assistant': return 'Editar Asistente GPT';
-      case 'roleplay': return 'Editar Roleplay';
-    }
+    return type === 'video' ? 'Editar Video' : 'Editar Asistente GPT';
   };
 
   return (
@@ -159,8 +161,8 @@ export function ContentEditModal({
             </>
           )}
 
-          {/* Assistant/Roleplay fields */}
-          {(type === 'assistant' || type === 'roleplay') && (
+          {/* Assistant fields */}
+          {type === 'assistant' && (
             <>
               <div className="grid grid-cols-[60px_1fr] gap-4">
                 <div className="space-y-2">
@@ -202,6 +204,26 @@ export function ContentEditModal({
                   onChange={(e) => setFormData(prev => ({ ...prev, assistant_url: e.target.value }))}
                   placeholder="https://chatgpt.com/g/..."
                 />
+              </div>
+
+              {/* Sub-type selector */}
+              <div className="space-y-2">
+                <Label htmlFor="sub_type">Tipo de asistente</Label>
+                <Select
+                  value={formData.sub_type}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, sub_type: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Estándar</SelectItem>
+                    <SelectItem value="roleplay">Roleplay (práctica)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Los roleplays se muestran con una etiqueta distintiva.
+                </p>
               </div>
 
               <div className="space-y-2">

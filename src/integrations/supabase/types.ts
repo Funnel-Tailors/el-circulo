@@ -383,6 +383,7 @@ export type Database = {
           journey_type: string
           module_id: string
           sort_order: number | null
+          sub_type: string | null
           updated_at: string
           video_title: string | null
           video_url: string | null
@@ -402,6 +403,7 @@ export type Database = {
           journey_type: string
           module_id: string
           sort_order?: number | null
+          sub_type?: string | null
           updated_at?: string
           video_title?: string | null
           video_url?: string | null
@@ -421,6 +423,7 @@ export type Database = {
           journey_type?: string
           module_id?: string
           sort_order?: number | null
+          sub_type?: string | null
           updated_at?: string
           video_title?: string | null
           video_url?: string | null
@@ -463,6 +466,72 @@ export type Database = {
           persist_until_next?: boolean | null
           updated_at?: string
           window_ms?: number | null
+        }
+        Relationships: []
+      }
+      journey_modules: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          journey_type: string
+          label: string
+          module_id: string
+          short_label: string | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          journey_type: string
+          label: string
+          module_id: string
+          short_label?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          journey_type?: string
+          label?: string
+          module_id?: string
+          short_label?: string | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      journeys: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          slug: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          slug: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          slug?: string
+          sort_order?: number | null
         }
         Relationships: []
       }
