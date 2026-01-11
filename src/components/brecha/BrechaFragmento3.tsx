@@ -97,6 +97,8 @@ export const BrechaFragmento3 = ({
   const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
   const [hasRestoredV1, setHasRestoredV1] = useState(false);
   const [hasRestoredV2, setHasRestoredV2] = useState(false);
+  const [showResumeIndicatorV1, setShowResumeIndicatorV1] = useState(false);
+  const [showResumeIndicatorV2, setShowResumeIndicatorV2] = useState(false);
   
   const lastV1Update = useRef(0);
   const lastV2Update = useRef(0);
@@ -204,6 +206,8 @@ export const BrechaFragmento3 = ({
       if (video.duration > 0 && initialVideo1Progress < 98) {
         video.currentTime = (initialVideo1Progress / 100) * video.duration;
         setHasRestoredV1(true);
+        setShowResumeIndicatorV1(true);
+        setTimeout(() => setShowResumeIndicatorV1(false), 2500);
       }
     };
 
@@ -224,6 +228,8 @@ export const BrechaFragmento3 = ({
       if (video.duration > 0 && initialVideo2Progress < 98) {
         video.currentTime = (initialVideo2Progress / 100) * video.duration;
         setHasRestoredV2(true);
+        setShowResumeIndicatorV2(true);
+        setTimeout(() => setShowResumeIndicatorV2(false), 2500);
       }
     };
 
@@ -335,6 +341,23 @@ export const BrechaFragmento3 = ({
           </div>
           
           <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
+            {/* Resume indicator V1 */}
+            {showResumeIndicatorV1 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
+            )}
+
             <ProtectedVideo
               ref={video1Ref}
               src={VIDEO_1_URL}
@@ -410,6 +433,23 @@ export const BrechaFragmento3 = ({
                   <p className="text-foreground/50 text-sm">Completa el video anterior para desbloquear</p>
                 </div>
               </div>
+            )}
+
+            {/* Resume indicator V2 */}
+            {showResumeIndicatorV2 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
             )}
             
             <ProtectedVideo

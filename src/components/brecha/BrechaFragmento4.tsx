@@ -69,6 +69,7 @@ export const BrechaFragmento4 = ({
   const [showRitualModal, setShowRitualModal] = useState(false);
   const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
+  const [showResumeIndicator, setShowResumeIndicator] = useState(false);
   
   const lastUpdate = useRef(0);
 
@@ -162,6 +163,8 @@ export const BrechaFragmento4 = ({
       if (video.duration > 0 && initialVideoProgress < 98) {
         video.currentTime = (initialVideoProgress / 100) * video.duration;
         setHasRestoredProgress(true);
+        setShowResumeIndicator(true);
+        setTimeout(() => setShowResumeIndicator(false), 2500);
       }
     };
 
@@ -254,6 +257,23 @@ export const BrechaFragmento4 = ({
           </h3>
           
           <div className="relative rounded-lg overflow-hidden bg-black/50">
+            {/* Resume indicator */}
+            {showResumeIndicator && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50
+                           px-6 py-3 rounded-full bg-black/80 backdrop-blur-md 
+                           border border-foreground/20 shadow-lg pointer-events-none"
+              >
+                <span className="text-foreground/80 text-sm flex items-center gap-2">
+                  <span className="text-foreground/60">⟡</span>
+                  Continuando donde lo dejaste...
+                </span>
+              </motion.div>
+            )}
+
             <ProtectedVideo
               ref={videoRef}
               src={VIDEO_MASTERCLASS}
