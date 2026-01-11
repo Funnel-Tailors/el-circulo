@@ -367,6 +367,105 @@ export type Database = {
           },
         ]
       }
+      journey_content: {
+        Row: {
+          assistant_description: string | null
+          assistant_features: Json | null
+          assistant_icon: string | null
+          assistant_name: string | null
+          assistant_poetic_message: string | null
+          assistant_url: string | null
+          content_key: string
+          content_type: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          journey_type: string
+          module_id: string
+          sort_order: number | null
+          updated_at: string
+          video_title: string | null
+          video_url: string | null
+        }
+        Insert: {
+          assistant_description?: string | null
+          assistant_features?: Json | null
+          assistant_icon?: string | null
+          assistant_name?: string | null
+          assistant_poetic_message?: string | null
+          assistant_url?: string | null
+          content_key: string
+          content_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          journey_type: string
+          module_id: string
+          sort_order?: number | null
+          updated_at?: string
+          video_title?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          assistant_description?: string | null
+          assistant_features?: Json | null
+          assistant_icon?: string | null
+          assistant_name?: string | null
+          assistant_poetic_message?: string | null
+          assistant_url?: string | null
+          content_key?: string
+          content_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          journey_type?: string
+          module_id?: string
+          sort_order?: number | null
+          updated_at?: string
+          video_title?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      journey_drops_config: {
+        Row: {
+          auto_capture: boolean | null
+          created_at: string
+          drops: Json
+          id: string
+          is_active: boolean | null
+          journey_type: string
+          module_id: string
+          persist_until_next: boolean | null
+          updated_at: string
+          window_ms: number | null
+        }
+        Insert: {
+          auto_capture?: boolean | null
+          created_at?: string
+          drops?: Json
+          id?: string
+          is_active?: boolean | null
+          journey_type: string
+          module_id: string
+          persist_until_next?: boolean | null
+          updated_at?: string
+          window_ms?: number | null
+        }
+        Update: {
+          auto_capture?: boolean | null
+          created_at?: string
+          drops?: Json
+          id?: string
+          is_active?: boolean | null
+          journey_type?: string
+          module_id?: string
+          persist_until_next?: boolean | null
+          updated_at?: string
+          window_ms?: number | null
+        }
+        Relationships: []
+      }
       meta_pixel_events: {
         Row: {
           content_category: string | null
