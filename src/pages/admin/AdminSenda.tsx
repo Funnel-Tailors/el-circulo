@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SendaJourneyMetrics from "@/components/analytics/SendaJourneyMetrics";
 import SendaLeadsManager from "@/components/analytics/SendaLeadsManager";
+import { JourneyContentManager } from "@/components/admin/JourneyContentManager";
 
 export default function AdminSenda() {
   const [dateRange, setDateRange] = useState("30");
@@ -36,6 +37,7 @@ export default function AdminSenda() {
         <TabsList>
           <TabsTrigger value="journey">Journey Metrics</TabsTrigger>
           <TabsTrigger value="leads">Gestión Leads</TabsTrigger>
+          <TabsTrigger value="content">📝 Contenido</TabsTrigger>
         </TabsList>
 
         <TabsContent value="journey" className="space-y-6">
@@ -44,6 +46,10 @@ export default function AdminSenda() {
 
         <TabsContent value="leads" className="space-y-6">
           <SendaLeadsManager />
+        </TabsContent>
+
+        <TabsContent value="content" className="space-y-6">
+          <JourneyContentManager journeyType="senda" />
         </TabsContent>
       </Tabs>
     </div>
