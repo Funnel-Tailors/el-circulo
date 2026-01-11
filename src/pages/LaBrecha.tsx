@@ -382,6 +382,7 @@ const LaBrecha = () => {
             token={token}
             fragmentNumber={1}
             videoUrl={VIDEO_FRAG1}
+            initialVideoProgress={progress.frag1_video_progress}
             progress={{
               ritual_accepted: progress.frag1_ritual_accepted,
               drops_captured: progress.frag1_drops_captured,
@@ -429,6 +430,7 @@ const LaBrecha = () => {
               token={token}
               fragmentNumber={2}
               videoUrl={VIDEO_FRAG2}
+              initialVideoProgress={progress.frag2_video_progress}
               progress={{
                 ritual_accepted: progress.frag2_ritual_accepted,
                 drops_captured: progress.frag2_drops_captured,
@@ -454,6 +456,8 @@ const LaBrecha = () => {
           <div ref={frag3Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento3
               token={token}
+              initialVideo1Progress={progress.frag3_video1_progress}
+              initialVideo2Progress={progress.frag3_video2_progress}
               progress={{
                 video1_started: progress.frag3_video1_started,
                 video1_progress: progress.frag3_video1_progress,
@@ -484,6 +488,7 @@ const LaBrecha = () => {
           <div ref={frag4Ref} className="mt-16 scroll-mt-20">
             <BrechaFragmento4
               token={token}
+              initialVideoProgress={progress.frag4_video_progress}
               progress={{
                 video_started: progress.frag4_video_started,
                 video_progress: progress.frag4_video_progress,

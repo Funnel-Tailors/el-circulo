@@ -32,6 +32,7 @@ interface BrechaFragmentoProps {
   token: string;
   fragmentNumber: 1 | 2;
   videoUrl: string;
+  initialVideoProgress?: number;
   progress: {
     ritual_accepted: boolean;
     drops_captured: string[];
@@ -66,6 +67,7 @@ export const BrechaFragmento = ({
   token,
   fragmentNumber,
   videoUrl,
+  initialVideoProgress,
   progress,
   onRitualAccepted,
   onDropCaptured,
@@ -77,9 +79,10 @@ export const BrechaFragmento = ({
   assistantEmbedId,
 }: BrechaFragmentoProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoProgress, setVideoProgress] = useState(0);
+  const [videoProgress, setVideoProgress] = useState(initialVideoProgress || 0);
   const [showSequenceModal, setShowSequenceModal] = useState(false);
   const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
+  const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
 
   // Class 5 = Fragmento 1 (3 drops), Class 6 = Fragmento 2 (5 drops)
   const classNumber = fragmentNumber === 1 ? 5 : 6;
@@ -147,6 +150,27 @@ export const BrechaFragmento = ({
     video.addEventListener('timeupdate', handleTimeUpdate);
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [handleTimeUpdate]);
+
+  // Restore video progress on load
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || hasRestoredProgress || !initialVideoProgress || initialVideoProgress < 2) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && initialVideoProgress < 98) {
+        const targetTime = (initialVideoProgress / 100) * video.duration;
+        video.currentTime = targetTime;
+        setHasRestoredProgress(true);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialVideoProgress, hasRestoredProgress]);
 
   // Auto-restore modal if user is stuck (all drops captured but sequence not completed)
   useEffect(() => {

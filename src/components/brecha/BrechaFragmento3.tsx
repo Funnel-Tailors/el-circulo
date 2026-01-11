@@ -48,6 +48,8 @@ const ASSISTANTS: GPTAssistant[] = [
 
 interface BrechaFragmento3Props {
   token: string;
+  initialVideo1Progress?: number;
+  initialVideo2Progress?: number;
   progress: {
     video1_started: boolean;
     video1_progress: number;
@@ -73,6 +75,8 @@ interface BrechaFragmento3Props {
 
 export const BrechaFragmento3 = ({
   token,
+  initialVideo1Progress,
+  initialVideo2Progress,
   progress,
   onVideo1Progress,
   onVideo2Progress,
@@ -86,11 +90,13 @@ export const BrechaFragmento3 = ({
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
   
-  const [video1Progress, setVideo1Progress] = useState(progress.video1_progress || 0);
-  const [video2Progress, setVideo2Progress] = useState(progress.video2_progress || 0);
+  const [video1Progress, setVideo1Progress] = useState(initialVideo1Progress || progress.video1_progress || 0);
+  const [video2Progress, setVideo2Progress] = useState(initialVideo2Progress || progress.video2_progress || 0);
   const [video1Completed, setVideo1Completed] = useState(progress.video1_progress >= 99);
   const [showRitualModal, setShowRitualModal] = useState(false);
   const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
+  const [hasRestoredV1, setHasRestoredV1] = useState(false);
+  const [hasRestoredV2, setHasRestoredV2] = useState(false);
   
   const lastV1Update = useRef(0);
   const lastV2Update = useRef(0);
@@ -188,6 +194,46 @@ export const BrechaFragmento3 = ({
     video.addEventListener('timeupdate', handleTimeUpdate);
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, [video1Completed, checkForDrop, onVideo2Progress]);
+
+  // Restore video 1 progress on load
+  useEffect(() => {
+    const video = video1Ref.current;
+    if (!video || hasRestoredV1 || !initialVideo1Progress || initialVideo1Progress < 2) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && initialVideo1Progress < 98) {
+        video.currentTime = (initialVideo1Progress / 100) * video.duration;
+        setHasRestoredV1(true);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialVideo1Progress, hasRestoredV1]);
+
+  // Restore video 2 progress on load
+  useEffect(() => {
+    const video = video2Ref.current;
+    if (!video || hasRestoredV2 || !initialVideo2Progress || initialVideo2Progress < 2 || !video1Completed) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && initialVideo2Progress < 98) {
+        video.currentTime = (initialVideo2Progress / 100) * video.duration;
+        setHasRestoredV2(true);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialVideo2Progress, hasRestoredV2, video1Completed]);
 
   // Auto-restore modal if user is stuck (allCaptured OR all drops shown/missed)
   useEffect(() => {

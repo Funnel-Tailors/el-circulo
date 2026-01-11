@@ -31,6 +31,7 @@ const GPT_ROLEPLAY = {
 
 interface BrechaFragmento4Props {
   token: string;
+  initialVideoProgress?: number;
   progress: {
     video_started: boolean;
     video_progress: number;
@@ -53,6 +54,7 @@ interface BrechaFragmento4Props {
 
 export const BrechaFragmento4 = ({
   token,
+  initialVideoProgress,
   progress,
   onVideoProgress,
   onDropCaptured,
@@ -63,9 +65,10 @@ export const BrechaFragmento4 = ({
   onJourneyCompleted,
 }: BrechaFragmento4Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoProgress, setVideoProgress] = useState(progress.video_progress || 0);
+  const [videoProgress, setVideoProgress] = useState(initialVideoProgress || progress.video_progress || 0);
   const [showRitualModal, setShowRitualModal] = useState(false);
   const [modalHasBeenShown, setModalHasBeenShown] = useState(false);
+  const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
   
   const lastUpdate = useRef(0);
 
@@ -149,6 +152,26 @@ export const BrechaFragmento4 = ({
       return () => clearTimeout(timer);
     }
   }, [allCaptured, progress.sequence_completed, showRitualModal]);
+
+  // Restore video progress on load
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || hasRestoredProgress || !initialVideoProgress || initialVideoProgress < 2) return;
+
+    const handleLoadedMetadata = () => {
+      if (video.duration > 0 && initialVideoProgress < 98) {
+        video.currentTime = (initialVideoProgress / 100) * video.duration;
+        setHasRestoredProgress(true);
+      }
+    };
+
+    if (video.readyState >= 1) {
+      handleLoadedMetadata();
+    } else {
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      return () => video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    }
+  }, [initialVideoProgress, hasRestoredProgress]);
 
   const handleRitualComplete = () => {
     setShowRitualModal(false);
