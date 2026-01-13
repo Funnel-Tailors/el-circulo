@@ -681,6 +681,9 @@ export type Database = {
       }
       senda_progress: {
         Row: {
+          access_expires_at: string | null
+          access_extended_by_hours: number | null
+          access_paused: boolean | null
           assistant1_opened: boolean | null
           assistant1_unlocked: boolean | null
           call_scheduled_at: string | null
@@ -738,11 +741,15 @@ export type Database = {
           skip_the_line_clicked: boolean | null
           skip_the_line_eligible: boolean | null
           skip_the_line_shown: boolean | null
+          timer_reset_at: string | null
           updated_at: string | null
           vault_unlocked: boolean | null
           vault_unlocked_at: string | null
         }
         Insert: {
+          access_expires_at?: string | null
+          access_extended_by_hours?: number | null
+          access_paused?: boolean | null
           assistant1_opened?: boolean | null
           assistant1_unlocked?: boolean | null
           call_scheduled_at?: string | null
@@ -800,11 +807,15 @@ export type Database = {
           skip_the_line_clicked?: boolean | null
           skip_the_line_eligible?: boolean | null
           skip_the_line_shown?: boolean | null
+          timer_reset_at?: string | null
           updated_at?: string | null
           vault_unlocked?: boolean | null
           vault_unlocked_at?: string | null
         }
         Update: {
+          access_expires_at?: string | null
+          access_extended_by_hours?: number | null
+          access_paused?: boolean | null
           assistant1_opened?: boolean | null
           assistant1_unlocked?: boolean | null
           call_scheduled_at?: string | null
@@ -862,6 +873,7 @@ export type Database = {
           skip_the_line_clicked?: boolean | null
           skip_the_line_eligible?: boolean | null
           skip_the_line_shown?: boolean | null
+          timer_reset_at?: string | null
           updated_at?: string | null
           vault_unlocked?: boolean | null
           vault_unlocked_at?: string | null
