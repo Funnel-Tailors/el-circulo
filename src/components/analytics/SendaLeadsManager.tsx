@@ -26,6 +26,7 @@ import {
 import { RefreshCw, Eye, Ban, Undo2, CalendarIcon, Check } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { SendaProgressBar } from './SendaProgressBar';
+import { TimerControlPanel } from '@/components/brecha/TimerControlPanel';
 
 const statusLabels: Record<SendaLead['sendaStatus'], { label: string; color: string }> = {
   no_access: { label: '⚪ Sin acceso', color: 'bg-muted text-muted-foreground' },
@@ -104,7 +105,21 @@ const renderExpirationInfo = (lead: SendaLead) => {
 };
 
 const SendaLeadsManager = () => {
-  const { leads, loading, fetchLeads, banLead, unbanLead, scheduleCall, markCompleted, unlockMilestone, resetMilestone } = useSendaLeads();
+  const { 
+    leads, 
+    loading, 
+    fetchLeads, 
+    banLead, 
+    unbanLead, 
+    scheduleCall, 
+    markCompleted, 
+    unlockMilestone, 
+    resetMilestone,
+    extendTimer,
+    resetTimer,
+    togglePause,
+    setCustomExpiry
+  } = useSendaLeads();
   const [selectedLead, setSelectedLead] = useState<SendaLead | null>(null);
   const [banReason, setBanReason] = useState<string>('no_show');
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -352,6 +367,18 @@ const SendaLeadsManager = () => {
                           leadName={lead.name}
                           onUnlockMilestone={(milestone) => unlockMilestone(lead.ghlContactId, milestone)}
                           onResetMilestone={handleResetWithConfirmation(lead.ghlContactId, lead.name, lead.journeyCompleted)}
+                        />
+                        {/* Timer Control Panel */}
+                        <TimerControlPanel
+                          token={lead.ghlContactId}
+                          expiresAt={lead.expiresAt ? new Date(lead.expiresAt) : null}
+                          isPaused={lead.isPaused}
+                          hoursExtended={lead.hoursExtended}
+                          firstVisitAt={lead.firstVisitAt}
+                          onExtendTimer={extendTimer}
+                          onResetTimer={resetTimer}
+                          onTogglePause={togglePause}
+                          onSetCustomExpiry={setCustomExpiry}
                         />
                       </td>
                     </tr>

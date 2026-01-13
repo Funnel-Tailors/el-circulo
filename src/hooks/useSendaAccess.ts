@@ -71,7 +71,7 @@ export const useSendaAccess = () => {
         // 2. Check senda_progress for journey state
         const { data: progressData } = await supabase
           .from('senda_progress')
-          .select('first_visit_at, call_scheduled_at, journey_completed')
+          .select('first_visit_at, call_scheduled_at, journey_completed, access_expires_at, access_paused, timer_reset_at')
           .eq('ghl_contact_id', tokenParam)
           .single();
 
@@ -79,8 +79,13 @@ export const useSendaAccess = () => {
           let isExpiredOrScheduled = false;
           let callScheduledAt: Date | null = null;
 
+          // Check if access is paused
+          if (progressData.access_paused) {
+            console.log('⏸️ Access paused for:', tokenParam);
+            isExpiredOrScheduled = true;
+          }
           // Check if journey is completed
-          if (progressData.journey_completed) {
+          else if (progressData.journey_completed) {
             setJourneyState({
               isExpiredOrScheduled: false,
               callScheduledAt: null,
@@ -92,11 +97,22 @@ export const useSendaAccess = () => {
               callScheduledAt = new Date(progressData.call_scheduled_at);
               isExpiredOrScheduled = true;
             }
-            // Check for 48h expiration
-            else if (progressData.first_visit_at) {
-              const expireDate = new Date(progressData.first_visit_at);
-              expireDate.setHours(expireDate.getHours() + 48);
-              if (new Date() > expireDate) {
+            // Check for expiration with timer control support
+            // Priority: 1. access_expires_at, 2. timer_reset_at + 48h, 3. first_visit_at + 48h
+            else {
+              let expirationDate: Date | null = null;
+              
+              if (progressData.access_expires_at) {
+                expirationDate = new Date(progressData.access_expires_at);
+              } else if (progressData.timer_reset_at) {
+                expirationDate = new Date(progressData.timer_reset_at);
+                expirationDate.setHours(expirationDate.getHours() + 48);
+              } else if (progressData.first_visit_at) {
+                expirationDate = new Date(progressData.first_visit_at);
+                expirationDate.setHours(expirationDate.getHours() + 48);
+              }
+
+              if (expirationDate && new Date() > expirationDate) {
                 isExpiredOrScheduled = true;
               }
             }

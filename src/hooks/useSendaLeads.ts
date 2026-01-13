@@ -16,6 +16,9 @@ export interface SendaLead {
   expiresAt: string | null;
   callScheduledAt: string | null;
   journeyCompleted: boolean;
+  // Timer control fields
+  isPaused: boolean;
+  hoursExtended: number;
   // Full progress data for the progress bar
   progress: SendaProgress | null;
 }
@@ -81,9 +84,16 @@ export const useSendaLeads = () => {
         const events = eventsMap.get(ghlId) || [];
         const rawProgress = progressMap.get(ghlId);
         
-        // Calculate expiration (48h from first visit)
+        // Calculate expiration with timer control support
+        // Priority: 1. access_expires_at, 2. timer_reset_at + 48h, 3. first_visit_at + 48h
         let expiresAt: string | null = null;
-        if (rawProgress?.first_visit_at) {
+        if (rawProgress?.access_expires_at) {
+          expiresAt = rawProgress.access_expires_at;
+        } else if (rawProgress?.timer_reset_at) {
+          const expireDate = new Date(rawProgress.timer_reset_at);
+          expireDate.setHours(expireDate.getHours() + 48);
+          expiresAt = expireDate.toISOString();
+        } else if (rawProgress?.first_visit_at) {
           const expireDate = new Date(rawProgress.first_visit_at);
           expireDate.setHours(expireDate.getHours() + 48);
           expiresAt = expireDate.toISOString();
@@ -182,6 +192,8 @@ export const useSendaLeads = () => {
           expiresAt,
           callScheduledAt: rawProgress?.call_scheduled_at || null,
           journeyCompleted: rawProgress?.journey_completed || false,
+          isPaused: rawProgress?.access_paused || false,
+          hoursExtended: rawProgress?.access_extended_by_hours || 0,
           progress,
         };
       });
@@ -531,6 +543,90 @@ export const useSendaLeads = () => {
     await fetchLeads();
   };
 
+  // Timer control functions
+  const extendTimer = async (ghlContactId: string, hours: number) => {
+    // Get current progress to calculate new expiration
+    const { data: currentProgress } = await supabase
+      .from('senda_progress')
+      .select('access_expires_at, access_extended_by_hours, timer_reset_at, first_visit_at')
+      .eq('ghl_contact_id', ghlContactId)
+      .single();
+
+    let currentExpires: Date;
+    if (currentProgress?.access_expires_at) {
+      currentExpires = new Date(currentProgress.access_expires_at);
+    } else if (currentProgress?.timer_reset_at) {
+      currentExpires = new Date(currentProgress.timer_reset_at);
+      currentExpires.setHours(currentExpires.getHours() + 48);
+    } else if (currentProgress?.first_visit_at) {
+      currentExpires = new Date(currentProgress.first_visit_at);
+      currentExpires.setHours(currentExpires.getHours() + 48);
+    } else {
+      currentExpires = new Date();
+    }
+
+    // If already expired, extend from now
+    if (currentExpires < new Date()) {
+      currentExpires = new Date();
+    }
+
+    currentExpires.setHours(currentExpires.getHours() + hours);
+    const newExtendedHours = (currentProgress?.access_extended_by_hours || 0) + hours;
+
+    const { error } = await supabase
+      .from('senda_progress')
+      .upsert({
+        ghl_contact_id: ghlContactId,
+        access_expires_at: currentExpires.toISOString(),
+        access_extended_by_hours: newExtendedHours
+      }, { onConflict: 'ghl_contact_id' });
+
+    if (error) throw error;
+    await fetchLeads();
+  };
+
+  const resetTimer = async (ghlContactId: string) => {
+    const now = new Date();
+    const newExpiry = new Date(now);
+    newExpiry.setHours(newExpiry.getHours() + 48);
+
+    const { error } = await supabase
+      .from('senda_progress')
+      .upsert({
+        ghl_contact_id: ghlContactId,
+        timer_reset_at: now.toISOString(),
+        access_expires_at: newExpiry.toISOString(),
+        access_paused: false
+      }, { onConflict: 'ghl_contact_id' });
+
+    if (error) throw error;
+    await fetchLeads();
+  };
+
+  const togglePause = async (ghlContactId: string, paused: boolean) => {
+    const { error } = await supabase
+      .from('senda_progress')
+      .upsert({
+        ghl_contact_id: ghlContactId,
+        access_paused: paused
+      }, { onConflict: 'ghl_contact_id' });
+
+    if (error) throw error;
+    await fetchLeads();
+  };
+
+  const setCustomExpiry = async (ghlContactId: string, expiryDate: Date) => {
+    const { error } = await supabase
+      .from('senda_progress')
+      .upsert({
+        ghl_contact_id: ghlContactId,
+        access_expires_at: expiryDate.toISOString()
+      }, { onConflict: 'ghl_contact_id' });
+
+    if (error) throw error;
+    await fetchLeads();
+  };
+
   useEffect(() => {
     fetchLeads();
   }, [fetchLeads]);
@@ -544,6 +640,11 @@ export const useSendaLeads = () => {
     scheduleCall, 
     markCompleted,
     unlockMilestone,
-    resetMilestone
+    resetMilestone,
+    // Timer control
+    extendTimer,
+    resetTimer,
+    togglePause,
+    setCustomExpiry
   };
 };
