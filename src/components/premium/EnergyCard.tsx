@@ -69,7 +69,10 @@ const EnergyCard = React.forwardRef<HTMLDivElement, EnergyCardProps>(
       variant = "default",
       beamColor = "rgba(255, 255, 255, 0.8)",
       children,
-      ...props
+      onAnimationStart: _onAnimationStart,
+      onAnimationEnd: _onAnimationEnd,
+      onAnimationIteration: _onAnimationIteration,
+      ...restProps
     },
     ref
   ) => {
@@ -153,7 +156,7 @@ const EnergyCard = React.forwardRef<HTMLDivElement, EnergyCardProps>(
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        {...props}
+        {...restProps}
       >
         {/* Energy Beam Border */}
         <div
