@@ -4,7 +4,7 @@ import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
 import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
-import TimelineDay from "@/components/roadmap/TimelineDay";
+import StellarTimeline from "@/components/roadmap/StellarTimeline";
 import BonusCard from "@/components/roadmap/BonusCard";
 import SuccessCase from "@/components/roadmap/SuccessCase";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
@@ -85,15 +85,9 @@ const Index = () => {
           {/* ROADMAP */}
           <RoadmapHero />
 
-          <div className="space-y-12 relative mb-16">
-            {/* Timeline circle symbol */}
-            <div className="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-              <div className="text-muted-foreground text-xs">Accede al ritual de evaluación</div>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-            </div>
-
-            {roadmapDays.map((day, index) => <TimelineDay key={day.day} {...day} index={index} />)}
+          {/* Constellation Timeline */}
+          <div className="mb-16">
+            <StellarTimeline days={roadmapDays} />
           </div>
 
           {/* CTA #2: Botón simple */}
