@@ -1,17 +1,18 @@
 /**
- * ARTEFACTO VISUAL - "Constelación Gravitacional" v1.0
+ * ARTEFACTO VISUAL - "Constelación Gravitacional" v2.0
  *
  * Adapted from LearningEngineVisual for El Círculo brand
  *
  * Philosophy: Data Gravity Well
  * - Datapoints spawn at outer orbit, orbit the core
- * - Connect with energy beams, then spiral inward
- * - Get absorbed by the hexagonal core which pulses on absorption
- * - Constellation connections between nearby datapoints
+ * - Connect with CURVED energy beams (Bézier), then spiral inward
+ * - Get absorbed by a radiant LIGHT ORB core which pulses on absorption
+ * - Constellation connections (curved toward center)
  * - Depth layers for 3D-like effect
  * - Core micro-pulses emanating outward
  *
  * Brand: Pure white/offwhite on dark - monochrome elegance
+ * On-brand: Curved beams like EnergyWire from timeline
  */
 
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -496,36 +497,59 @@ interface DatapointVisualProps {
 }
 
 function DatapointVisual({ datapoint }: DatapointVisualProps) {
-  const { angle, orbitRadius, size, opacity, phase, beamProgress } = datapoint;
+  const { angle, orbitRadius, size, opacity, phase } = datapoint;
 
   const x = ENGINE_CENTER.x + Math.cos(angle) * orbitRadius;
   const y = ENGINE_CENTER.y + Math.sin(angle) * orbitRadius;
 
   const showBeam = phase === "connecting" || phase === "absorbing";
 
-  const beamPulseX = x + (ENGINE_CENTER.x - x) * beamProgress;
-  const beamPulseY = y + (ENGINE_CENTER.y - y) * beamProgress;
+  // Calculate curved Bézier path (perpendicular control point for smooth curve)
+  const midX = (x + ENGINE_CENTER.x) / 2;
+  const midY = (y + ENGINE_CENTER.y) / 2;
+  // Perpendicular offset (30% curvature)
+  const perpX = -(y - ENGINE_CENTER.y) * 0.25;
+  const perpY = (x - ENGINE_CENTER.x) * 0.25;
+  const ctrlX = midX + perpX;
+  const ctrlY = midY + perpY;
+  const curvedPath = `M ${x} ${y} Q ${ctrlX} ${ctrlY} ${ENGINE_CENTER.x} ${ENGINE_CENTER.y}`;
 
   return (
     <g className="datapoint">
       {showBeam && (
         <>
-          <line
-            x1={x}
-            y1={y}
-            x2={ENGINE_CENTER.x}
-            y2={ENGINE_CENTER.y}
+          {/* Curved beam path */}
+          <path
+            d={curvedPath}
+            fill="none"
             stroke="url(#beam-gradient)"
-            strokeWidth="0.3"
+            strokeWidth="0.4"
             opacity={opacity * 0.5}
+            strokeLinecap="round"
           />
-          <circle
-            cx={beamPulseX}
-            cy={beamPulseY}
-            r={0.8}
-            fill="url(#beam-pulse-gradient)"
-            opacity={opacity * 0.9}
-          />
+          {/* Traveling pulse particle along curved path */}
+          <circle r={0.8} fill="url(#beam-pulse-gradient)" opacity={opacity * 0.9}>
+            <animateMotion
+              dur="0.6s"
+              repeatCount="indefinite"
+              path={curvedPath}
+              keyPoints="0;1"
+              keyTimes="0;1"
+              calcMode="linear"
+            />
+          </circle>
+          {/* Secondary slower particle */}
+          <circle r={0.5} fill="white" opacity={opacity * 0.5}>
+            <animateMotion
+              dur="0.6s"
+              repeatCount="indefinite"
+              begin="0.3s"
+              path={curvedPath}
+              keyPoints="0;1"
+              keyTimes="0;1"
+              calcMode="linear"
+            />
+          </circle>
         </>
       )}
 
@@ -563,16 +587,25 @@ function ConnectionLine({ connection }: ConnectionLineProps) {
   const x2 = ENGINE_CENTER.x + Math.cos(to.angle) * to.orbitRadius;
   const y2 = ENGINE_CENTER.y + Math.sin(to.angle) * to.orbitRadius;
 
+  // Curved connection: control point bends toward the core
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  const toCenter = { x: ENGINE_CENTER.x - midX, y: ENGINE_CENTER.y - midY };
+  const curveFactor = 0.2; // Subtle curve toward core
+  const ctrlX = midX + toCenter.x * curveFactor;
+  const ctrlY = midY + toCenter.y * curveFactor;
+
+  const curvedPath = `M ${x1} ${y1} Q ${ctrlX} ${ctrlY} ${x2} ${y2}`;
+
   return (
-    <line
-      x1={x1}
-      y1={y1}
-      x2={x2}
-      y2={y2}
+    <path
+      d={curvedPath}
+      fill="none"
       stroke="url(#constellation-gradient)"
       strokeWidth={CONNECTION_STROKE_WIDTH}
       opacity={opacity}
       filter="url(#connection-blur)"
+      strokeLinecap="round"
     />
   );
 }
@@ -603,31 +636,16 @@ function CoreWaveVisual({ wave, coreSize, now }: CoreWaveVisualProps) {
 }
 
 // ============================================
-// Hexagonal Core
+// Light Orb Core (radiant ball of light)
 // ============================================
 
-function HexagonalCore({
+function LightOrbCore({
   coreSize,
   pulseScale,
 }: {
   coreSize: number;
   pulseScale: number;
 }) {
-  // Generate hexagon points
-  const hexPoints = Array.from({ length: 6 }, (_, i) => {
-    const angle = (i * 60 - 30) * (Math.PI / 180);
-    const x = ENGINE_CENTER.x + Math.cos(angle) * coreSize;
-    const y = ENGINE_CENTER.y + Math.sin(angle) * coreSize;
-    return `${x},${y}`;
-  }).join(" ");
-
-  const innerHexPoints = Array.from({ length: 6 }, (_, i) => {
-    const angle = (i * 60 - 30) * (Math.PI / 180);
-    const x = ENGINE_CENTER.x + Math.cos(angle) * (coreSize * 0.5);
-    const y = ENGINE_CENTER.y + Math.sin(angle) * (coreSize * 0.5);
-    return `${x},${y}`;
-  }).join(" ");
-
   return (
     <g
       className="engine-core"
@@ -637,40 +655,39 @@ function HexagonalCore({
         transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}
     >
-      {/* Outer glow */}
-      <polygon
-        points={hexPoints}
-        fill="none"
-        stroke="rgba(255,255,255,0.15)"
-        strokeWidth="8"
-        style={{ filter: "blur(4px)" }}
-        className="core-glow"
-      />
-
-      {/* Main hexagon */}
-      <polygon
-        points={hexPoints}
-        fill="rgba(255,255,255,0.03)"
-        stroke="rgba(255,255,255,0.6)"
-        strokeWidth="1.5"
-        className="core-outer"
-      />
-
-      {/* Inner hexagon */}
-      <polygon
-        points={innerHexPoints}
-        fill="none"
-        stroke="rgba(255,255,255,0.3)"
-        strokeWidth="1"
-        className="core-inner"
-      />
-
-      {/* Center dot */}
+      {/* Outer glow - large and diffuse */}
       <circle
         cx={ENGINE_CENTER.x}
         cy={ENGINE_CENTER.y}
-        r="1.5"
-        fill="rgba(255,255,255,0.9)"
+        r={coreSize * 2.5}
+        fill="url(#core-outer-glow)"
+        className="core-glow"
+      />
+
+      {/* Mid layer - main glow */}
+      <circle
+        cx={ENGINE_CENTER.x}
+        cy={ENGINE_CENTER.y}
+        r={coreSize * 1.4}
+        fill="url(#core-mid-glow)"
+        className="core-outer"
+      />
+
+      {/* Inner bright core */}
+      <circle
+        cx={ENGINE_CENTER.x}
+        cy={ENGINE_CENTER.y}
+        r={coreSize * 0.6}
+        fill="url(#core-inner)"
+        className="core-inner"
+      />
+
+      {/* Center brilliant point */}
+      <circle
+        cx={ENGINE_CENTER.x}
+        cy={ENGINE_CENTER.y}
+        r={coreSize * 0.25}
+        fill="rgba(255,255,255,1)"
         className="core-center"
       />
     </g>
@@ -752,7 +769,7 @@ export function ArtefactoVisual({
         aspectRatio: "1",
       }}
       role="img"
-      aria-label="Visualización del sistema El Artefacto - partículas de datos orbitando un núcleo hexagonal"
+      aria-label="Visualización del sistema El Artefacto - partículas de datos orbitando un núcleo de luz radiante"
     >
       <svg
         viewBox="0 0 100 100"
@@ -827,6 +844,27 @@ export function ArtefactoVisual({
             <stop offset="85%" stopColor="rgba(255,255,255,0.4)" />
             <stop offset="100%" stopColor="rgba(255,255,255,0)" />
           </linearGradient>
+
+          {/* Light Orb Core gradients */}
+          <radialGradient id="core-outer-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.35)" />
+            <stop offset="40%" stopColor="rgba(255,255,255,0.12)" />
+            <stop offset="70%" stopColor="rgba(255,255,255,0.04)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </radialGradient>
+
+          <radialGradient id="core-mid-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.9)" />
+            <stop offset="40%" stopColor="rgba(255,255,255,0.5)" />
+            <stop offset="70%" stopColor="rgba(255,255,255,0.15)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </radialGradient>
+
+          <radialGradient id="core-inner" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(255,255,255,1)" />
+            <stop offset="60%" stopColor="rgba(255,255,255,0.95)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0.7)" />
+          </radialGradient>
         </defs>
 
         {/* Orbit rings (subtle) */}
@@ -889,45 +927,49 @@ export function ArtefactoVisual({
               ))}
         </g>
 
-        {/* Hexagonal Core */}
-        <HexagonalCore coreSize={coreSize} pulseScale={pulseScale} />
+        {/* Light Orb Core */}
+        <LightOrbCore coreSize={coreSize} pulseScale={pulseScale} />
       </svg>
 
       <style>{`
         .core-glow {
           animation: coreGlowPulse 4s ease-in-out infinite;
+          transform-origin: center;
         }
 
         .core-outer {
           animation: coreOuterPulse 3.5s ease-in-out infinite;
+          transform-origin: center;
         }
 
         .core-inner {
           animation: coreInnerPulse 3s ease-in-out infinite;
+          transform-origin: center;
         }
 
         .core-center {
           animation: coreCenterPulse 2.5s ease-in-out infinite;
+          transform-origin: center;
         }
 
         @keyframes coreGlowPulse {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.25; }
+          0%, 100% { opacity: 0.8; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.08); }
         }
 
         @keyframes coreOuterPulse {
-          0%, 100% { opacity: 0.9; }
-          50% { opacity: 1; }
+          0%, 100% { opacity: 0.85; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
         }
 
         @keyframes coreInnerPulse {
-          0%, 100% { opacity: 0.3; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.05); }
+          0%, 100% { opacity: 0.9; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.1); }
         }
 
         @keyframes coreCenterPulse {
-          0%, 100% { opacity: 0.8; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.1); }
+          0%, 100% { opacity: 0.95; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.15); }
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -937,10 +979,10 @@ export function ArtefactoVisual({
           .core-center {
             animation: none !important;
           }
-          .core-glow { opacity: 0.2; }
+          .core-glow { opacity: 0.9; }
           .core-outer { opacity: 0.95; }
-          .core-inner { opacity: 0.4; }
-          .core-center { opacity: 0.9; }
+          .core-inner { opacity: 1; }
+          .core-center { opacity: 1; }
         }
       `}</style>
     </div>
