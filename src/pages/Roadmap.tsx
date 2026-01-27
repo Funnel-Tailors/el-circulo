@@ -3,7 +3,7 @@ import Starfield from "@/components/quiz/Starfield";
 import CircleHero from "@/components/roadmap/CircleHero";
 import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
-import TimelineDay from "@/components/roadmap/TimelineDay";
+import ConstellationTimeline from "@/components/roadmap/ConstellationTimeline";
 import BonusCard from "@/components/roadmap/BonusCard";
 import SuccessCase from "@/components/roadmap/SuccessCase";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
@@ -50,11 +50,8 @@ const Roadmap = () => {
           {/* ROADMAP */}
           <RoadmapHero />
 
-          <div className="space-y-12 relative">
-            {roadmapDays.map((day, index) => (
-              <TimelineDay key={day.day} {...day} index={index} />
-            ))}
-          </div>
+          {/* Constellation Timeline */}
+          <ConstellationTimeline days={roadmapDays} />
 
           {/* ASCENDIDOS */}
           <div className="mt-16">
