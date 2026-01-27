@@ -1,0 +1,408 @@
+/**
+ * Premium Effects CSS
+ * El Circulo Design System
+ *
+ * Efectos avanzados de nivel Linear/Raycast/Vercel
+ * Estos estilos complementan los componentes React premium
+ */
+
+/* ============================================================================
+   CSS CUSTOM PROPERTIES - MOTION TOKENS PREMIUM
+   ============================================================================ */
+
+:root {
+  /* Durations */
+  --motion-instant: 100ms;
+  --motion-swift: 150ms;
+  --motion-moderate: 250ms;
+  --motion-gentle: 400ms;
+  --motion-slow: 600ms;
+
+  /* Premium easings */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Energy beam */
+  --beam-width: 80px;
+  --beam-blur: 20px;
+  --beam-speed: 3s;
+  --beam-color: rgba(255, 255, 255, 0.8);
+
+  /* Spotlight */
+  --spotlight-size: 300px;
+  --spotlight-opacity: 0.15;
+
+  /* Glow */
+  --glow-color: rgba(255, 255, 255, 0.5);
+  --glow-spread: 20px;
+}
+
+/* ============================================================================
+   ENERGY BEAM BORDER EFFECT
+   ============================================================================
+   Un punto de luz que recorre el borde de la card como energia fluyendo.
+   Usa conic-gradient + animation para crear el efecto de movimiento.
+*/
+
+.energy-beam-border {
+  --angle: 0deg;
+
+  /* El beam es un pseudo-elemento con conic gradient */
+  background: none;
+}
+
+.energy-beam-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+
+  /* Conic gradient que crea el efecto de beam */
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0%,
+    transparent 35%,
+    var(--beam-color) 45%,
+    var(--beam-color) 55%,
+    transparent 65%,
+    transparent 100%
+  );
+
+  /* Mask para que solo se vea el borde */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  /* Animacion continua */
+  animation: energy-beam-rotate var(--beam-speed) linear infinite;
+
+  /* Estado base: sutil */
+  opacity: 0.3;
+  filter: blur(0.5px);
+
+  transition: opacity var(--motion-moderate) var(--ease-smooth),
+              filter var(--motion-moderate) var(--ease-smooth);
+}
+
+/* Estado activo (hover) - beam mas intenso */
+.energy-beam-border.energy-beam-active::before {
+  opacity: var(--beam-intensity, 0.6);
+  filter: blur(0px);
+}
+
+/* Glow adicional del beam */
+.energy-beam-border::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+
+  background: conic-gradient(
+    from var(--angle),
+    transparent 0%,
+    transparent 40%,
+    var(--beam-color) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  animation: energy-beam-rotate var(--beam-speed) linear infinite;
+  opacity: 0;
+  filter: blur(var(--beam-blur));
+
+  transition: opacity var(--motion-moderate) var(--ease-smooth);
+}
+
+.energy-beam-border.energy-beam-active::after {
+  opacity: 0.4;
+}
+
+@keyframes energy-beam-rotate {
+  from {
+    --angle: 0deg;
+  }
+  to {
+    --angle: 360deg;
+  }
+}
+
+/* Registrar la custom property para animarla */
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* ============================================================================
+   MAGNETIC BUTTON GLOW
+   ============================================================================ */
+
+.magnetic-button-glow {
+  position: relative;
+}
+
+.magnetic-button-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--motion-moderate) var(--ease-smooth);
+}
+
+.magnetic-button-glow:hover::before {
+  opacity: 1;
+  animation: button-glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes button-glow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   SHIMMER EFFECT (para skeletons y loading states)
+   ============================================================================ */
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 80%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================================================
+   SPOTLIGHT HOVER CARD
+   ============================================================================ */
+
+.spotlight-hover {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-hover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    var(--spotlight-size) circle at var(--mouse-x) var(--mouse-y),
+    rgba(255, 255, 255, var(--spotlight-opacity)) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity var(--motion-moderate) var(--ease-smooth);
+  pointer-events: none;
+}
+
+.spotlight-hover:hover::before {
+  opacity: 1;
+}
+
+/* ============================================================================
+   FOCUS RING ANIMATED
+   ============================================================================ */
+
+.focus-ring-animated {
+  position: relative;
+}
+
+.focus-ring-animated::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: calc(inherit + 4px);
+  border: 2px solid transparent;
+  opacity: 0;
+  transition: all var(--motion-swift) var(--ease-out-expo);
+}
+
+.focus-ring-animated:focus-visible::after {
+  border-color: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+  animation: focus-ring-expand 0.3s var(--ease-out-expo);
+}
+
+@keyframes focus-ring-expand {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   BORDER GRADIENT ANIMATED
+   ============================================================================ */
+
+.border-gradient-animated {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 1rem;
+}
+
+.border-gradient-animated::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.2) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: border-gradient-shift 4s ease-in-out infinite;
+}
+
+@keyframes border-gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ============================================================================
+   TEXT REVEAL ANIMATION (typewriter style)
+   ============================================================================ */
+
+.text-reveal {
+  overflow: hidden;
+}
+
+.text-reveal span {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: text-reveal-char 0.4s var(--ease-out-expo) forwards;
+}
+
+@keyframes text-reveal-char {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   STAGGERED FADE IN (para listas)
+   ============================================================================ */
+
+.stagger-fade-in > * {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: stagger-item-in 0.4s var(--ease-out-expo) forwards;
+}
+
+.stagger-fade-in > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-fade-in > *:nth-child(2) { animation-delay: 50ms; }
+.stagger-fade-in > *:nth-child(3) { animation-delay: 100ms; }
+.stagger-fade-in > *:nth-child(4) { animation-delay: 150ms; }
+.stagger-fade-in > *:nth-child(5) { animation-delay: 200ms; }
+.stagger-fade-in > *:nth-child(6) { animation-delay: 250ms; }
+.stagger-fade-in > *:nth-child(7) { animation-delay: 300ms; }
+.stagger-fade-in > *:nth-child(8) { animation-delay: 350ms; }
+
+@keyframes stagger-item-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   REDUCED MOTION
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .energy-beam-border::before,
+  .energy-beam-border::after {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .shimmer::after {
+    animation: none;
+  }
+
+  .magnetic-button-glow:hover::before {
+    animation: none;
+  }
+
+  .border-gradient-animated::before {
+    animation: none;
+  }
+
+  .text-reveal span {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .stagger-fade-in > * {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .focus-ring-animated:focus-visible::after {
+    animation: none;
+  }
+}

@@ -20,6 +20,8 @@ const AdminMetaPixel = lazy(() => import("./pages/admin/AdminMetaPixel"));
 const AdminSenda = lazy(() => import("./pages/admin/AdminSenda"));
 const AdminBrecha = lazy(() => import("./pages/admin/AdminBrecha"));
 const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
+const Showcase = lazy(() => import("./pages/admin/Showcase"));
+const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,8 @@ const App = () => (
             <Route path="senda" element={<Suspense fallback={<AdminFallback />}><AdminSenda /></Suspense>} />
             <Route path="brecha" element={<Suspense fallback={<AdminFallback />}><AdminBrecha /></Suspense>} />
             <Route path="dev" element={<Suspense fallback={<AdminFallback />}><AdminDevTools /></Suspense>} />
+            <Route path="showcase" element={<Suspense fallback={<AdminFallback />}><Showcase /></Suspense>} />
+            <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
           </Route>
           
           {/* Redirects */}

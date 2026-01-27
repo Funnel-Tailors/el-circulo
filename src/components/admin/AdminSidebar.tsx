@@ -7,6 +7,8 @@ import {
   Zap,
   Wrench,
   LogOut,
+  Palette,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,6 +64,18 @@ const navItems = [
     url: "/admin/dev",
     icon: Wrench,
     description: "Testing components",
+  },
+  {
+    title: "Design System",
+    url: "/admin/showcase",
+    icon: Palette,
+    description: "Tokens y componentes",
+  },
+  {
+    title: "Premium Effects",
+    url: "/admin/premium",
+    icon: Sparkles,
+    description: "Efectos Linear/Raycast",
   },
 ];
 
