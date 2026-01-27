@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ArtefactoVisual } from "../ArtefactoVisual";
@@ -7,7 +7,6 @@ import { OrbitRing } from "./OrbitRing";
 import { ConstellationWire } from "./ConstellationWire";
 import { FeatureDetailPanel } from "./FeatureDetailPanel";
 import { FeatureBottomSheet } from "./FeatureBottomSheet";
-import { useOrbitalPositions } from "./hooks/useOrbitalPositions";
 import { useConstellationState } from "./hooks/useConstellationState";
 import {
   FEATURES,
@@ -16,10 +15,44 @@ import {
   ORBIT_CONFIG,
   CENTRAL_ORB_SIZE,
   EASING,
+  getFeaturesByOrbit,
+  calculateAngles,
 } from "./constants";
+import type { Feature, FeatureWithPosition, OrbitLayer } from "./types";
 
 interface FeatureConstellationProps {
   className?: string;
+}
+
+// Calculate initial positions for features in an orbit
+function getOrbitFeatures(orbit: OrbitLayer): FeatureWithPosition[] {
+  const features = getFeaturesByOrbit(orbit);
+  const config = ORBIT_CONFIG[orbit];
+
+  // Offset each orbit for visual variety
+  const startOffset =
+    orbit === "inner"
+      ? -Math.PI / 2
+      : orbit === "middle"
+      ? -Math.PI / 2 + Math.PI / 8
+      : -Math.PI / 2 - Math.PI / 6;
+
+  const angles = calculateAngles(features.length, startOffset);
+
+  return features.map((feature, index) => {
+    const angle = angles[index];
+
+    return {
+      ...feature,
+      position: {
+        // x and y are still stored for wire calculations (absolute coords)
+        x: CENTER.x + Math.cos(angle) * config.radius,
+        y: CENTER.y + Math.sin(angle) * config.radius,
+        angle,
+        radius: config.radius,
+      },
+    };
+  });
 }
 
 export function FeatureConstellation({ className }: FeatureConstellationProps) {
@@ -27,15 +60,39 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Calculate positions for all features
-  const featuresWithPositions = useOrbitalPositions(FEATURES);
+  // Calculate features by orbit
+  const orbitFeatures = useMemo(
+    () => ({
+      inner: getOrbitFeatures("inner"),
+      middle: getOrbitFeatures("middle"),
+      outer: getOrbitFeatures("outer"),
+    }),
+    []
+  );
+
+  // Flatten for easy access
+  const allFeatures = useMemo(
+    () => [
+      ...orbitFeatures.inner,
+      ...orbitFeatures.middle,
+      ...orbitFeatures.outer,
+    ],
+    [orbitFeatures]
+  );
 
   // Constellation state management
-  const { selectedId, hoveredId, isDetailOpen, select, hover, closeDetail, isActive } =
-    useConstellationState();
+  const {
+    selectedId,
+    hoveredId,
+    isDetailOpen,
+    select,
+    hover,
+    closeDetail,
+    isActive,
+  } = useConstellationState();
 
   // Get selected feature
-  const selectedFeature = featuresWithPositions.find((f) => f.id === selectedId) || null;
+  const selectedFeature = allFeatures.find((f) => f.id === selectedId) || null;
 
   // Visibility observer
   useEffect(() => {
@@ -63,7 +120,8 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
     mediaQuery.addEventListener("change", handler);
     return () => mediaQuery.removeEventListener("change", handler);
   }, []);
@@ -76,7 +134,9 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
         <motion.div
           className="flex justify-center mb-8"
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+          animate={
+            isVisible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }
+          }
           transition={{ duration: 0.6, ease: EASING.outExpo }}
         >
           <ArtefactoVisual variant="simple" />
@@ -84,7 +144,7 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
 
         {/* Feature grid */}
         <div className="grid grid-cols-2 gap-4">
-          {featuresWithPositions.map((feature, index) => (
+          {allFeatures.map((feature, index) => (
             <motion.div
               key={feature.id}
               className={cn(
@@ -137,7 +197,7 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
     );
   }
 
-  // Desktop: Orbital constellation
+  // Desktop: Orbital constellation with rotation
   return (
     <div
       ref={containerRef}
@@ -149,15 +209,20 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
         margin: "0 auto",
       }}
     >
-      {/* SVG Canvas for orbital elements */}
+      {/* SVG Canvas for orbit rings (static) */}
       <svg
         viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ overflow: "visible" }}
       >
         <defs>
-          {/* Glow filter for particles */}
-          <filter id="constellation-particle-glow" x="-50%" y="-50%" width="200%" height="200%">
+          <filter
+            id="constellation-particle-glow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
             <feGaussianBlur stdDeviation="2" result="blur" />
             <feMerge>
               <feMergeNode in="blur" />
@@ -166,7 +231,7 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
           </filter>
         </defs>
 
-        {/* Orbit rings */}
+        {/* Orbit rings (static - don't rotate) */}
         {(["inner", "middle", "outer"] as const).map((orbit, index) => (
           <OrbitRing
             key={orbit}
@@ -175,23 +240,11 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
             isVisible={isVisible && !prefersReducedMotion}
           />
         ))}
-
-        {/* Connection wires */}
-        {featuresWithPositions.map((feature, index) => (
-          <ConstellationWire
-            key={`wire-${feature.id}`}
-            from={feature.position}
-            to={CENTER}
-            isActive={isActive(feature.id)}
-            isVisible={isVisible && !prefersReducedMotion}
-            index={index}
-          />
-        ))}
       </svg>
 
-      {/* Central Orb (ArtefactoVisual) */}
+      {/* Central Orb (ArtefactoVisual) - static */}
       <motion.div
-        className="absolute"
+        className="absolute z-10"
         style={{
           left: CENTER.x - CENTRAL_ORB_SIZE / 2,
           top: CENTER.y - CENTRAL_ORB_SIZE / 2,
@@ -215,24 +268,86 @@ export function FeatureConstellation({ className }: FeatureConstellationProps) {
         <ArtefactoVisual variant="simple" />
       </motion.div>
 
-      {/* Feature Orbs */}
-      {featuresWithPositions.map((feature, index) => (
-        <FeatureOrb
-          key={feature.id}
-          feature={feature}
-          index={index}
-          isSelected={feature.id === selectedId}
-          isHovered={feature.id === hoveredId}
-          isDimmed={
-            (hoveredId !== null || selectedId !== null) &&
-            feature.id !== hoveredId &&
-            feature.id !== selectedId
-          }
-          onSelect={select}
-          onHover={hover}
-          isVisible={isVisible && !prefersReducedMotion}
-        />
-      ))}
+      {/* Rotating Orbit Containers */}
+      {(["inner", "middle", "outer"] as const).map((orbit) => {
+        const config = ORBIT_CONFIG[orbit];
+        const features = orbitFeatures[orbit];
+        const direction = orbit === "middle" ? -1 : 1; // Middle orbit rotates opposite
+
+        return (
+          <motion.div
+            key={orbit}
+            className="absolute inset-0 pointer-events-none"
+            style={{ transformOrigin: "center center" }}
+            animate={
+              isVisible && !prefersReducedMotion
+                ? { rotate: 360 * direction }
+                : { rotate: 0 }
+            }
+            transition={{
+              rotate: {
+                duration: config.rotationDuration,
+                repeat: Infinity,
+                ease: "linear",
+              },
+            }}
+          >
+            {/* SVG for wires in this orbit (rotate with container) */}
+            <svg
+              viewBox={`0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}`}
+              className="absolute inset-0 w-full h-full"
+              style={{ overflow: "visible" }}
+            >
+              {features.map((feature, index) => (
+                <ConstellationWire
+                  key={`wire-${feature.id}`}
+                  from={feature.position}
+                  to={CENTER}
+                  isActive={isActive(feature.id)}
+                  isVisible={isVisible && !prefersReducedMotion}
+                  index={index}
+                />
+              ))}
+            </svg>
+
+            {/* Feature orbs (positioned with transform, counter-rotate to stay upright) */}
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.id}
+                className="absolute inset-0 pointer-events-auto"
+                style={{ transformOrigin: "center center" }}
+                animate={
+                  isVisible && !prefersReducedMotion
+                    ? { rotate: -360 * direction }
+                    : { rotate: 0 }
+                }
+                transition={{
+                  rotate: {
+                    duration: config.rotationDuration,
+                    repeat: Infinity,
+                    ease: "linear",
+                  },
+                }}
+              >
+                <FeatureOrb
+                  feature={feature}
+                  index={index}
+                  isSelected={feature.id === selectedId}
+                  isHovered={feature.id === hoveredId}
+                  isDimmed={
+                    (hoveredId !== null || selectedId !== null) &&
+                    feature.id !== hoveredId &&
+                    feature.id !== selectedId
+                  }
+                  onSelect={select}
+                  onHover={hover}
+                  isVisible={isVisible && !prefersReducedMotion}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        );
+      })}
 
       {/* Detail Panel */}
       <FeatureDetailPanel
