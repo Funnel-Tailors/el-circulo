@@ -1,5 +1,7 @@
 # Welcome to your Lovable project
 
+> "Este proyecto fue programado por un mono con wifi. Funciona de milagro."
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/4d97f832-aa6d-4981-8dc6-7892b4ae7442
