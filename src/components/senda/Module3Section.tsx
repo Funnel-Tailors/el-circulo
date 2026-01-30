@@ -22,36 +22,53 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
-import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { AgentConstellation, AgentGroup, AgentState } from "@/components/agents";
 
 // Video URLs
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
 const VIDEO_2_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c742e6d103270ef1685.mp4";
 
-// GPT Assistant configurations
-const ASSISTANTS: GPTAssistant[] = [
-  {
-    id: 1,
-    name: "Anuncios Express",
-    description: "Crea anuncios que capturan atención y generan clics",
-    url: "https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo",
-    icon: "📢",
-  },
-  {
-    id: 2,
-    name: "Formularios Express",
-    description: "Diseña formularios que cualifican sin espantar",
-    url: "https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo",
-    icon: "📋",
-  },
-  {
-    id: 3,
-    name: "Guiones de Venta",
-    description: "Escribe guiones que cierran sin presionar",
-    url: "https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo",
-    icon: "🎯",
-  },
-];
+// GPT Assistant configurations (formato AgentConstellation)
+const ASISTENTES_VOZ: AgentGroup = {
+  id: "module3-assistants",
+  title: "Asistentes IA Exclusivos",
+  layout: "triangle",
+  agents: [
+    {
+      id: "anuncios",
+      name: "Anuncios Express",
+      description: "Crea anuncios que capturan atención y generan clics",
+      url: "https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo",
+      icon: "📢",
+      lockMessage: "Captura los 4 resquicios",
+      connectsTo: ["formularios", "guiones"],
+    },
+    {
+      id: "formularios",
+      name: "Formularios Express",
+      description: "Diseña formularios que cualifican sin espantar",
+      url: "https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo",
+      icon: "📋",
+      lockMessage: "Captura los 4 resquicios",
+      connectsTo: ["guiones"],
+    },
+    {
+      id: "guiones",
+      name: "Guiones de Venta",
+      description: "Escribe guiones que cierran sin presionar",
+      url: "https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo",
+      icon: "🎯",
+      lockMessage: "Captura los 4 resquicios",
+    },
+  ],
+};
+
+// Mapeo de agent IDs a números para callbacks
+const AGENT_ID_MAP: Record<string, 1 | 2 | 3> = {
+  anuncios: 1,
+  formularios: 2,
+  guiones: 3,
+};
 
 interface Module3SectionProps {
   isVisible: boolean;
@@ -533,29 +550,25 @@ const Module3Section = ({
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
-        {/* 3 GPT Assistants */}
+        {/* 3 GPT Assistants - Constelación */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
           transition={{ delay: 1.6, duration: 0.8 }}
         >
-          <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
-            Asistentes IA Exclusivos
-          </h3>
-          
-          <div className="grid md:grid-cols-3 gap-4">
-            {ASSISTANTS.map((assistant, index) => (
-              <GPTAssistantCard
-                key={assistant.id}
-                assistant={assistant}
-                isUnlocked={assistantsUnlocked}
-                lockMessage="Captura los 4 resquicios"
-                variant="grid"
-                animationDelay={1.8 + index * 0.2}
-                onOpen={() => handleAssistantOpen(assistant.id as 1 | 2 | 3)}
-              />
-            ))}
-          </div>
+          <AgentConstellation
+            group={ASISTENTES_VOZ}
+            unlockState={{
+              anuncios: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
+              formularios: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
+              guiones: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
+            }}
+            onAgentOpen={(agentId) => {
+              const num = AGENT_ID_MAP[agentId];
+              if (num) handleAssistantOpen(num);
+            }}
+            animationDelay={1.8}
+          />
         </motion.div>
 
         {/* Portal trigger - only shows after ritual completed */}

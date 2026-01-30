@@ -6,25 +6,41 @@ import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { useVideoDrops } from "@/hooks/useVideoDrops";
-import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { AgentConstellation, AgentGroup, AgentState } from "@/components/agents";
 import { ProtectedVideo } from "@/components/brecha/ProtectedVideo";
 import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 
-// Assistant configurations for fragments 1 and 2
-const FRAGMENT_ASSISTANTS: Record<1 | 2, GPTAssistant> = {
+// Assistant configurations for fragments 1 and 2 (formato AgentConstellation)
+const FRAGMENT_AGENTS: Record<1 | 2, AgentGroup> = {
   1: {
-    id: "frag1-assistant",
-    name: "Acólito del Tributo",
-    description: "Define una oferta por la que cobrar 5 cifras",
-    url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
-    icon: "💰",
+    id: "frag1-acolito",
+    title: "Acólito del Tributo",
+    layout: "single",
+    agents: [
+      {
+        id: "tributo",
+        name: "Acólito del Tributo",
+        description: "Define una oferta por la que cobrar 5 cifras",
+        url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
+        icon: "💰",
+        lockMessage: "Completa el ritual para despertar al Acólito",
+      },
+    ],
   },
   2: {
-    id: "frag2-assistant",
-    name: "Acólito de la Voz",
-    description: "Encuentra a quien pague esas 5 cifras por tu trabajo",
-    url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
-    icon: "🪞",
+    id: "frag2-acolito",
+    title: "Acólito de la Voz",
+    layout: "single",
+    agents: [
+      {
+        id: "voz",
+        name: "Acólito de la Voz",
+        description: "Encuentra a quien pague esas 5 cifras por tu trabajo",
+        url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
+        icon: "🪞",
+        lockMessage: "Completa el ritual para despertar al Acólito",
+      },
+    ],
   },
 };
 
@@ -89,7 +105,7 @@ export const BrechaFragmento = ({
   const classNumber = fragmentNumber === 1 ? 5 : 6;
   const totalDrops = fragmentNumber === 1 ? 3 : 5;
   const fragmentInfo = FRAGMENTO_INFO[fragmentNumber];
-  const assistant = FRAGMENT_ASSISTANTS[fragmentNumber];
+  const agentGroup = FRAGMENT_AGENTS[fragmentNumber];
 
   // Fire-and-forget tracking
   const trackEvent = useCallback((eventType: string) => {
@@ -209,17 +225,20 @@ export const BrechaFragmento = ({
 
   return (
     <div className="space-y-6 mb-16">
-      <div className="max-w-4xl mx-auto">
-        {/* Small sello indicator - no duplicate header */}
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header - consistente con Frag 3-4 */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-4"
+          className="text-center mb-8"
         >
-          <span className="text-foreground/40 text-xs tracking-[0.3em] uppercase">
+          <span className="text-foreground/40 text-sm tracking-[0.3em] uppercase mb-4 block">
             {fragmentInfo.sello}
           </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground glow mb-4">
+            {fragmentInfo.title}
+          </h2>
         </motion.div>
 
         {/* Video container - clean, no glass-card-dark wrapper */}
@@ -275,9 +294,9 @@ export const BrechaFragmento = ({
         </motion.div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-1 bg-primary/10 rounded-full overflow-hidden">
+        <div className="mt-4 h-1 bg-foreground/10 rounded-full overflow-hidden">
           <motion.div
-            className="h-full bg-primary/50"
+            className="h-full bg-foreground/40"
             style={{ width: `${videoProgress}%` }}
             transition={{ duration: 0.3 }}
           />
@@ -317,18 +336,15 @@ export const BrechaFragmento = ({
             viewport={{ once: true }}
             className="mt-12"
           >
-            <div className="text-center mb-6">
-              <h3 className="text-foreground/50 text-sm tracking-[0.2em] uppercase">
-                Acólito de la Voz del Espejo
-              </h3>
-            </div>
-
-            <GPTAssistantCard
-              assistant={assistant}
-              isUnlocked={progress.sequence_completed}
-              lockMessage="La Voz aún no te reconoce. Completa el ritual."
-              variant="single"
-              onOpen={handleAssistantOpen}
+            <AgentConstellation
+              group={agentGroup}
+              unlockState={{
+                [agentGroup.agents[0].id]: progress.sequence_completed
+                  ? 'unlocked'
+                  : (progress.ritual_accepted ? 'pending' : 'locked'),
+              }}
+              onAgentOpen={handleAssistantOpen}
+              animationDelay={0.2}
             />
           </motion.div>
         )}

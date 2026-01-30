@@ -7,19 +7,27 @@ import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
 import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
-import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { AgentConstellation, AgentGroup, AgentState } from "@/components/agents";
 
-// Assistant configuration
-const PREPARATION_ASSISTANT: GPTAssistant = {
-  id: "ofertas",
-  name: "Asistente IA Exclusivo",
-  description: "GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso",
-  url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
-  icon: "🤖",
-  features: [
-    "Analiza tu modelo actual",
-    "Diseña tu oferta premium",
-    "Prepara tus preguntas clave",
+// Assistant configuration (formato AgentConstellation)
+const PREPARATION_AGENT: AgentGroup = {
+  id: "class1-assistant",
+  title: "Asistente IA Exclusivo",
+  layout: "single",
+  agents: [
+    {
+      id: "ofertas",
+      name: "Asistente IA Exclusivo",
+      description: "GPT entrenado para ayudarte a diseñar tu oferta premium paso a paso",
+      url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
+      icon: "🤖",
+      lockMessage: "Captura los 3 resquicios para desbloquear",
+      features: [
+        "Analiza tu modelo actual",
+        "Diseña tu oferta premium",
+        "Prepara tus preguntas clave",
+      ],
+    },
   ],
 };
 interface PreparationCardsProps {
@@ -297,12 +305,13 @@ export const PreparationCards = ({ token, onSequenceComplete, initialProgress }:
 
       {/* AI Assistant - Locked until all drops captured */}
       <div className="max-w-2xl mx-auto">
-        <GPTAssistantCard
-          assistant={PREPARATION_ASSISTANT}
-          isUnlocked={allCaptured}
-          lockMessage="Captura los 3 resquicios para desbloquear"
-          variant="single"
-          onOpen={handleAIAssistantOpen}
+        <AgentConstellation
+          group={PREPARATION_AGENT}
+          unlockState={{
+            ofertas: allCaptured ? 'unlocked' : (ritualAccepted ? 'pending' : 'locked'),
+          }}
+          onAgentOpen={handleAIAssistantOpen}
+          animationDelay={0.2}
         />
       </div>
 

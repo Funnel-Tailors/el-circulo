@@ -13,7 +13,7 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
-import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { AgentConstellation, Agent, AgentGroup, AgentState } from "@/components/agents";
 import { ProtectedVideo } from "@/components/brecha/ProtectedVideo";
 import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 
@@ -21,30 +21,47 @@ import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
 const VIDEO_2_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c742e6d103270ef1685.mp4";
 
-// GPT Assistants - Acólitos de la Voz del Espejo
-const ASSISTANTS: GPTAssistant[] = [
-  {
-    id: 1,
-    name: "Acólito del Reclamo",
-    description: "Las palabras exactas para llegar a tu cliente",
-    url: "https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo",
-    icon: "📢",
-  },
-  {
-    id: 2,
-    name: "Acólito del Muro",
-    description: "Formularios que filtran a quien no va a pagar",
-    url: "https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo",
-    icon: "🧱",
-  },
-  {
-    id: 3,
-    name: "Acólito de Clausura",
-    description: "Guiones que cierran ventas sin rogar",
-    url: "https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo",
-    icon: "🔐",
-  },
-];
+// GPT Assistants - Acólitos de la Voz (formato AgentConstellation)
+const ACOLITOS_VOZ: AgentGroup = {
+  id: "frag3-acolitos",
+  title: "Acólitos de la Voz",
+  layout: "triangle",
+  agents: [
+    {
+      id: "reclamo",
+      name: "Acólito del Reclamo",
+      description: "Las palabras exactas para llegar a tu cliente",
+      url: "https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo",
+      icon: "📢",
+      lockMessage: "Completa la secuencia ritual",
+      connectsTo: ["muro", "clausura"],
+    },
+    {
+      id: "muro",
+      name: "Acólito del Muro",
+      description: "Formularios que filtran a quien no va a pagar",
+      url: "https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo",
+      icon: "🧱",
+      lockMessage: "Completa la secuencia ritual",
+      connectsTo: ["clausura"],
+    },
+    {
+      id: "clausura",
+      name: "Acólito de Clausura",
+      description: "Guiones que cierran ventas sin rogar",
+      url: "https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo",
+      icon: "🔐",
+      lockMessage: "Completa la secuencia ritual",
+    },
+  ],
+};
+
+// Mapeo de agent IDs a números para callbacks
+const AGENT_ID_MAP: Record<string, 1 | 2 | 3> = {
+  reclamo: 1,
+  muro: 2,
+  clausura: 3,
+};
 
 interface BrechaFragmento3Props {
   token: string;
@@ -531,29 +548,25 @@ export const BrechaFragmento3 = ({
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
-        {/* 3 GPT Assistants */}
+        {/* 3 GPT Assistants - Constelación de Acólitos */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.6, duration: 0.8 }}
         >
-          <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
-            Acólitos
-          </h3>
-          
-          <div className="grid md:grid-cols-3 gap-4">
-            {ASSISTANTS.map((assistant, index) => (
-              <GPTAssistantCard
-                key={assistant.id}
-                assistant={assistant}
-                isUnlocked={assistantsUnlocked}
-                lockMessage="La Voz aún no te reconoce"
-                variant="grid"
-                animationDelay={1.8 + index * 0.2}
-                onOpen={() => handleAssistantOpen(assistant.id as 1 | 2 | 3)}
-              />
-            ))}
-          </div>
+          <AgentConstellation
+            group={ACOLITOS_VOZ}
+            unlockState={{
+              reclamo: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
+              muro: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
+              clausura: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
+            }}
+            onAgentOpen={(agentId) => {
+              const num = AGENT_ID_MAP[agentId];
+              if (num) handleAssistantOpen(num);
+            }}
+            animationDelay={1.8}
+          />
         </motion.div>
 
         {/* Continue button */}

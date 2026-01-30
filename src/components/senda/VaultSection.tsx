@@ -8,16 +8,24 @@ import { useVideoDrops } from "@/hooks/useVideoDrops";
 import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { VideoRitualOverlay, useRitualAccepted } from "./VideoRitualOverlay";
-import { GPTAssistantCard, GPTAssistant } from "@/components/shared/GPTAssistantCard";
+import { AgentConstellation, AgentGroup, AgentState } from "@/components/agents";
 
-// Assistant configuration
-const AVATAR_ASSISTANT: GPTAssistant = {
-  id: "avatar",
-  name: "El Arquitecto de Avatares",
-  description: "Diseña el cliente que mereces con precisión quirúrgica",
-  url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
-  icon: "bot",
-  poeticMessage: '"El Arquitecto de Avatares reconoce tu valía.<br />Ahora, diseña el cliente que mereces."',
+// Assistant configuration (formato AgentConstellation)
+const AVATAR_AGENT: AgentGroup = {
+  id: "class2-assistant",
+  title: "Asistente IA Exclusivo",
+  layout: "single",
+  agents: [
+    {
+      id: "avatar",
+      name: "El Arquitecto de Avatares",
+      description: "Diseña el cliente que mereces con precisión quirúrgica",
+      url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
+      icon: "🎭",
+      lockMessage: "Captura los 5 resquicios para desbloquear",
+      poeticMessage: '"El Arquitecto de Avatares reconoce tu valía.<br />Ahora, diseña el cliente que mereces."',
+    },
+  ],
 };
 
 interface VaultSectionProps {
@@ -362,16 +370,13 @@ const VaultSection = ({ isVisible, class2Progress, onClass2Progress, token, init
           animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 30 }}
           transition={{ delay: 2.8, duration: 0.8 }}
         >
-          <h3 className="text-center text-foreground/50 text-sm tracking-[0.2em] uppercase mb-6">
-            Asistente IA Exclusivo
-          </h3>
-          
-          <GPTAssistantCard
-            assistant={AVATAR_ASSISTANT}
-            isUnlocked={allCaptured}
-            lockMessage="Captura los 5 resquicios para desbloquear"
-            variant="single"
-            onOpen={handleAssistantOpen}
+          <AgentConstellation
+            group={AVATAR_AGENT}
+            unlockState={{
+              avatar: allCaptured ? 'unlocked' : (ritualAccepted ? 'pending' : 'locked'),
+            }}
+            onAgentOpen={handleAssistantOpen}
+            animationDelay={2.9}
           />
         </motion.div>
 

@@ -17,19 +17,28 @@ import { VideoDropOverlay } from "./VideoDropOverlay";
 import { DropsInventory } from "./DropsInventory";
 import { RitualSequenceModal } from "./RitualSequenceModal";
 import { useSendaProgress } from "@/hooks/useSendaProgress";
-import { GPTRoleplayCard } from "@/components/shared/GPTRoleplayCard";
+import { AgentConstellation, AgentGroup, AgentState } from "@/components/agents";
 import { AlertTriangle, Lock, Play, CheckCircle } from "lucide-react";
 
 // Video URL for Masterclass de Ventas
 const VIDEO_MASTERCLASS = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68af36e8123b93670b1fc364.mp4";
 
-// Roleplay GPT
-const GPT_ROLEPLAY = {
-  id: "cliente-circulo",
-  name: "Cliente del Círculo",
-  description: "Practica cierres reales con un cliente simulado",
-  url: "https://chatgpt.com/g/g-68a4634fe12c81918e514fb812f40fa8-cliente-del-circulo",
-  icon: "🎭"
+// Roleplay GPT (formato AgentConstellation)
+const CLIENTE_CIRCULO: AgentGroup = {
+  id: "module4-roleplay",
+  title: "Cliente del Círculo",
+  layout: "single",
+  agents: [
+    {
+      id: "cliente",
+      name: "Cliente del Círculo",
+      description: "Practica cierres reales con un cliente simulado",
+      url: "https://chatgpt.com/g/g-68a4634fe12c81918e514fb812f40fa8-cliente-del-circulo",
+      icon: "🎭",
+      lockMessage: "Captura todos los resquicios sin perder ninguno",
+      subType: "roleplay",
+    },
+  ],
 };
 
 interface Module4SectionProps {
@@ -310,17 +319,23 @@ const Module4Section = ({
           </motion.div>
         )}
         
-        {/* Roleplay GPT Section */}
-        <GPTRoleplayCard
-          roleplay={GPT_ROLEPLAY}
-          isUnlocked={allDropsCapturedNoMisses}
-          isPermanentlyLocked={roleplayPermanentlyLocked}
-          pendingMessage="Captura todos los resquicios y completa el ritual para desbloquear"
-          lockedMessage="Perdiste resquicios durante el video"
-          successMessage="Roleplay desbloqueado - Practica tu cierre con un cliente simulado"
-          onOpen={handleRoleplayClick}
-          animationDelay={0.3}
-        />
+        {/* Roleplay GPT Section - Constelación */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+        >
+          <AgentConstellation
+            group={CLIENTE_CIRCULO}
+            unlockState={{
+              cliente: roleplayPermanentlyLocked
+                ? 'permanently_locked'
+                : (allDropsCapturedNoMisses ? 'unlocked' : 'pending'),
+            }}
+            onAgentOpen={handleRoleplayClick}
+            animationDelay={0.5}
+          />
+        </motion.div>
         
         {/* Journey complete message */}
         {allDropsCapturedNoMisses && progress?.module4RoleplayOpened && (
