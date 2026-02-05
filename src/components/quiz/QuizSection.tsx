@@ -55,7 +55,7 @@ const steps: QuizStep[] = [{
   id: "q2",
   question: "¿A qué te dedicas hoy?",
   type: "radio",
-  options: ["Diseñador Gráfico / Web", "Fotógrafo/Filmmaker", "Automatizador", "Otro servicio creativo"],
+  options: ["Agencia de diseño / branding", "Productora / Estudio audiovisual", "Estudio de desarrollo / automatización", "Otro tipo de agencia creativa"],
   badge: "🎯 Paso 2/7 - Tu Especialidad",
   subtext: "Tu especialidad dicta tu camino de ascenso",
   motivator: null
