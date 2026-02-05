@@ -228,7 +228,7 @@ const CircleHero = () => {
 
       {/* Pre-qualificación ICP */}
       <p className="text-sm md:text-base text-muted-foreground leading-[1em] italic">
-        Solo para <span className="text-foreground font-bold glow">emprendedores creativos</span> que ya estén facturando y quieran <span className="text-foreground font-bold glow">cerrar proyectos de 3.000€ cada semana</span> sin depender del algoritmo
+        Solo para dueños de <span className="text-foreground font-bold glow">agencia, estudio o productora</span> con equipo que quieren dejar de depender de la suerte para saber <span className="text-foreground font-bold glow">cuánto van a facturar el mes que viene</span>
       </p>
 
       {/* Hero Title + Subheadline */}
@@ -237,7 +237,7 @@ const CircleHero = () => {
           El problema no es que <span className="glow">no tengas clientes</span>,<br />
           es que tienes clientes <em className="not-italic glow">de mierda</em>
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Descubre en 5 minutos el secreto para llenar tu agenda cada semana de clientes que pagan sin cuestionarte y por adelantado    </p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Descubre cómo vender cada día sin depender de la suerte, clientes ratilla o que los astros se alineen para tener un mes bueno</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
@@ -295,7 +295,7 @@ const CircleHero = () => {
 
         {/* Subheadline */}
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-          Consigue tu próximo cliente que no regatea <span className="text-foreground font-bold">en menos de 30 días</span> (o en 7 si aguantas el ritmo)
+          Un sistema para saber exactamente cuánto vas a generar el mes que viene — <span className="text-foreground font-bold">ejecutable en 3 días, optimizado en 7</span>
         </p>
       </div>
     </div>;
