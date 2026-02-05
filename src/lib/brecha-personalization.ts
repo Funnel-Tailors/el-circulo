@@ -67,19 +67,19 @@ export const getTierWelcome = (lead: BrechaLead | null): string => {
   return TIER_MESSAGES[lead.tier];
 };
 
-// Get profession-specific context
+// Get profession-specific context (actualizado para agencias)
 export const getProfessionContext = (profession: string | null): string => {
   switch (profession) {
     case 'designer':
-      return "diseñadores que cobran €5K+ por proyecto";
+      return "agencias de diseño que cobran €10K+ por proyecto";
     case 'photographer':
-      return "fotógrafos que cobran €3K+ por sesión";
+      return "productoras que cobran €15K+ por producción";
     case 'automation':
-      return "automatizadores que cobran €10K+ por implementación";
+      return "estudios de desarrollo que cobran €20K+ por implementación";
     case 'other_creative':
-      return "creativos que cobran lo que realmente valen";
+      return "agencias creativas que cobran lo que realmente valen";
     default:
-      return "creativos que cobran premium";
+      return "agencias que cobran premium";
   }
 };
 

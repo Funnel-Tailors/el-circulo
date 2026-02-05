@@ -88,14 +88,14 @@ interface LeadSubmission {
 
 // Helper: Detectar razón específica de hardstop
 function getHardstopReason(answers: QuizAnswers, score: number): string | null {
-  // HARDSTOP #1: Sin capacidad de inversión mínima
-  if (answers.q5 === "Menos de €1.500") {
-    return "Sin capacidad de inversión mínima";
+  // HARDSTOP #1: Sin capacidad de inversión mínima (nuevo threshold €3K)
+  if (answers.q5 === "Menos de €3.000") {
+    return "Sin capacidad de inversión mínima (< €3K)";
   }
   
-  // HARDSTOP #2: Revenue muy bajo + inversión baja
-  if (answers.q3 === "Menos de €500/mes" && answers.q5 === "€1.500 - €3.000") {
-    return "Revenue muy bajo + inversión insuficiente";
+  // HARDSTOP #2: Revenue muy bajo
+  if (answers.q3 === "Menos de €500/mes") {
+    return "Revenue muy bajo (< €500/mes)";
   }
   
   // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
@@ -106,24 +106,24 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
   return null;
 }
 
-// Helper: Categorizar leads (A+/A/B/C/DQ)
+// Helper: Categorizar leads (A+/A/B/C/DQ) - actualizado para nuevo pricing 5K/8K
 function getLeadCategory(score: number, answers: QuizAnswers): string {
   const hardstop = getHardstopReason(answers, score);
   
   // DQ: Disqualified por hardstop
   if (hardstop) return 'DQ';
   
-  // A+: Score 95-110, budget OK, autoridad solo
+  // A+: Score 95-110, budget €5K+, autoridad solo
   if (score >= 95 && 
-      answers.q5 !== "Menos de €1.500" && 
-      answers.q5 !== "€1.500 - €3.000" &&
+      answers.q5 !== "Menos de €3.000" && 
+      answers.q5 !== "€3.000 - €5.000" && // Marginal no es A+
       answers.q7 === "Solo yo") {
     return 'A+';
   }
   
-  // A: Score 85-94, budget OK o autoridad solo
+  // A: Score 85-94, budget €5K+ o autoridad solo
   if (score >= 85 && 
-      (answers.q5 !== "Menos de €1.500" || answers.q7 === "Solo yo")) {
+      (answers.q5 === "€5.000 - €8.000" || answers.q5 === "Más de €8.000" || answers.q7 === "Solo yo")) {
     return 'A';
   }
   
@@ -202,12 +202,12 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   };
   if (answers.q1) tags.push(painMap[answers.q1] || '❓ CÍRCULO-PAIN-Other');
   
-  // Tags de profesión (Q2) con prefijo CÍRCULO
+  // Tags de profesión (Q2) con prefijo CÍRCULO - actualizado para agencias
   const professionMap: Record<string, string> = {
-    'Diseñador Gráfico / Web': '🎨 CÍRCULO-PRO-Designer',
-    'Fotógrafo/Filmmaker': '🎬 CÍRCULO-PRO-Visual',
-    'Automatizador': '🤖 CÍRCULO-PRO-Automation',
-    'Otro servicio creativo': '✨ CÍRCULO-PRO-Creative'
+    'Agencia de diseño / branding': '🎨 CÍRCULO-PRO-DesignAgency',
+    'Productora / Estudio audiovisual': '🎬 CÍRCULO-PRO-Production',
+    'Estudio de desarrollo / automatización': '🤖 CÍRCULO-PRO-DevStudio',
+    'Otro tipo de agencia creativa': '✨ CÍRCULO-PRO-CreativeAgency'
   };
   if (answers.q2) tags.push(professionMap[answers.q2] || '🔹 CÍRCULO-PRO-Other');
   
@@ -235,12 +235,12 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Tags de presupuesto de inversión (Q5) con prefijo CÍRCULO
+  // Tags de presupuesto de inversión (Q5) con prefijo CÍRCULO - actualizado para pricing 5K/8K
   const investmentMap: Record<string, string> = {
-    'Más de €5.000': '💎 CÍRCULO-INV-5K+',
-    '€3.000 - €5.000': '💰 CÍRCULO-INV-3K-5K',
-    '€1.500 - €3.000': '💵 CÍRCULO-INV-1.5K-3K',
-    'Menos de €1.500': '❌ CÍRCULO-INV-<1.5K'
+    'Más de €8.000': '💎 CÍRCULO-INV-8K+ (DWY SPEEDRUN)',
+    '€5.000 - €8.000': '💰 CÍRCULO-INV-5K-8K (DIY o DWY)',
+    '€3.000 - €5.000': '💵 CÍRCULO-INV-3K-5K (MARGINAL)',
+    'Menos de €3.000': '❌ CÍRCULO-INV-<3K (DQ)'
   };
   if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-INV-Unknown');
   
@@ -296,7 +296,7 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
-  const hasInvestment = answers.q5 !== 'Menos de €1.500';
+  const hasInvestment = answers.q5 !== 'Menos de €3.000';
   const fastTrack = answers.q6?.includes('Rápido');
   
   if (score >= 85) {
@@ -511,7 +511,7 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
-  const hasInvestment = answers.q5 !== 'Menos de €1.500';
+  const hasInvestment = answers.q5 !== 'Menos de €3.000';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
   const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   
@@ -557,8 +557,8 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
-${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€1.500 - €3.000' ? 'TICKET 3K' : 'TICKET 5K'}` : ''}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente (<3K)'}
+${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€3.000 - €5.000' ? 'TICKET 5K DIY (ajustado)' : answers.q5 === '€5.000 - €8.000' ? 'TICKET 5K DIY o 8K DWY' : 'TICKET 8K DWY SPEEDRUN'}` : ''}
 • Decide: ${answers.q7}
 
 📞 CONTACTO:
@@ -578,7 +578,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const hasInvestment = answers.q5 !== 'Menos de €1.500';
+  const hasInvestment = answers.q5 !== 'Menos de €3.000';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
   const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
@@ -628,7 +628,7 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 ⚡ RESUMEN INICIÁTICO:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€1.500 - €3.000' ? 'TICKET 3K' : 'TICKET 5K'}` : '❌ Insuficiente'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€3.000 - €5.000' ? 'TICKET 5K DIY (ajustado)' : answers.q5 === '€5.000 - €8.000' ? 'TICKET 5K DIY o 8K DWY' : 'TICKET 8K DWY SPEEDRUN'}` : '❌ Insuficiente (<3K)'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
 • Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
@@ -644,8 +644,8 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const pain = answers.q1 || '';
   const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   const midRevenue = answers.q3 === '€2.500 - €5.000/mes' || answers.q3 === 'Más de €5.000/mes';
-  const hasMoney = answers.q5 !== 'Menos de €1.500';
-  const lowInvestment = answers.q5 === 'Menos de €1.500' || answers.q5 === '€1.500 - €3.000';
+  const hasMoney = answers.q5 !== 'Menos de €3.000';
+  const lowInvestment = answers.q5 === 'Menos de €3.000' || answers.q5 === '€3.000 - €5.000';
   const fastTrack = answers.q6?.includes('Rápido');
   const gradual = answers.q6?.includes('Gradual');
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
@@ -763,22 +763,22 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
   
-  // Identidades profesionales (sin revelar demasiado)
+  // Identidades profesionales - actualizado para agencias
   const professionIdentity: Record<string, string> = {
-    'Diseñador Gráfico / Web': 
-      'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo. La diferencia no está en el portfolio. Está en lo que dices antes de enseñarlo.',
+    'Agencia de diseño / branding': 
+      'Mientras otras agencias pelean por proyectos de 2.000€, hay estudios que cobran 15.000€ por lo mismo. Misma entrega. Distinta conversación.',
     
-    'Fotógrafo/Filmmaker': 
-      'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€ por el mismo día de trabajo. Misma cámara. Distinta conversación.',
+    'Productora / Estudio audiovisual': 
+      'Hay productoras que cobran 3.000€ por un vídeo. Y hay estudios que cobran 20.000€ por el mismo día de rodaje. Mismo equipo. Diferente forma de venderlo.',
     
-    'Automatizador': 
-      'Montar un proceso te paga 500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 10.000€. Mismo trabajo. Diferente forma de venderlo.',
+    'Estudio de desarrollo / automatización': 
+      'Montar un proceso te paga 1.500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 25.000€. Mismo trabajo. Diferente forma de venderlo.',
     
-    'Otro servicio creativo': 
-      'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale tu tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
+    'Otro tipo de agencia creativa': 
+      'La habilidad ya la tiene tu equipo. Lo que falta es saber qué decir para que un cliente te pague lo que vale vuestro tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
   };
   
-  const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro servicio creativo'];
+  const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro tipo de agencia creativa'];
   
   // Generar insight personalizado
   const personalizedInsight = generatePersonalizedInsight(answers, score);
@@ -868,40 +868,41 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const pain = answers.q1 || '';
   
-  // Objetivos específicos por profesión
+  // Objetivos específicos por profesión - actualizado para agencias
   const professionGoals: Record<string, { goal: string; prep: string[] }> = {
-    'Diseñador Gráfico / Web': {
-      goal: 'convertirte en el diseñador de referencia de tu nicho',
+    'Agencia de diseño / branding': {
+      goal: 'convertir tu agencia en el estudio de referencia de tu nicho',
       prep: [
-        'Tu portfolio actual (3-5 mejores proyectos)',
-        'Cuánto cobras actualmente por proyecto',
-        'Qué tipo de clientes quieres atraer',
-        'Si haces diseño gráfico, web o ambos'
+        'Tu portfolio actual (3-5 mejores proyectos de agencia)',
+        'Cuánto cobráis actualmente por proyecto medio',
+        'Qué tipo de clientes queréis atraer',
+        'Tamaño de tu equipo actual'
       ]
     },
-    'Fotógrafo/Filmmaker': {
-      goal: 'posicionarte como el creador visual premium de tu mercado',
+    'Productora / Estudio audiovisual': {
+      goal: 'posicionar tu productora como el estudio premium de tu mercado',
       prep: [
-        'Tu reel/portfolio (mejores 3-10 trabajos)',
-        'Qué cobras por proyecto/sesión actualmente',
-        'Tipo de producciones que quieres hacer',
-        'Si te enfocas en foto, video o ambos'
+        'Tu reel/portfolio (mejores 3-10 producciones)',
+        'Qué cobráis por proyecto/producción actualmente',
+        'Tipo de producciones que queréis hacer',
+        'Equipo técnico que tenéis'
       ]
     },
-    'Automatizador': {
-      goal: 'convertirte en el experto en automatización que todos buscan',
+    'Estudio de desarrollo / automatización': {
+      goal: 'convertir tu estudio en el experto en desarrollo/automatización que todos buscan',
       prep: [
-        'Tus últimos 3 proyectos de automatización',
-        'Qué cobras actualmente',
-        'Herramientas que dominas (Make, Zapier, IA, etc.)'
+        'Vuestros últimos 3 proyectos',
+        'Qué cobráis actualmente por proyecto',
+        'Stack tecnológico que domináis'
       ]
     },
-    'Otro servicio creativo': {
-      goal: 'alcanzar tus objetivos profesionales',
+    'Otro tipo de agencia creativa': {
+      goal: 'llevar tu agencia al siguiente nivel',
       prep: [
-        'Tu situación actual y servicios que ofreces',
-        'Tus objetivos principales',
-        'Tus mayores desafíos'
+        'Ejemplos de trabajo reciente',
+        'Ticket medio actual',
+        'Qué servicios ofrecéis',
+        'Tamaño de equipo'
       ]
     }
   };
@@ -1039,15 +1040,15 @@ const scoreAgitations = {
   }
 };
 
-// Casos de éxito por profesión
+// Casos de éxito por profesión - actualizado para agencias
 const successStoriesMap: Record<string, string> = {
-  'Diseñador Gráfico / Web': 
+  'Agencia de diseño / branding': 
     'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
-  'Fotógrafo/Filmmaker': 
+  'Productora / Estudio audiovisual': 
     'Dani hizo 2.000€ con su primer cliente en 10 días.\nCris pasó de tirar la toalla a cerrar 3.000€.',
-  'Automatizador': 
+  'Estudio de desarrollo / automatización': 
     'Felipe pasó de cero estrategia a sistema de captación en una semana.',
-  'Otro servicio creativo': 
+  'Otro tipo de agencia creativa': 
     'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
 };
 
