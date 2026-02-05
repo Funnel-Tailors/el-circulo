@@ -1,459 +1,207 @@
 
 
-## Migración Completa del ICP: Freelancer → Agencia + Nuevo Pricing 5K/8K
+## Ajustes del Quiz para ICP Agencias + Pricing 5K/8K
 
-### Visión General
+### Contexto
 
-Este es un cambio estructural que afecta **12+ archivos** y requiere coherencia total entre:
-- Copy visual de la landing (CircleHero, PainSection, ClientBubble)
-- Lógica de cualificación del quiz
-- Sistema de scoring y categorización
-- Notificaciones personalizadas (closer, internal, client, follow-ups)
-- Personalización dinámica (/senda, /brecha)
-- Recomendaciones de ticket
+El quiz actual tiene rangos de facturación y copy orientados a freelancers individuales. Con el nuevo ICP (agencias/estudios con equipo) y pricing (5K DIY / 8K DWY), necesitamos:
 
----
-
-### FASE 1: Copy Visual de la Landing
-
-**1.1 Eliminar ClientBubble del render**
-
-Archivo: `src/pages/Roadmap.tsx`
-- Eliminar `<ClientBubble />` del render (el componente queda intacto por si acaso)
-- Razonamiento: el roadmap día a día es lo importante y ClientBubble añade scroll innecesario
-
-**1.2 Reescribir PainSection con copy del VSL**
-
-Archivo: `src/components/roadmap/PainSection.tsx`
-
-| # | Copy Nuevo (extraído del VSL) |
-|---|-------------------------------|
-| 1 | Es que dependes de la suerte o antiguos clientes ratilla sin saber exactamente lo que vas a generar el mes que viene, **mientras los miembros del Círculo** venden cada día sabiendo exactamente cuánto van a facturar. |
-| 2 | Es que crees que lo que haces se vende como patatas al kilo y copias fórmulas mágicas de gente que no entiende el sector, **mientras los miembros del Círculo** usan una fórmula (no tan) revolucionaria que utilizaba la empresa de tu abuelo para facturar millones hace 80 años. |
-| 3 | Es que te pasas semanas creando contenido, marca personal, un portfolio que no mira ni dios, **mientras los miembros del Círculo** tienen ejecutado el sistema en 3 días — y optimizado por completo en menos de 7. |
-| 4 | Es que esperas a que una mención en una revista que solo van a leer tus familiares y amigos te salve el mes, **mientras los miembros del Círculo** ponen un anuncio que toca puertas sin parar y consiguen captar clientes cada puto día. |
-| 5 | Es que patrocinas eventillos de la ciudad o eventos donde todos los del sector se hacen la pelota unos a otros deseando que les pasen algo de curro **(que nos conocemos ya)**, **mientras los miembros del Círculo** saben cuántos impactos tienen, cuántos agendan, y cuántos cierran. |
-| 6 | Es que te prometes una y otra vez no bajar los precios y acabas bajándolos igual por miedo a perder el proyecto, **mientras los miembros del Círculo** tienen clientes que piensan que regatear es de cutres y pagan por adelantado sin pestañear. |
-| 7 | Es que has tenido meses muy buenos en los que los astros se alinearon y creías que por fin despegaba, **para volver a estamparte al mes siguiente** y darte cuenta de que solo fue un poco de suerte. |
-| 8 | Es que cada nuevo posible cliente es una guerra contra ti mismo en la que te prometes no bajar los precios **añadiendo todavía más incertidumbre** y trabajo al mes que viene. |
-| 9 | Es que Bruno mejoró la oferta que ya tenía, se la ofreció a sus ya clientes y descubrió que **7 de ellos estaban dispuestos a pagarle más por trabajar menos** — solo cambiando la forma de decir lo que hacía. |
-| 10 | Que sabes gestionar proyectos. Pero **no sabes vender proyectos.** |
-
-Título: `"El problema no es tu agencia."`
-
-Remate final: `"Lo peor es que cada mañana te sientas en el PC sin saber muy bien a qué dedicarle el tiempo mientras estás deseando ser productivo con la mirada perdida."`
+1. **Subir los rangos de facturación** a niveles realistas de agencia
+2. **Reformular Q3** para preguntar por "un buen mes" (reconociendo la irregularidad)
+3. **Adaptar el copy del formulario** al lenguaje de agencias
+4. **Revisar Q1 (pains)** para que resuenen con dueños de agencia
 
 ---
 
-### FASE 2: Lógica del Quiz y Scoring
+### 1. Q3 - Facturación (Líneas 63-72)
 
-**2.1 Actualizar opciones de Q2**
+**Cambio de enfoque**: Preguntar por "un buen mes" en vez de media, reconociendo que es irregular.
 
-Archivo: `src/components/quiz/QuizSection.tsx` (línea 58)
-- ✅ Ya actualizado en cambio anterior
+**ANTES:**
+```
+question: "¿Cuánta pasta entra al mes de media? (últimos 3 meses)"
+options: ["Menos de €500/mes", "€500 - €1.500/mes", "€1.500 - €3.000/mes", "€3.000 - €6.000/mes", "Más de €6.000/mes"]
+```
 
-**2.2 Actualizar scoring de Q2**
+**DESPUÉS:**
+```
+question: "¿Cuánto factura tu agencia en un mes bueno?"
+subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media"
+options: ["Menos de €2.000/mes", "€2.000 - €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"]
+```
 
-Archivo: `src/components/quiz/QuizSection.tsx` (líneas 736-739)
+**Motivador actualizado:**
+```
+"Agencias que facturan €5K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
+```
+
+---
+
+### 2. Scoring Q3 (Líneas 741-746)
+
+Ajustar puntuación a los nuevos rangos:
 
 ```typescript
 // ANTES
-if (state.q2 === "Diseñador Gráfico / Web") score += 10;
-else if (state.q2 === "Fotógrafo/Filmmaker") score += 10;
-else if (state.q2 === "Automatizador") score += 10;
-else if (state.q2 === "Otro servicio creativo") score += 9;
+if (state.q3 === "€1.500 - €3.000/mes") score += 30; // ← ICP SWEET SPOT
+else if (state.q3 === "€3.000 - €6.000/mes") score += 28;
+else if (state.q3 === "Más de €6.000/mes") score += 25;
+else if (state.q3 === "€500 - €1.500/mes") score += 22;
+else if (state.q3 === "Menos de €500/mes") score += 0;
 
 // DESPUÉS
-if (state.q2 === "Agencia de diseño / branding") score += 10;
-else if (state.q2 === "Productora / Estudio audiovisual") score += 10;
-else if (state.q2 === "Estudio de desarrollo / automatización") score += 10;
-else if (state.q2 === "Otro tipo de agencia creativa") score += 9;
+if (state.q3 === "€5.000 - €10.000/mes") score += 30; // ← ICP SWEET SPOT (agencia media)
+else if (state.q3 === "€10.000 - €20.000/mes") score += 28; // Alto LTV
+else if (state.q3 === "Más de €20.000/mes") score += 25; // Premium, no penalizar
+else if (state.q3 === "€2.000 - €5.000/mes") score += 22; // Potencial ascenso
+else if (state.q3 === "Menos de €2.000/mes") score += 0; // Demasiado pequeña
 ```
 
-**2.3 Actualizar opciones de Q5 (Inversión) para nuevo pricing**
+---
 
-Archivo: `src/components/quiz/QuizSection.tsx` (línea 89)
+### 3. Hardstops Q3 (Líneas 781-785)
+
+Actualizar los thresholds de descalificación:
 
 ```typescript
 // ANTES
-options: ["Menos de €1.500", "€1.500 - €3.000", "€3.000 - €5.000", "Más de €5.000"]
-
-// DESPUÉS (nuevo pricing 5K/8K)
-options: ["Menos de €3.000", "€3.000 - €5.000", "€5.000 - €8.000", "Más de €8.000"]
-```
-
-**2.4 Actualizar scoring de Q5**
-
-Archivo: `src/components/quiz/QuizSection.tsx` (líneas 764-768)
-
-```typescript
-// ANTES
-if (state.q5 === "Más de €5.000") score += 37;
-else if (state.q5 === "€3.000 - €5.000") score += 37;
-else if (state.q5 === "€1.500 - €3.000") score += 20;
-else if (state.q5 === "Menos de €1.500") score += 0; // Disqualifies
-
-// DESPUÉS (nuevo threshold mínimo 5K)
-if (state.q5 === "Más de €8.000") score += 37;     // DWY speedrun fácil
-else if (state.q5 === "€5.000 - €8.000") score += 37; // DIY o DWY
-else if (state.q5 === "€3.000 - €5.000") score += 15; // Marginal - puede que DIY ajustado
-else if (state.q5 === "Menos de €3.000") score += 0;  // Disqualifies
-```
-
-**2.5 Actualizar hardstops en hasAutoDisqualify**
-
-Archivo: `src/components/quiz/QuizSection.tsx` (líneas 780-796)
-
-```typescript
-// ANTES
-if (state.q5 === "Menos de €1.500") return true;
-
-// DESPUÉS (nuevo threshold)
-if (state.q5 === "Menos de €3.000") return true; // Nuevo mínimo para 5K DIY
-```
-
-También ajustar la lógica combinada:
-```typescript
-// ANTES
-if (state.q3 === "€500 - €1.500/mes" && state.q5 === "Menos de €1.500") return true;
-
-// DESPUÉS
+if (state.q3 === "Menos de €500/mes") return true;
 if (state.q3 === "€500 - €1.500/mes" && state.q5 === "Menos de €3.000") return true;
-if (state.q3 === "Menos de €500/mes") return true; // Mantener
+
+// DESPUÉS
+if (state.q3 === "Menos de €2.000/mes") return true;
+if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Menos de €3.000") return true;
 ```
 
 ---
 
-### FASE 3: Notificaciones GHL (Edge Function)
+### 4. Q1 - Pains (Líneas 37-53)
 
-**3.1 Actualizar mapeo de profesiones en generateTags**
+Revisar las opciones para que resuenen con dueños de agencia con equipo:
 
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 206-212)
-
-```typescript
-// ANTES
-const professionMap: Record<string, string> = {
-  'Diseñador Gráfico / Web': '🎨 CÍRCULO-PRO-Designer',
-  'Fotógrafo/Filmmaker': '🎬 CÍRCULO-PRO-Visual',
-  'Automatizador': '🤖 CÍRCULO-PRO-Automation',
-  'Otro servicio creativo': '✨ CÍRCULO-PRO-Creative'
-};
-
-// DESPUÉS
-const professionMap: Record<string, string> = {
-  'Agencia de diseño / branding': '🎨 CÍRCULO-PRO-DesignAgency',
-  'Productora / Estudio audiovisual': '🎬 CÍRCULO-PRO-Production',
-  'Estudio de desarrollo / automatización': '🤖 CÍRCULO-PRO-DevStudio',
-  'Otro tipo de agencia creativa': '✨ CÍRCULO-PRO-CreativeAgency'
-};
+**ANTES:**
+```
+"Mis clientes no tienen presupuesto (cobro poco y me regatean)"
+"Trabajo muchas horas y no gano tanto como me gustaría"
+"No tengo clientes suficientes (no sé ni por donde empezar)"
+"No sé vender lo que hago a gente que pague 5 cifras por ello"
+"Todo lo anterior (¿Pero de verdad se gana pasta con esto?)"
 ```
 
-**3.2 Actualizar mapeo de inversión en generateTags**
-
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 239-244)
-
-```typescript
-// ANTES
-const investmentMap: Record<string, string> = {
-  'Más de €5.000': '💎 CÍRCULO-INV-5K+',
-  '€3.000 - €5.000': '💰 CÍRCULO-INV-3K-5K',
-  '€1.500 - €3.000': '💵 CÍRCULO-INV-1.5K-3K',
-  'Menos de €1.500': '❌ CÍRCULO-INV-<1.5K'
-};
-
-// DESPUÉS
-const investmentMap: Record<string, string> = {
-  'Más de €8.000': '💎 CÍRCULO-INV-8K+ (DWY SPEEDRUN)',
-  '€5.000 - €8.000': '💰 CÍRCULO-INV-5K-8K (DIY o DWY)',
-  '€3.000 - €5.000': '💵 CÍRCULO-INV-3K-5K (MARGINAL)',
-  'Menos de €3.000': '❌ CÍRCULO-INV-<3K (DQ)'
-};
+**DESPUÉS (adaptado a agencias del VSL):**
+```
+"Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)"
+"Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo"
+"Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)"
+"No sé cómo vender proyectos de 5 cifras sin que nos regateen"
+"Todo lo anterior (¿Pero de verdad se puede escalar esto?)"
 ```
 
-**3.3 Actualizar recomendación de ticket en notificaciones**
+**Razón:** El VSL menciona exactamente estos dolores:
+- "Vienen por recomendación de otros que pagaron poco"
+- "Meses buenos → estampazos"
+- "Guerra contra ti mismo para no bajar precios"
 
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts`
+---
 
-Línea ~561 (generateCloserNotification):
-```typescript
-// ANTES
-${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€1.500 - €3.000' ? 'TICKET 3K' : 'TICKET 5K'}` : ''}
+### 5. Scoring Q1 (Líneas 728-733)
 
-// DESPUÉS
-${hasInvestment ? `💎 RECOMENDACIÓN: ${
-  answers.q5 === '€3.000 - €5.000' ? 'TICKET 5K DIY (ajustado)' : 
-  answers.q5 === '€5.000 - €8.000' ? 'TICKET 5K DIY o 8K DWY' : 
-  'TICKET 8K DWY SPEEDRUN'
-}` : ''}
-```
-
-Línea ~631 (generateInternalNotification):
-```typescript
-// ANTES  
-• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€1.500 - €3.000' ? 'TICKET 3K' : 'TICKET 5K'}` : '❌ Insuficiente'}
-
-// DESPUÉS
-• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${
-  answers.q5 === '€3.000 - €5.000' ? 'TICKET 5K DIY (ajustado)' : 
-  answers.q5 === '€5.000 - €8.000' ? 'TICKET 5K DIY o 8K DWY' : 
-  'TICKET 8K DWY SPEEDRUN'
-}` : '❌ Insuficiente (<3K)'}
-```
-
-**3.4 Actualizar helper hasInvestment en toda la función**
-
-Cambiar todas las referencias:
-```typescript
-// ANTES
-const hasInvestment = answers.q5 !== 'Menos de €1.500';
-
-// DESPUÉS
-const hasInvestment = answers.q5 !== 'Menos de €3.000';
-```
-
-**3.5 Actualizar professionIdentity en generateClientNotification**
-
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 767-779)
-
-```typescript
-// ANTES
-const professionIdentity: Record<string, string> = {
-  'Diseñador Gráfico / Web': 
-    'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo...',
-  'Fotógrafo/Filmmaker': 
-    'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€...',
-  // etc
-};
-
-// DESPUÉS
-const professionIdentity: Record<string, string> = {
-  'Agencia de diseño / branding': 
-    'Mientras otras agencias pelean por proyectos de 2.000€, hay estudios que cobran 15.000€ por lo mismo. Misma entrega. Distinta conversación.',
-  'Productora / Estudio audiovisual': 
-    'Hay productoras que cobran 3.000€ por un vídeo. Y hay estudios que cobran 20.000€ por el mismo día de rodaje. Mismo equipo. Diferente forma de venderlo.',
-  'Estudio de desarrollo / automatización': 
-    'Montar un proceso te paga 1.500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 25.000€. Mismo trabajo. Diferente forma de venderlo.',
-  'Otro tipo de agencia creativa': 
-    'La habilidad ya la tiene tu equipo. Lo que falta es saber qué decir para que un cliente te pague lo que vale tu tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
-};
-```
-
-**3.6 Actualizar professionGoals en generateClientPostBookingNotification**
-
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 872-900)
+Actualizar para matchear nuevas opciones:
 
 ```typescript
 // DESPUÉS
-const professionGoals: Record<string, { goal: string; prep: string[] }> = {
-  'Agencia de diseño / branding': {
-    goal: 'convertir tu agencia en el estudio de referencia de tu nicho',
-    prep: [
-      'Tu portfolio actual (3-5 mejores proyectos de agencia)',
-      'Cuánto cobráis actualmente por proyecto medio',
-      'Qué tipo de clientes queréis atraer',
-      'Tamaño de tu equipo actual'
-    ]
-  },
-  'Productora / Estudio audiovisual': {
-    goal: 'posicionar tu productora como el estudio premium de tu mercado',
-    prep: [
-      'Tu reel/portfolio (mejores 3-10 producciones)',
-      'Qué cobráis por proyecto/producción actualmente',
-      'Tipo de producciones que queréis hacer',
-      'Equipo técnico que tenéis'
-    ]
-  },
-  'Estudio de desarrollo / automatización': {
-    goal: 'convertir tu estudio en el experto en desarrollo/automatización que todos buscan',
-    prep: [
-      'Vuestros últimos 3 proyectos',
-      'Qué cobráis actualmente por proyecto',
-      'Stack tecnológico que domináis'
-    ]
-  },
-  'Otro tipo de agencia creativa': {
-    goal: 'llevar tu agencia al siguiente nivel',
-    prep: [
-      'Ejemplos de trabajo reciente',
-      'Ticket medio actual',
-      'Qué servicios ofrecéis',
-      'Tamaño de equipo'
-    ]
-  }
-};
-```
-
-**3.7 Actualizar successStoriesMap para agencias**
-
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 1043-1052)
-
-```typescript
-// DESPUÉS
-const successStoriesMap: Record<string, string> = {
-  'Agencia de diseño / branding': 
-    'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
-  'Productora / Estudio audiovisual': 
-    'Dani hizo 2.000€ con su primer cliente en 10 días.\nCris pasó de tirar la toalla a cerrar 3.000€.',
-  'Estudio de desarrollo / automatización': 
-    'Felipe pasó de cero estrategia a sistema de captación en una semana.',
-  'Otro tipo de agencia creativa': 
-    'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
-};
+if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 8;
+else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 8;
+else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 8;
+else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 8;
+else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 7;
 ```
 
 ---
 
-### FASE 4: Personalización Dinámica
+### 6. Formulario de Contacto - Bullets (Líneas 1076-1090)
 
-**4.1 Actualizar filterSuccessCasesByProfession**
-
-Archivo: `src/lib/senda-personalization.ts` (líneas 149-166)
-
-```typescript
-// DESPUÉS
-export const filterSuccessCasesByProfession = (profession: string | undefined) => {
-  if (!profession) return ['Nico', 'Felipe']; // Default: agencias diseño
-
-  if (profession.toLowerCase().includes('agencia de diseño') || profession.toLowerCase().includes('branding')) {
-    return ['Nico', 'Felipe'];
-  }
-  
-  if (profession.toLowerCase().includes('productora') || profession.toLowerCase().includes('audiovisual')) {
-    return ['Dani', 'Cris'];
-  }
-  
-  if (profession.toLowerCase().includes('desarrollo') || profession.toLowerCase().includes('automatización')) {
-    return ['Felipe', 'Dani'];
-  }
-
-  // Default: mix
-  return ['Nico', 'Dani'];
-};
+**ANTES:**
+```
+→ Cómo transformar tu habilidad en un producto redondo que la gente percibe como una puta ganga, aún a cinco cifras
+→ Cómo petar tu agenda y cobrar 5.000€ sin que te tiemblen las piernas ni a tu cliente la cartera
+→ El sistema exacto para que ese cliente que te va a torear ni siquiera llegue a hacerte perder el tiempo
 ```
 
-**4.2 Actualizar copy en generateSendaPersonalization**
-
-Archivo: `src/lib/senda-personalization.ts`
-
-Cambiar referencias de "€2K-3K" a "€5K+" y de "tu negocio" a "tu agencia/estudio":
-
-```typescript
-// ANTES
-heroSubtext: `En 60 minutos diseñaremos tu oferta de €2K-3K para cerrar tu primer proyecto...`
-
-// DESPUÉS  
-heroSubtext: `En 60 minutos diseñaremos tu oferta de €5K+ para cerrar tu primer proyecto de agencia...`
+**DESPUÉS (adaptado a agencias):**
 ```
-
-**4.3 Actualizar getProfessionContext en brecha-personalization**
-
-Archivo: `src/lib/brecha-personalization.ts` (líneas 71-84)
-
-```typescript
-// DESPUÉS
-export const getProfessionContext = (profession: string | null): string => {
-  switch (profession) {
-    case 'designer':
-      return "agencias de diseño que cobran €10K+ por proyecto";
-    case 'photographer':
-      return "productoras que cobran €15K+ por producción";
-    case 'automation':
-      return "estudios de desarrollo que cobran €20K+ por implementación";
-    case 'other_creative':
-      return "agencias creativas que cobran lo que realmente valen";
-    default:
-      return "agencias que cobran premium";
-  }
-};
+→ Cómo transformar lo que hace tu agencia en un servicio de un solo precio que los clientes se matan por pagar
+→ Cómo pasar de proyectos de €2K a €10K+ sin cambiar lo que entregáis — solo cómo lo vendéis
+→ El sistema exacto para que el cliente rata ni siquiera llegue a hacerte perder el tiempo a ti ni a tu equipo
 ```
 
 ---
 
-### FASE 5: Hardstops y Cualificación (Edge Function)
+### 7. Analytics Q3 Tracking (Líneas 243-266)
 
-**5.1 Actualizar getHardstopReason**
-
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 90-107)
+Actualizar los eventos de Meta Pixel para los nuevos rangos:
 
 ```typescript
-// ANTES
-if (answers.q5 === "Menos de €1.500") {
-  return "Sin capacidad de inversión mínima";
-}
-
-if (answers.q3 === "Menos de €500/mes" && answers.q5 === "€1.500 - €3.000") {
-  return "Revenue muy bajo + inversión insuficiente";
-}
-
 // DESPUÉS
-if (answers.q5 === "Menos de €3.000") {
-  return "Sin capacidad de inversión mínima (< €3K)";
-}
-
-// El combo €3K-5K + revenue bajo es marginal pero no hardstop
-```
-
-**5.2 Actualizar getLeadCategory**
-
-Archivo: `supabase/functions/submit-lead-to-ghl/index.ts` (líneas 109-137)
-
-```typescript
-// ANTES
-if (score >= 95 && 
-    answers.q5 !== "Menos de €1.500" && 
-    answers.q5 !== "€1.500 - €3.000" &&
-    answers.q7 === "Solo yo") {
-  return 'A+';
-}
-
-// DESPUÉS
-if (score >= 95 && 
-    answers.q5 !== "Menos de €3.000" && 
-    answers.q5 !== "€3.000 - €5.000" && // Marginal no es A+
-    answers.q7 === "Solo yo") {
-  return 'A+';
-}
-
-// A: ahora requiere €5K+ para ser A
-if (score >= 85 && 
-    (answers.q5 === "€5.000 - €8.000" || answers.q5 === "Más de €8.000" || answers.q7 === "Solo yo")) {
-  return 'A';
+if (value === "€5.000 - €10.000/mes") {
+  quizAnalytics.trackICPMatch(value);
+} else if (value === "€10.000 - €20.000/mes") {
+  quizAnalytics.trackICPMatch(value);
+} else if (value === "Más de €20.000/mes") {
+  quizAnalytics.trackMetaPixelEvent('ViewContent', {
+    content_type: 'quiz',
+    content_name: 'High LTV Agency',
+    content_category: 'premium_lead',
+    value: 800,
+    currency: 'EUR',
+    custom_data: {
+      revenue_bracket: value,
+      high_ltv: true
+    }
+  });
+} else if (value === "Menos de €2.000/mes") {
+  quizAnalytics.trackLowRevenueDisqualified();
 }
 ```
 
 ---
 
-### Resumen de Archivos a Modificar
+### 8. Lead Event Enrichment (Líneas 650-661)
 
-| Archivo | Cambios | Prioridad |
-|---------|---------|-----------|
-| `src/pages/Roadmap.tsx` | Eliminar `<ClientBubble />` | Alta |
-| `src/components/roadmap/PainSection.tsx` | Reescribir 10 párrafos + título + remate | Alta |
-| `src/components/quiz/QuizSection.tsx` | Q2 scoring, Q5 opciones+scoring, hardstops | Alta |
-| `supabase/functions/submit-lead-to-ghl/index.ts` | Tags, notificaciones, hardstops, recomendaciones ticket | Alta |
-| `src/lib/senda-personalization.ts` | filterSuccessCases + copy €5K+ | Media |
-| `src/lib/brecha-personalization.ts` | getProfessionContext | Media |
+Actualizar los checks de ICP para nuevos rangos:
 
----
-
-### Nuevo Modelo de Pricing
-
-| Rango Inversión | Ticket Recomendado | Tag GHL |
-|-----------------|-------------------|---------|
-| Menos de €3.000 | ❌ DQ (No cualifica) | CÍRCULO-INV-<3K (DQ) |
-| €3.000 - €5.000 | 5K DIY (ajustado) | CÍRCULO-INV-3K-5K (MARGINAL) |
-| €5.000 - €8.000 | 5K DIY o 8K DWY | CÍRCULO-INV-5K-8K (DIY o DWY) |
-| Más de €8.000 | 8K DWY SPEEDRUN | CÍRCULO-INV-8K+ (DWY SPEEDRUN) |
+```typescript
+// DESPUÉS
+const isICP = revenueAnswer === "€5.000 - €10.000/mes" 
+  || revenueAnswer === "€10.000 - €20.000/mes";
+const hasBudget = budgetAnswer === "€3.000 - €5.000"
+  || budgetAnswer === "€5.000 - €8.000"
+  || budgetAnswer === "Más de €8.000";
+```
 
 ---
 
-### Notas Técnicas
+### Resumen de Cambios
 
-1. **Backward Compatibility**: Los leads antiguos con valores de Q2/Q5 antiguos seguirán funcionando pero mostrarán tags "Unknown" en GHL.
+| Sección | Cambio |
+|---------|--------|
+| Q3 pregunta | "un mes bueno" en vez de "media" |
+| Q3 opciones | €2K-€5K-€10K-€20K+ (rangos agencia) |
+| Q3 subtext | "Ya sabemos que es irregular" |
+| Q3 scoring | Sweet spot €5K-€10K |
+| Q3 hardstop | <€2K descalifica |
+| Q1 opciones | 5 pains adaptados a agencias del VSL |
+| Q1 scoring | Ajustado a nuevas opciones |
+| Form bullets | Lenguaje de agencia (equipo, €10K+) |
+| Analytics | Nuevos rangos en tracking |
 
-2. **El hardstop sube de €1.500 a €3.000**: Esto bloqueará más leads pero alineado con el nuevo pricing 5K/8K.
+---
 
-3. **Las notificaciones de closer ahora incluyen recomendación de ticket DIY vs DWY**: Facilita la decisión en llamada.
+### Edge Function Sync
 
-4. **Los success stories se mantienen iguales**: Los casos de Nico, Dani, Cris, Felipe aplican tanto a freelancers como a agencias pequeñas.
+El edge function `submit-lead-to-ghl` también necesitará actualizarse para:
+- Los nuevos valores de Q3 en `generateTags`
+- Los nuevos valores de Q1 en scoring/notificaciones
+
+Esto se hará en el mismo batch de cambios.
 
