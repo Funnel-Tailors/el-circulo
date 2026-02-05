@@ -181,7 +181,7 @@ const Module4Section = ({
   // Handle roleplay click
   const handleRoleplayClick = useCallback(async () => {
     await markModule4RoleplayOpened();
-    window.open(GPT_ROLEPLAY.url, '_blank');
+    window.open(CLIENTE_CIRCULO.agents[0].url, '_blank');
   }, [markModule4RoleplayOpened]);
 
   if (!isVisible) return null;

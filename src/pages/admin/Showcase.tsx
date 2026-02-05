@@ -420,7 +420,7 @@ function MotionTab() {
                 <p className="font-medium text-foreground">{key}</p>
                 <span className="text-xs text-foreground/40">Click to demo</span>
               </div>
-              <p className="text-xs text-foreground/50 font-mono">[{(value as number[]).join(', ')}]</p>
+              <p className="text-xs text-foreground/50 font-mono">[{[...value].join(', ')}]</p>
             </div>
           ))}
         </div>
@@ -435,7 +435,7 @@ function MotionTab() {
               animate={{ x: 200 }}
               transition={{
                 duration: 1,
-                ease: ease[playDemo as keyof typeof ease] as number[],
+                ease: [...ease[playDemo as keyof typeof ease]] as [number, number, number, number],
               }}
             />
           </div>

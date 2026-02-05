@@ -133,6 +133,9 @@ const MagneticButton = React.forwardRef<HTMLButtonElement, MagneticButtonProps>(
       onAnimationStart: _onAnimationStart,
       onAnimationEnd: _onAnimationEnd,
       onAnimationIteration: _onAnimationIteration,
+      onDragStart: _onDragStart,
+      onDrag: _onDrag,
+      onDragEnd: _onDragEnd,
       ...restProps
     },
     ref
@@ -217,7 +220,7 @@ const MagneticButton = React.forwardRef<HTMLButtonElement, MagneticButtonProps>(
         <Slot
           className={cn(magneticButtonVariants({ variant, size, className }))}
           ref={ref}
-          {...props}
+          {...restProps}
         >
           {children}
         </Slot>
@@ -238,7 +241,7 @@ const MagneticButton = React.forwardRef<HTMLButtonElement, MagneticButtonProps>(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
-        {...restProps}
+        {...(restProps as React.ComponentProps<typeof motion.button>)}
       >
         {/* Glow layer para variant "glow" */}
         {variant === "glow" && (
