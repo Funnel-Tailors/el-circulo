@@ -93,9 +93,9 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
     return "Sin capacidad de inversión mínima (< €3K)";
   }
   
-  // HARDSTOP #2: Revenue muy bajo
-  if (answers.q3 === "Menos de €500/mes") {
-    return "Revenue muy bajo (< €500/mes)";
+  // HARDSTOP #2: Revenue muy bajo (umbral agencia)
+  if (answers.q3 === "Menos de €2.000/mes") {
+    return "Revenue muy bajo (< €2K/mes agencia)";
   }
   
   // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
@@ -192,13 +192,13 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     tags.push('🔴 CÍRCULO-ICP-POOR');
   }
   
-  // Tags de Pain Point (Q1) con prefijo CÍRCULO
+  // Tags de Pain Point (Q1) con prefijo CÍRCULO - adaptado a agencias
   const painMap: Record<string, string> = {
-    'Mis clientes no tienen presupuesto': '💸 CÍRCULO-PAIN-NoBudget',
-    'Trabajo muchas horas y encima estoy tieso': '🔥 CÍRCULO-PAIN-Burnout',
-    'No tengo clientes suficientes (no sé ni por donde empezar)': '🎯 CÍRCULO-PAIN-NoLeads',
-    'No sé cómo vender lo que hago sin que me regateen': '🗣️ CÍRCULO-PAIN-CantSell',
-    'Todo lo anterior': '💥 CÍRCULO-PAIN-All'
+    'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': '🔄 CÍRCULO-PAIN-BadReferrals',
+    'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': '🔥 CÍRCULO-PAIN-LowMargin',
+    'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': '🎲 CÍRCULO-PAIN-Inconsistent',
+    'No sé cómo vender proyectos de 5 cifras sin que nos regateen': '🗣️ CÍRCULO-PAIN-CantSell5Figs',
+    'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': '💥 CÍRCULO-PAIN-All'
   };
   if (answers.q1) tags.push(painMap[answers.q1] || '❓ CÍRCULO-PAIN-Other');
   
@@ -211,13 +211,13 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   };
   if (answers.q2) tags.push(professionMap[answers.q2] || '🔹 CÍRCULO-PRO-Other');
   
-  // Tags de facturación mensual (Q3) con prefijo CÍRCULO
+  // Tags de facturación mensual (Q3) con prefijo CÍRCULO - rangos agencia
   const revenueMap: Record<string, string> = {
-    'Más de €5.000/mes': '💎 CÍRCULO-REV-5K+',
-    '€2.500 - €5.000/mes': '💰 CÍRCULO-REV-2.5K-5K',
-    '€1.500 - €2.500/mes': '💵 CÍRCULO-REV-1.5K-2.5K',
-    '€500 - €1.500/mes': '💸 CÍRCULO-REV-500-1.5K',
-    'Menos de €500/mes': '🪙 CÍRCULO-REV-<500'
+    'Más de €20.000/mes': '💎 CÍRCULO-REV-20K+',
+    '€10.000 - €20.000/mes': '💰 CÍRCULO-REV-10K-20K',
+    '€5.000 - €10.000/mes': '💵 CÍRCULO-REV-5K-10K',
+    '€2.000 - €5.000/mes': '💸 CÍRCULO-REV-2K-5K',
+    'Menos de €2.000/mes': '🪙 CÍRCULO-REV-<2K'
   };
   if (answers.q3) tags.push(revenueMap[answers.q3] || '💰 CÍRCULO-REV-Unknown');
   
@@ -295,7 +295,7 @@ ${grouped.qualification.join('\n')}
 
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
   const hasInvestment = answers.q5 !== 'Menos de €3.000';
   const fastTrack = answers.q6?.includes('Rápido');
   
@@ -345,134 +345,134 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   return insights.join('\n');
 }
 
-// Pain-specific content objects
+// Pain-specific content objects - adaptado a agencias
 const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
-  'Mis clientes no tienen presupuesto': {
-    hot: 'El problema no son tus clientes. Es que apuntas a quién no debe. Los miembros del Círculo dejan de perseguir mierdecillas que regatean €100 y empiezan a hablar con quien sabe lo que vale su tiempo.',
-    warm: 'Tus clientes sí tienen presupuesto. Pero no para ti. Eso se arregla reposicionando. No es magia. Es saber a quién dirigirte y qué decir.',
-    cold: 'Si tus clientes no tienen pasta, es porque buscas en el lugar equivocado. Antes de invertir en ti, necesitas saber a quién vender.'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': {
+    hot: 'El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco — y atraen más de lo mismo. Los miembros del Círculo dejan de depender de esas cadenas y empiezan a atraer clientes que pagan €10K+ sin pestañear.',
+    warm: 'Las recomendaciones son el síntoma, no la causa. Si tus clientes actuales pagan poco, sus referidos pagarán igual o menos. Eso se arregla cambiando el tipo de cliente que atraes.',
+    cold: 'Si todos tus clientes vienen de otros que pagaron poco, estás atrapado en un ciclo. Antes de escalar, necesitas romper esa cadena.'
   },
-  'Trabajo muchas horas y encima estoy tieso': {
-    hot: 'Ese tren de trabajar hasta las 23:47 por cuatro duros tiene una parada. Los miembros del Círculo cobran €5K+ trabajando la mitad que tú. No es magia. Es saber cobrar por transformación, no por horas.',
-    warm: 'Trabajar más no te va a sacar de ahí. Necesitas cobrar más por las mismas horas. Eso requiere cambiar lo que vendes y cómo lo vendes.',
-    cold: 'Ese burnout de trabajar sin parar por poco no se arregla trabajando más. Necesitas primero creer que puedes cobrar 5x más por lo que ya haces.'
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': {
+    hot: 'Ese tren de que todo el equipo trabaje hasta tarde por márgenes de mierda tiene una parada. Las agencias del Círculo cobran €10K+ por proyecto trabajando la mitad. No es magia. Es saber cobrar por transformación, no por horas.',
+    warm: 'Trabajar más horas no va a aumentar el margen. Necesitáis cobrar más por el mismo esfuerzo. Eso requiere cambiar lo que vendéis y cómo lo vendéis.',
+    cold: 'Ese burnout colectivo no se arregla con más eficiencia. Necesitáis primero creer que podéis cobrar 5x más por lo que ya entregáis.'
   },
-  'No tengo clientes suficientes (no sé ni por donde empezar)': {
-    hot: 'Ese "no sé por dónde empezar" es tu mayor fricción. Los miembros del Círculo tienen 4-6 leads semanales sin mendigar en redes. Sistema claro. Sin regateos. Sin rogar.',
-    warm: 'Sin clientes = sin sistema. El 89% de creativos no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
-    cold: 'Sin clientes suficientes porque persigues leads como todos. Necesitas primero un sistema antes de invertir en cualquier otra cosa.'
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': {
+    hot: 'Esa montaña rusa de meses buenos y estampazos tiene una salida. Los miembros del Círculo tienen 4-6 leads semanales sin depender de la suerte. Sistema predecible. Facturación constante.',
+    warm: 'Depender de la suerte es síntoma de no tener sistema. El 89% de agencias no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
+    cold: 'Si un mes bueno es cuestión de suerte, estáis apostando en lugar de construyendo. Antes de escalar, necesitáis un sistema predecible.'
   },
-  'No sé cómo vender lo que hago sin que regateen': {
-    hot: 'Te regatean porque estás vendiendo píxeles bonitos en lugar de transformación. Los miembros del Círculo dicen su precio sin tartamudear y el cliente aún piensa que es una ganga.',
-    warm: 'El regateo pasa cuando vendes servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
-    cold: 'Te regatean porque no sabes defender tu valor. Antes de cobrar más, necesitas aprender a vender diferente.'
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': {
+    hot: 'Os regatean porque vendéis entregables en lugar de transformación. Las agencias del Círculo dicen su precio de €10K+ sin tartamudear y el cliente aún piensa que es una ganga.',
+    warm: 'El regateo pasa cuando vendéis servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
+    cold: 'Os regatean porque no sabéis defender vuestro valor. Antes de subir precios, necesitáis aprender a vender diferente.'
   },
-  'Todo lo anterior': {
-    hot: 'Todas las fricciones a la vez y aún así tienes para invertir en ti. Eso dice mucho. Los que deciden salir de ahí, salen. Los que exploran eternamente, se quedan.',
-    warm: 'Llevas tanto tiempo así que ya te has convencido de que es normal. Los miembros del Círculo hace tiempo que trascendieron esa mierda. Y tú estás a un ritual de distancia.',
-    cold: 'Todas las fricciones a la vez. O te hundes o cruzas el umbral. No hay punto medio. Pero primero necesitas decidir si estás listo.'
+  'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': {
+    hot: 'Todas las fricciones a la vez y aún así tenéis para invertir en la agencia. Eso dice mucho. Las agencias que deciden salir de ahí, salen. Las que exploran eternamente, se quedan.',
+    warm: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal. Las agencias del Círculo hace tiempo que trascendieron esa mierda. Y vosotros estáis a un ritual de distancia.',
+    cold: 'Todas las fricciones a la vez. O os hundís o cruzáis el umbral. No hay punto medio. Pero primero necesitáis decidir si estáis listos.'
   }
 };
 
 const painContextualNotes: Record<string, string> = {
-  'Mis clientes no tienen presupuesto': 
-    '💡 Nota: El día que apuntes a quien debe, tus precios parecerán una ganga.',
-  'Trabajo muchas horas y encima estoy tieso':
-    '🔥 Nota: Ese burnout de trabajar hasta tarde por poco tiene fecha de caducidad. Decide cuándo.',
-  'No tengo clientes suficientes (no sé ni por donde empezar)':
-    '💡 Nota: Sin clientes = sin sistema. Eso tiene solución exacta. Los miembros del Círculo tienen 4-6 leads semanales sin mendigar.',
-  'No sé cómo vender lo que hago sin que regateen':
-    '🎯 Nota: Te regatean porque vendes píxeles, no transformación. Eso se arregla cambiando 3 frases en tu pitch.',
-  'Todo lo anterior':
-    '⚡ Nota: Todas las fricciones a la vez. O te hundes o cruzas el umbral. No hay punto medio.'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': 
+    '💡 Nota: El día que rompáis esa cadena de referidos malos, vuestros precios parecerán una ganga.',
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo':
+    '🔥 Nota: Ese burnout de todo el equipo trabajando por poco tiene fecha de caducidad. Decidid cuándo.',
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)':
+    '🎲 Nota: La suerte no escala. Un sistema sí. Los miembros del Círculo tienen 4-6 leads semanales sin depender de los astros.',
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen':
+    '🎯 Nota: Os regatean porque vendéis entregables, no transformación. Eso se arregla cambiando 3 frases en vuestro pitch.',
+  'Todo lo anterior (¿Pero de verdad se puede escalar esto?)':
+    '⚡ Nota: Todas las fricciones a la vez. O os hundís o cruzáis el umbral. No hay punto medio.'
 };
 
 const painOpeningAngles: Record<string, string[]> = {
-  'Mis clientes no tienen presupuesto': [
-    '"Vi que tus clientes no tienen presupuesto. Eso no es verdad. Sí tienen. Pero no para ti. ¿Sabes por qué?"',
-    '"¿A qué tipo de clientes apuntas actualmente? Porque apostaría a que estás persiguiendo al ICP equivocado."',
-    '"El problema no es que no haya dinero en tu mercado. Es que hablas con quien no lo tiene. ¿Listo para cambiar de conversación?"'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': [
+    '"Vi que vuestros clientes vienen de referidos que pagaron poco. Eso no es problema de recomendaciones. Es que estáis atrapados en una cadena de clientes baratos. ¿Queréis ver cómo romperla?"',
+    '"¿De dónde vienen la mayoría de vuestros clientes actuales? Porque apostaría a que son todos del mismo perfil que no valora lo que hacéis."',
+    '"El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco. ¿Listos para cambiar el tipo de cliente que atraéis?"'
   ],
-  'Trabajo muchas horas y encima estoy tieso': [
-    '"Vi que trabajas muchas horas y cobras poco. Típico de quien cobra por tiempo en lugar de por transformación. ¿Quieres ver cómo lo cambiamos?"',
-    '"¿Cuántas horas trabajas por semana? Porque te garantizo que puedes cobrar 3x más trabajando la mitad. ¿Listo?"',
-    '"Ese burnout de trabajar hasta tarde por cuatro duros tiene solución. Pero primero: ¿cuánto cobras por proyecto actualmente?"'
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': [
+    '"Vi que el equipo trabaja muchas horas y el margen no lo justifica. Típico de agencias que cobran por entregables en lugar de por transformación. ¿Queréis ver cómo lo cambiamos?"',
+    '"¿Cuántas horas trabaja el equipo por semana? Porque os garantizo que podéis cobrar 3x más por el mismo esfuerzo. ¿Listos?"',
+    '"Ese burnout colectivo por márgenes de mierda tiene solución. Pero primero: ¿cuánto cobráis por proyecto actualmente?"'
   ],
-  'No tengo clientes suficientes (no sé ni por donde empezar)': [
-    '"Vi que no tienes leads suficientes. Normal. El 89% de creativos no tiene sistema de adquisición. ¿Quieres ver cómo tener 4-6 leads semanales sin mendigar?"',
-    '"Ese \'no sé por dónde empezar\' es lo primero que arreglamos. ¿Listo para tener un sistema claro de captación?"',
-    '"Sin clientes = sin sistema. Eso tiene solución exacta. ¿Cuántos leads necesitas por semana para sentirte cómodo?"'
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': [
+    '"Vi que tenéis meses buenos pero luego os estampáis. Eso es síntoma de no tener sistema de captación. ¿Queréis ver cómo tener 4-6 leads semanales sin depender de la suerte?"',
+    '"Esa montaña rusa de facturación es lo primero que arreglamos. ¿Listos para tener un sistema predecible?"',
+    '"Depender de la suerte = sin sistema. Eso tiene solución exacta. ¿Cuántos leads necesitáis por semana para estar tranquilos?"'
   ],
-  'No sé cómo vender lo que hago sin que regateen': [
-    '"Vi que te regatean siempre. Eso pasa cuando vendes servicio en lugar de resultado. ¿Quieres aprender a decir tu precio sin que te tiemble la voz?"',
-    '"¿Cuánto cobras actualmente? Porque apostaría a que estás 5x por debajo de lo que deberías. Y no es por skill. Es por cómo lo vendes."',
-    '"El regateo se acaba cuando cambias la conversación. No el precio. ¿Listo para ver cómo?"'
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': [
+    '"Vi que os regatean siempre. Eso pasa cuando vendéis servicio en lugar de resultado. ¿Queréis aprender a decir €10K sin que os tiemble la voz?"',
+    '"¿Cuánto cobráis actualmente por proyecto? Porque apostaría a que estáis 5x por debajo de lo que deberíais. Y no es por skill. Es por cómo lo vendéis."',
+    '"El regateo se acaba cuando cambiáis la conversación. No el precio. ¿Listos para ver cómo?"'
   ],
-  'Todo lo anterior': [
-    '"Vi que todas las fricciones te tocan. Llevas tiempo así, ¿verdad? Los miembros del Círculo estaban igual. ¿Quieres ver por dónde empezamos?"',
-    '"Todas las fricciones a la vez. Eso es crisis completa o punto de inflexión. ¿Listo para salir?"',
-    '"Llevas tanto tiempo en el mismo sitio que ya se siente normal. ¿Listo para que deje de serlo?"'
+  'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': [
+    '"Vi que todas las fricciones os tocan. Lleváis tiempo así, ¿verdad? Las agencias del Círculo estaban igual. ¿Queréis ver por dónde empezamos?"',
+    '"Todas las fricciones a la vez. Eso es crisis completa o punto de inflexión. ¿Listos para salir?"',
+    '"Lleváis tanto tiempo en el mismo sitio que ya se siente normal. ¿Listos para que deje de serlo?"'
   ]
 };
 
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
-  const hasMoney = answers.q5 !== 'Menos de €1.500';
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const hasMoney = answers.q5 !== 'Menos de €3.000';
   const fastTrack = answers.q6?.includes('Rápido');
   
   switch(pain) {
-    case 'Mis clientes no tienen presupuesto':
+    case 'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)':
       if (lowRevenue && hasMoney) {
-        levers.push('• PERFIL IDEAL: ICP equivocado + tiene budget = reposicionamiento rápido');
+        levers.push('• CADENA TÓXICA: Referidos de clientes baratos + tiene budget = romper ciclo rápido');
       }
       if (fastTrack) {
-        levers.push('• URGENCIA: Necesita leads YA = implementación Sprint 7 días');
+        levers.push('• URGENCIA: Necesita leads de calidad YA = implementación Sprint 7 días');
       }
-      levers.push('• SOLUCIÓN: Workshop ICP + messaging + outreach básico');
+      levers.push('• SOLUCIÓN: Reposicionamiento ICP + nuevo sistema de captación');
       break;
       
-    case 'Trabajo muchas horas y encima estoy tieso':
+    case 'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo':
       if (lowRevenue && hasMoney) {
-        levers.push('• PERFIL BURNOUT: Sobretrabajado + mal pagado = explosivo si arreglamos pricing');
+        levers.push('• PERFIL BURNOUT: Equipo sobretrabajado + margen pobre = explosivo si arreglamos pricing');
       }
       if (score >= 85) {
         levers.push('• SCORE ALTO: Ready para cambio radical de modelo de negocio');
       }
-      levers.push('• SOLUCIÓN: Value-based pricing + productización');
+      levers.push('• SOLUCIÓN: Value-based pricing + productización de servicios');
       break;
       
-    case 'No tengo clientes suficientes (no sé ni por donde empezar)':
+    case 'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)':
       if (fastTrack && hasMoney) {
-        levers.push('• FRICCIÓN CRÍTICA: Sin leads + urgencia + budget = necesita sistema YA');
+        levers.push('• FRICCIÓN CRÍTICA: Inconsistencia + urgencia + budget = necesita sistema predecible YA');
       }
-      if (Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)')) {
-        levers.push('• DEPENDENCIA REDES: Solo orgánico = inestable, necesita sistema predecible');
+      if (Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones')) {
+        levers.push('• DEPENDENCIA REFERIDOS: Solo recomendaciones = inestable, necesita sistema activo');
       }
-      levers.push('• SOLUCIÓN: Sistema de adquisición 4-6 leads/semana');
+      levers.push('• SOLUCIÓN: Sistema de adquisición predecible 4-6 leads/semana');
       break;
       
-    case 'No sé cómo vender lo que hago sin que regateen':
+    case 'No sé cómo vender proyectos de 5 cifras sin que nos regateen':
       if (lowRevenue) {
-        levers.push('• PRICING ROTO: Cobra poco porque vende servicio, no transformación');
+        levers.push('• PRICING ROTO: Cobran poco porque venden entregables, no transformación');
       }
       if (hasMoney) {
-        levers.push('• INVERSIÓN OK: Tiene budget = listo para aprender a vender valor');
+        levers.push('• INVERSIÓN OK: Tienen budget = listos para aprender a vender valor');
       }
-      levers.push('• SOLUCIÓN: Sales framework + positioning + storytelling');
+      levers.push('• SOLUCIÓN: Sales framework + positioning + storytelling de agencia');
       break;
       
-    case 'Todo lo anterior':
+    case 'Todo lo anterior (¿Pero de verdad se puede escalar esto?)':
       if (hasMoney) {
         levers.push('• CRISIS TOTAL: Todas las fricciones + tiene budget = transformación completa posible');
       }
       if (lowRevenue && hasMoney) {
-        levers.push('• PERFIL IDEAL: Dolor máximo + inversión = máximo potencial');
+        levers.push('• PERFIL IDEAL: Dolor máximo + inversión = máximo potencial de ascenso');
       }
       if (score >= 85) {
         levers.push('• SCORE ALTO: A pesar de crisis, tiene mentalidad de crecimiento');
       }
-      levers.push('• SOLUCIÓN: Sprint intensivo 90 días - todo el sistema');
+      levers.push('• SOLUCIÓN: Sprint intensivo 90 días - todo el sistema de agencia');
       break;
   }
   

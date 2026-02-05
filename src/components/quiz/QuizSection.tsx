@@ -39,11 +39,11 @@ const steps: QuizStep[] = [{
   question: "¿Cuál es tu MAYOR FRUSTRACIÓN ahora mismo?",
   type: "radio",
   options: [
-    "Mis clientes no tienen presupuesto (cobro poco y me regatean)",
-    "Trabajo muchas horas y no gano tanto como me gustaría",
-    "No tengo clientes suficientes (no sé ni por donde empezar)",
-    "No sé vender lo que hago a gente que pague 5 cifras por ello",
-    "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)"
+    "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)",
+    "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo",
+    "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)",
+    "No sé cómo vender proyectos de 5 cifras sin que nos regateen",
+    "Todo lo anterior (¿Pero de verdad se puede escalar esto?)"
   ],
   badge: "💥 Paso 1/7 - Tu Punto de Dolor",
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
@@ -61,14 +61,14 @@ const steps: QuizStep[] = [{
   motivator: null
 }, {
   id: "q3",
-  question: "¿Cuánta pasta entra al mes de media? (últimos 3 meses)",
+  question: "¿Cuánto factura tu agencia en un mes bueno?",
   type: "radio",
-  options: ["Menos de €500/mes", "€500 - €1.500/mes", "€1.500 - €3.000/mes", "€3.000 - €6.000/mes", "Más de €6.000/mes"],
+  options: ["Menos de €2.000/mes", "€2.000 - €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
   badge: "💰 Paso 3/7 - Tu Punto de Partida",
-  subtext: "Tu facturación actual revela dónde estás en La Senda",
+  subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
   motivator: {
     icon: "🚀",
-    text: "Miembros que facturan €1.5K-3K/mes multiplican x3 en 90 días. Ahora cobran €5K+ de media sin portfolio."
+    text: "Agencias que facturan €5K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
   }
 }, {
   id: "q4",
@@ -239,28 +239,28 @@ const QuizSection = ({
       quizAnalytics.trackQuizEngagement();
     }
 
-    // Track Q3 - ICP Match or Disqualification (Facturación mensual)
+    // Track Q3 - ICP Match or Disqualification (Facturación mensual - rangos agencia)
     if (currentQuestion.id === 'q3') {
       const value = currentAnswer as string;
       
-      // Track ICP match for high-value monthly revenue brackets
-      if (value === "€1.500 - €3.000/mes") {
+      // Track ICP match for agency revenue brackets
+      if (value === "€5.000 - €10.000/mes") {
         quizAnalytics.trackICPMatch(value);
-      } else if (value === "€3.000 - €6.000/mes") {
+      } else if (value === "€10.000 - €20.000/mes") {
         quizAnalytics.trackICPMatch(value);
-      } else if (value === "Más de €6.000/mes") {
+      } else if (value === "Más de €20.000/mes") {
         quizAnalytics.trackMetaPixelEvent('ViewContent', {
           content_type: 'quiz',
-          content_name: 'High LTV Lead',
+          content_name: 'High LTV Agency',
           content_category: 'premium_lead',
-          value: 600,
+          value: 800,
           currency: 'EUR',
           custom_data: {
             revenue_bracket: value,
             high_ltv: true
           }
         });
-      } else if (value === "Menos de €500/mes") {
+      } else if (value === "Menos de €2.000/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
       }
     }
@@ -359,7 +359,7 @@ const QuizSection = ({
         const decisionMaker = value; // Q7
         
         // Determinar ICP flags
-        const isHighRevenue = ['€1.500 - €3.000/mes', '€3.000 - €6.000/mes', 'Más de €6.000/mes'].includes(revenueBracket);
+        const isHighRevenue = ['€5.000 - €10.000/mes', '€10.000 - €20.000/mes', 'Más de €20.000/mes'].includes(revenueBracket);
         const isHighBudget = ['€5.000 - €8.000', 'Más de €8.000'].includes(investmentCapacity);
         const isICPMatch = isHighRevenue && isHighBudget;
         const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
@@ -725,12 +725,12 @@ const QuizSection = ({
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - Pain Point/Frustración (0-8 puntos) - Indica motivación y awareness
-    if (state.q1 === "Mis clientes no tienen presupuesto (cobro poco y me regatean)") score += 8; // Alta necesidad pricing
-    else if (state.q1 === "Trabajo muchas horas y encima estoy tieso") score += 8; // Alta necesidad eficiencia + revenue
-    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)") score += 8; // Máxima frustración + escepticismo
-    else if (state.q1 === "No tengo clientes suficientes (no sé ni por donde empezar)") score += 7; // Necesidad adquisición
-    else if (state.q1 === "No sé vender lo que hago a gente que pague 5 cifras por ello") score += 8; // Alta necesidad positioning
+    // Q1 - Pain Point/Frustración (0-8 puntos) - Adaptado a agencias
+    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 8;
+    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 8;
+    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 8;
+    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 8;
+    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 7;
 
     // Q2 - ICP/Profesión (0-10 puntos) - Agencias/Estudios son ICP
     if (state.q2 === "Agencia de diseño / branding") score += 10;
@@ -738,12 +738,12 @@ const QuizSection = ({
     else if (state.q2 === "Estudio de desarrollo / automatización") score += 10;
     else if (state.q2 === "Otro tipo de agencia creativa") score += 9;
 
-    // Q3 - Monthly Revenue (0-30 puntos) - ICP Sweet Spot sin penalizar alto revenue
-    if (state.q3 === "€1.500 - €3.000/mes") score += 30; // ← ICP SWEET SPOT
-    else if (state.q3 === "€3.000 - €6.000/mes") score += 28; // Buen fit, alto LTV
-    else if (state.q3 === "Más de €6.000/mes") score += 25; // Alto LTV, no penalizar
-    else if (state.q3 === "€500 - €1.500/mes") score += 22; // Potencial ascenso
-    else if (state.q3 === "Menos de €500/mes") score += 0; // Solo disqualify si Q5 también bajo
+    // Q3 - Monthly Revenue (0-30 puntos) - ICP Sweet Spot agencias
+    if (state.q3 === "€5.000 - €10.000/mes") score += 30; // ← ICP SWEET SPOT (agencia media)
+    else if (state.q3 === "€10.000 - €20.000/mes") score += 28; // Alto LTV
+    else if (state.q3 === "Más de €20.000/mes") score += 25; // Premium, no penalizar
+    else if (state.q3 === "€2.000 - €5.000/mes") score += 22; // Potencial ascenso
+    else if (state.q3 === "Menos de €2.000/mes") score += 0; // Demasiado pequeña
 
     // Q4 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
     if (Array.isArray(state.q4)) {
@@ -778,13 +778,13 @@ const QuizSection = ({
     return Math.min(score, 100); // Cap at 100
   };
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
-    // HARDSTOP #0: Revenue demasiado bajo - No ICP (< €500/mes)
-    if (state.q3 === "Menos de €500/mes") return true;
+    // HARDSTOP #0: Revenue demasiado bajo - No ICP (< €2K/mes para agencias)
+    if (state.q3 === "Menos de €2.000/mes") return true;
     
-    // HARDSTOP #0.5: Revenue marginal SIN presupuesto - Si €500-€1.500/mes PERO no tiene budget, descalifica
-    if (state.q3 === "€500 - €1.500/mes" && state.q5 === "Menos de €3.000") return true;
+    // HARDSTOP #0.5: Revenue marginal SIN presupuesto
+    if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Menos de €3.000") return true;
     
-    // HARDSTOP #1: Sin capacidad de inversión mínima (nuevo threshold €3K para pricing 5K/8K)
+    // HARDSTOP #1: Sin capacidad de inversión mínima (threshold €3K para pricing 5K/8K)
     if (state.q5 === "Menos de €3.000") return true;
     
     // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
@@ -1072,20 +1072,20 @@ const QuizSection = ({
                 </div>
               </div>
 
-              {/* 3 bullets poderosos */}
+              {/* 3 bullets poderosos - adaptados a agencias */}
               <div className="text-left space-y-2 pt-2">
                 <ul className="text-xs text-muted-foreground space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-accent">→</span>
-                    <span>Cómo <strong className="text-foreground">transformar tu habilidad en un producto redondo</strong> que la gente percibe como una puta ganga, aún a cinco cifras</span>
+                    <span>Cómo <strong className="text-foreground">transformar lo que hace tu agencia en un servicio de un solo precio</strong> que los clientes se matan por pagar</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">→</span>
-                    <span>Cómo <strong className="text-foreground">petar tu agenda y cobrar 5.000€</strong> sin que te tiemblen las piernas ni a tu cliente la cartera</span>
+                    <span>Cómo <strong className="text-foreground">pasar de proyectos de €2K a €10K+</strong> sin cambiar lo que entregáis — solo cómo lo vendéis</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent">→</span>
-                    <span>El <strong className="text-foreground">sistema exacto</strong> para que ese cliente que te va a torear <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo</strong></span>
+                    <span>El <strong className="text-foreground">sistema exacto</strong> para que el cliente rata <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo a ti ni a tu equipo</strong></span>
                   </li>
                 </ul>
               </div>
