@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Starfield from "@/components/quiz/Starfield";
 import CircleHero from "@/components/roadmap/CircleHero";
-import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import ConstellationTimeline from "@/components/roadmap/ConstellationTimeline";
 import BonusCard from "@/components/roadmap/BonusCard";
@@ -40,9 +39,6 @@ const Roadmap = () => {
         {/* Layout vertical único */}
         <div className="space-y-0">
           <CircleHero />
-          
-          {/* CLIENT BUBBLE */}
-          <ClientBubble />
 
           {/* PAIN SECTION */}
           <PainSection />

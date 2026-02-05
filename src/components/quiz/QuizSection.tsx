@@ -84,9 +84,9 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q5",
-  question: "Si hoy tuvieras el sistema exacto que usan creativos que cobran €5K+, ¿cuánto invertirías en tu ascenso?",
+  question: "Si hoy tuvieras el sistema exacto que usan agencias que cobran €10K+ por proyecto, ¿cuánto invertirías en tu ascenso?",
   type: "radio",
-  options: ["Menos de €1.500", "€1.500 - €3.000", "€3.000 - €5.000", "Más de €5.000"],
+  options: ["Menos de €3.000", "€3.000 - €5.000", "€5.000 - €8.000", "Más de €8.000"],
   badge: "💎 Paso 5/7 - Tu Capacidad",
   subtext: "El tributo al Círculo se adapta según tu ruta. Responde con sinceridad.",
   valueStack: null,
@@ -286,7 +286,7 @@ const QuizSection = ({
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       
-      if (value !== "Menos de €1.500") {
+      if (value !== "Menos de €3.000") {
         quizAnalytics.trackBudgetQualified(value);
         // Meta Pixel - Budget Qualified
         quizAnalytics.trackMetaPixelEvent('ViewContent', {
@@ -360,7 +360,7 @@ const QuizSection = ({
         
         // Determinar ICP flags
         const isHighRevenue = ['€1.500 - €3.000/mes', '€3.000 - €6.000/mes', 'Más de €6.000/mes'].includes(revenueBracket);
-        const isHighBudget = ['€3.000 - €5.000', 'Más de €5.000'].includes(investmentCapacity);
+        const isHighBudget = ['€5.000 - €8.000', 'Más de €8.000'].includes(investmentCapacity);
         const isICPMatch = isHighRevenue && isHighBudget;
         const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
         
@@ -732,11 +732,11 @@ const QuizSection = ({
     else if (state.q1 === "No tengo clientes suficientes (no sé ni por donde empezar)") score += 7; // Necesidad adquisición
     else if (state.q1 === "No sé vender lo que hago a gente que pague 5 cifras por ello") score += 8; // Alta necesidad positioning
 
-    // Q2 - ICP/Profesión (0-10 puntos) - Todos los creativos son ICP
-    if (state.q2 === "Diseñador Gráfico / Web") score += 10;
-    else if (state.q2 === "Fotógrafo/Filmmaker") score += 10;
-    else if (state.q2 === "Automatizador") score += 10;
-    else if (state.q2 === "Otro servicio creativo") score += 9;
+    // Q2 - ICP/Profesión (0-10 puntos) - Agencias/Estudios son ICP
+    if (state.q2 === "Agencia de diseño / branding") score += 10;
+    else if (state.q2 === "Productora / Estudio audiovisual") score += 10;
+    else if (state.q2 === "Estudio de desarrollo / automatización") score += 10;
+    else if (state.q2 === "Otro tipo de agencia creativa") score += 9;
 
     // Q3 - Monthly Revenue (0-30 puntos) - ICP Sweet Spot sin penalizar alto revenue
     if (state.q3 === "€1.500 - €3.000/mes") score += 30; // ← ICP SWEET SPOT
@@ -761,11 +761,11 @@ const QuizSection = ({
       }
     }
 
-    // Q5 - Investment Capacity (0-37 puntos) - CRÍTICO: NO penalizar presupuestos altos
-    if (state.q5 === "Más de €5.000") score += 37;
-    else if (state.q5 === "€3.000 - €5.000") score += 37;
-    else if (state.q5 === "€1.500 - €3.000") score += 20;
-    else if (state.q5 === "Menos de €1.500") score += 0; // Disqualifies
+    // Q5 - Investment Capacity (0-37 puntos) - Nuevo pricing 5K/8K
+    if (state.q5 === "Más de €8.000") score += 37;     // DWY speedrun fácil
+    else if (state.q5 === "€5.000 - €8.000") score += 37; // DIY o DWY
+    else if (state.q5 === "€3.000 - €5.000") score += 15; // Marginal - puede que DIY ajustado
+    else if (state.q5 === "Menos de €3.000") score += 0;  // Disqualifies
 
     // Q6 - Urgencia/Compromiso (0-5 puntos)
     if (state.q6?.includes("Rápido")) score += 5; // Conversión rápida
@@ -782,10 +782,10 @@ const QuizSection = ({
     if (state.q3 === "Menos de €500/mes") return true;
     
     // HARDSTOP #0.5: Revenue marginal SIN presupuesto - Si €500-€1.500/mes PERO no tiene budget, descalifica
-    if (state.q3 === "€500 - €1.500/mes" && state.q5 === "Menos de €1.500") return true;
+    if (state.q3 === "€500 - €1.500/mes" && state.q5 === "Menos de €3.000") return true;
     
-    // HARDSTOP #1: Sin capacidad de inversión mínima (aplica a todos los rangos de revenue)
-    if (state.q5 === "Menos de €1.500") return true;
+    // HARDSTOP #1: Sin capacidad de inversión mínima (nuevo threshold €3K para pricing 5K/8K)
+    if (state.q5 === "Menos de €3.000") return true;
     
     // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
     if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {
