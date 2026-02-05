@@ -47,7 +47,7 @@ export const ArtefactoPricing = () => {
               EL ARTEFACTO
             </h3>
             <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-5xl font-display font-black text-foreground">€97</span>
+              <span className="text-5xl font-display font-black text-foreground">$59</span>
               <span className="text-foreground/60">/mes</span>
             </div>
             <p className="text-sm text-foreground/60">

@@ -72,6 +72,9 @@ const EnergyCard = React.forwardRef<HTMLDivElement, EnergyCardProps>(
       onAnimationStart: _onAnimationStart,
       onAnimationEnd: _onAnimationEnd,
       onAnimationIteration: _onAnimationIteration,
+      onDragStart: _onDragStart,
+      onDrag: _onDrag,
+      onDragEnd: _onDragEnd,
       ...restProps
     },
     ref
@@ -156,7 +159,7 @@ const EnergyCard = React.forwardRef<HTMLDivElement, EnergyCardProps>(
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        {...restProps}
+        {...(restProps as React.ComponentProps<typeof motion.div>)}
       >
         {/* Energy Beam Border */}
         <div
