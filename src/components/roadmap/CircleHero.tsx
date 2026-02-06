@@ -42,27 +42,6 @@ const CircleHero = () => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
-  const [showTestimonialCTA, setShowTestimonialCTA] = useState(false);
-  const [testimonialCTADismissed, setTestimonialCTADismissed] = useState(false);
-
-  // Scroll to testimonials handler
-  const handleScrollToTestimonials = () => {
-    quizAnalytics.trackMetaPixelEvent('ViewContent', {
-      content_type: 'testimonial_engagement',
-      content_name: 'VSL Testimonial CTA Clicked',
-      content_category: 'vsl_testimonial_cta',
-      value: 150,
-      currency: 'EUR'
-    });
-    setShowTestimonialCTA(false);
-    setTestimonialCTADismissed(true);
-    const section = document.getElementById('testimonials-section');
-    if (section) {
-      section.scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
-  };
 
   // Track PageView + VSL view on component mount
   useEffect(() => {
@@ -135,73 +114,50 @@ const CircleHero = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Control de hitos disparados para evitar duplicados (separados por tipo de evento)
     const vslProgressMilestones = new Set<number>();
     const metaPixelMilestones = new Set<number>();
+    let lastCheck = 0;
+
     const handleTimeUpdate = () => {
+      const now = Date.now();
+      if (now - lastCheck < 5000) return; // Throttle: solo cada 5s
+      lastCheck = now;
+
       const percentage = Math.round(video.currentTime / video.duration * 100);
       const duration = Math.round(video.currentTime);
 
-      // Mostrar CTA de testimonios en 02:51 (171 segundos)
-      if (video.currentTime >= 171 && !testimonialCTADismissed) {
-        setShowTestimonialCTA(true);
-      }
-
-      // Track analytics interno SOLO en hitos clave (no bloqueante)
+      // VSL progress tracking
       const vslMilestones = [25, 50, 75, 100];
       const currentMilestone = vslMilestones.find(m => percentage >= m && !vslProgressMilestones.has(m));
       if (currentMilestone) {
         vslProgressMilestones.add(currentMilestone);
-        // Ejecutar tracking en background sin bloquear el video
-        setTimeout(() => {
-          quizAnalytics.trackVSLProgress(percentage, duration).catch(() => {
-            // Silenciar errores de tracking para no afectar video
-          });
-        }, 0);
+        const cb = () => { quizAnalytics.trackVSLProgress(percentage, duration).catch(() => {}); };
+        'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
       }
 
-      // Disparar ViewContent en hitos clave con valor progresivo
-      const metaMilestones = [{
-        threshold: 25,
-        value: 500,
-        category: 'vsl_25_percent'
-      }, {
-        threshold: 50,
-        value: 1000,
-        category: 'vsl_50_percent'
-      }, {
-        threshold: 75,
-        value: 1500,
-        category: 'vsl_75_percent'
-      }, {
-        threshold: 100,
-        value: 2000,
-        category: 'vsl_100_percent'
-      }];
-      metaMilestones.forEach(({
-        threshold,
-        value,
-        category
-      }) => {
+      // Meta Pixel milestones
+      const metaMilestones = [
+        { threshold: 25, value: 500, category: 'vsl_25_percent' },
+        { threshold: 50, value: 1000, category: 'vsl_50_percent' },
+        { threshold: 75, value: 1500, category: 'vsl_75_percent' },
+        { threshold: 100, value: 2000, category: 'vsl_100_percent' },
+      ];
+      metaMilestones.forEach(({ threshold, value, category }) => {
         if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
           metaPixelMilestones.add(threshold);
-          quizAnalytics.trackMetaPixelEvent('ViewContent', {
-            content_type: 'video',
-            content_name: 'Roadmap VSL',
-            content_category: category,
-            video_title: 'Roadmap VSL',
-            video_type: 'sales_video',
-            video_status: `viewed_${threshold}%`,
-            value: value,
-            currency: 'EUR'
-          });
+          const cb = () => {
+            quizAnalytics.trackMetaPixelEvent('ViewContent', {
+              content_type: 'video', content_name: 'Roadmap VSL',
+              content_category: category, value, currency: 'EUR'
+            });
+          };
+          'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
         }
       });
     };
+
     video.addEventListener('timeupdate', handleTimeUpdate);
-    return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-    };
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, []);
 
   // (Duplicado eliminado - scroll tracking ya se hace en useEffect línea 91-131)
@@ -251,7 +207,7 @@ const CircleHero = () => {
               <X className="w-4 h-4" />
             </button>}
           
-          <video ref={videoRef} autoPlay loop muted playsInline controls preload="auto" className={`
+          <video ref={videoRef} autoPlay muted playsInline controls preload="auto" className={`
               w-full shadow-2xl video-glow transition-all duration-300
               ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
             `} style={{
@@ -261,21 +217,6 @@ const CircleHero = () => {
             <source src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69863e880708e4678a24a99b.mp4" type="video/mp4" />
             Tu navegador no soporta video HTML5.
           </video>
-          
-          {/* CTA overlay - aparece en minuto 3 */}
-          {showTestimonialCTA && !testimonialCTADismissed && <div className="absolute bottom-4 right-4 animate-fade-in z-20">
-              <div className="flex items-center gap-2 bg-background/95 backdrop-blur-md border border-foreground/20 rounded-xl px-4 py-2.5 shadow-lg shadow-background/50">
-                <button onClick={handleScrollToTestimonials} className="text-sm font-semibold text-foreground/90 hover:text-foreground transition-colors tracking-wide">
-                  👀 Escucha su versión
-                </button>
-                <button onClick={() => {
-              setShowTestimonialCTA(false);
-              setTestimonialCTADismissed(true);
-            }} className="text-foreground/60 hover:text-foreground/90 transition-colors p-0.5" aria-label="Cerrar">
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>}
         </div>
         
         {/* Spacer invisible cuando el video se vuelve sticky */}
