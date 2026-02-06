@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 import { X } from "lucide-react";
+import VideoRoadmapOverlay from "./VideoRoadmapOverlay";
 const CircleHero = () => {
   const handleScrollToQuiz = () => {
     // Track CTA click ANTES de trackQuizStart
@@ -207,6 +208,7 @@ const CircleHero = () => {
               <X className="w-4 h-4" />
             </button>}
           
+          <VideoRoadmapOverlay videoRef={videoRef} />
           <video ref={videoRef} autoPlay muted playsInline controls preload="auto" className={`
               w-full shadow-2xl video-glow transition-all duration-300
               ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
