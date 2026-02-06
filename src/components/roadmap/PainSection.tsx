@@ -56,7 +56,7 @@ export const PainSection = () => {
               Y lo peor no es eso.
             </p>
             <p className="text-2xl md:text-3xl font-display font-bold text-foreground leading-[1em] glow">
-              Lo peor es que cada mañana te sientas en el PC sin saber muy bien a qué dedicarle el tiempo mientras estás deseando ser productivo con la mirada perdida.
+              Lo peor es que te has convencido de que esto es tener un negocio.
             </p>
           </div>
         </div>
