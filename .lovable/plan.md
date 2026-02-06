@@ -1,49 +1,102 @@
 
 
-## Cambiar VSL + Compatibilidad Firefox
+## Limpiar CircleHero: quitar CTA overlay + optimizar tracking del video
+
+### Problema
+
+El evento `timeupdate` se dispara ~4 veces/segundo. Aunque los milestones solo se trackean una vez, el handler ejecuta logica en cada tick. Ademas el CTA overlay sobre el video puede interferir con la reproduccion en algunos navegadores. El video tiene `loop` activado, lo que podria causar problemas con el tracking al reiniciar.
 
 ### Cambios en `src/components/roadmap/CircleHero.tsx`
 
-**1. Actualizar URL del video (linea 254)**
+**1. Eliminar todo lo relacionado con el CTA de testimonios**
 
-Cambiar la URL actual:
+- Quitar estados: `showTestimonialCTA`, `testimonialCTADismissed`
+- Quitar funcion `handleScrollToTestimonials`
+- Quitar el bloque JSX del CTA overlay (lineas 265-278)
+- Quitar la logica del minuto 2:51 dentro del `handleTimeUpdate` (lineas 145-148)
+
+**2. Optimizar el tracking de video**
+
+- Quitar `loop` del video (un VSL no deberia loopear, y al loopear puede resetear el tracking o causar conflictos)
+- Throttlear el `timeupdate` handler: solo ejecutar logica cada 5 segundos en vez de cada ~250ms
+- Usar `requestIdleCallback` en vez de `setTimeout(fn, 0)` para las llamadas de tracking, para que no compitan con el decode del video
+
+**3. Resultado**
+
+El video carga sin CTA overlay encima, el tracking solo ejecuta logica util cada 5s en vez de 4 veces/segundo, y no loopea para evitar re-triggers.
+
+### Seccion tecnica
+
+```text
+ANTES: timeupdate fires ~4/sec = ~240 handler executions/min
+        cada ejecucion: 2x Math.round, 1x find(), 1x forEach()
+        + setState para CTA overlay
+
+DESPUES: timeupdate throttled a 1 cada 5sec = ~12 handler executions/min
+         sin setState del CTA
+         tracking via requestIdleCallback
 ```
-https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4
+
+Cambios concretos en el useEffect de tracking (lineas 133-205):
+
+```typescript
+useEffect(() => {
+  const video = videoRef.current;
+  if (!video) return;
+
+  const vslProgressMilestones = new Set<number>();
+  const metaPixelMilestones = new Set<number>();
+  let lastCheck = 0;
+
+  const handleTimeUpdate = () => {
+    const now = Date.now();
+    if (now - lastCheck < 5000) return; // Throttle: solo cada 5s
+    lastCheck = now;
+
+    const percentage = Math.round(video.currentTime / video.duration * 100);
+    const duration = Math.round(video.currentTime);
+
+    // VSL progress tracking
+    const vslMilestones = [25, 50, 75, 100];
+    const currentMilestone = vslMilestones.find(m => percentage >= m && !vslProgressMilestones.has(m));
+    if (currentMilestone) {
+      vslProgressMilestones.add(currentMilestone);
+      const cb = () => { quizAnalytics.trackVSLProgress(percentage, duration).catch(() => {}); };
+      'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
+    }
+
+    // Meta Pixel milestones
+    const metaMilestones = [
+      { threshold: 25, value: 500, category: 'vsl_25_percent' },
+      { threshold: 50, value: 1000, category: 'vsl_50_percent' },
+      { threshold: 75, value: 1500, category: 'vsl_75_percent' },
+      { threshold: 100, value: 2000, category: 'vsl_100_percent' },
+    ];
+    metaMilestones.forEach(({ threshold, value, category }) => {
+      if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
+        metaPixelMilestones.add(threshold);
+        const cb = () => {
+          quizAnalytics.trackMetaPixelEvent('ViewContent', {
+            content_type: 'video', content_name: 'Roadmap VSL',
+            content_category: category, value, currency: 'EUR'
+          });
+        };
+        'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
+      }
+    });
+  };
+
+  video.addEventListener('timeupdate', handleTimeUpdate);
+  return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+}, []);
 ```
-Por la nueva:
-```
-https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69863e880708e4678a24a99b.mp4
-```
 
-**2. Compatibilidad Firefox**
+Video element: quitar `loop` y el CTA overlay:
 
-Firefox no soporta el codec H.265/HEVC que algunos MP4 usan. Para garantizar compatibilidad:
-
-- Añadir `type="video/mp4"` explícito usando `<source>` en vez de `src` directo
-- Añadir fallback con mensaje para navegadores sin soporte
-- Añadir evento `onError` para detectar fallos de carga y loggear
-
-Cambiar de:
-```html
-<video ref={videoRef} src="..." autoPlay loop muted playsInline controls preload="auto" ...>
-```
-
-A:
-```html
-<video ref={videoRef} autoPlay loop muted playsInline controls preload="auto" ...>
-  <source src="..." type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
-  <source src="..." type="video/mp4" />
+```tsx
+<video ref={videoRef} autoPlay muted playsInline controls preload="auto" ...>
+  <source src="...mp4" type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
+  <source src="...mp4" type="video/mp4" />
   Tu navegador no soporta video HTML5.
 </video>
 ```
-
-El doble `<source>` con y sin codec hint maximiza compatibilidad: navegadores modernos usan el primero, Firefox y otros usan el segundo como fallback.
-
-### Detalles tecnicos
-
-- El codec `avc1.64001E` es H.264 High Profile Level 3.0, soportado universalmente
-- Si el MP4 nuevo resulta ser H.265, el `<source>` sin codec hint hara que Firefox intente reproducirlo y falle gracefully mostrando el texto fallback
-- `preload="auto"` se mantiene para carga inmediata
-- Todos los atributos existentes (`autoPlay`, `loop`, `muted`, `playsInline`, `controls`) se mantienen intactos
-- El tracking de progreso sigue funcionando igual porque usa `videoRef`
-
