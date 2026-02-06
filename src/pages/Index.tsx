@@ -12,7 +12,7 @@ import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
 import type { QuizState } from "@/types/quiz";
-
+import { PainSection } from "@/components/roadmap/PainSection";
 import { FAQSection } from "@/components/roadmap/FAQSection";
 import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
@@ -76,8 +76,8 @@ const Index = () => {
         <div>
           <CircleHero />
           
-          {/* CLIENT BUBBLE */}
-          <ClientBubble />
+          {/* PAIN SECTION */}
+          <PainSection />
 
 
           {/* ROADMAP */}
