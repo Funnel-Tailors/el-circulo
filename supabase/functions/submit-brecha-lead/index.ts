@@ -58,26 +58,26 @@ const AUTHORITY_MAP: Record<string, { value: string; score: number }> = {
 // ============= LITERAL TRANSLATION MAPS (emoji value → readable text) =============
 
 const PAIN_LITERAL_MAP: Record<string, string> = {
-  'low_budget_clients': 'Mis clientes no tienen presupuesto',
-  'overworked_underpaid': 'Trabajo muchas horas y encima estoy tieso',
-  'no_clients': 'No tengo clientes suficientes (no sé ni por donde empezar)',
-  'cant_sell_high_ticket': 'No sé cómo vender lo que hago sin que me regateen',
-  'all_above': 'Todo lo anterior',
+  'low_budget_clients': 'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)',
+  'overworked_underpaid': 'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo',
+  'no_clients': 'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)',
+  'cant_sell_high_ticket': 'No sé cómo vender proyectos de 5 cifras sin que nos regateen',
+  'all_above': 'Todo lo anterior (Pero de verdad se puede escalar esto?)',
 }
 
 const PROFESSION_LITERAL_MAP: Record<string, string> = {
-  'designer': 'Diseñador Gráfico / Web',
-  'photographer': 'Fotógrafo/Filmmaker',
-  'automation': 'Automatizador',
-  'other_creative': 'Otro servicio creativo',
+  'designer': 'Agencia de diseño / branding',
+  'photographer': 'Productora / Estudio audiovisual',
+  'automation': 'Estudio de desarrollo / automatización',
+  'other_creative': 'Otro tipo de agencia creativa',
 }
 
 const REVENUE_LITERAL_MAP: Record<string, string> = {
-  'menos_500': 'Menos de €500/mes',
-  '500_1500': '€500 - €1.500/mes',
-  '1500_3000': '€1.500 - €2.500/mes',
-  '3000_6000': '€2.500 - €5.000/mes',
-  'mas_6000': 'Más de €5.000/mes',
+  'menos_500': 'Menos de €2.000/mes',
+  '500_1500': '€2.000 - €5.000/mes',
+  '1500_3000': '€5.000 - €10.000/mes',
+  '3000_6000': '€10.000 - €20.000/mes',
+  'mas_6000': 'Más de €20.000/mes',
 }
 
 const ACQUISITION_LITERAL_MAP: Record<string, string> = {
@@ -89,10 +89,10 @@ const ACQUISITION_LITERAL_MAP: Record<string, string> = {
 }
 
 const BUDGET_LITERAL_MAP: Record<string, string> = {
-  'menos_500': 'Menos de €500',
-  '500_1500': '€500 - €1.500',
-  '1500_3000': '€1.500 - €3.000',
-  'mas_3000': 'Más de €3.000',
+  'menos_500': 'Menos de €3.000',
+  '500_1500': '€3.000 - €5.000',
+  '1500_3000': '€5.000 - €8.000',
+  'mas_3000': 'Más de €8.000',
 }
 
 const URGENCY_LITERAL_MAP: Record<string, string> = {
@@ -202,87 +202,87 @@ function generateTags(
 // ============= NOTIFICATION GENERATION (copied from submit-lead-to-ghl) =============
 
 const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
-  'Mis clientes no tienen presupuesto': {
-    hot: 'El problema no son tus clientes. Es que apuntas a quién no debe. Los miembros del Círculo dejan de perseguir mierdecillas que regatean €100 y empiezan a hablar con quien sabe lo que vale su tiempo.',
-    warm: 'Tus clientes sí tienen presupuesto. Pero no para ti. Eso se arregla reposicionando. No es magia. Es saber a quién dirigirte y qué decir.',
-    cold: 'Si tus clientes no tienen pasta, es porque buscas en el lugar equivocado. Antes de invertir en ti, necesitas saber a quién vender.'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': {
+    hot: 'El problema no son tus clientes. Es que apuntas a quién no debe. Los miembros del Círculo dejan de perseguir recomendaciones de mierda y empiezan a hablar con quien paga €10K+ sin pestañear.',
+    warm: 'Tus clientes sí tienen presupuesto. Pero no para ti. Eso se arregla reposicionando tu agencia. No es magia.',
+    cold: 'Si tus clientes vienen de recomendaciones baratas, es porque atraes lo que proyectas.'
   },
-  'Trabajo muchas horas y encima estoy tieso': {
-    hot: 'Ese tren de trabajar hasta las 23:47 por cuatro duros tiene una parada. Los miembros del Círculo cobran €5K+ trabajando la mitad que tú. No es magia. Es saber cobrar por transformación, no por horas.',
-    warm: 'Trabajar más no te va a sacar de ahí. Necesitas cobrar más por las mismas horas. Eso requiere cambiar lo que vendes y cómo lo vendes.',
-    cold: 'Ese burnout de trabajar sin parar por poco no se arregla trabajando más. Necesitas primero creer que puedes cobrar 5x más por lo que ya haces.'
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': {
+    hot: 'Ese tren de trabajar hasta las 23:47 con todo el equipo por cuatro duros tiene una parada. Los miembros del Círculo cobran €10K+ por proyecto trabajando la mitad. No es magia. Es saber cobrar por transformación, no por horas.',
+    warm: 'Trabajar más no os va a sacar de ahí. Necesitáis cobrar más por las mismas horas. Eso requiere cambiar lo que vendéis y cómo lo vendéis.',
+    cold: 'Ese burnout colectivo no se arregla con más horas. Necesitáis cobrar 5x más por lo que ya hacéis.'
   },
-  'No tengo clientes suficientes (no sé ni por donde empezar)': {
-    hot: 'Ese "no sé por dónde empezar" es tu mayor fricción. Los miembros del Círculo tienen 4-6 leads semanales sin mendigar en redes. Sistema claro. Sin regateos. Sin rogar.',
-    warm: 'Sin clientes = sin sistema. El 89% de creativos no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
-    cold: 'Sin clientes suficientes porque persigues leads como todos. Necesitas primero un sistema antes de invertir en cualquier otra cosa.'
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': {
+    hot: 'Esa montaña rusa de facturación tiene solución exacta. Los miembros del Círculo tienen 4-6 leads semanales sin depender de la suerte. Sistema claro. Sin regateos.',
+    warm: 'Meses buenos seguidos de estampazos = sin sistema. El 89% de agencias no tiene proceso de captación predecible.',
+    cold: 'Sin sistema = dependéis de que los astros se alineen. Necesitáis predecibilidad antes de invertir en otra cosa.'
   },
-  'No sé cómo vender lo que hago sin que me regateen': {
-    hot: 'Te regatean porque estás vendiendo píxeles bonitos en lugar de transformación. Los miembros del Círculo dicen su precio sin tartamudear y el cliente aún piensa que es una ganga.',
-    warm: 'El regateo pasa cuando vendes servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
-    cold: 'Te regatean porque no sabes defender tu valor. Antes de cobrar más, necesitas aprender a vender diferente.'
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': {
+    hot: 'Os regatean porque vendéis entregables en lugar de transformación. Los miembros del Círculo dicen su precio sin tartamudear y el cliente piensa que es una ganga.',
+    warm: 'El regateo pasa cuando vendéis servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
+    cold: 'Os regatean porque no sabéis defender vuestro valor. Antes de cobrar más, necesitáis vender diferente.'
   },
-  'Todo lo anterior': {
-    hot: 'Todas las fricciones a la vez y aún así tienes para invertir en ti. Eso dice mucho. Los que deciden salir de ahí, salen. Los que exploran eternamente, se quedan.',
-    warm: 'Llevas tanto tiempo así que ya te has convencido de que es normal. Los miembros del Círculo hace tiempo que trascendieron esa mierda. Y tú estás a un ritual de distancia.',
-    cold: 'Todas las fricciones a la vez. O te hundes o cruzas el umbral. No hay punto medio. Pero primero necesitas decidir si estás listo.'
+  'Todo lo anterior (Pero de verdad se puede escalar esto?)': {
+    hot: 'Todas las fricciones a la vez y aún así tenéis para invertir. Eso dice mucho. Los que deciden salir de ahí, salen.',
+    warm: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal. Los miembros del Círculo trascendieron esa mierda.',
+    cold: 'Todas las fricciones a la vez. O os hundís o cruzáis el umbral.'
   }
 }
 
 const dailyRealities: Record<string, string[]> = {
-  'Mis clientes no tienen presupuesto': [
-    'Probablemente ayer pasaste 2 horas en una videollamada con alguien que al final te pidió presupuesto "sin compromiso". Ya sabes cómo acaba eso.',
-    'Esta mañana te despertaste pensando en cuántas propuestas has enviado esta semana que no han contestado. Ninguna llevaba tu precio real.',
-    'Llevas 3 días dándole vueltas a si bajar el precio de ese proyecto. Ya sabes que aunque lo bajes, no te lo van a pagar.'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': [
+    'Probablemente ayer pasasteis 2 horas en una videollamada con alguien que al final os pidió presupuesto "sin compromiso". Ya sabéis cómo acaba eso.',
+    'Esta mañana os despertasteis pensando en cuántas propuestas habéis enviado esta semana que no han contestado. Ninguna llevaba vuestro precio real.',
+    'Lleváis 3 días dándole vueltas a si bajar el precio de ese proyecto. Ya sabéis que aunque lo bajéis, no os lo van a pagar bien.'
   ],
-  'Trabajo muchas horas y encima estoy tieso': [
-    'Anoche te quedaste hasta las 00:37 terminando algo que cobras 600€. Hoy te levantaste cansado sabiendo que tienes tres proyectos más igual de mal pagados.',
-    'Esta semana trabajaste 52 horas. Cobraste menos que alguien que trabaja 20. Sabes hacer el trabajo. No sabes venderlo.',
-    'El viernes pasado enviaste el último entregable de la semana. Eran las 22:14. Has cobrado 1.200€ por 40 horas de trabajo.'
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': [
+    'Anoche os quedasteis hasta las 00:37 terminando algo que cobráis 600€. Hoy os levantasteis cansados sabiendo que tenéis tres proyectos más igual de mal pagados.',
+    'Esta semana el equipo trabajó 52 horas. Cobrasteis menos que una agencia que trabaja 20. Sabéis hacer el trabajo. No sabéis venderlo.',
+    'El viernes pasado enviasteis el último entregable de la semana. Eran las 22:14. Habéis cobrado 1.200€ por 40 horas de trabajo del equipo.'
   ],
-  'No tengo clientes suficientes (no sé ni por donde empezar)': [
-    'Llevas 11 días sin que nadie te escriba preguntando por tu trabajo. Actualizaste el portfolio hace 3 semanas. Optimizaste la biografía hace 10 días. Nada.',
-    'Esta mañana abriste Instagram esperando un mensaje. Nada. Revisaste el correo. Nada. Miraste LinkedIn. Nada. Llevas 4 meses así.',
-    'El mes pasado conseguiste 2 clientes. Los dos llegaron por recomendación. Cuando se acaben estos proyectos, vuelta a cero.'
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': [
+    'Lleváis 11 días sin que nadie os escriba preguntando por vuestro trabajo. Actualizasteis el portfolio hace 3 semanas. Nada.',
+    'Esta mañana abristeis el correo esperando un mensaje de un cliente potencial. Nada. Revisasteis LinkedIn. Nada. Lleváis 4 meses así entre picos y valles.',
+    'El mes pasado conseguisteis 2 clientes. Los dos llegaron por suerte. Cuando se acaben estos proyectos, vuelta a cero.'
   ],
-  'No sé cómo vender lo que hago sin que me regateen': [
-    'La semana pasada enviaste una propuesta de 2.400€. Te contestaron "está un poco fuera de presupuesto". Te adelantaste tú y bajaste a 1.800€. Aún no te han contestado.',
-    'Ayer pasaste 3 horas preparando un presupuesto detallado de 14 páginas. Lo enviaste. Te respondieron "gracias, lo vemos y te decimos". Ya sabes que es un no.',
-    'El viernes cerraste un proyecto de 1.200€. El cliente te dijo que era mucho. Aceptó. Pero te quedaste con la sensación de que podrías haber cobrado el doble.'
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': [
+    'La semana pasada enviasteis una propuesta de 4.000€. Os contestaron "está un poco fuera de presupuesto". Os adelantasteis y bajasteis a 2.500€. Aún no os han contestado.',
+    'Ayer pasasteis 3 horas preparando un presupuesto detallado de 14 páginas. Lo enviasteis. Os respondieron "gracias, lo vemos y os decimos". Ya sabéis que es un no.',
+    'El viernes cerrasteis un proyecto de 2.000€. El cliente dijo que era mucho. Aceptó. Pero os quedasteis con la sensación de que podríais haber cobrado el doble.'
   ],
-  'Todo lo anterior': [
-    'Esta semana trabajaste 47 horas. Cobraste 1.100€. Tienes el portfolio actualizado al milímetro. Cero leads nuevos.',
-    'Anoche te quedaste hasta la 01:22 terminando un proyecto mal pagado. Esta mañana revisaste Instagram esperando algún lead. Nada.',
-    'Llevas 9 días sin que nadie te pregunte por tu trabajo. Tienes 3 proyectos activos mal pagados.'
+  'Todo lo anterior (Pero de verdad se puede escalar esto?)': [
+    'Esta semana el equipo trabajó 47 horas. Cobrasteis 1.100€. Tenéis el portfolio actualizado al milímetro. Cero leads nuevos.',
+    'Anoche os quedasteis hasta la 01:22 terminando un proyecto mal pagado. Esta mañana revisasteis Instagram esperando algún lead. Nada.',
+    'Lleváis 9 días sin que nadie os pregunte por vuestro trabajo. Tenéis 3 proyectos activos mal pagados.'
   ]
 }
 
 const contrastStatements: Record<string, string> = {
-  'Mis clientes no tienen presupuesto': 
-    'Mientras tú negociabas 100€ de descuento con alguien que nunca iba a pagarte bien, Nico cerró un proyecto de 5.000€ con una sola llamada.',
-  'Trabajo muchas horas y encima estoy tieso': 
-    'Mientras tú te quedabas hasta las 23:47 terminando algo mal pagado, Dani cobró 2.000€ por su primer proyecto en el Círculo en 10 días.',
-  'No tengo clientes suficientes (no sé ni por donde empezar)': 
-    'Mientras tú actualizabas el portfolio esperando que el algoritmo te descubra, Felipe tuvo sus primeras 2 llamadas de venta en 7 días.',
-  'No sé cómo vender lo que hago sin que me regateen': 
-    'Mientras tú enviabas un presupuesto de 14 páginas y te comías un silencio, Cris cerró 3.000€ en una conversación.',
-  'Todo lo anterior': 
-    'Mientras tú pulías el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo.'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': 
+    'Mientras vosotros negociabais 100€ de descuento con alguien que nunca iba a pagaros bien, Nico cerró un proyecto de 5.000€ con una sola llamada.',
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': 
+    'Mientras vuestro equipo se quedaba hasta las 23:47 terminando algo mal pagado, Dani cobró 2.000€ por su primer proyecto en el Círculo en 10 días.',
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': 
+    'Mientras vosotros actualizabais el portfolio esperando que el algoritmo os descubra, Felipe tuvo sus primeras 2 llamadas de venta en 7 días.',
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': 
+    'Mientras vosotros enviasteis un presupuesto de 14 páginas y os comíais un silencio, Cris cerró 3.000€ en una conversación.',
+  'Todo lo anterior (Pero de verdad se puede escalar esto?)': 
+    'Mientras vosotros pulíais el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de €10K+ sin enseñarlo.'
 }
 
 const successStoriesMap: Record<string, string> = {
-  'Diseñador Gráfico / Web': 'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
-  'Fotógrafo/Filmmaker': 'Dani hizo 2.000€ con su primer cliente en 10 días.\nCris pasó de tirar la toalla a cerrar 3.000€.',
-  'Automatizador': 'Felipe pasó de cero estrategia a sistema de captación en una semana.',
-  'Otro servicio creativo': 'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
+  'Agencia de diseño / branding': 'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
+  'Productora / Estudio audiovisual': 'Dani hizo 2.000€ con su primer cliente en 10 días.\nCris pasó de tirar la toalla a cerrar 3.000€.',
+  'Estudio de desarrollo / automatización': 'Felipe pasó de cero estrategia a sistema de captación en una semana.',
+  'Otro tipo de agencia creativa': 'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
 }
 
 const painPrepQuestions: Record<string, string[]> = {
-  'Mis clientes no tienen presupuesto': ['¿Qué tipo de clientes persigues actualmente?', '¿Cuánto cobras de media por proyecto?', '¿Por qué crees que te regatean?'],
-  'Trabajo muchas horas y encima estoy tieso': ['¿Cuántas horas trabajas por semana?', '¿Qué cobras por proyecto actualmente?', '¿Dónde se va tu tiempo sin generar pasta?'],
-  'No tengo clientes suficientes (no sé ni por donde empezar)': ['¿Cuántos leads tienes al mes actualmente?', '¿Qué has probado para conseguir clientes?', '¿Qué te frena ahora mismo?'],
-  'No sé cómo vender lo que hago sin que me regateen': ['¿Cómo presentas actualmente tus servicios?', '¿Cuál es la objeción más común que recibes?', '¿Cuánto cobras actualmente vs. cuánto quieres cobrar?'],
-  'Todo lo anterior': ['¿Cuál de todas las fricciones te afecta más?', '¿Cuánto tiempo llevas en esta situación?', '¿Qué esperas lograr en los próximos 90 días?']
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': ['¿Qué tipo de clientes perseguís actualmente?', '¿Cuánto cobráis de media por proyecto?', '¿Por qué creéis que os regatean?'],
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': ['¿Cuántas horas trabaja el equipo por semana?', '¿Qué cobráis por proyecto actualmente?', '¿Dónde se va el tiempo del equipo sin generar margen?'],
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': ['¿Cuántos leads tenéis al mes actualmente?', '¿Qué habéis probado para conseguir clientes?', '¿Qué os frena ahora mismo?'],
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': ['¿Cómo presentáis actualmente vuestros servicios?', '¿Cuál es la objeción más común que recibís?', '¿Cuánto cobráis actualmente vs. cuánto queréis cobrar?'],
+  'Todo lo anterior (Pero de verdad se puede escalar esto?)': ['¿Cuál de todas las fricciones os afecta más?', '¿Cuánto tiempo lleváis en esta situación?', '¿Qué esperáis lograr en los próximos 90 días?']
 }
 
 const fearCalls: Record<'hot' | 'qualified' | 'marginal', string[]> = {
@@ -312,8 +312,8 @@ function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0]
   const isHot = score >= 85
-  const hasInvestment = answers.q5 !== 'Menos de €1.500'
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes'
   const isIdealClient = lowRevenue && hasInvestment
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️'
   
@@ -352,8 +352,8 @@ ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agen
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
-  const hasInvestment = answers.q5 !== 'Menos de €1.500'
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
   return `
@@ -380,13 +380,13 @@ function generateClientNotification(name: string, answers: QuizAnswers, score: n
   const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || painInsights[pain]?.warm || ''
   
   const professionIdentity: Record<string, string> = {
-    'Diseñador Gráfico / Web': 'Mientras otros diseñadores pelean por proyectos de 300€, hay quien cobra 5.000€ por lo mismo.',
-    'Fotógrafo/Filmmaker': 'Hay fotógrafos que cobran 200€ por sesión. Y hay creadores visuales que cobran 5.000€ por el mismo día.',
-    'Automatizador': 'Montar un proceso te paga 500€. Diseñar un sistema que escala un negocio te paga 10.000€.',
-    'Otro servicio creativo': 'La habilidad ya la tienes. Lo que te falta es saber qué decir para que alguien te pague lo que vale.'
+    'Agencia de diseño / branding': 'Mientras otras agencias pelean por proyectos de 2.000€, hay estudios que cobran 15.000€ por lo mismo. Misma entrega. Distinta conversación.',
+    'Productora / Estudio audiovisual': 'Hay productoras que cobran 3.000€ por un video. Y hay estudios que cobran 20.000€ por el mismo día de rodaje.',
+    'Estudio de desarrollo / automatización': 'Montar un proceso te paga 1.500€. Diseñar un sistema que escala un negocio te paga 25.000€. Mismo trabajo.',
+    'Otro tipo de agencia creativa': 'La habilidad ya la tiene tu equipo. Lo que falta es saber qué decir para que un cliente os pague lo que vale vuestro tiempo.'
   }
   
-  const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro servicio creativo']
+  const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro tipo de agencia creativa']
   
   if (score >= 85) {
     return `
@@ -452,13 +452,13 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
   const pain = answers.q1 || ''
   
   const professionGoals: Record<string, { prep: string[] }> = {
-    'Diseñador Gráfico / Web': { prep: ['Tu portfolio actual (3-5 mejores proyectos)', 'Cuánto cobras actualmente por proyecto', 'Qué tipo de clientes quieres atraer'] },
-    'Fotógrafo/Filmmaker': { prep: ['Tu reel/portfolio (mejores 3-10 trabajos)', 'Qué cobras por proyecto/sesión actualmente', 'Tipo de producciones que quieres hacer'] },
-    'Automatizador': { prep: ['Tus últimos 3 proyectos de automatización', 'Qué cobras actualmente', 'Herramientas que dominas'] },
-    'Otro servicio creativo': { prep: ['Tu situación actual y servicios que ofreces', 'Tus objetivos principales', 'Tus mayores desafíos'] }
+    'Agencia de diseño / branding': { prep: ['Tu portfolio actual (3-5 mejores proyectos de agencia)', 'Cuánto cobráis actualmente por proyecto medio', 'Qué tipo de clientes queréis atraer', 'Tamaño de tu equipo actual'] },
+    'Productora / Estudio audiovisual': { prep: ['Tu reel/portfolio (mejores 3-10 producciones)', 'Qué cobráis por proyecto/producción actualmente', 'Tipo de producciones que queréis hacer', 'Equipo técnico que tenéis'] },
+    'Estudio de desarrollo / automatización': { prep: ['Vuestros últimos 3 proyectos', 'Qué cobráis actualmente por proyecto', 'Stack tecnológico que domináis'] },
+    'Otro tipo de agencia creativa': { prep: ['Ejemplos de trabajo reciente', 'Ticket medio actual', 'Qué servicios ofrecéis', 'Tamaño de equipo'] }
   }
   
-  const professionData = professionGoals[answers.q2 || ''] || professionGoals['Otro servicio creativo']
+  const professionData = professionGoals[answers.q2 || ''] || professionGoals['Otro tipo de agencia creativa']
   const painQuestions = painPrepQuestions[pain] || []
   
   if (isHot) {
@@ -511,8 +511,8 @@ El Círculo
 
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number): string {
   const firstName = contact.name.split(' ')[0]
-  const hasInvestment = answers.q5 !== 'Menos de €1.500'
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD'
@@ -550,7 +550,7 @@ ${closingStrategy}
 function generateBrechaFollowUp1(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
   const firstName = name.split(' ')[0]
   const pain = answers.q1 || ''
-  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior (Pero de verdad se puede escalar esto?)']
   const randomReality = realities[Math.floor(Math.random() * realities.length)]
   
   return `
@@ -575,7 +575,7 @@ El Círculo
 function generateBrechaFollowUp2(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
   const firstName = name.split(' ')[0]
   const pain = answers.q1 || ''
-  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior']
+  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior (Pero de verdad se puede escalar esto?)']
   
   return `
 ${firstName}.
@@ -604,10 +604,10 @@ El Círculo
 
 function generateBrechaFollowUp3(name: string, answers: QuizAnswers, score: number, brechaUrl: string): string {
   const firstName = name.split(' ')[0]
-  const profession = answers.q2 || 'Otro servicio creativo'
-  const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo']
+  const profession = answers.q2 || 'Otro tipo de agencia creativa'
+  const successStory = successStoriesMap[profession] || successStoriesMap['Otro tipo de agencia creativa']
   const pain = answers.q1 || ''
-  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior (Pero de verdad se puede escalar esto?)']
   const randomReality = realities[Math.floor(Math.random() * realities.length)]
   
   return `
@@ -701,7 +701,7 @@ function generateFollowUp1(name: string, answers: QuizAnswers, score: number): s
   const firstName = name.split(' ')[0]
   const pain = answers.q1 || ''
   const level = getAgitationLevel(score)
-  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior (Pero de verdad se puede escalar esto?)']
   const randomReality = realities[Math.floor(Math.random() * realities.length)]
   const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || ''
   
@@ -728,7 +728,7 @@ function generateFollowUp2(name: string, answers: QuizAnswers, score: number): s
   const level = getAgitationLevel(score)
   const fears = fearCalls[level]
   const randomFear = fears[Math.floor(Math.random() * fears.length)]
-  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior']
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior (Pero de verdad se puede escalar esto?)']
   const randomReality = realities[Math.floor(Math.random() * realities.length)]
   
   return `
@@ -751,9 +751,9 @@ El Círculo
 function generateFollowUp3(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0]
   const pain = answers.q1 || ''
-  const profession = answers.q2 || 'Otro servicio creativo'
-  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior']
-  const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo']
+  const profession = answers.q2 || 'Otro tipo de agencia creativa'
+  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior (Pero de verdad se puede escalar esto?)']
+  const successStory = successStoriesMap[profession] || successStoriesMap['Otro tipo de agencia creativa']
   
   return `
 ${firstName}.
@@ -879,14 +879,14 @@ Presta atención. Anota todo.
 Hay resquicios de magia escondidos.
 No dejes que se te escape ninguno.
 
-Vas a aprender a definir una oferta por la que alguien pagaría 5 cifras.
+Vas a aprender a definir una oferta por la que alguien pagaría €10K+.
 A encontrar a ese alguien.
 Y a cerrarle.
 
 ⚡ ACCEDE AHORA ⚡
 ${url}
 
-48 horas para cambiar tu negocio para siempre.
+48 horas para cambiar tu agencia para siempre.
 
 ${fearCall}`
   }
@@ -910,7 +910,7 @@ Las siete pruebas existen por algo.
 No vas a ver toda La Brecha.
 Pero te abro el Primer Fragmento.
 
-Un video. 30 minutos. Cómo definir una oferta por la que alguien pague 5 cifras.
+Un video. 30 minutos. Cómo definir una oferta por la que alguien pague €10K+.
 
 Presta atención. Anota todo. Hay resquicios de magia escondidos.
 
@@ -1027,7 +1027,7 @@ Deno.serve(async (req) => {
     
     if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
-      console.log('HARDSTOP: Budget menor a 500€ detectado')
+      console.log('HARDSTOP: Budget menor a €3.000 detectado')
     }
 
     // Calculate qualification score
