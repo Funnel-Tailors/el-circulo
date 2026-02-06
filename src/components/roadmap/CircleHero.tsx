@@ -251,12 +251,16 @@ const CircleHero = () => {
               <X className="w-4 h-4" />
             </button>}
           
-          <video ref={videoRef} src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6903b00b521c848057fa391c.mp4" autoPlay loop muted playsInline controls preload="auto" className={`
+          <video ref={videoRef} autoPlay loop muted playsInline controls preload="auto" className={`
               w-full shadow-2xl video-glow transition-all duration-300
               ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
             `} style={{
           aspectRatio: '16/9'
-        }} />
+        }}>
+            <source src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69863e880708e4678a24a99b.mp4" type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
+            <source src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69863e880708e4678a24a99b.mp4" type="video/mp4" />
+            Tu navegador no soporta video HTML5.
+          </video>
           
           {/* CTA overlay - aparece en minuto 3 */}
           {showTestimonialCTA && !testimonialCTADismissed && <div className="absolute bottom-4 right-4 animate-fade-in z-20">
