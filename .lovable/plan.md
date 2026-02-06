@@ -1,102 +1,58 @@
 
 
-## Limpiar CircleHero: quitar CTA overlay + optimizar tracking del video
+## Mini-nodos del roadmap sincronizados con el VSL
 
-### Problema
+### Que se va a hacer
 
-El evento `timeupdate` se dispara ~4 veces/segundo. Aunque los milestones solo se trackean una vez, el handler ejecuta logica en cada tick. Ademas el CTA overlay sobre el video puede interferir con la reproduccion en algunos navegadores. El video tiene `loop` activado, lo que podria causar problemas con el tracking al reiniciar.
+Mientras el video se reproduce, aparecen progresivamente 6 mini-nodos (uno por dia del roadmap) encima del video, sincronizados con el momento exacto en que se mencionan en el VSL. En desktop salen en fila horizontal conectados por lineas. En mobile igual pero mas compactos.
 
-### Cambios en `src/components/roadmap/CircleHero.tsx`
+### Timestamps extraidos del VSL
 
-**1. Eliminar todo lo relacionado con el CTA de testimonios**
+```text
+Dia 1 - Construye tu Oferta     --> 108s  (01:48)
+Dia 2 - Conoce a tu Cliente     --> 114s  (01:54)
+Dia 3 - Sal a Buscarlo          --> 130s  (02:10)
+Dia 4 - Convencelo en Llamada   --> 136s  (02:16)
+Dia 5 - Tu Primer Embudo        --> 151s  (02:31)
+Dia 6 - Herramientas Extra      --> 165s  (02:45)
+```
 
-- Quitar estados: `showTestimonialCTA`, `testimonialCTADismissed`
-- Quitar funcion `handleScrollToTestimonials`
-- Quitar el bloque JSX del CTA overlay (lineas 265-278)
-- Quitar la logica del minuto 2:51 dentro del `handleTimeUpdate` (lineas 145-148)
+### Cambios
 
-**2. Optimizar el tracking de video**
+**1. Nuevo componente: `src/components/roadmap/VideoRoadmapOverlay.tsx`**
 
-- Quitar `loop` del video (un VSL no deberia loopear, y al loopear puede resetear el tracking o causar conflictos)
-- Throttlear el `timeupdate` handler: solo ejecutar logica cada 5 segundos en vez de cada ~250ms
-- Usar `requestIdleCallback` en vez de `setTimeout(fn, 0)` para las llamadas de tracking, para que no compitan con el decode del video
+- Recibe `videoRef` como prop
+- Escucha `timeupdate` con throttle de 2s (mas frecuente que el tracking porque aqui la precision visual importa)
+- Estado `visibleDays: number` -- cuantos dias son visibles (0 a 6)
+- Cada nodo: runa + "Dia X" + titulo corto
+- Conexion entre nodos: linea horizontal fina
+- Animacion de entrada: CSS transition `opacity 0->1, scale 0.8->1` (sin framer-motion)
+- Desktop: fila horizontal con gap, texto debajo de cada runa
+- Mobile: misma fila pero con texto mas pequeno (`text-[10px]`), solo runa + "D1" etc.
 
-**3. Resultado**
+**2. Editar `CircleHero.tsx`**
 
-El video carga sin CTA overlay encima, el tracking solo ejecuta logica util cada 5s en vez de 4 veces/segundo, y no loopea para evitar re-triggers.
+- Importar y renderizar `<VideoRoadmapOverlay videoRef={videoRef} />` justo encima del elemento `<video>` dentro del container
+
+### Layout visual
+
+```text
+Desktop:
+  ⟡────◈────✧────⬢────⬡────✦
+  Dia 1  Dia 2  Dia 3  Dia 4  Dia 5  Dia 6
+  Oferta Cliente Buscar Llamada Embudo Tools
+
+Mobile:
+  ⟡──◈──✧──⬢──⬡──✦
+  D1  D2  D3  D4  D5  D6
+```
+
+Los nodos aparecen uno a uno conforme el video llega a cada timestamp. Los que aun no han aparecido son invisibles (no ocupan espacio fantasma).
 
 ### Seccion tecnica
 
-```text
-ANTES: timeupdate fires ~4/sec = ~240 handler executions/min
-        cada ejecucion: 2x Math.round, 1x find(), 1x forEach()
-        + setState para CTA overlay
-
-DESPUES: timeupdate throttled a 1 cada 5sec = ~12 handler executions/min
-         sin setState del CTA
-         tracking via requestIdleCallback
-```
-
-Cambios concretos en el useEffect de tracking (lineas 133-205):
-
-```typescript
-useEffect(() => {
-  const video = videoRef.current;
-  if (!video) return;
-
-  const vslProgressMilestones = new Set<number>();
-  const metaPixelMilestones = new Set<number>();
-  let lastCheck = 0;
-
-  const handleTimeUpdate = () => {
-    const now = Date.now();
-    if (now - lastCheck < 5000) return; // Throttle: solo cada 5s
-    lastCheck = now;
-
-    const percentage = Math.round(video.currentTime / video.duration * 100);
-    const duration = Math.round(video.currentTime);
-
-    // VSL progress tracking
-    const vslMilestones = [25, 50, 75, 100];
-    const currentMilestone = vslMilestones.find(m => percentage >= m && !vslProgressMilestones.has(m));
-    if (currentMilestone) {
-      vslProgressMilestones.add(currentMilestone);
-      const cb = () => { quizAnalytics.trackVSLProgress(percentage, duration).catch(() => {}); };
-      'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
-    }
-
-    // Meta Pixel milestones
-    const metaMilestones = [
-      { threshold: 25, value: 500, category: 'vsl_25_percent' },
-      { threshold: 50, value: 1000, category: 'vsl_50_percent' },
-      { threshold: 75, value: 1500, category: 'vsl_75_percent' },
-      { threshold: 100, value: 2000, category: 'vsl_100_percent' },
-    ];
-    metaMilestones.forEach(({ threshold, value, category }) => {
-      if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
-        metaPixelMilestones.add(threshold);
-        const cb = () => {
-          quizAnalytics.trackMetaPixelEvent('ViewContent', {
-            content_type: 'video', content_name: 'Roadmap VSL',
-            content_category: category, value, currency: 'EUR'
-          });
-        };
-        'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
-      }
-    });
-  };
-
-  video.addEventListener('timeupdate', handleTimeUpdate);
-  return () => video.removeEventListener('timeupdate', handleTimeUpdate);
-}, []);
-```
-
-Video element: quitar `loop` y el CTA overlay:
-
-```tsx
-<video ref={videoRef} autoPlay muted playsInline controls preload="auto" ...>
-  <source src="...mp4" type="video/mp4; codecs=avc1.64001E,mp4a.40.2" />
-  <source src="...mp4" type="video/mp4" />
-  Tu navegador no soporta video HTML5.
-</video>
-```
+- El overlay se posiciona `absolute` dentro del container del video, en la parte superior
+- Usa `pointer-events-none` para no interferir con los controles del video
+- El listener de timeupdate es independiente del de tracking (ese va cada 5s, este cada 2s) -- son ligeros ambos
+- Los datos de los 6 dias se importan de `roadmap.ts` (reutiliza `roadmapDays`)
+- Impacto en rendimiento: minimo. Solo 1 setState cuando cambia `visibleDays`, CSS transitions puras, sin re-renders innecesarios
