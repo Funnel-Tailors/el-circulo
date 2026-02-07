@@ -84,9 +84,9 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q5",
-  question: "Si hoy tuvieras el sistema exacto que usan agencias que cobran €10K+ por proyecto, ¿cuánto invertirías en tu ascenso?",
+  question: "Si hoy tuvieras el sistema exacto que usan agencias que cobran €30K+ por proyecto, ¿cuánto invertirías en tu ascenso?",
   type: "radio",
-  options: ["Menos de €3.000", "€3.000 - €5.000", "€5.000 - €8.000", "Más de €8.000"],
+  options: ["Menos de €8.000", "€8.000 - €15.000", "€15.000 - €30.000", "Más de €30.000"],
   badge: "💎 Paso 5/7 - Tu Capacidad",
   subtext: "El tributo al Círculo se adapta según tu ruta. Responde con sinceridad.",
   valueStack: null,
@@ -286,7 +286,7 @@ const QuizSection = ({
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       
-      if (value !== "Menos de €3.000") {
+      if (value !== "Menos de €8.000") {
         quizAnalytics.trackBudgetQualified(value);
         // Meta Pixel - Budget Qualified
         quizAnalytics.trackMetaPixelEvent('ViewContent', {
@@ -360,7 +360,7 @@ const QuizSection = ({
         
         // Determinar ICP flags
         const isHighRevenue = ['€5.000 - €10.000/mes', '€10.000 - €20.000/mes', 'Más de €20.000/mes'].includes(revenueBracket);
-        const isHighBudget = ['€5.000 - €8.000', 'Más de €8.000'].includes(investmentCapacity);
+        const isHighBudget = ['€15.000 - €30.000', 'Más de €30.000'].includes(investmentCapacity);
         const isICPMatch = isHighRevenue && isHighBudget;
         const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
         
@@ -371,19 +371,19 @@ const QuizSection = ({
         let conversionProb = 0;
         
         if (finalScore >= 90) {
-          cartValue = 5000;
+          cartValue = 30000;
           qualificationLevel = 'premium_qualified';
-          predictedLTV = 15000;
+          predictedLTV = 90000;
           conversionProb = 0.85;
         } else if (finalScore >= 80) {
-          cartValue = 4000;
+          cartValue = 15000;
           qualificationLevel = 'qualified';
-          predictedLTV = 12000;
+          predictedLTV = 45000;
           conversionProb = 0.70;
         } else {
-          cartValue = 3000;
+          cartValue = 8000;
           qualificationLevel = 'marginal';
-          predictedLTV = 9000;
+          predictedLTV = 24000;
           conversionProb = 0.50;
         }
         
@@ -649,11 +649,12 @@ const QuizSection = ({
       // Enriquecer evento Lead de Meta Pixel con datos ICP
       const revenueAnswer = answers.q3 as string;
       const budgetAnswer = answers.q5 as string;
-    const isICP = revenueAnswer === "€1.500 - €3.000/mes" 
-      || revenueAnswer === "€3.000 - €6.000/mes";
-      const hasBudget = budgetAnswer === "€1.500 - €3.000" 
-        || budgetAnswer === "€3.000 - €5.000"
-        || budgetAnswer === "Más de €5.000";
+    const isICP = revenueAnswer === "€5.000 - €10.000/mes" 
+      || revenueAnswer === "€10.000 - €20.000/mes"
+      || revenueAnswer === "Más de €20.000/mes";
+      const hasBudget = budgetAnswer === "€8.000 - €15.000" 
+        || budgetAnswer === "€15.000 - €30.000"
+        || budgetAnswer === "Más de €30.000";
 
       let leadValue = 1000;
       if (isICP && hasBudget) leadValue = 2000;
@@ -761,11 +762,11 @@ const QuizSection = ({
       }
     }
 
-    // Q5 - Investment Capacity (0-37 puntos) - Nuevo pricing 5K/8K
-    if (state.q5 === "Más de €8.000") score += 37;     // DWY speedrun fácil
-    else if (state.q5 === "€5.000 - €8.000") score += 37; // DIY o DWY
-    else if (state.q5 === "€3.000 - €5.000") score += 15; // Marginal - puede que DIY ajustado
-    else if (state.q5 === "Menos de €3.000") score += 0;  // Disqualifies
+    // Q5 - Investment Capacity (0-37 puntos) - Pricing 8K/15K/30K
+    if (state.q5 === "Más de €30.000") score += 37;       // Premium
+    else if (state.q5 === "€15.000 - €30.000") score += 37; // DWY
+    else if (state.q5 === "€8.000 - €15.000") score += 25;  // DIY (entrada válida)
+    else if (state.q5 === "Menos de €8.000") score += 0;    // Disqualifies
 
     // Q6 - Urgencia/Compromiso (0-5 puntos)
     if (state.q6?.includes("Rápido")) score += 5; // Conversión rápida
@@ -782,10 +783,10 @@ const QuizSection = ({
     if (state.q3 === "Menos de €2.000/mes") return true;
     
     // HARDSTOP #0.5: Revenue marginal SIN presupuesto
-    if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Menos de €3.000") return true;
+    if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Menos de €8.000") return true;
     
-    // HARDSTOP #1: Sin capacidad de inversión mínima (threshold €3K para pricing 5K/8K)
-    if (state.q5 === "Menos de €3.000") return true;
+    // HARDSTOP #1: Sin capacidad de inversión mínima (threshold €8K para pricing 8K/15K/30K)
+    if (state.q5 === "Menos de €8.000") return true;
     
     // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
     if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {

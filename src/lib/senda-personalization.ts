@@ -23,7 +23,7 @@ export const generateSendaPersonalization = (quizState: QuizState): Personalizat
   // Helper: Detectar revenue bajo
   const lowRevenue = q3.includes('Menos de €500') || q3.includes('€500 - €1.500');
   const midRevenue = q3.includes('€1.500 - €3.000') || q3.includes('€2.500 - €5.000');
-  const hasInvestment = !q5.includes('Menos de €3.000');
+  const hasInvestment = !q5.includes('Menos de €8.000');
   const noSystem = Array.isArray(q4) && q4.some(m => m.includes('Aún no tengo'));
 
   // ========================================
@@ -34,11 +34,11 @@ export const generateSendaPersonalization = (quizState: QuizState): Personalizat
   if (q1.includes('No tengo clientes') && noSystem && lowRevenue) {
     return {
       heroHeadline: 'Tu primer cierre premium de agencia comienza aquí',
-      heroSubtext: `En 60 minutos diseñaremos la oferta de €5K+ de tu agencia para cerrar tu primer proyecto sin experiencia previa.`,
+      heroSubtext: `En 60 minutos diseñaremos la oferta de €8K+ de tu agencia para cerrar tu primer proyecto sin experiencia previa.`,
       painHeadline: 'EL PROBLEMA NO ES LA EXPERIENCIA',
-      painBody: `Tu agencia sin clientes suficientes, facturando menos de €1.500/mes. El problema no es tu skill. Es que nunca te enseñaron a VENDER TU OFERTA DE AGENCIA como un producto premium.\n\nEn la consulta estructuraremos tu posicionamiento para que tu primer cliente pague €5K-8K, no €800.`,
+      painBody: `Tu agencia sin clientes suficientes, facturando menos de €1.500/mes. El problema no es tu skill. Es que nunca te enseñaron a VENDER TU OFERTA DE AGENCIA como un producto premium.\n\nEn la consulta estructuraremos tu posicionamiento para que tu primer cliente pague €10K-15K, no €800.`,
       painBullets: [
-        `Tu oferta premium de agencia €5K-8K estructurada para vender sin portafolio`,
+        `Tu oferta premium de agencia €10K-15K estructurada para vender sin portafolio`,
         `El posicionamiento exacto para ${q2} que justifica pricing premium`,
         `Script de cierre diseñado para el primer cliente ideal de tu estudio`
       ]
@@ -52,7 +52,7 @@ export const generateSendaPersonalization = (quizState: QuizState): Personalizat
       heroHeadline: 'De clientes ratilla a clientes premium',
       heroSubtext: `En 60 minutos descubrirás cómo multiplicar x3 el ticket medio de tu agencia sin cambiar lo que hacéis.`,
       painHeadline: 'EL PROBLEMA NO SON TUS CLIENTES',
-      painBody: `Facturando ${currentRevenue.toLowerCase()} cobrando poco por proyecto. Haz la cuenta: Si tu ticket medio fuera de €8.000 en vez de €1.500... ¿cuántos proyectos necesitaríais? Menos de la mitad. Mismo trabajo, triple de ingresos.\n\nEn la consulta rediseñaremos la oferta de tu agencia para atraer clientes que pagan €10K+ sin cuestionar el precio.`,
+      painBody: `Facturando ${currentRevenue.toLowerCase()} cobrando poco por proyecto. Haz la cuenta: Si tu ticket medio fuera de €15.000 en vez de €3.000... ¿cuántos proyectos necesitaríais? Menos de la mitad. Mismo trabajo, triple de ingresos.\n\nEn la consulta rediseñaremos la oferta de tu agencia para atraer clientes que pagan €15K+ sin cuestionar el precio.`,
       painBullets: [
         `El reframe exacto que hace que clientes con presupuesto digan "¿cuándo empezamos?"`,
         `Por qué el pricing actual de tu agencia atrae clientela rata (y cómo arreglarlo)`,
@@ -65,11 +65,11 @@ export const generateSendaPersonalization = (quizState: QuizState): Personalizat
   if (q1.includes('Trabajo muchas horas') && lowRevenue) {
     return {
       heroHeadline: 'De agencia esclava a estudio premium',
-      heroSubtext: `En 60 minutos diseñaremos la oferta de €5K-8K de tu agencia para trabajar menos y cobrar más.`,
+      heroSubtext: `En 60 minutos diseñaremos la oferta de €10K-15K de tu agencia para trabajar menos y cobrar más.`,
       painHeadline: 'EL BURNOUT TIENE SOLUCIÓN',
       painBody: `Tu equipo trabajando hasta las 23:47 por cuatro duros. Facturando ${q3?.toLowerCase() || 'poco'} mientras quemáis horas como condenados. Eso no es un modelo de negocio. Es una prisión.\n\nEn la consulta estructuraremos la oferta premium de tu agencia basada en VALOR, no en tiempo. Mismo resultado, triple del precio, mitad de horas.`,
       painBullets: [
-        `Cómo estructurar ofertas de agencia de €10K+ trabajando la mitad de horas`,
+        `Cómo estructurar ofertas de agencia de €15K+ trabajando la mitad de horas`,
         `Por qué cobrar por tiempo mantiene a tu equipo en burnout permanente`,
         `El cambio exacto de modelo que hacen las agencias que facturan 6 cifras`
       ]
@@ -133,7 +133,7 @@ Prepárate completando el material de esta página ANTES de la llamada.`,
   // ========================================
   return {
     heroHeadline: 'El ritual comienza',
-    heroSubtext: `En 60 minutos diseñaremos la oferta premium de tu agencia para cerrar proyectos de €5K-10K cobrando lo que valéis.`,
+    heroSubtext: `En 60 minutos diseñaremos la oferta premium de tu agencia para cerrar proyectos de €15K-30K cobrando lo que valéis.`,
     painHeadline: 'LO QUE VAMOS A RESOLVER',
     painBody: `Has cualificado porque sabes que algo no funciona en el modelo actual de tu agencia. Y tienes razón. Lo que hacen los miembros del Círculo es radicalmente diferente a lo que hace el 89% de agencias creativas.\n\nEn la consulta aplicaremos la clase "Crea Tu Oferta" a tu negocio específico: posicionamiento, pricing premium, y cómo vender la oferta de tu agencia sin rogar.`,
     painBullets: [
