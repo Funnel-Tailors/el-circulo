@@ -88,9 +88,9 @@ interface LeadSubmission {
 
 // Helper: Detectar razón específica de hardstop
 function getHardstopReason(answers: QuizAnswers, score: number): string | null {
-  // HARDSTOP #1: Sin capacidad de inversión mínima (nuevo threshold €3K)
-  if (answers.q5 === "Menos de €3.000") {
-    return "Sin capacidad de inversión mínima (< €3K)";
+  // HARDSTOP #1: Sin capacidad de inversión mínima (threshold €8K)
+  if (answers.q5 === "Menos de €8.000") {
+    return "Sin capacidad de inversión mínima (< 8K)";
   }
   
   // HARDSTOP #2: Revenue muy bajo (umbral agencia)
@@ -106,24 +106,24 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
   return null;
 }
 
-// Helper: Categorizar leads (A+/A/B/C/DQ) - actualizado para nuevo pricing 5K/8K
+// Helper: Categorizar leads (A+/A/B/C/DQ) - actualizado para pricing 8K/15K/30K
 function getLeadCategory(score: number, answers: QuizAnswers): string {
   const hardstop = getHardstopReason(answers, score);
   
   // DQ: Disqualified por hardstop
   if (hardstop) return 'DQ';
   
-  // A+: Score 95-110, budget €5K+, autoridad solo
+  // A+: Score 95-110, budget €15K+, autoridad solo
   if (score >= 95 && 
-      answers.q5 !== "Menos de €3.000" && 
-      answers.q5 !== "€3.000 - €5.000" && // Marginal no es A+
+      answers.q5 !== "Menos de €8.000" && 
+      answers.q5 !== "€8.000 - €15.000" && // DIY no es A+
       answers.q7 === "Solo yo") {
     return 'A+';
   }
   
-  // A: Score 85-94, budget €5K+ o autoridad solo
+  // A: Score 85-94, budget €15K+ o autoridad solo
   if (score >= 85 && 
-      (answers.q5 === "€5.000 - €8.000" || answers.q5 === "Más de €8.000" || answers.q7 === "Solo yo")) {
+      (answers.q5 === "€15.000 - €30.000" || answers.q5 === "Más de €30.000" || answers.q7 === "Solo yo")) {
     return 'A';
   }
   
@@ -235,12 +235,12 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Tags de presupuesto de inversión (Q5) con prefijo CÍRCULO - actualizado para pricing 5K/8K
+  // Tags de presupuesto de inversión (Q5) con prefijo CÍRCULO - pricing 8K/15K/30K
   const investmentMap: Record<string, string> = {
-    'Más de €8.000': '💎 CÍRCULO-INV-8K+ (DWY SPEEDRUN)',
-    '€5.000 - €8.000': '💰 CÍRCULO-INV-5K-8K (DIY o DWY)',
-    '€3.000 - €5.000': '💵 CÍRCULO-INV-3K-5K (MARGINAL)',
-    'Menos de €3.000': '❌ CÍRCULO-INV-<3K (DQ)'
+    'Más de €30.000': '💎 CÍRCULO-INV-30K+ (PREMIUM)',
+    '€15.000 - €30.000': '💰 CÍRCULO-INV-15K-30K (DWY)',
+    '€8.000 - €15.000': '💵 CÍRCULO-INV-8K-15K (DIY)',
+    'Menos de €8.000': '❌ CÍRCULO-INV-<8K (DQ)'
   };
   if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-INV-Unknown');
   
@@ -296,7 +296,7 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
-  const hasInvestment = answers.q5 !== 'Menos de €3.000';
+  const hasInvestment = answers.q5 !== 'Menos de €8.000';
   const fastTrack = answers.q6?.includes('Rápido');
   
   if (score >= 85) {
@@ -418,7 +418,7 @@ const painOpeningAngles: Record<string, string[]> = {
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
-  const hasMoney = answers.q5 !== 'Menos de €3.000';
+  const hasMoney = answers.q5 !== 'Menos de €8.000';
   const fastTrack = answers.q6?.includes('Rápido');
   
   switch(pain) {
@@ -511,9 +511,9 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
-  const hasInvestment = answers.q5 !== 'Menos de €3.000';
+  const hasInvestment = answers.q5 !== 'Menos de €8.000';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
   
   // 🎯 CLIENTE IDEAL = Low revenue + investment OK
   const isIdealClient = lowRevenue && hasInvestment;
@@ -557,8 +557,8 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente (<3K)'}
-${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€3.000 - €5.000' ? 'TICKET 5K DIY (ajustado)' : answers.q5 === '€5.000 - €8.000' ? 'TICKET 5K DIY o 8K DWY' : 'TICKET 8K DWY SPEEDRUN'}` : ''}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente (<8K)'}
+${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€8.000 - €15.000' ? 'TICKET 8K DIY' : answers.q5 === '€15.000 - €30.000' ? 'TICKET 15K DWY' : 'TICKET 30K PREMIUM'}` : ''}
 • Decide: ${answers.q7}
 
 📞 CONTACTO:
@@ -578,10 +578,10 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const hasInvestment = answers.q5 !== 'Menos de €3.000';
+  const hasInvestment = answers.q5 !== 'Menos de €8.000';
   const fastTrack = tags.some(t => t.includes('FAST-7D'));
   const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
   
   // Solo objeciones REALES
   const realObjections: string[] = [];
@@ -628,7 +628,7 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 ⚡ RESUMEN INICIÁTICO:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€3.000 - €5.000' ? 'TICKET 5K DIY (ajustado)' : answers.q5 === '€5.000 - €8.000' ? 'TICKET 5K DIY o 8K DWY' : 'TICKET 8K DWY SPEEDRUN'}` : '❌ Insuficiente (<3K)'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€8.000 - €15.000' ? 'TICKET 8K DIY' : answers.q5 === '€15.000 - €30.000' ? 'TICKET 15K DWY' : 'TICKET 30K PREMIUM'}` : '❌ Insuficiente (<8K)'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
 • Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
@@ -644,8 +644,8 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const pain = answers.q1 || '';
   const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
   const midRevenue = answers.q3 === '€2.500 - €5.000/mes' || answers.q3 === 'Más de €5.000/mes';
-  const hasMoney = answers.q5 !== 'Menos de €3.000';
-  const lowInvestment = answers.q5 === 'Menos de €3.000' || answers.q5 === '€3.000 - €5.000';
+  const hasMoney = answers.q5 !== 'Menos de €8.000';
+  const lowInvestment = answers.q5 === 'Menos de €8.000' || answers.q5 === '€8.000 - €15.000';
   const fastTrack = answers.q6?.includes('Rápido');
   const gradual = answers.q6?.includes('Gradual');
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
