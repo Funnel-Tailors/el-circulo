@@ -1,111 +1,101 @@
 
+## Optimizacion de rendimiento mobile: VSL + La Brecha
 
-## Adaptar baremos al nuevo pricing: 8K / 15K / 30K
+### Problemas identificados
 
-### Resumen
+1. **VSL en landing (CircleHero)**: `preload="auto"` descarga el video entero antes de poder reproducir. En mobile con conexion variable, esto bloquea la reproduccion. Ademas, `video-glow` aplica una animacion CSS infinita con box-shadow pesado que causa repaint constante en GPU mobile.
 
-Actualizar todas las referencias al pricing antiguo (3K/5K/8K) al nuevo (8K/15K/30K) en el quiz, la edge function de GHL, y la personalizacion de /senda. La Brecha se deja intacta (freelancers).
+2. **La Brecha - sobrecarga de animaciones simultaneas**:
+   - PortalVortex: SVG con 18 espirales + filtro SVG blur + rotacion infinita + 20 particulas framer-motion = GPU killer en mobile
+   - Starfield: 80 elementos DOM con animaciones CSS individuales (fixed position)
+   - ShootingStars: Creacion dinamica de elementos DOM con box-shadow triple + animaciones
+   - BrechaFragmento x4: Cada uno con ProtectedVideo + VideoDropOverlay + motion animations
+   - Multiples `backdrop-filter: blur()` en glass-card-dark (muy costoso en mobile)
+   - Glow animations infinitas en texto y botones
 
-### Archivos a modificar
+3. **Videos en La Brecha**: No usan `preload="metadata"` ni lazy loading. Se cargan todos los fragmentos aunque el usuario solo vea el primero.
 
----
-
-**1. `src/components/quiz/QuizSection.tsx`** (quiz frontend)
-
-- **Opciones Q5** (linea 89): `["Menos de €8.000", "€8.000 - €15.000", "€15.000 - €30.000", "Mas de €30.000"]`
-- **Pregunta Q5** (linea 87): Cambiar "agencias que cobran 10K+" a "agencias que cobran 30K+" para que el ancla sea coherente con el nuevo techo
-- **Scoring Q5** (lineas 764-768):
-  - "Mas de €30.000" -> 37 pts
-  - "€15.000 - €30.000" -> 37 pts
-  - "€8.000 - €15.000" -> 25 pts (entrada valida, no marginal)
-  - "Menos de €8.000" -> 0 pts (DQ)
-- **Hardstop #1** (linea 788): `"Menos de €8.000"` en vez de `"Menos de €3.000"`
-- **Hardstop #0.5** (linea 785): Revenue marginal sin presupuesto -> `"Menos de €8.000"` en vez de `"Menos de €3.000"`
-- **Budget check Q5** (linea 289): `"Menos de €8.000"` en vez de `"Menos de €3.000"`
-- **isHighBudget** (linea 363): `["€15.000 - €30.000", "Mas de €30.000"]`
-- **AddToCart values** (lineas 373-388):
-  - score >= 90: cartValue = 30000, predictedLTV = 90000
-  - score >= 80: cartValue = 15000, predictedLTV = 45000
-  - else: cartValue = 8000, predictedLTV = 24000
-- **Legacy ICP/budget checks** (lineas 650-656): Actualizar a las nuevas opciones
-- **Motivator Q5** (linea 95): Actualizar copy - "El 78% recupera su inversion x2 en 60 dias" sigue valiendo
+### Cambios propuestos
 
 ---
 
-**2. `supabase/functions/submit-lead-to-ghl/index.ts`** (backend lead processing)
+**1. `src/components/roadmap/CircleHero.tsx`** - VSL mobile fix
 
-- **getHardstopReason()** (lineas 91-93): `"Menos de €8.000"` -> `"Sin capacidad de inversion minima (< 8K)"`
-- **getLeadCategory()** (lineas 116-127):
-  - A+: excluir `"Menos de €8.000"` y `"€8.000 - €15.000"` (solo 15K+ es A+)
-  - A: incluir `"€15.000 - €30.000"` o `"Mas de €30.000"` o solo-decision
-- **Investment tags** (lineas 239-244):
-  - `"Mas de €30.000"` -> `"CIRCULO-INV-30K+ (PREMIUM)"`
-  - `"€15.000 - €30.000"` -> `"CIRCULO-INV-15K-30K (DWY)"`
-  - `"€8.000 - €15.000"` -> `"CIRCULO-INV-8K-15K (DIY)"`
-  - `"Menos de €8.000"` -> `"CIRCULO-INV-<8K (DQ)"`
-- **hasInvestment checks** (multiples lineas): Todas las comparaciones `!== 'Menos de €3.000'` pasan a `!== 'Menos de €8.000'`
-- **lowInvestment** (linea 648): `"Menos de €8.000"` o `"€8.000 - €15.000"`
-- **TICKET RECOMENDACION** en notificaciones (lineas 561, 631): Actualizar:
-  - `"€8.000 - €15.000"` -> TICKET 8K DIY
-  - `"€15.000 - €30.000"` -> TICKET 15K DWY
-  - `"Mas de €30.000"` -> TICKET 30K PREMIUM
-- **Insuficiente label** (lineas 560, 631): De `(<3K)` a `(<8K)`
+- Cambiar `preload="auto"` a `preload="metadata"` para que solo cargue metadatos, no el video entero
+- Eliminar clase `video-glow` en mobile (mantener en desktop) usando media query o condicional
+- Usar `poster` attribute con un frame del video para dar feedback visual inmediato mientras carga
 
 ---
 
-**3. `src/lib/senda-personalization.ts`** (personalizacion pagina /senda)
+**2. `src/components/quiz/Starfield.tsx`** - Reducir carga en mobile
 
-- **hasInvestment** (linea 26): `!q5.includes('Menos de €8.000')`
-- **Copy pricing** en heroSubtext y painBody: Cambiar `€5K-8K` a `€10K-15K` y `€5K+` a `€8K+` para coherencia con nuevo pricing (varias lineas)
-- **Fallback general** (linea 137): Cambiar `€5K-10K` a `€15K-30K`
-
----
-
-**4. NO tocar: `supabase/functions/submit-brecha-lead/index.ts`**
-
-La Brecha mantiene sus propios baremos (freelancers). No se modifica.
+- Reducir `starCount` de 80 a 30 en mobile (`window.innerWidth < 768`)
+- Eliminar `filter: blur()` en las estrellas distantes en mobile (blur en elementos fixed = GPU heavy)
+- Usar `will-change: opacity` en vez de animaciones de transform + opacity combinadas
 
 ---
 
-### Seccion tecnica - Mapeo completo
+**3. `src/components/roadmap/ShootingStars.tsx`** - Simplificar en mobile
+
+- Reducir `maxStars` de 3 a 1 en mobile
+- Simplificar `box-shadow` triple a uno solo en mobile
+- Incrementar delay entre estrellas en mobile (6-9s en vez de 3-6s)
+
+---
+
+**4. `src/components/shared/PortalVortex.tsx`** - Optimizar vortex
+
+- En mobile: reducir espirales de 18 a 9 (solo las clockwise)
+- Reducir particulas de 20 a 8 en mobile
+- Eliminar filtro SVG blur (`feGaussianBlur`) en mobile (el mayor culpable de GPU usage)
+- Usar `will-change: transform` en el SVG container
+
+---
+
+**5. `src/pages/LaBrecha.tsx`** - Lazy loading de fragmentos
+
+- Envolver fragmentos 2, 3 y 4 en `React.lazy` o al menos no renderizar sus videos hasta que el fragmento sea visible
+- Los videos de fragmentos ocultos no deben estar en el DOM hasta que el usuario llegue a ellos
+
+---
+
+**6. `src/index.css`** - Desactivar animaciones costosas en mobile
+
+- Anadir media query `@media (max-width: 768px)` para:
+  - Desactivar `pulse-video-glow` animation
+  - Desactivar `pulse-card-glow` animation
+  - Desactivar `pulse-button-glow` animation
+  - Simplificar `backdrop-filter` de `blur(12px)` a `blur(4px)` o eliminarlo
+  - Reducir `pulse-glow` text-shadow a estatico
+
+---
+
+**7. `src/components/brecha/BrechaFragmento.tsx`** - Video preload
+
+- Asegurar que los videos usan `preload="none"` o `preload="metadata"` en vez de cargar todo
+- Solo cargar el video cuando el ritual overlay se acepta (lazy video src)
+
+---
+
+### Seccion tecnica - Resumen de impacto
 
 ```text
-ANTES (pricing 3K/5K/8K)           DESPUES (pricing 8K/15K/30K)
-────────────────────────────────    ────────────────────────────────
-Q5 Options:
-  Menos de €3.000                   Menos de €8.000
-  €3.000 - €5.000                   €8.000 - €15.000
-  €5.000 - €8.000                   €15.000 - €30.000
-  Mas de €8.000                     Mas de €30.000
-
-Scoring Q5:
-  >€8K  = 37pts                    >€30K  = 37pts
-  5-8K  = 37pts                    15-30K = 37pts
-  3-5K  = 15pts (marginal)         8-15K  = 25pts (entrada)
-  <€3K  = 0pts (DQ)               <€8K   = 0pts (DQ)
-
-AddToCart:
-  score>=90: €5.000                score>=90: €30.000
-  score>=80: €4.000                score>=80: €15.000
-  else:      €3.000                else:      €8.000
-
-Hardstop:
-  <€3K = DQ                       <€8K = DQ
-
-ICP Match (isHighBudget):
-  5-8K o >8K                       15-30K o >30K
-
-Tags GHL:
-  INV-8K+ (DWY SPEEDRUN)          INV-30K+ (PREMIUM)
-  INV-5K-8K (DIY o DWY)           INV-15K-30K (DWY)
-  INV-3K-5K (MARGINAL)            INV-8K-15K (DIY)
-  INV-<3K (DQ)                    INV-<8K (DQ)
-
-Ticket recomendacion:
-  3-5K -> TICKET 5K DIY            8-15K  -> TICKET 8K DIY
-  5-8K -> TICKET 5K/8K DWY        15-30K -> TICKET 15K DWY
-  >8K  -> TICKET 8K SPEEDRUN      >30K   -> TICKET 30K PREMIUM
-
-Lead Category A+:
-  Budget 5K+ (excl 3-5K)          Budget 15K+ (excl 8-15K)
+COMPONENTE              PROBLEMA                         FIX
+─────────────────────  ────────────────────────────────  ──────────────────────
+CircleHero VSL         preload="auto" + video-glow      preload="metadata" + no glow mobile
+Starfield              80 stars + blur filter            30 stars mobile, no blur
+ShootingStars          3 simultaneous + triple shadow    1 star mobile, simple shadow
+PortalVortex           18 spirals + SVG blur + 20 pts   9 spirals, no blur, 8 pts mobile
+LaBrecha videos        All 4 fragments load at once      Lazy load on visibility
+CSS animations         5+ infinite animations            Disable on mobile
+glass-card-dark        backdrop-filter: blur(12px)       blur(4px) or none on mobile
 ```
+
+### Orden de ejecucion
+
+1. CSS global (mayor impacto inmediato, un solo archivo)
+2. CircleHero VSL fix (la queja principal)
+3. Starfield + ShootingStars (background perf)
+4. PortalVortex mobile optimization
+5. LaBrecha lazy video loading
+6. BrechaFragmento preload fix
