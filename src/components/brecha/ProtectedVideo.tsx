@@ -35,6 +35,7 @@ export const ProtectedVideo = forwardRef<HTMLVideoElement, ProtectedVideoProps>(
           src={src}
           className={className}
           playsInline={playsInline}
+          preload="metadata"
           controlsList="nodownload nofullscreen noremoteplayback"
           disablePictureInPicture
           onContextMenu={(e) => e.preventDefault()}

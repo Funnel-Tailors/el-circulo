@@ -148,6 +148,32 @@ All colors MUST be HSL.
       transform: none;
     }
   }
+
+  /* Mobile performance: reduce GPU-heavy effects */
+  @media (max-width: 768px) {
+    .glass-card-dark {
+      backdrop-filter: blur(4px) saturate(100%);
+      -webkit-backdrop-filter: blur(4px) saturate(100%);
+    }
+
+    .video-glow {
+      animation: none !important;
+      box-shadow: 0 0 20px hsl(0 0% 100% / 0.08), 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .glow {
+      animation: none !important;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+    }
+
+    .dark-card {
+      animation: none !important;
+    }
+
+    .dark-button-primary {
+      animation: none !important;
+    }
+  }
   
   .dark-card {
     background: hsl(0, 0%, 10%);

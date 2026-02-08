@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 const ShootingStars = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeStarsRef = useRef(0);
-  const maxStars = 3;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -11,6 +10,11 @@ const ShootingStars = () => {
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
+
+    const isMobile = window.innerWidth < 768;
+    const maxStars = isMobile ? 1 : 3;
+    const minDelay = isMobile ? 6000 : 3000;
+    const maxExtraDelay = isMobile ? 3000 : 3000;
 
     const createShootingStar = () => {
       if (activeStarsRef.current >= maxStars) return;
@@ -23,22 +27,22 @@ const ShootingStars = () => {
       const duration = 1.5 + Math.random();
       const size = 2 + Math.random();
 
+      const boxShadow = isMobile
+        ? '0 0 6px 2px rgba(255, 255, 255, 0.8)'
+        : '0 0 6px 2px rgba(255, 255, 255, 0.9), 0 0 12px 4px rgba(255, 255, 255, 0.5), 0 0 20px 8px rgba(255, 255, 255, 0.2)';
+
       star.style.cssText = `
         position: absolute;
         width: ${size}px;
         height: ${size}px;
         background: white;
-        box-shadow: 
-          0 0 6px 2px rgba(255, 255, 255, 0.9),
-          0 0 12px 4px rgba(255, 255, 255, 0.5),
-          0 0 20px 8px rgba(255, 255, 255, 0.2);
+        box-shadow: ${boxShadow};
         border-radius: 50%;
         left: ${startX}%;
         top: ${startY}%;
         will-change: transform, opacity;
         pointer-events: none;
         transform: translateZ(0);
-        backface-visibility: hidden;
         animation: shootingStar ${duration}s ease-out forwards;
         --end-x: ${endX}px;
         --end-y: ${endY}px;
@@ -54,7 +58,7 @@ const ShootingStars = () => {
     };
 
     const scheduleNextStar = () => {
-      const delay = 3000 + Math.random() * 3000;
+      const delay = minDelay + Math.random() * maxExtraDelay;
       return setTimeout(() => {
         createShootingStar();
         intervalId = scheduleNextStar();
