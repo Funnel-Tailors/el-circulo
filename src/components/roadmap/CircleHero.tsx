@@ -213,7 +213,7 @@ const CircleHero = () => {
             `} style={{
           aspectRatio: '16/9'
         }}>
-            <source src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69867a1e5f93993bbfa0560f.mp4" type="video/mp4" />
+            <source src="https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/6987ef750a7fd16a9e17bc46.mp4" type="video/mp4" />
             Tu navegador no soporta video HTML5.
           </video>
         </div>
