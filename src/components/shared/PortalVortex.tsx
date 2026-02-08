@@ -1,34 +1,15 @@
 import { motion } from "framer-motion";
 import { duration, ease } from "@/design-system/tokens/motion";
-
-/**
- * PortalVortex - Unified vortex effect component
- *
- * Features:
- * - 18 Archimedean spirals (9 clockwise, 9 counter-clockwise)
- * - Pulsing black hole center
- * - 20 attracted particles
- * - Catmull-Rom spline smoothing
- *
- * Used in: VortexEffect, BrechaPortalModal, VaultPortal
- */
+import { useMemo } from "react";
 
 export interface PortalVortexProps {
-  /** Size preset or custom class */
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  /** Custom size class (overrides size prop) */
   sizeClass?: string;
-  /** Whether the vortex is closing/exiting */
   isClosing?: boolean;
-  /** Rotation speed in seconds (default: 15) */
   rotationSpeed?: number;
-  /** Number of particles (default: 20) */
   particleCount?: number;
-  /** Whether to show particles (default: true) */
   showParticles?: boolean;
-  /** Additional className */
   className?: string;
-  /** Unique ID prefix for SVG gradients (prevents conflicts when multiple instances) */
   idPrefix?: string;
 }
 
@@ -39,9 +20,8 @@ const SIZE_CLASSES = {
   xl: 'w-[28rem] h-[28rem]',
 } as const;
 
-// Spiral configuration
-const SPIRALS = [
-  // Primary spirals (clockwise) - 9 arms at 40° intervals
+// Full spiral config
+const ALL_SPIRALS = [
   { startAngle: 0, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
   { startAngle: 40, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
   { startAngle: 80, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
@@ -51,7 +31,6 @@ const SPIRALS = [
   { startAngle: 240, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
   { startAngle: 280, turns: 1.5, clockwise: true, gradient: 1, width: 2.5 },
   { startAngle: 320, turns: 1.5, clockwise: true, gradient: 2, width: 2 },
-  // Counter-clockwise spirals - 9 arms offset 20°
   { startAngle: 20, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
   { startAngle: 60, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
   { startAngle: 100, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
@@ -63,9 +42,9 @@ const SPIRALS = [
   { startAngle: 340, turns: 1.3, clockwise: false, gradient: 3, width: 1.5 },
 ];
 
-/**
- * Generates an Archimedean spiral path using Catmull-Rom to Bezier conversion
- */
+// Mobile: only clockwise spirals (9 instead of 18)
+const MOBILE_SPIRALS = ALL_SPIRALS.filter(s => s.clockwise);
+
 function generateSpiralPath(
   startAngle: number,
   turns: number = 1.5,
@@ -89,7 +68,6 @@ function generateSpiralPath(
     });
   }
 
-  // Convert points to smooth bezier path (Catmull-Rom)
   let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
   for (let i = 1; i < points.length - 2; i++) {
     const p0 = points[i - 1];
@@ -107,6 +85,8 @@ function generateSpiralPath(
   return d;
 }
 
+const IS_MOBILE = typeof window !== 'undefined' && window.innerWidth < 768;
+
 export function PortalVortex({
   size = 'md',
   sizeClass,
@@ -118,6 +98,19 @@ export function PortalVortex({
   idPrefix = 'vortex',
 }: PortalVortexProps) {
   const sizeClassName = sizeClass || SIZE_CLASSES[size];
+  const spirals = IS_MOBILE ? MOBILE_SPIRALS : ALL_SPIRALS;
+  const actualParticleCount = IS_MOBILE ? Math.min(particleCount, 8) : particleCount;
+  const useGlow = !IS_MOBILE;
+
+  const spiralPaths = useMemo(() =>
+    spirals.map((spiral, i) => ({
+      key: i,
+      d: generateSpiralPath(spiral.startAngle, spiral.turns, spiral.clockwise),
+      gradient: spiral.gradient,
+      width: spiral.width,
+    })),
+    [spirals]
+  );
 
   return (
     <motion.div
@@ -134,15 +127,14 @@ export function PortalVortex({
           : { duration: duration.slow, ease: ease.out }
       }
     >
-      {/* SVG Vortex with Archimedean Spirals */}
       <motion.svg
         viewBox="0 0 400 400"
         className="w-full h-full"
+        style={{ willChange: 'transform' }}
         animate={{ rotate: isClosing ? -360 : 360 }}
         transition={{ duration: rotationSpeed, repeat: Infinity, ease: "linear" }}
       >
         <defs>
-          {/* Radial gradients for sphere effect */}
           <radialGradient id={`${idPrefix}Gradient1`} cx="50%" cy="50%" r="50%">
             <stop offset="0%" stopColor="hsl(var(--foreground))" stopOpacity="0.7" />
             <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.4" />
@@ -158,25 +150,26 @@ export function PortalVortex({
             <stop offset="50%" stopColor="hsl(var(--foreground))" stopOpacity="0.15" />
             <stop offset="100%" stopColor="hsl(var(--foreground))" stopOpacity="0.03" />
           </radialGradient>
-          <filter id={`${idPrefix}Glow`}>
-            <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          {useGlow && (
+            <filter id={`${idPrefix}Glow`}>
+              <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          )}
         </defs>
 
-        {/* Render spirals */}
-        {SPIRALS.map((spiral, i) => (
+        {spiralPaths.map((spiral) => (
           <path
-            key={i}
-            d={generateSpiralPath(spiral.startAngle, spiral.turns, spiral.clockwise)}
+            key={spiral.key}
+            d={spiral.d}
             fill="none"
             stroke={`url(#${idPrefix}Gradient${spiral.gradient})`}
             strokeWidth={spiral.width}
             strokeLinecap="round"
-            filter={`url(#${idPrefix}Glow)`}
+            filter={useGlow ? `url(#${idPrefix}Glow)` : undefined}
           />
         ))}
       </motion.svg>
@@ -200,11 +193,11 @@ export function PortalVortex({
       />
 
       {/* Attracted particles */}
-      {showParticles && Array.from({ length: particleCount }).map((_, i) => {
-        const startAngle = (i / particleCount) * 360;
+      {showParticles && Array.from({ length: actualParticleCount }).map((_, i) => {
+        const startAngle = (i / actualParticleCount) * 360;
         const startRadius = 110 + (i % 3) * 15;
         const particleDuration = 3 + (i % 5) * 0.5;
-        const delay = (i / particleCount) * 3;
+        const delay = (i / actualParticleCount) * 3;
         const particleSize = 0.4 + (i % 4) * 0.2;
 
         return (
@@ -213,7 +206,6 @@ export function PortalVortex({
             className="absolute top-1/2 left-1/2 text-foreground pointer-events-none"
             style={{
               fontSize: `${particleSize * 10}px`,
-              filter: particleSize < 0.6 ? 'blur(0.5px)' : 'none',
             }}
             initial={{
               x: Math.cos(startAngle * Math.PI / 180) * startRadius,

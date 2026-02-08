@@ -207,7 +207,7 @@ const CircleHero = () => {
               <X className="w-4 h-4" />
             </button>}
           
-          <video ref={videoRef} autoPlay muted playsInline controls controlsList="nodownload" disablePictureInPicture preload="auto" className={`
+          <video ref={videoRef} autoPlay muted playsInline controls controlsList="nodownload" disablePictureInPicture preload="metadata" className={`
               w-full shadow-2xl video-glow transition-all duration-300
               ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
             `} style={{
