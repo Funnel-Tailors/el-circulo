@@ -143,19 +143,6 @@ export const successCases = [
     ]
   },
   {
-    name: "Dani",
-    role: "Brand Strategist",
-    offer: "Cook Your Brand",
-    highlight: "ROI x10",
-    videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69090fa737c43acb39b5b373.mp4",
-    results: [
-      "2.000€ su primer cliente en 10 días",
-      "Marca personal → clientes con presupuesto real",
-      "Dejó de perder tiempo con prospectos sin pasta",
-      "Optimizó su embudo de ventas"
-    ]
-  },
-  {
     name: "Cris",
     role: "Estratega de Ventas",
     offer: "Embudo Express",
