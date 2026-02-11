@@ -92,7 +92,7 @@ const steps: QuizStep[] = [{
   valueStack: null,
   motivator: {
     icon: "🔥",
-    text: "El 78% recupera su inversión x2 en 60 días. Dani hizo ROI x10 en su primera semana."
+    text: "El 78% recupera su inversión x2 en 60 días. Cris pasó de tirar la toalla a cerrar 3.000€."
   }
 }, {
   id: "q6",

@@ -156,13 +156,13 @@ export const filterSuccessCasesByProfession = (profession: string | undefined) =
   }
   
   if (profession.toLowerCase().includes('productora') || profession.toLowerCase().includes('audiovisual')) {
-    return ['Dani', 'Cris'];
+    return ['Cris', 'Felipe'];
   }
   
   if (profession.toLowerCase().includes('desarrollo') || profession.toLowerCase().includes('automatización')) {
-    return ['Felipe', 'Dani'];
+    return ['Felipe', 'Cris'];
   }
 
   // Default: mix
-  return ['Nico', 'Dani'];
+  return ['Nico', 'Cris'];
 };
