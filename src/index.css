@@ -156,7 +156,7 @@ All colors MUST be HSL.
       -webkit-backdrop-filter: blur(4px) saturate(100%);
     }
 
-    .video-glow {
+    .video-glow-wrapper {
       animation: none !important;
       box-shadow: 0 0 20px hsl(0 0% 100% / 0.08), 0 4px 16px rgba(0, 0, 0, 0.4);
     }
@@ -324,12 +324,17 @@ All colors MUST be HSL.
   }
 }
 
-/* Video glow pulsante para VSL */
+/* Video glow wrapper - aísla repaint del glow del <video> */
 @layer utilities {
-  .video-glow {
+  .video-glow-wrapper {
+    position: relative;
     box-shadow: 0 0 40px hsl(0 0% 100% / 0.15), 
                 0 8px 32px rgba(0, 0, 0, 0.4);
     animation: pulse-video-glow 3s ease-in-out infinite alternate;
+  }
+
+  .video-glow-wrapper > video {
+    display: block;
   }
 
   @keyframes pulse-video-glow {
@@ -344,7 +349,7 @@ All colors MUST be HSL.
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .video-glow {
+    .video-glow-wrapper {
       animation: none;
       box-shadow: 0 0 40px hsl(0 0% 100% / 0.15), 
                   0 8px 32px rgba(0, 0, 0, 0.4);
