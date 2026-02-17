@@ -228,14 +228,19 @@ const Module4Section = ({
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="glass-card-dark p-6"
+          className="mb-12"
         >
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Play className="w-5 h-5 text-primary" />
-            Masterclass: Cierres de Venta
-          </h3>
-          
-          <div className="relative rounded-lg overflow-hidden bg-black/50">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center">
+              <Play className="w-5 h-5 text-foreground" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Masterclass: Cierres de Venta</h3>
+              <p className="text-foreground/50 text-sm">El arte de cerrar sin rogar</p>
+            </div>
+          </div>
+
+          <div className="relative aspect-video bg-black rounded-xl overflow-hidden video-glow shadow-2xl">
             {/* Resume indicator */}
             {showResumeIndicator && (
               <motion.div
@@ -271,16 +276,19 @@ const Module4Section = ({
           </div>
           
           {/* Progress bar */}
-          <div className="mt-4 h-1 bg-foreground/10 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-primary"
-              animate={{ width: `${videoProgress}%` }}
-              transition={{ duration: 0.3 }}
-            />
+          <div className="mt-4">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-foreground/50">Tu progreso</span>
+              <span className="text-foreground/70">{videoProgress}%</span>
+            </div>
+            <div className="h-1 bg-foreground/10 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-foreground/40"
+                animate={{ width: `${videoProgress}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
           </div>
-          <p className="text-xs text-foreground/40 mt-2 text-right">
-            Progreso: {videoProgress}%
-          </p>
         </motion.div>
         
         {/* Drops Inventory */}
