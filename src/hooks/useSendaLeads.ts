@@ -323,6 +323,59 @@ export const useSendaLeads = () => {
       case 'module4_roleplay':
         updates.module4_roleplay_unlocked = true;
         break;
+      // Individual milestone unlocks (inline buttons)
+      case 'class1_video_complete':
+        updates.class1_video_started = true;
+        updates.class1_video_progress = 100;
+        break;
+      case 'class1_ritual_complete':
+        updates.class1_ritual_accepted = true;
+        updates.class1_ritual_accepted_at = new Date().toISOString();
+        updates.class1_sequence_completed = true;
+        break;
+      case 'class1_assistant':
+        updates.class1_assistant_opened = true;
+        break;
+      case 'class2_video_complete':
+        updates.class2_video_started = true;
+        updates.class2_video_progress = 100;
+        break;
+      case 'class2_ritual_complete':
+        updates.class2_ritual_accepted = true;
+        updates.class2_ritual_accepted_at = new Date().toISOString();
+        updates.class2_sequence_completed = true;
+        break;
+      case 'module3_video1_complete':
+        updates.module3_video1_started = true;
+        updates.module3_video1_progress = 100;
+        break;
+      case 'module3_video2_complete':
+        updates.module3_video2_started = true;
+        updates.module3_video2_progress = 100;
+        break;
+      case 'module3_ritual_complete':
+        updates.module3_ritual_accepted = true;
+        updates.module3_ritual_accepted_at = new Date().toISOString();
+        updates.module3_sequence_completed = true;
+        break;
+      case 'module3_assistant1':
+        updates.module3_assistant1_opened = true;
+        break;
+      case 'module3_assistant2':
+        updates.module3_assistant2_opened = true;
+        break;
+      case 'module3_assistant3':
+        updates.module3_assistant3_opened = true;
+        break;
+      case 'module4_video_complete':
+        updates.module4_video_started = true;
+        updates.module4_video_progress = 100;
+        break;
+      case 'module4_ritual_complete':
+        updates.module4_ritual_accepted = true;
+        updates.module4_ritual_accepted_at = new Date().toISOString();
+        updates.module4_sequence_completed = true;
+        break;
       // Push actions - cascade unlocks
       case 'push_to_vault':
         updates.class1_video_started = true;

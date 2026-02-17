@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Video, Target, Sparkles, Bot, Lock, Unlock, RotateCcw, MessageSquare } from 'lucide-react';
+import { ChevronDown, ChevronUp, Video, Target, Sparkles, Bot, Unlock, RotateCcw, MessageSquare } from 'lucide-react';
 
 // Modular milestone configuration - easy to extend
 const SENDA_MODULES = [
@@ -262,6 +262,36 @@ const statusIcons: Record<MilestoneStatus, string> = {
   locked: '🔒',
 };
 
+// Helper to get unlock key for each milestone
+const getUnlockKey = (moduleId: string, milestoneId: string): string | null => {
+  // Class 1
+  if (moduleId === 'class1' && milestoneId === 'video') return 'class1_video_complete';
+  if (moduleId === 'class1' && milestoneId === 'drops') return 'class1_all_drops';
+  if (moduleId === 'class1' && milestoneId === 'ritual') return 'class1_ritual_complete';
+  if (moduleId === 'class1' && milestoneId === 'assistant') return 'class1_assistant';
+  // Vault
+  if (moduleId === 'vault' && milestoneId === 'unlocked') return 'vault';
+  // Class 2
+  if (moduleId === 'class2' && milestoneId === 'video') return 'class2_video_complete';
+  if (moduleId === 'class2' && milestoneId === 'drops') return 'class2_all_drops';
+  if (moduleId === 'class2' && milestoneId === 'ritual') return 'class2_ritual_complete';
+  if (moduleId === 'class2' && milestoneId === 'assistant') return 'assistant';
+  // Module 3
+  if (moduleId === 'module3' && milestoneId === 'video1') return 'module3_video1_complete';
+  if (moduleId === 'module3' && milestoneId === 'video2') return 'module3_video2_complete';
+  if (moduleId === 'module3' && milestoneId === 'drops') return 'module3_all_drops';
+  if (moduleId === 'module3' && milestoneId === 'ritual') return 'module3_ritual_complete';
+  if (moduleId === 'module3' && milestoneId === 'assistant1') return 'module3_assistant1';
+  if (moduleId === 'module3' && milestoneId === 'assistant2') return 'module3_assistant2';
+  if (moduleId === 'module3' && milestoneId === 'assistant3') return 'module3_assistant3';
+  // Module 4
+  if (moduleId === 'module4' && milestoneId === 'video') return 'module4_video_complete';
+  if (moduleId === 'module4' && milestoneId === 'drops') return 'module4_all_drops';
+  if (moduleId === 'module4' && milestoneId === 'ritual') return 'module4_ritual_complete';
+  if (moduleId === 'module4' && milestoneId === 'roleplay') return 'module4_roleplay';
+  return null;
+};
+
 export const SendaProgressBar = ({
   progress,
   onUnlockMilestone,
@@ -360,14 +390,32 @@ export const SendaProgressBar = ({
                     {mod.milestones.map((m) => {
                       const { status, detail } = getMilestoneStatus(mod.id, m.id, progress);
                       const Icon = m.icon;
+                      const unlockKey = getUnlockKey(mod.id, m.id);
+                      const canUnlock = status !== 'completed' && unlockKey;
                       return (
                         <div
                           key={`${mod.id}-${m.id}`}
-                          className={`flex flex-col items-center p-2 rounded-lg border ${statusColors[status]}`}
+                          className={`flex flex-col items-center p-2 rounded-lg border ${statusColors[status]} relative group`}
                         >
                           <Icon className="w-4 h-4 mb-1" />
                           <span className="text-xs font-medium">{m.label}</span>
                           <span className="text-[10px] opacity-70">{detail}</span>
+                          {/* Inline unlock button */}
+                          {canUnlock && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="absolute -top-1 -right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-600 hover:bg-emerald-500 text-white rounded-full"
+                              disabled={loading !== null}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleAction(() => onUnlockMilestone(unlockKey), unlockKey);
+                              }}
+                              title="Desbloquear"
+                            >
+                              {loading === unlockKey ? '...' : <Unlock className="w-3 h-3" />}
+                            </Button>
+                          )}
                         </div>
                       );
                     })}
