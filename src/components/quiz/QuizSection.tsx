@@ -132,7 +132,12 @@ const QuizSection = ({
   onExit
 }: QuizSectionProps) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<QuizState>({});
+  const [answers, _setAnswers] = useState<QuizState>({});
+  const answersRef = useRef<QuizState>({});
+  const setAnswers = (newAnswers: QuizState) => {
+    answersRef.current = newAnswers;
+    _setAnswers(newAnswers);
+  };
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,7 +213,7 @@ const QuizSection = ({
   }, [showContactForm]);
 
   const handleNext = () => {
-    const currentAnswer = answers[currentQuestion.id as keyof QuizState];
+    const currentAnswer = answersRef.current[currentQuestion.id as keyof QuizState];
     if (!currentAnswer || Array.isArray(currentAnswer) && currentAnswer.length === 0) {
       return;
     }
