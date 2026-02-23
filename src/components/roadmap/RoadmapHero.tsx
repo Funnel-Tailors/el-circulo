@@ -7,12 +7,12 @@ const RoadmapHero = () => {
         <div className="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
       </div>
 
-      <h1 className="text-3xl md:text-5xl font-display font-black tracking-tight leading-[0.85em]">
-        El método (no tan) secreto que puedes utilizar <span className="glow">HOY</span> para conseguir clientes que te paguen <span className="glow">5 cifras</span> por proyecto
+      <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow leading-[0.85em]">
+        LA SENDA AL CÍRCULO
       </h1>
 
       <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
-        y cómo aplicarlo para tener un negocio de verdad - en menos de 7 días
+        un sistema paso a paso para que estés buscando clientes en 3 días (y tengas tu sistema en 7)
       </p>
 
       {/* Bottom divider */}
