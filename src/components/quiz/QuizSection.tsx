@@ -84,11 +84,16 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q5",
-  question: "Si hoy tuvieras el sistema exacto que usan agencias que cobran €30K+ por proyecto, ¿cuánto invertirías en tu ascenso?",
+  question: "¿Cómo quieres implementar tu sistema?",
   type: "radio",
-  options: ["Menos de €8.000", "€8.000 - €15.000", "€15.000 - €30.000", "Más de €30.000"],
-  badge: "💎 Paso 5/7 - Tu Capacidad",
-  subtext: "El tributo al Círculo se adapta según tu ruta. Responde con sinceridad.",
+  options: [
+    "Ahora mismo no puedo invertir en esto",
+    "Quiero hacerlo yo con guía paso a paso (desde €5K)",
+    "Quiero que me ayudéis a implementarlo (desde €8K)",
+    "Quiero que lo hagáis todo por mí (desde €15K)"
+  ],
+  badge: "💎 Paso 5/7 - Tu Modo de Ascensión",
+  subtext: "Elige la modalidad que encaja con tu situación actual",
   valueStack: null,
   motivator: {
     icon: "🔥",
@@ -96,20 +101,28 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q6",
-  question: "¿Cómo quieres ascender al Círculo?",
+  question: "¿Cuándo necesitas tener esto funcionando?",
   type: "radio",
-  options: ["Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA", "Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas"],
-  badge: "⏱️ Paso 6/7 - Tu Ritmo",
-  subtext: "Ambas rutas llevan al mismo destino. Elige tu ritmo.",
+  options: [
+    "Esta semana - estoy perdiendo dinero cada día que pasa",
+    "Este mes - tengo margen pero quiero moverme",
+    "No tengo prisa, solo estoy explorando"
+  ],
+  badge: "⏱️ Paso 6/7 - Tu Urgencia",
+  subtext: "No hay respuesta correcta. Pero sí hay una honesta.",
   motivator: {
     icon: "🔥",
-    text: "Rápida: Ideal para transformación inmediata | Progresiva: Para integrar sin prisa"
+    text: "Los que implementan en 7 días recuperan la inversión 3x más rápido"
   }
 }, {
   id: "q7",
   question: "¿Quién toma la decisión final sobre esta inversión?",
   type: "radio",
-  options: ["Solo yo", "Yo con mi pareja/socio (lo invitaré a la llamada)"],
+  options: [
+    "Solo yo - decido hoy si me convence",
+    "Con mi socio/pareja - ambos estaremos en la llamada",
+    "Necesito consultarlo después de la llamada"
+  ],
   badge: "🔐 Paso 7/7 - Final",
   subtext: "Si decides con alguien más, ambos deben estar en la llamada",
   motivator: null
@@ -123,30 +136,27 @@ const QuizSection = ({
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quizStartTime] = useState(Date.now()); // Track quiz start time for completion metrics
-  const [showSkepticChallenge, setShowSkepticChallenge] = useState(false); // El Espejo - intervención escépticos
+  const [quizStartTime] = useState(Date.now());
+  const [showSkepticChallenge, setShowSkepticChallenge] = useState(false);
+  const [showMicroCommitment, setShowMicroCommitment] = useState(false);
+  const [microCommitChecks, setMicroCommitChecks] = useState({ time: false, investment: false, partner: false });
+  const [pendingCompleteState, setPendingCompleteState] = useState<{ state: QuizState; qualified: boolean } | null>(null);
 
-
-  // Initialize form at component level (hooks must be called unconditionally)
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       name: "",
       countryCode: "+34",
       phone: "",
-      website: "" // Honeypot field
+      website: ""
     }
   });
 
-  // State for selected country code to generate dynamic placeholder
   const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
 
-  // Auto-detect country based on timezone
   useEffect(() => {
     const detectCountry = () => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      
-      // Map common timezones to country codes
       const timezoneMap: Record<string, string> = {
         'Europe/Madrid': '+34',
         'America/Mexico_City': '+52',
@@ -161,16 +171,13 @@ const QuizSection = ({
         'America/Sao_Paulo': '+55',
         'America/Costa_Rica': '+506',
       };
-
-      const detectedCode = timezoneMap[timezone] || '+34'; // Default to Spain
+      const detectedCode = timezoneMap[timezone] || '+34';
       form.setValue('countryCode', detectedCode);
       setSelectedCountryCode(detectedCode);
     };
-
     detectCountry();
   }, [form]);
 
-  // Generate dynamic placeholder based on selected country
   const getPhonePlaceholder = (code: string): string => {
     const placeholders: Record<string, string> = {
       '+34': '612 34 56 78',
@@ -206,19 +213,18 @@ const QuizSection = ({
       return;
     }
 
-    // Track Q1 - Pain Point (nueva pregunta de frustración)
+    // Track Q1 - Pain Point
     if (currentQuestion.id === 'q1') {
       const value = currentAnswer as string;
       quizAnalytics.trackPainPoint(value);
       
-      // Meta Pixel - ViewContent con valor según pain point
       let painValue = 150;
-      if (value === "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)") {
-        painValue = 250; // Máxima frustración = mayor intención
-      } else if (value === "Trabajo muchas horas y encima estoy tieso") {
-        painValue = 200; // Alta urgencia económica
-      } else if (value === "Mis clientes no tienen presupuesto (cobro poco y me regatean)") {
-        painValue = 180; // Problema de pricing
+      if (value === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") {
+        painValue = 250;
+      } else if (value === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") {
+        painValue = 200;
+      } else if (value === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") {
+        painValue = 180;
       }
       
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
@@ -234,16 +240,14 @@ const QuizSection = ({
       });
     }
 
-    // Track Q2 - Quiz engagement (Profesión)
+    // Track Q2
     if (currentQuestion.id === 'q2') {
       quizAnalytics.trackQuizEngagement();
     }
 
-    // Track Q3 - ICP Match or Disqualification (Facturación mensual - rangos agencia)
+    // Track Q3
     if (currentQuestion.id === 'q3') {
       const value = currentAnswer as string;
-      
-      // Track ICP match for agency revenue brackets
       if (value === "€5.000 - €10.000/mes") {
         quizAnalytics.trackICPMatch(value);
       } else if (value === "€10.000 - €20.000/mes") {
@@ -255,17 +259,14 @@ const QuizSection = ({
           content_category: 'premium_lead',
           value: 800,
           currency: 'EUR',
-          custom_data: {
-            revenue_bracket: value,
-            high_ltv: true
-          }
+          custom_data: { revenue_bracket: value, high_ltv: true }
         });
       } else if (value === "Menos de €2.000/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
       }
     }
 
-    // Track Q4 - Acquisition Methods
+    // Track Q4
     if (currentQuestion.id === 'q4') {
       const value = currentAnswer as string[];
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
@@ -282,13 +283,12 @@ const QuizSection = ({
       });
     }
 
-    // Track Q5 - Investment capacity
+    // Track Q5 - Investment/Tier
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       
-      if (value !== "Menos de €8.000") {
+      if (value !== "Ahora mismo no puedo invertir en esto") {
         quizAnalytics.trackBudgetQualified(value);
-        // Meta Pixel - Budget Qualified
         quizAnalytics.trackMetaPixelEvent('ViewContent', {
           content_type: 'quiz',
           content_name: 'Budget Capacity Qualified',
@@ -313,21 +313,20 @@ const QuizSection = ({
         content_type: 'quiz',
         content_name: 'Urgency Level Identified',
         content_category: 'quiz_q6_urgency',
-        value: value === 'Mañana mismo' ? 500 : 350,
+        value: value.includes('Esta semana') ? 500 : 350,
         currency: 'EUR',
         custom_data: {
           urgency_level: value,
-          high_urgency: value === 'Mañana mismo',
+          high_urgency: value.includes('Esta semana'),
           question_number: 6
         }
       });
     }
 
-    // Track Q7 - Decision Maker + AddToCart con SCORE COMPLETO (Q1-Q7)
+    // Track Q7 - Decision Maker + AddToCart
     if (currentQuestion.id === 'q7') {
       const value = currentAnswer as string;
       
-      // Meta Pixel - Decision Maker
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'Decision Maker Confirmed',
@@ -335,36 +334,32 @@ const QuizSection = ({
         value: 600,
         currency: 'EUR',
         custom_data: {
-          is_decision_maker: value === 'Yo decido',
+          is_decision_maker: value.includes('Solo yo'),
           decision_maker_type: value,
           question_number: 7,
           ready_for_form: true
         }
       });
       
-      // AHORA sí tenemos TODAS las respuestas (Q1-Q7) para score completo
       const tempAnswers = { ...answers, q7: value };
       const finalScore = calculateScore(tempAnswers);
       const isDisqualified = hasAutoDisqualify(tempAnswers, finalScore);
       
-      // Solo disparar AddToCart si usuario está cualificado
       if (finalScore >= 75 && !isDisqualified) {
-        // Extraer datos del quiz para enrichment
         const painPoint = tempAnswers.q1 as string;
         const profession = tempAnswers.q2 as string;
         const revenueBracket = tempAnswers.q3 as string;
         const acquisitionMethods = tempAnswers.q4 as string[];
         const investmentCapacity = tempAnswers.q5 as string;
         const urgency = tempAnswers.q6 as string;
-        const decisionMaker = value; // Q7
+        const decisionMaker = value;
         
-        // Determinar ICP flags
         const isHighRevenue = ['€5.000 - €10.000/mes', '€10.000 - €20.000/mes', 'Más de €20.000/mes'].includes(revenueBracket);
-        const isHighBudget = ['€15.000 - €30.000', 'Más de €30.000'].includes(investmentCapacity);
-        const isICPMatch = isHighRevenue && isHighBudget;
+        const isDFY = investmentCapacity === "Quiero que lo hagáis todo por mí (desde €15K)";
+        const isDWY = investmentCapacity === "Quiero que me ayudéis a implementarlo (desde €8K)";
+        const isICPMatch = isHighRevenue && (isDFY || isDWY);
         const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
         
-        // Graduar valores según score COMPLETO
         let cartValue = 0;
         let qualificationLevel = '';
         let predictedLTV = 0;
@@ -387,10 +382,8 @@ const QuizSection = ({
           conversionProb = 0.50;
         }
         
-        // Calcular tiempo de completado del quiz
         const quizCompletionTimeSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
         
-        // DISPARAR AddToCart con máximo enrichment
         quizAnalytics.trackMetaPixelEvent('AddToCart', {
           content_type: 'product',
           content_name: 'Círculo Membership',
@@ -401,12 +394,9 @@ const QuizSection = ({
           currency: 'EUR',
           predicted_ltv: predictedLTV,
           custom_data: {
-            // Quiz Score & Qualification (SCORE COMPLETO Q1-Q7)
             quiz_score: finalScore,
             qualification_level: qualificationLevel,
             conversion_probability: conversionProb,
-            
-            // User Profile Data (COMPLETO)
             pain_point: painPoint,
             profession: profession,
             revenue_bracket: revenueBracket,
@@ -414,23 +404,16 @@ const QuizSection = ({
             investment_capacity: investmentCapacity,
             urgency: urgency,
             decision_maker: decisionMaker,
-            
-            // ICP Matching Flags
             is_icp_match: isICPMatch,
             is_high_revenue: isHighRevenue,
-            is_high_budget: isHighBudget,
+            is_dfy: isDFY,
+            is_dwy: isDWY,
             has_acquisition_system: hasAcquisitionSystem,
-            
-            // Behavioral Signals
             quiz_completion_time_seconds: quizCompletionTimeSeconds,
-            
-            // Traffic Source Context
             utm_source: quizAnalytics.utmParams.utm_source || 'direct',
             utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
             utm_campaign: quizAnalytics.utmParams.utm_campaign || 'none',
             device_type: quizAnalytics.deviceType,
-            
-            // Metadata
             quiz_version: 'v2',
             event_timestamp: new Date().toISOString(),
           }
@@ -454,12 +437,10 @@ const QuizSection = ({
     }
 
     if (isLastStep) {
-      // Check if qualified before showing contact form
       const score = calculateScore(answers);
       const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
       
       if (qualified) {
-        // Mostrar formulario de contacto (AddToCart ya se disparó al completar Q7)
         setShowContactForm(true);
       } else {
         onComplete(answers, false);
@@ -474,92 +455,41 @@ const QuizSection = ({
     }
   };
   const handleContactSubmit = async (data: ContactFormData) => {
-    console.log('📋 [FORM SUBMIT] Starting submission process...', {
-      timestamp: new Date().toISOString(),
-      hasName: !!data.name,
-      hasPhone: !!data.phone,
-      hasWebsite: !!data.website
-    });
+    console.log('📋 [FORM SUBMIT] Starting submission process...');
 
-    // Honeypot check - rechazar silenciosamente si el campo está lleno
     if (data.website && data.website.length > 0) {
-      console.log('🤖 [HONEYPOT] Bot detected by honeypot field:', data.website);
-      toast({
-        title: "Error",
-        description: "Hubo un problema. Por favor intenta de nuevo más tarde.",
-        variant: "destructive"
-      });
+      console.log('🤖 [HONEYPOT] Bot detected');
+      toast({ title: "Error", description: "Hubo un problema. Por favor intenta de nuevo más tarde.", variant: "destructive" });
       return;
     }
-    console.log('✅ [HONEYPOT] Honeypot check passed');
 
-    // Rate limiting check - MEJORADO: 5 intentos en 30 minutos
     const lastSubmit = localStorage.getItem('lastSubmitTime');
     const submitCount = parseInt(localStorage.getItem('submitCount') || '0');
     const now = Date.now();
     
-    console.log('🚦 [RATE LIMIT] Checking rate limit...', {
-      lastSubmit,
-      submitCount,
-      now
-    });
-    
     if (lastSubmit) {
       const timeDiff = now - parseInt(lastSubmit);
-      const thirtyMinutes = 30 * 60 * 1000; // ✅ CAMBIO: 30 minutos
-      
-      if (timeDiff < thirtyMinutes && submitCount >= 5) { // ✅ CAMBIO: 5 intentos
-        console.log('❌ [RATE LIMIT] Too many attempts detected:', {
-          attempts: submitCount,
-          timeSinceLastSubmit: Math.floor(timeDiff / 1000) + 's',
-          remainingTime: Math.floor((thirtyMinutes - timeDiff) / 1000) + 's'
-        });
-        
-        toast({
-          title: "Demasiados intentos",
-          description: "Por favor espera unos minutos antes de intentar de nuevo",
-          variant: "destructive"
-        });
+      const thirtyMinutes = 30 * 60 * 1000;
+      if (timeDiff < thirtyMinutes && submitCount >= 5) {
+        toast({ title: "Demasiados intentos", description: "Por favor espera unos minutos antes de intentar de nuevo", variant: "destructive" });
         return;
       }
-      
       if (timeDiff > thirtyMinutes) {
         localStorage.setItem('submitCount', '1');
-        console.log('♻️ [RATE LIMIT] Rate limit reset (30 min passed)');
       } else {
-        const newCount = submitCount + 1;
-        localStorage.setItem('submitCount', newCount.toString());
-        console.log('📊 [RATE LIMIT] Incrementing counter:', newCount + '/5');
+        localStorage.setItem('submitCount', (submitCount + 1).toString());
       }
     } else {
       localStorage.setItem('submitCount', '1');
-      console.log('🆕 [RATE LIMIT] First submission detected');
     }
     localStorage.setItem('lastSubmitTime', now.toString());
-    console.log('✅ [RATE LIMIT] Rate limit check passed');
     setIsSubmitting(true);
 
-    // Combinar countryCode + phone para el campo whatsapp
     const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
-    const contactData = {
-      name: data.name,
-      whatsapp: fullPhone
-    };
-    
-    console.log('📞 [PHONE FORMAT] Formatted phone number:', {
-      countryCode: data.countryCode,
-      rawPhone: data.phone,
-      fullPhone
-    });
+    const contactData = { name: data.name, whatsapp: fullPhone };
 
     const score = calculateScore(answers);
     const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
-    
-    console.log('📊 [SCORING] Quiz scoring results:', {
-      score,
-      qualified,
-      threshold: 75
-    });
     
     const edgeFunctionPayload = {
       ...contactData,
@@ -570,112 +500,42 @@ const QuizSection = ({
       isPartialSubmission: false,
       sessionId: quizAnalytics.getSessionId()
     };
-    
-    console.log('🚀 [EDGE FUNCTION] Invoking submit-lead-to-ghl...', {
-      sessionId: edgeFunctionPayload.sessionId,
-      isPartialSubmission: false
-    });
 
     try {
-      const {
-        data: responseData,
-        error
-      } = await supabase.functions.invoke('submit-lead-to-ghl', {
+      const { data: responseData, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
         body: edgeFunctionPayload
       });
       
-      console.log('📦 [EDGE FUNCTION] Response received:', {
-        hasError: !!error,
-        hasData: !!responseData,
-        dataKeys: responseData ? Object.keys(responseData) : []
-      });
-      
-      if (error) {
-        console.error('❌ [EDGE FUNCTION] Error returned:', {
-          error,
-          message: error.message,
-          details: error
-        });
-        throw error;
-      }
-      
-      console.log('✅ [EDGE FUNCTION] Success response received');
-      console.log('📦 [CONTACT ID] Validating contactId...', {
-        hasContactId: !!responseData?.contactId,
-        contactId: responseData?.contactId,
-        contactIdType: typeof responseData?.contactId,
-        contactIdLength: responseData?.contactId ? responseData.contactId.length : 0,
-        fullResponse: responseData
-      });
+      if (error) throw error;
       
       if (!responseData?.contactId) {
-        console.warn('⚠️ [CONTACT ID] Missing contactId in response!', {
-          response: responseData,
-          responseKeys: responseData ? Object.keys(responseData) : [],
-          success: responseData?.success,
-          message: responseData?.message
-        });
-        
-        // Track error en analytics
-        quizAnalytics.trackValidationError(
-          'contact_form',
-          'missing_contact_id',
-          'Edge function did not return contactId'
-        );
-      } else {
-        console.log('✅ [CONTACT ID] ContactId validated successfully:', {
-          contactId: responseData.contactId,
-          isString: typeof responseData.contactId === 'string',
-          length: responseData.contactId.length
-        });
+        quizAnalytics.trackValidationError('contact_form', 'missing_contact_id', 'Edge function did not return contactId');
       }
-      
-      // Track contact form submission before completing quiz
-      console.log('📊 [ANALYTICS] Tracking contact form submission...', {
-        sessionId: quizAnalytics.getSessionId(),
-        timestamp: new Date().toISOString()
-      });
       
       try {
         await quizAnalytics.submitContactForm();
-        console.log('✅ [ANALYTICS] Contact form submission tracked');
       } catch (error) {
         console.error('⚠️ [ANALYTICS] Failed to track form submission (non-blocking):', error);
       }
       
       quizAnalytics.completeQuiz();
-      console.log('✅ [ANALYTICS] Quiz completion tracked');
       
-      // Enriquecer evento Lead de Meta Pixel con datos ICP
+      // Meta Pixel Lead enrichment
       const revenueAnswer = answers.q3 as string;
       const budgetAnswer = answers.q5 as string;
-    const isICP = revenueAnswer === "€5.000 - €10.000/mes" 
-      || revenueAnswer === "€10.000 - €20.000/mes"
-      || revenueAnswer === "Más de €20.000/mes";
-      const hasBudget = budgetAnswer === "€8.000 - €15.000" 
-        || budgetAnswer === "€15.000 - €30.000"
-        || budgetAnswer === "Más de €30.000";
+      const isICP = revenueAnswer === "€5.000 - €10.000/mes" 
+        || revenueAnswer === "€10.000 - €20.000/mes"
+        || revenueAnswer === "Más de €20.000/mes";
+      const hasBudget = budgetAnswer !== "Ahora mismo no puedo invertir en esto";
 
       let leadValue = 1000;
       if (isICP && hasBudget) leadValue = 2000;
       else if (isICP) leadValue = 1500;
       else if (hasBudget) leadValue = 1200;
 
-      console.log('🎯 [META PIXEL] Enriching Lead event...', {
-        revenueAnswer,
-        budgetAnswer,
-        isICP,
-        hasBudget,
-        leadValue
-      });
-
       quizAnalytics.enrichLeadEvent(leadValue, isICP, revenueAnswer, hasBudget);
-      console.log('✅ [META PIXEL] Lead event enriched with ICP data');
       
-      toast({
-        title: "✅ Perfecto",
-        description: "Tus datos han sido guardados correctamente"
-      });
+      toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados correctamente" });
       
       const finalState = {
         ...answers,
@@ -683,120 +543,110 @@ const QuizSection = ({
         ghlContactId: responseData?.contactId || null
       };
       
-      console.log('🎯 [FINAL STATE] Completing quiz with state:', {
-        hasContactId: !!finalState.ghlContactId,
-        contactId: finalState.ghlContactId,
-        qualified: true
-      });
-      
-      onComplete(finalState, true);
+      // Show micro-commitment screen instead of completing directly
+      setPendingCompleteState({ state: finalState, qualified: true });
+      setShowMicroCommitment(true);
+      setShowContactForm(false);
     } catch (error) {
-      console.error('💥 [ERROR] Failed to submit lead to GHL');
-      console.error('💥 [ERROR] Error type:', error instanceof Error ? error.constructor.name : typeof error);
-      console.error('💥 [ERROR] Error message:', error instanceof Error ? error.message : String(error));
-      console.error('💥 [ERROR] Error stack:', error instanceof Error ? error.stack : 'N/A');
-      console.error('💥 [ERROR] Full error object:', error);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('💥 [ERROR] Failed to submit lead to GHL:', error);
       
       toast({
         title: "⚠️ Error al guardar",
-        description: errorMessage.length > 100 
-          ? "Hubo un problema al guardar tus datos, pero puedes continuar" 
-          : errorMessage,
+        description: "Hubo un problema al guardar tus datos, pero puedes continuar",
         variant: "destructive"
       });
       
-      // Continuar sin contactId - el calendario funcionará pero sin pre-rellenar
-      const finalState = {
-        ...answers,
-        ...contactData,
-        ghlContactId: null
-      };
-      
-      console.log('⚠️ [FALLBACK] Continuing without contactId due to error');
-      console.log('🔄 [FALLBACK] User can still access calendar, but without pre-filled data');
-      
-      onComplete(finalState, true);
+      const finalState = { ...answers, ...contactData, ghlContactId: null };
+      setPendingCompleteState({ state: finalState, qualified: true });
+      setShowMicroCommitment(true);
+      setShowContactForm(false);
     } finally {
-      console.log('🏁 [SUBMIT] Form submission process completed');
       setIsSubmitting(false);
     }
   };
+
+  const handleMicroCommitConfirm = () => {
+    if (pendingCompleteState) {
+      onComplete(pendingCompleteState.state, pendingCompleteState.qualified);
+    }
+  };
+
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - Pain Point/Frustración (0-8 puntos) - Adaptado a agencias
+    // Q1 - Pain Point (0-8 pts)
     if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 8;
     else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 8;
     else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 8;
     else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 8;
     else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 7;
 
-    // Q2 - ICP/Profesión (0-10 puntos) - Agencias/Estudios son ICP
+    // Q2 - Profesión (0-10 pts)
     if (state.q2 === "Agencia de diseño / branding") score += 10;
     else if (state.q2 === "Productora / Estudio audiovisual") score += 10;
     else if (state.q2 === "Estudio de desarrollo / automatización") score += 10;
     else if (state.q2 === "Otro tipo de agencia creativa") score += 9;
 
-    // Q3 - Monthly Revenue (0-30 puntos) - ICP Sweet Spot agencias
-    if (state.q3 === "€5.000 - €10.000/mes") score += 30; // ← ICP SWEET SPOT (agencia media)
-    else if (state.q3 === "€10.000 - €20.000/mes") score += 28; // Alto LTV
-    else if (state.q3 === "Más de €20.000/mes") score += 25; // Premium, no penalizar
-    else if (state.q3 === "€2.000 - €5.000/mes") score += 22; // Potencial ascenso
-    else if (state.q3 === "Menos de €2.000/mes") score += 0; // Demasiado pequeña
+    // Q3 - Revenue (0-30 pts)
+    if (state.q3 === "€5.000 - €10.000/mes") score += 30;
+    else if (state.q3 === "€10.000 - €20.000/mes") score += 28;
+    else if (state.q3 === "Más de €20.000/mes") score += 25;
+    else if (state.q3 === "€2.000 - €5.000/mes") score += 22;
+    else if (state.q3 === "Menos de €2.000/mes") score += 0;
 
-    // Q4 - Métodos de adquisición (0-15 puntos) - Prioriza necesidad de sistema
+    // Q4 - Acquisition (0-15 pts)
     if (Array.isArray(state.q4)) {
       const hasNoSystem = state.q4.includes("Aún no tengo un sistema");
       const methodCount = state.q4.filter(m => m !== "Aún no tengo un sistema").length;
-
-      if (hasNoSystem) {
-        score += 15; // ← CAMBIO: Sin sistema = MÁXIMA necesidad del Círculo
-      } else if (methodCount === 1 || methodCount === 2) {
-        score += 12; // 1-2 métodos = necesita escalar y sistematizar
-      } else if (methodCount === 3) {
-        score += 10; // 3 métodos = disperso, necesita optimizar
-      } else if (methodCount >= 4) {
-        score += 8; // 4+ métodos = muy disperso
-      }
+      if (hasNoSystem) score += 15;
+      else if (methodCount === 1 || methodCount === 2) score += 12;
+      else if (methodCount === 3) score += 10;
+      else if (methodCount >= 4) score += 8;
     }
 
-    // Q5 - Investment Capacity (0-37 puntos) - Pricing 8K/15K/30K
-    if (state.q5 === "Más de €30.000") score += 37;       // Premium
-    else if (state.q5 === "€15.000 - €30.000") score += 37; // DWY
-    else if (state.q5 === "€8.000 - €15.000") score += 25;  // DIY (entrada válida)
-    else if (state.q5 === "Menos de €8.000") score += 0;    // Disqualifies
+    // Q5 - Tier/Investment (0-37 pts) — DFY=37, DWY=30, DIY=20, none=0
+    if (state.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") score += 37;
+    else if (state.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") score += 30;
+    else if (state.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") score += 20;
+    else if (state.q5 === "Ahora mismo no puedo invertir en esto") score += 0;
 
-    // Q6 - Urgencia/Compromiso (0-5 puntos)
-    if (state.q6?.includes("Rápido")) score += 5; // Conversión rápida
-    else if (state.q6?.includes("Gradual")) score += 4; // Buena conversión
+    // Q6 - Urgency (0-5 pts)
+    if (state.q6?.includes("Esta semana")) score += 5;
+    else if (state.q6?.includes("Este mes")) score += 4;
+    else if (state.q6?.includes("explorando")) score += 0;
 
-    // Q7 - Autoridad de decisión (0-5 puntos)
-    if (state.q7 === "Solo yo") score += 5; // Cero fricción en cierre
-    else if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)") score += 3; // Posible fricción
+    // Q7 - Authority (0-5 pts)
+    if (state.q7?.includes("Solo yo")) score += 5;
+    else if (state.q7?.includes("Con mi socio")) score += 3;
+    else if (state.q7?.includes("consultarlo")) score += 0;
     
-    return Math.min(score, 100); // Cap at 100
+    return Math.min(score, 100);
   };
+
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
-    // HARDSTOP #0: Revenue demasiado bajo - No ICP (< €2K/mes para agencias)
+    // HARDSTOP: Revenue demasiado bajo
     if (state.q3 === "Menos de €2.000/mes") return true;
     
-    // HARDSTOP #0.5: Revenue marginal SIN presupuesto
-    if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Menos de €8.000") return true;
+    // HARDSTOP: Revenue marginal + sin inversión
+    if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Ahora mismo no puedo invertir en esto") return true;
     
-    // HARDSTOP #1: Sin capacidad de inversión mínima (threshold €8K para pricing 8K/15K/30K)
-    if (state.q5 === "Menos de €8.000") return true;
+    // HARDSTOP: No puede invertir
+    if (state.q5 === "Ahora mismo no puedo invertir en esto") return true;
     
-    // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
-    if (state.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {
-      return true;
-    }
+    // HARDSTOP: Solo explorando
+    if (state.q6?.includes("explorando")) return true;
+    
+    // HARDSTOP: Necesita consultarlo después
+    if (state.q7?.includes("consultarlo")) return true;
+    
+    // HARDSTOP: Decisión compartida + score bajo
+    if (state.q7?.includes("Con mi socio") && score < 85) return true;
     
     return false;
   };
+
   const renderInput = () => {
-    const skepticOption = "Todo lo anterior (¿Pero de verdad se gana pasta con esto?)";
+    const skepticOption = "Todo lo anterior (¿Pero de verdad se puede escalar esto?)";
     const isQ1 = currentQuestion.id === 'q1';
     
     switch (currentQuestion.type) {
@@ -804,31 +654,21 @@ const QuizSection = ({
         return (
           <>
             <RadioGroup value={answers[currentQuestion.id as keyof QuizState] as string || ""} onValueChange={value => {
-              // El Espejo: Si selecciona "Todo lo anterior" en Q1, mostrar intervención
               if (isQ1 && value === skepticOption) {
                 setShowSkepticChallenge(true);
                 quizAnalytics.trackEvent({ event_type: 'skeptic_challenged', step_id: 'q1', answer_value: value });
-                // NO guardar respuesta ni avanzar
                 return;
               }
               
-              // Si estaba en modo escéptico y ahora elige otra opción, convertir
               if (isQ1 && showSkepticChallenge) {
                 setShowSkepticChallenge(false);
                 quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: value });
               }
               
-              const updatedAnswers = {
-                ...answers,
-                [currentQuestion.id]: value
-              };
+              const updatedAnswers = { ...answers, [currentQuestion.id]: value };
               setAnswers(updatedAnswers);
               quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
-
-              // Auto-avance después de 300ms para dar feedback visual
-              setTimeout(() => {
-                handleNext();
-              }, 300);
+              setTimeout(() => { handleNext(); }, 300);
             }} className="space-y-3">
               {currentQuestion.options?.map(option => {
                 const isSkepticOption = isQ1 && option === skepticOption;
@@ -846,16 +686,8 @@ const QuizSection = ({
                           : 'hover:bg-accent/50'
                     }`}
                   >
-                    <RadioGroupItem 
-                      value={option} 
-                      id={option} 
-                      className="border-2" 
-                      disabled={isDisabledByChallenge}
-                    />
-                    <Label 
-                      htmlFor={option} 
-                      className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-                    >
+                    <RadioGroupItem value={option} id={option} className="border-2" disabled={isDisabledByChallenge} />
+                    <Label htmlFor={option} className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                       {option}
                     </Label>
                   </div>
@@ -863,67 +695,38 @@ const QuizSection = ({
               })}
             </RadioGroup>
             
-            {/* El Espejo - Modal para escépticos */}
+            {/* El Espejo */}
             <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
               <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100vw-2rem)] sm:max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                  {/* Header místico */}
                   <div className="text-center space-y-2">
                     <span className="text-foreground/60 text-lg">⟡</span>
                     <h3 className="text-xl sm:text-2xl font-display font-black text-foreground glow">El Espejo</h3>
                   </div>
                   
-                  {/* Copy brutal */}
                   <div className="space-y-3 text-foreground/90 text-xs sm:text-sm leading-relaxed">
-                    <p>
-                      <span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.
-                    </p>
-                    <p>
-                      Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.
-                    </p>
-                    <p>
-                      Mira, yo no estoy aquí para convencerte de nada.
-                    </p>
-                    <p>
-                      Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.
-                    </p>
-                    <p>
-                      O que crees que me importan algo tus barreras mentales. Que las derribe otro.
-                    </p>
-                    <p className="font-medium text-foreground">
-                      Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.
-                    </p>
+                    <p><span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.</p>
+                    <p>Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.</p>
+                    <p>Mira, yo no estoy aquí para convencerte de nada.</p>
+                    <p>Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.</p>
+                    <p>O que crees que me importan algo tus barreras mentales. Que las derribe otro.</p>
+                    <p className="font-medium text-foreground">Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.</p>
                   </div>
                   
-                  {/* CTA + Opciones dentro del popup */}
                   <div className="pt-4 border-t border-border/30 space-y-3">
                     <div className="text-center space-y-1">
-                      <p className="text-foreground font-semibold text-sm">
-                        ¿Cuál es tu problema REAL?
-                      </p>
-                      <p className="text-foreground/50 text-xs">
-                        👇 Elige (ahora prestando atención)
-                      </p>
+                      <p className="text-foreground font-semibold text-sm">¿Cuál es tu problema REAL?</p>
+                      <p className="text-foreground/50 text-xs">👇 Elige (ahora prestando atención)</p>
                     </div>
                     
-                    {/* Opciones válidas de Q1 dentro del popup */}
                     <div className="space-y-2">
                       {steps[0].options?.filter(opt => opt !== skepticOption).map((option) => (
                         <button
                           key={option}
                           onClick={() => {
-                            // Guardar respuesta + badge escéptico
                             setAnswers({ ...answers, q1: option, isSkeptic: true });
-                            
-                            // Trackear conversión del escéptico
-                            quizAnalytics.trackEvent({ 
-                              event_type: 'skeptic_converted', 
-                              step_id: 'q1', 
-                              answer_value: option 
-                            });
+                            quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: option });
                             quizAnalytics.answerStep('q1', 0, option);
-                            
-                            // Cerrar popup y avanzar instantáneamente a Q2
                             setShowSkepticChallenge(false);
                             setCurrentStep(1);
                           }}
@@ -945,24 +748,100 @@ const QuizSection = ({
                 <Checkbox id={option} checked={(answers.q4 as string[] || []).includes(option)} onCheckedChange={checked => {
               const current = answers.q4 as string[] || [];
               const updated = checked ? [...current, option] : current.filter(v => v !== option);
-              setAnswers({
-                ...answers,
-                q4: updated
-              });
+              setAnswers({ ...answers, q4: updated });
               quizAnalytics.answerStep(currentQuestion.id, currentStep, updated.join(', '));
             }} className="border-2" />
-                <Label htmlFor={option} className="flex-1 cursor-pointer text-base">
-                  {option}
-                </Label>
+                <Label htmlFor={option} className="flex-1 cursor-pointer text-base">{option}</Label>
               </div>)}
           </div>;
     }
   };
+
+  // Micro-commitment screen
+  if (showMicroCommitment) {
+    const firstName = (pendingCompleteState?.state.name || '').split(' ')[0];
+    const tier = answers.q5 as string;
+    const needsPartner = answers.q7?.includes("Con mi socio");
+    
+    const allChecked = microCommitChecks.time && microCommitChecks.investment && (!needsPartner || microCommitChecks.partner);
+
+    return (
+      <div className="w-full space-y-6 animate-fade-in">
+        <div className="text-center space-y-3">
+          <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
+            Perfecto, <span className="glow">{firstName}</span>
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Antes de reservar tu llamada, confirma lo siguiente:
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div 
+            className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setMicroCommitChecks(prev => ({ ...prev, time: !prev.time }))}
+          >
+            <Checkbox 
+              id="mc-time" 
+              checked={microCommitChecks.time}
+              onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, time: !!checked }))}
+              className="border-2 mt-0.5"
+            />
+            <Label htmlFor="mc-time" className="flex-1 cursor-pointer text-sm">
+              Puedo dedicar <strong className="text-foreground">30 minutos sin interrupciones</strong> a la llamada
+            </Label>
+          </div>
+
+          <div 
+            className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+            onClick={() => setMicroCommitChecks(prev => ({ ...prev, investment: !prev.investment }))}
+          >
+            <Checkbox 
+              id="mc-investment" 
+              checked={microCommitChecks.investment}
+              onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, investment: !!checked }))}
+              className="border-2 mt-0.5"
+            />
+            <Label htmlFor="mc-investment" className="flex-1 cursor-pointer text-sm">
+              Tengo la <strong className="text-foreground">capacidad de inversión</strong> que indiqué
+              <span className="block text-xs text-muted-foreground mt-1">{tier}</span>
+            </Label>
+          </div>
+
+          {needsPartner && (
+            <div 
+              className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => setMicroCommitChecks(prev => ({ ...prev, partner: !prev.partner }))}
+            >
+              <Checkbox 
+                id="mc-partner" 
+                checked={microCommitChecks.partner}
+                onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, partner: !!checked }))}
+                className="border-2 mt-0.5"
+              />
+              <Label htmlFor="mc-partner" className="flex-1 cursor-pointer text-sm">
+                Mi <strong className="text-foreground">socio/pareja estará presente</strong> en la llamada
+              </Label>
+            </div>
+          )}
+        </div>
+
+        <Button 
+          onClick={handleMicroCommitConfirm}
+          disabled={!allChecked}
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-40"
+          size="lg"
+        >
+          Confirmo — Reservar mi llamada →
+        </Button>
+      </div>
+    );
+  }
+
   if (showContactForm) {
     return <div className="w-full space-y-4 animate-fade-in">
         <div className="space-y-4">
           <div className="text-center space-y-4">
-            {/* Badge de cualificación */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
               <span className="text-xs font-semibold text-foreground">🔓 Eres digno de cruzar el umbral</span>
             </div>
@@ -975,7 +854,6 @@ const QuizSection = ({
               <em>Clase secreta desbloqueada como bonus.</em> Esta clase no existe para el resto. Solo los que demuestran que van en serio la reciben.
             </p>
 
-            {/* Mini value prop de entrega */}
             <div className="flex items-center justify-center text-xs">
               <span className="font-semibold glow">⚡ Enviada instantáneamente al agendar</span>
             </div>
@@ -985,7 +863,6 @@ const QuizSection = ({
             <form 
               onSubmit={form.handleSubmit(handleContactSubmit)} 
               onKeyDown={(e) => {
-                // Permitir submit con Enter desde cualquier campo
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   form.handleSubmit(handleContactSubmit)();
@@ -993,87 +870,72 @@ const QuizSection = ({
               }}
               className="space-y-4"
             >
-              {/* Campo Honeypot - invisible para usuarios reales */}
-              <FormField control={form.control} name="website" render={({
-              field
-            }) => <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
-                    <FormLabel>Website</FormLabel>
-                    <FormControl>
-                      <Input {...field} type="text" autoComplete="off" tabIndex={-1} />
-                    </FormControl>
-                  </FormItem>} />
+              <FormField control={form.control} name="website" render={({ field }) => 
+                <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl><Input {...field} type="text" autoComplete="off" tabIndex={-1} /></FormControl>
+                </FormItem>
+              } />
 
-              {/* Campo Nombre Completo */}
-              <FormField control={form.control} name="name" render={({
-              field
-            }) => <FormItem>
-                    <FormLabel className="text-sm">Nombre completo</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="Juan Pérez" 
-                        autoComplete="name" 
-                        disabled={isSubmitting}
-                        className="dark-button text-base" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>} />
+              <FormField control={form.control} name="name" render={({ field }) => 
+                <FormItem>
+                  <FormLabel className="text-sm">Nombre completo</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              } />
 
-              {/* Campo Teléfono con Selector de País */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">
                   💬 Tu WhatsApp para enviarte la clase y recordatorios
                 </Label>
                 <div className="grid grid-cols-[140px_1fr] gap-2">
-                  {/* Selector de País */}
-                  <FormField control={form.control} name="countryCode" render={({
-                  field
-                }) => <FormItem>
-                        <Select 
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            setSelectedCountryCode(value);
-                          }} 
-                          value={field.value}
-                          disabled={isSubmitting}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="dark-button text-base" disabled={isSubmitting}>
-                              <SelectValue placeholder="País" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-popover max-h-[300px]">
-                            {TOP_COUNTRY_CODES.map(country => <SelectItem key={country.code} value={country.code} className="cursor-pointer">
-                                {country.flag} {country.code}
-                              </SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>} />
-
-                  {/* Campo de Número */}
-                  <FormField control={form.control} name="phone" render={({
-                  field
-                }) => <FormItem>
+                  <FormField control={form.control} name="countryCode" render={({ field }) => 
+                    <FormItem>
+                      <Select 
+                        onValueChange={(value) => { field.onChange(value); setSelectedCountryCode(value); }} 
+                        value={field.value}
+                        disabled={isSubmitting}
+                      >
                         <FormControl>
-                          <Input 
-                            {...field} 
-                            type="tel" 
-                            placeholder={getPhonePlaceholder(selectedCountryCode)} 
-                            autoComplete="tel-national"
-                            inputMode="numeric"
-                            pattern="[0-9\s\-]*"
-                            disabled={isSubmitting}
-                            className="dark-button text-base" 
-                          />
+                          <SelectTrigger className="dark-button text-base" disabled={isSubmitting}>
+                            <SelectValue placeholder="País" />
+                          </SelectTrigger>
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>} />
+                        <SelectContent className="bg-popover max-h-[300px]">
+                          {TOP_COUNTRY_CODES.map(country => 
+                            <SelectItem key={country.code} value={country.code} className="cursor-pointer">
+                              {country.flag} {country.code}
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  } />
+
+                  <FormField control={form.control} name="phone" render={({ field }) => 
+                    <FormItem>
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          type="tel" 
+                          placeholder={getPhonePlaceholder(selectedCountryCode)} 
+                          autoComplete="tel-national"
+                          inputMode="numeric"
+                          pattern="[0-9\s\-]*"
+                          disabled={isSubmitting}
+                          className="dark-button text-base" 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  } />
                 </div>
               </div>
 
-              {/* 3 bullets poderosos - adaptados a agencias */}
               <div className="text-left space-y-2 pt-2">
                 <ul className="text-xs text-muted-foreground space-y-2">
                   <li className="flex items-start gap-2">
@@ -1108,17 +970,12 @@ const QuizSection = ({
   }
   return <>
     <div className="w-full space-y-4 animate-fade-in">
-      {/* Hero copy integrado - SOLO visible en Q1 */}
-      {currentStep === 0 && <>
-        
-
-      </>}
+      {currentStep === 0 && <></>}
 
       <ProgressBar current={currentStep + 1} total={steps.length} />
 
       <div className="space-y-4">
           <div className="space-y-3">
-            {/* Timer estimado */}
             <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1 animate-pulse">
               <span className="text-base">⏱️</span>
               <span className="text-xs font-semibold text-foreground">
@@ -1126,18 +983,13 @@ const QuizSection = ({
               </span>
             </div>
 
-            {/* Pregunta principal */}
             <h2 className="text-2xl md:text-3xl font-display font-black">
               {currentQuestion.question}
             </h2>
             
-            {/* Subtext contextual */}
             {currentQuestion.subtext && <p className="text-sm text-muted-foreground/90">{currentQuestion.subtext}</p>}
-            
-            {/* Description original (para Q3) */}
             {currentQuestion.description && <p className="text-xs text-muted-foreground/70 italic">{currentQuestion.description}</p>}
 
-            {/* Value stack para Q4 (tributo) */}
             {currentQuestion.valueStack && <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2 mt-3">
                 <p className="text-xs font-semibold text-foreground mb-2">📦 ¿Qué incluye el tributo?</p>
                 {currentQuestion.valueStack.map((item, idx) => <p key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
@@ -1149,7 +1001,6 @@ const QuizSection = ({
 
           {renderInput()}
 
-          {/* Motivador contextual (después de las opciones) */}
           {currentQuestion.motivator && <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
               <p className="text-xs text-muted-foreground flex items-start gap-2">
                 <span className="text-base shrink-0">{currentQuestion.motivator.icon}</span>
