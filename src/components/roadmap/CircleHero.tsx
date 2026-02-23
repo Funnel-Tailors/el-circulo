@@ -186,7 +186,7 @@ const CircleHero = () => {
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          El método (no tan) secreto que puedes utilizar <span className="glow">HOY</span> para conseguir clientes que te paguen <span className="glow">5 cifras</span> por proyecto
+          El método (no tan) secreto para cerrar proyectos de <span className="glow">5 cifras</span> esta misma semana (y en todas las que vengan)
         </h1>
         <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">y cómo aplicarlo para tener un negocio de verdad - en menos de 7 días</p>
       </div>
