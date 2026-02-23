@@ -1,46 +1,22 @@
 
 
-## Mejora de rendimiento del VSL - Fase 2
+## Cambio de titular en RoadmapHero
 
-### Problemas raiz identificados
+### Archivo a modificar
 
-1. **`transition-all duration-300` en el video container**: Cuando el video pasa a sticky/no-sticky, `transition-all` anima TODAS las propiedades CSS (width, position, transform, border-radius...) causando layout thrashing. Debe ser especifico: solo `opacity` y `transform`.
+**`src/components/roadmap/RoadmapHero.tsx`**
 
-2. **`timeupdate` se dispara ~4 veces/segundo**: Aunque hay throttle de 5s, el event listener sigue ejecutandose y evaluando condiciones en cada frame. Mejor usar `setInterval` con polling manual cada 5s y limpiar cuando el video termina.
+- **H1 actual**: `LA SENDA AL CÍRCULO`
+- **H1 nuevo**: `El método (no tan) secreto que puedes utilizar HOY para conseguir clientes que te paguen 5 cifras por proyecto`
+- **Subtítulo actual**: `un sistema paso a paso para que estés buscando clientes en 3 días (y tengas tu sistema en 7)`
+- **Subtítulo nuevo**: `y cómo aplicarlo para tener un negocio de verdad - en menos de 7 días`
 
-3. **`video-glow` en desktop**: La animacion `pulse-video-glow` aplica box-shadow cambiante sobre un elemento `<video>`, que es uno de los elementos mas costosos de repintar. Cambiar a un pseudo-elemento `::after` en el container para que el repaint no afecte al video.
+### Ajustes de estilo
 
-4. **Sticky video causa layout shift**: El toggle entre `fixed` y `relative` con `transition-all` forza un recalculo de layout completo. Usar `will-change: transform` y transiciones especificas.
+El H1 actual usa `text-6xl md:text-8xl uppercase` porque era un título corto tipo marca. El nuevo es una frase larga tipo headline de copy, así que hay que:
 
-5. **`performance.timing.navigationStart` esta deprecated**: Causa warnings y puede fallar en navegadores nuevos. Cambiar a `performance.now()` o `performance.timeOrigin`.
+- Bajar el tamaño a `text-3xl md:text-5xl` para que no ocupe media pantalla
+- Quitar `uppercase` porque el copy tiene mayúsculas/minúsculas intencionales
+- Mantener `font-display font-black tracking-tight glow leading-[0.85em]`
+- Resaltar "HOY" y "5 cifras" con el estilo `glow` o `text-primary` para mantener el punch visual
 
-### Cambios
-
-**1. `src/components/roadmap/CircleHero.tsx`**
-
-- Reemplazar `transition-all duration-300` del video container por `transition-[transform,opacity] duration-300`
-- Mover el glow visual a un wrapper `<div>` en vez de aplicar `video-glow` directamente al `<video>`
-- Reemplazar `timeupdate` listener por `setInterval` de 5s que lee `video.currentTime` -- mismo resultado, 80% menos ejecuciones
-- Anadir `will-change: transform` al container sticky
-- Reemplazar `performance.timing.navigationStart` por `performance.timeOrigin`
-
-**2. `src/index.css`**
-
-- Crear `.video-glow-wrapper` que aplica el glow como `box-shadow` en un div contenedor, no en el `<video>` directamente
-- Esto aísla el repaint del glow del repaint del video
-
-### Seccion tecnica
-
-```text
-PROBLEMA                              IMPACTO          FIX
-────────────────────────────────────  ───────────────  ──────────────────────────────
-transition-all en sticky toggle       Layout thrash    transition-[transform,opacity]
-timeupdate ~4/s con throttle check    CPU innecesaria  setInterval 5s + polling
-video-glow en <video> directamente    Repaint costoso  Mover glow a wrapper div
-performance.timing.navigationStart    Deprecated       performance.timeOrigin
-Sticky sin will-change                Jank en toggle   will-change: transform
-```
-
-Archivos a modificar:
-- `src/components/roadmap/CircleHero.tsx`
-- `src/index.css`
