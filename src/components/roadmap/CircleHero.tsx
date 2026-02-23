@@ -186,10 +186,9 @@ const CircleHero = () => {
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          El problema no es que <span className="glow">no tengas clientes</span>,<br />
-          es que tienes clientes <em className="not-italic glow">de mierda</em>
+          El método (no tan) secreto que puedes utilizar <span className="glow">HOY</span> para conseguir clientes que te paguen <span className="glow">5 cifras</span> por proyecto
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Descubre cómo vender cada día sin depender de la suerte, clientes ratilla o que los astros se alineen para tener un mes bueno</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">y cómo aplicarlo para tener un negocio de verdad - en menos de 7 días</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
