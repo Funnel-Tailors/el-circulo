@@ -777,9 +777,9 @@ const QuizSection = ({
         </div>
 
         <div className="space-y-4">
-          <div 
+          <label 
+            htmlFor="mc-time"
             className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => setMicroCommitChecks(prev => ({ ...prev, time: !prev.time }))}
           >
             <Checkbox 
               id="mc-time" 
@@ -787,14 +787,14 @@ const QuizSection = ({
               onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, time: !!checked }))}
               className="border-2 mt-0.5"
             />
-            <Label htmlFor="mc-time" className="flex-1 cursor-pointer text-sm">
+            <span className="flex-1 text-sm">
               Puedo dedicar <strong className="text-foreground">30 minutos sin interrupciones</strong> a la llamada
-            </Label>
-          </div>
+            </span>
+          </label>
 
-          <div 
+          <label 
+            htmlFor="mc-investment"
             className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-            onClick={() => setMicroCommitChecks(prev => ({ ...prev, investment: !prev.investment }))}
           >
             <Checkbox 
               id="mc-investment" 
@@ -802,16 +802,16 @@ const QuizSection = ({
               onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, investment: !!checked }))}
               className="border-2 mt-0.5"
             />
-            <Label htmlFor="mc-investment" className="flex-1 cursor-pointer text-sm">
+            <span className="flex-1 text-sm">
               Tengo la <strong className="text-foreground">capacidad de inversión</strong> que indiqué
               <span className="block text-xs text-muted-foreground mt-1">{tier}</span>
-            </Label>
-          </div>
+            </span>
+          </label>
 
           {needsPartner && (
-            <div 
+            <label 
+              htmlFor="mc-partner"
               className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-              onClick={() => setMicroCommitChecks(prev => ({ ...prev, partner: !prev.partner }))}
             >
               <Checkbox 
                 id="mc-partner" 
@@ -819,10 +819,10 @@ const QuizSection = ({
                 onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, partner: !!checked }))}
                 className="border-2 mt-0.5"
               />
-              <Label htmlFor="mc-partner" className="flex-1 cursor-pointer text-sm">
+              <span className="flex-1 text-sm">
                 Mi <strong className="text-foreground">socio/pareja estará presente</strong> en la llamada
-              </Label>
-            </div>
+              </span>
+            </label>
           )}
         </div>
 
