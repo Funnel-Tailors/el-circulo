@@ -97,7 +97,7 @@ All colors MUST be HSL.
   h1, h2, h3 {
     font-family: "degular-display", system-ui, -apple-system, "Inter", Arial, sans-serif;
     font-weight: 900;
-    text-transform: uppercase;
+    
     letter-spacing: -0.025em;
     line-height: 1em;
   }
