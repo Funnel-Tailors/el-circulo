@@ -21,60 +21,51 @@ const SPAM_PATTERNS = {
 };
 
 function isSpamSubmission(data: ContactData): { isSpam: boolean; reason?: string } {
-  // Verificar patrones spam en nombre
   if (SPAM_PATTERNS.name.test(data.name.trim())) {
     return { isSpam: true, reason: 'Spam pattern in name' };
   }
-  
-  // Verificar email temporal/spam SOLO si email existe
   if (data.email) {
     const emailLower = data.email.toLowerCase();
     if (SPAM_PATTERNS.email.test(emailLower)) {
       return { isSpam: true, reason: 'Spam pattern in email' };
     }
-    
     const emailDomain = emailLower.split('@')[1];
     if (DISPOSABLE_EMAIL_DOMAINS.includes(emailDomain)) {
       return { isSpam: true, reason: 'Disposable email domain' };
     }
   }
-  
-  // Verificar teléfono con patrón spam
   if (data.whatsapp) {
     const cleanPhone = data.whatsapp.replace(/[^\d]/g, '');
     if (SPAM_PATTERNS.phone.test(cleanPhone)) {
       return { isSpam: true, reason: 'Spam pattern in phone' };
     }
   }
-  
-  // Verificar nombre con palabras repetidas
   const nameWords = data.name.trim().toLowerCase().split(/\s+/);
   if (nameWords.length !== new Set(nameWords).size) {
     return { isSpam: true, reason: 'Repeated words in name' };
   }
-  
   return { isSpam: false };
 }
 
 interface QuizAnswers {
-  q1?: string;  // Pain Point
-  q2?: string;  // Profesión
-  q3?: string;  // Facturación mensual
-  q4?: string[]; // Métodos de adquisición (array)
-  q5?: string;  // Presupuesto de inversión
-  q6?: string;  // Urgencia/Compromiso
-  q7?: string;  // Autoridad de decisión
+  q1?: string;
+  q2?: string;
+  q3?: string;
+  q4?: string[];
+  q5?: string;
+  q6?: string;
+  q7?: string;
 }
 
 interface ContactData {
   name: string;
-  email?: string; // Email ahora opcional
+  email?: string;
   whatsapp?: string;
 }
 
 interface LeadSubmission {
   name: string;
-  email?: string; // Email ahora opcional
+  email?: string;
   whatsapp?: string;
   answers: QuizAnswers;
   score: number;
@@ -83,78 +74,96 @@ interface LeadSubmission {
   isPartialSubmission?: boolean;
   ghlContactId?: string;
   sessionId?: string;
-  isSkeptic?: boolean; // True si entró por popup "El Espejo"
+  isSkeptic?: boolean;
 }
 
 // Helper: Detectar razón específica de hardstop
 function getHardstopReason(answers: QuizAnswers, score: number): string | null {
-  // HARDSTOP #1: Sin capacidad de inversión mínima (threshold €8K)
-  if (answers.q5 === "Menos de €8.000") {
-    return "Sin capacidad de inversión mínima (< 8K)";
+  // HARDSTOP: No puede invertir
+  if (answers.q5 === "Ahora mismo no puedo invertir en esto") {
+    return "Sin capacidad de inversión";
   }
   
-  // HARDSTOP #2: Revenue muy bajo (umbral agencia)
+  // HARDSTOP: Revenue muy bajo
   if (answers.q3 === "Menos de €2.000/mes") {
     return "Revenue muy bajo (< €2K/mes agencia)";
   }
   
-  // HARDSTOP #3: Sin autoridad de decisión + score medio-bajo
-  if (answers.q7 === "Yo con mi pareja/socio (lo invitaré a la llamada)" && score < 85) {
+  // HARDSTOP: Solo explorando
+  if (answers.q6?.includes("explorando")) {
+    return "Solo explorando, sin urgencia";
+  }
+  
+  // HARDSTOP: Necesita consultarlo después
+  if (answers.q7?.includes("consultarlo")) {
+    return "Necesita consultarlo después de la llamada";
+  }
+  
+  // HARDSTOP: Decisión compartida + score bajo
+  if (answers.q7?.includes("Con mi socio") && score < 85) {
     return "Falta autoridad de decisión + score bajo";
   }
   
   return null;
 }
 
-// Helper: Categorizar leads (A+/A/B/C/DQ) - actualizado para pricing 8K/15K/30K
+// Helper: Determinar tier del lead
+function getLeadTier(answers: QuizAnswers): string {
+  if (answers.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") return 'DFY';
+  if (answers.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") return 'DWY';
+  if (answers.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") return 'DIY';
+  return 'NONE';
+}
+
+// Helper: Ticket label para notificaciones
+function getTicketLabel(answers: QuizAnswers): string {
+  const tier = getLeadTier(answers);
+  const labels: Record<string, string> = {
+    'DFY': 'DFY (desde €15K)',
+    'DWY': 'DWY (desde €8K)',
+    'DIY': 'DIY (desde €5K)',
+    'NONE': 'Sin inversión'
+  };
+  return labels[tier] || 'Sin inversión';
+}
+
+// Helper: Categorizar leads (A+/A/B/C/DQ)
 function getLeadCategory(score: number, answers: QuizAnswers): string {
   const hardstop = getHardstopReason(answers, score);
-  
-  // DQ: Disqualified por hardstop
   if (hardstop) return 'DQ';
   
-  // A+: Score 95-110, budget €15K+, autoridad solo
-  if (score >= 95 && 
-      answers.q5 !== "Menos de €8.000" && 
-      answers.q5 !== "€8.000 - €15.000" && // DIY no es A+
-      answers.q7 === "Solo yo") {
+  const tier = getLeadTier(answers);
+  
+  // A+: Score 95+, DFY/DWY, decide solo
+  if (score >= 95 && (tier === 'DFY' || tier === 'DWY') && answers.q7?.includes("Solo yo")) {
     return 'A+';
   }
   
-  // A: Score 85-94, budget €15K+ o autoridad solo
-  if (score >= 85 && 
-      (answers.q5 === "€15.000 - €30.000" || answers.q5 === "Más de €30.000" || answers.q7 === "Solo yo")) {
+  // A: Score 85+, DFY/DWY o decide solo
+  if (score >= 85 && (tier === 'DFY' || tier === 'DWY' || answers.q7?.includes("Solo yo"))) {
     return 'A';
   }
   
-  // B: Score 75-84, cualificado pero con fricciones
-  if (score >= 75) {
-    return 'B';
-  }
+  // B: Score 75+
+  if (score >= 75) return 'B';
   
-  // C: Score < 75, bajo threshold
+  // C: Score < 75
   return 'C';
 }
 
 function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false, isSkeptic: boolean = false): string[] {
   const tags: string[] = [];
   
-  // Tag de escéptico convertido (si aplica)
-  if (isSkeptic) {
-    tags.push('🪞 CÍRCULO-SKEPTIC-CONVERTED');
-  }
+  if (isSkeptic) tags.push('🪞 CÍRCULO-SKEPTIC-CONVERTED');
   
-  // Tag de estado: parcial o completo
   if (isPartial) {
     tags.push('🟡 CÍRCULO-LEAD-PARCIAL');
   } else {
     tags.push('🟢 CÍRCULO-LEAD-COMPLETO');
   }
   
-  // Tag de origen con prefijo CÍRCULO
   tags.push('🎯 CÍRCULO-SOURCE-Quiz2025-v2');
   
-  // Tag de categoría de lead
   const category = getLeadCategory(score, answers);
   const categoryTags: Record<string, string> = {
     'A+': '⭐ CÍRCULO-CATEGORY-A+',
@@ -165,34 +174,26 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   };
   tags.push(categoryTags[category]);
   
-  // Tags de cualificación con threshold 75
   if (score >= 85) {
-    // HOT (85-110 pts)
     tags.push('🔥 CÍRCULO-HOT');
     tags.push('✅ CÍRCULO-CUALIFICADO');
-    if (score >= 95) {
-      tags.push('⭐ CÍRCULO-ICP-PERFECT');
-    } else {
-      tags.push('💎 CÍRCULO-ICP-STRONG');
-    }
+    if (score >= 95) tags.push('⭐ CÍRCULO-ICP-PERFECT');
+    else tags.push('💎 CÍRCULO-ICP-STRONG');
   } else if (score >= 75) {
-    // WARM (75-84 pts)
     tags.push('⭐ CÍRCULO-WARM');
     tags.push('✅ CÍRCULO-CUALIFICADO');
     tags.push('💎 CÍRCULO-ICP-STRONG');
   } else if (score >= 60) {
-    // COLD-MID (60-74 pts)
     tags.push('❄️ CÍRCULO-COLD');
     tags.push('⚠️ CÍRCULO-BAJO-THRESHOLD');
     tags.push('🟡 CÍRCULO-ICP-FAIR');
   } else {
-    // COLD-LOW (0-59 pts)
     tags.push('❄️ CÍRCULO-COLD');
     tags.push('❌ CÍRCULO-NO-CUALIFICADO');
     tags.push('🔴 CÍRCULO-ICP-POOR');
   }
   
-  // Tags de Pain Point (Q1) con prefijo CÍRCULO - adaptado a agencias
+  // Pain (Q1)
   const painMap: Record<string, string> = {
     'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': '🔄 CÍRCULO-PAIN-BadReferrals',
     'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': '🔥 CÍRCULO-PAIN-LowMargin',
@@ -202,7 +203,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   };
   if (answers.q1) tags.push(painMap[answers.q1] || '❓ CÍRCULO-PAIN-Other');
   
-  // Tags de profesión (Q2) con prefijo CÍRCULO - actualizado para agencias
+  // Profession (Q2)
   const professionMap: Record<string, string> = {
     'Agencia de diseño / branding': '🎨 CÍRCULO-PRO-DesignAgency',
     'Productora / Estudio audiovisual': '🎬 CÍRCULO-PRO-Production',
@@ -211,7 +212,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   };
   if (answers.q2) tags.push(professionMap[answers.q2] || '🔹 CÍRCULO-PRO-Other');
   
-  // Tags de facturación mensual (Q3) con prefijo CÍRCULO - rangos agencia
+  // Revenue (Q3)
   const revenueMap: Record<string, string> = {
     'Más de €20.000/mes': '💎 CÍRCULO-REV-20K+',
     '€10.000 - €20.000/mes': '💰 CÍRCULO-REV-10K-20K',
@@ -221,7 +222,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   };
   if (answers.q3) tags.push(revenueMap[answers.q3] || '💰 CÍRCULO-REV-Unknown');
   
-  // Tags de adquisición (Q4) con prefijo CÍRCULO
+  // Acquisition (Q4)
   const acquisitionMap: Record<string, string> = {
     'Recomendaciones': '🤝 CÍRCULO-ACQ-Referrals',
     'Contenido orgánico (redes/web)': '📱 CÍRCULO-ACQ-Organic',
@@ -235,30 +236,32 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Tags de presupuesto de inversión (Q5) con prefijo CÍRCULO - pricing 8K/15K/30K
+  // Tier (Q5) — NEW
   const investmentMap: Record<string, string> = {
-    'Más de €30.000': '💎 CÍRCULO-INV-30K+ (PREMIUM)',
-    '€15.000 - €30.000': '💰 CÍRCULO-INV-15K-30K (DWY)',
-    '€8.000 - €15.000': '💵 CÍRCULO-INV-8K-15K (DIY)',
-    'Menos de €8.000': '❌ CÍRCULO-INV-<8K (DQ)'
+    'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-DFY',
+    'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-DWY',
+    'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-DIY',
+    'Ahora mismo no puedo invertir en esto': '❌ CÍRCULO-TIER-NONE'
   };
-  if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-INV-Unknown');
+  if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-TIER-Unknown');
   
-  // Tags de urgencia/compromiso (Q6) con prefijo CÍRCULO
+  // Urgency (Q6) — NEW
   const urgencyMap: Record<string, string> = {
-    'Ascenso Rápido (7 días, 1-2h/día) - Quiero resultados YA': '🚀 CÍRCULO-FAST-7D',
-    'Ascenso Gradual (30 días, 30-60 min/día) - Sin prisas pero sin pausas': '📈 CÍRCULO-GRAD-30D'
+    'Esta semana - estoy perdiendo dinero cada día que pasa': '🚀 CÍRCULO-URG-ThisWeek',
+    'Este mes - tengo margen pero quiero moverme': '📈 CÍRCULO-URG-ThisMonth',
+    'No tengo prisa, solo estoy explorando': '⏸️ CÍRCULO-URG-Exploring'
   };
-  if (answers.q6) tags.push(urgencyMap[answers.q6] || '⏸️ CÍRCULO-URGENCY-Unknown');
+  if (answers.q6) tags.push(urgencyMap[answers.q6] || '⏸️ CÍRCULO-URG-Unknown');
   
-  // Tags de autoridad de decisión (Q7) con prefijo CÍRCULO
+  // Authority (Q7) — NEW
   const authorityMap: Record<string, string> = {
-    'Solo yo': '👤 CÍRCULO-AUTH-SOLO',
-    'Yo con mi pareja/socio (lo invitaré a la llamada)': '👥 CÍRCULO-AUTH-SHARED'
+    'Solo yo - decido hoy si me convence': '👤 CÍRCULO-AUTH-SOLO',
+    'Con mi socio/pareja - ambos estaremos en la llamada': '👥 CÍRCULO-AUTH-SHARED',
+    'Necesito consultarlo después de la llamada': '🚫 CÍRCULO-AUTH-CONSULT-LATER'
   };
   if (answers.q7) tags.push(authorityMap[answers.q7] || '❓ CÍRCULO-AUTH-Unknown');
   
-  // Tag de hardstop si aplica
+  // Hardstop tag
   const hardstop = getHardstopReason(answers, score);
   if (hardstop) {
     tags.push(`🚫 CÍRCULO-HARDSTOP: ${hardstop}`);
@@ -268,13 +271,12 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
 }
 
 function formatTagsForNotification(tags: string[]): string {
-  // Agrupar tags CÍRCULO por categoría
   const grouped = {
     qualification: tags.filter(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD') || t.includes('CUALIFICADO')),
     profession: tags.filter(t => t.includes('CÍRCULO-PRO-')),
     revenue: tags.filter(t => t.includes('CÍRCULO-REV-')),
-    budget: tags.filter(t => t.includes('CÍRCULO-BUDGET-')),
-    urgency: tags.filter(t => t.includes('CÍRCULO-FAST-') || t.includes('CÍRCULO-PROG-') || t.includes('CÍRCULO-NOT-NOW')),
+    tier: tags.filter(t => t.includes('CÍRCULO-TIER-')),
+    urgency: tags.filter(t => t.includes('CÍRCULO-URG-')),
     authority: tags.filter(t => t.includes('CÍRCULO-AUTH-')),
     acquisition: tags.filter(t => t.includes('CÍRCULO-ACQ-'))
   };
@@ -286,7 +288,7 @@ ${grouped.qualification.join('\n')}
 
 👤 ${grouped.profession.join(', ')}
 💰 ${grouped.revenue.join(', ')}
-💳 ${grouped.budget.join(', ')}
+💎 ${grouped.tier.join(', ')}
 ⚡ ${grouped.urgency.join(', ')}
 🎯 ${grouped.authority.join(', ')}
 📱 ${grouped.acquisition.join(', ')}
@@ -296,8 +298,9 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
-  const hasInvestment = answers.q5 !== 'Menos de €8.000';
-  const fastTrack = answers.q6?.includes('Rápido');
+  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const fastTrack = answers.q6?.includes('Esta semana');
+  const tier = getLeadTier(answers);
   
   if (score >= 85) {
     insights.push('🔥 LEAD HOT (85-110 pts) - Contactar URGENTE');
@@ -309,43 +312,36 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
     insights.push('❄️ Lead COLD (<60 pts) - Considerar nurturing');
   }
   
-  // Pain-specific insights (NUEVOS - priorizar Q1)
   if (answers.q1?.includes('Todo lo anterior') && hasInvestment) {
     insights.push('🚨 CRISIS TOTAL: Todas las fricciones + budget = máximo potencial');
   }
   
-  if (answers.q1?.includes('No tengo clientes') && fastTrack) {
-    insights.push('🎯 SIN LEADS + URGENCIA: Necesita sistema inmediato');
+  if (fastTrack && hasInvestment) {
+    insights.push('🔥 Combinación ideal: Inversión + Urgencia esta semana');
   }
-  
-  if (answers.q1?.includes('Trabajo muchas horas') && lowRevenue) {
-    insights.push('🔥 BURNOUT: Sobretrabajado + mal pagado = explosivo si arreglamos');
-  }
-  
-  if (answers.q1?.includes('Mis clientes no tienen presupuesto') && lowRevenue) {
-    insights.push('💡 ICP EQUIVOCADO: Cobra poco porque vende a quien no debe');
-  }
-  
-  // 🎯 DOLOR AGUDO: Low revenue + investment OK = CLIENTE IDEAL
   
   if (lowRevenue && hasInvestment) {
     insights.push('🎯 DOLOR AGUDO: Cobra poco + tiene inversión = ¡CLIENTE IDEAL!');
   }
   
-  if (hasInvestment && fastTrack) {
-    insights.push('🔥 Combinación ideal: Inversión + Urgencia');
+  if (answers.q1?.includes('Trabajo muchas horas') || answers.q1?.includes('Trabajamos muchas horas')) {
+    if (lowRevenue) insights.push('🔥 BURNOUT: Sobretrabajado + mal pagado = explosivo si arreglamos');
   }
   
-  if (answers.q7 === 'Solo yo') {
+  if (answers.q7?.includes('Solo yo')) {
     insights.push('✓ Decisor único - Proceso de venta simplificado');
-  } else if (answers.q7 === 'Yo con mi pareja/socio (lo invitaré a la llamada)') {
+  } else if (answers.q7?.includes('Con mi socio')) {
     insights.push('⚠️ Decisión compartida - Considerar segundo contacto');
+  }
+  
+  if (tier !== 'NONE') {
+    insights.push(`💎 Tier: ${getTicketLabel(answers)}`);
   }
   
   return insights.join('\n');
 }
 
-// Pain-specific content objects - adaptado a agencias
+// Pain-specific content objects
 const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
   'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': {
     hot: 'El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco — y atraen más de lo mismo. Los miembros del Círculo dejan de depender de esas cadenas y empiezan a atraer clientes que pagan €10K+ sin pestañear.',
@@ -418,8 +414,9 @@ const painOpeningAngles: Record<string, string[]> = {
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
-  const hasMoney = answers.q5 !== 'Menos de €8.000';
-  const fastTrack = answers.q6?.includes('Rápido');
+  const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const fastTrack = answers.q6?.includes('Esta semana');
+  const tier = getLeadTier(answers);
   
   switch(pain) {
     case 'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)':
@@ -427,7 +424,7 @@ function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number
         levers.push('• CADENA TÓXICA: Referidos de clientes baratos + tiene budget = romper ciclo rápido');
       }
       if (fastTrack) {
-        levers.push('• URGENCIA: Necesita leads de calidad YA = implementación Sprint 7 días');
+        levers.push('• URGENCIA: Necesita leads de calidad esta semana');
       }
       levers.push('• SOLUCIÓN: Reposicionamiento ICP + nuevo sistema de captación');
       break;
@@ -476,62 +473,63 @@ function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number
       break;
   }
   
+  if (tier !== 'NONE') {
+    levers.push(`• TIER: ${getTicketLabel(answers)}`);
+  }
+  
   return levers;
 }
 
 const painPrepQuestions: Record<string, string[]> = {
-  'Mis clientes no tienen presupuesto': [
-    '¿Qué tipo de clientes persigues actualmente?',
-    '¿Cuánto cobras de media por proyecto?',
-    '¿Por qué crees que te regatean?'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': [
+    '¿De dónde vienen la mayoría de vuestros clientes actuales?',
+    '¿Cuánto cobráis de media por proyecto?',
+    '¿Qué tipo de clientes queréis atraer?'
   ],
-  'Trabajo muchas horas y encima estoy tieso': [
-    '¿Cuántas horas trabajas por semana?',
-    '¿Qué cobras por proyecto actualmente?',
-    '¿Dónde se va tu tiempo sin generar pasta?'
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': [
+    '¿Cuántas horas trabaja el equipo por semana?',
+    '¿Qué cobráis por proyecto actualmente?',
+    '¿Dónde se va vuestro tiempo sin generar margen?'
   ],
-  'No tengo clientes suficientes (no sé ni por donde empezar)': [
-    '¿Cuántos leads tienes al mes actualmente?',
-    '¿Qué has probado para conseguir clientes?',
-    '¿Qué te frena ahora mismo?'
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': [
+    '¿Cuántos leads tenéis al mes actualmente?',
+    '¿Qué habéis probado para tener flujo constante?',
+    '¿Qué os frena ahora mismo?'
   ],
-  'No sé cómo vender lo que hago sin que regateen': [
-    '¿Cómo presentas actualmente tus servicios?',
-    '¿Cuál es la objeción más común que recibes?',
-    '¿Cuánto cobras actualmente vs. cuánto quieres cobrar?'
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': [
+    '¿Cómo presentáis actualmente vuestros servicios?',
+    '¿Cuál es la objeción más común que recibís?',
+    '¿Cuánto cobráis actualmente vs. cuánto queréis cobrar?'
   ],
-  'Todo lo anterior': [
-    '¿Cuál de todas las fricciones te afecta más?',
-    '¿Cuánto tiempo llevas en esta situación?',
-    '¿Qué esperas lograr en los próximos 90 días?'
+  'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': [
+    '¿Cuál de todas las fricciones os afecta más?',
+    '¿Cuánto tiempo lleváis en esta situación?',
+    '¿Qué esperáis lograr en los próximos 90 días?'
   ]
 };
 
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
-  const hasInvestment = answers.q5 !== 'Menos de €8.000';
-  const fastTrack = tags.some(t => t.includes('FAST-7D'));
+  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const fastTrack = answers.q6?.includes('Esta semana');
   const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const tier = getLeadTier(answers);
+  const ticketLabel = getTicketLabel(answers);
   
-  // 🎯 CLIENTE IDEAL = Low revenue + investment OK
   const isIdealClient = lowRevenue && hasInvestment;
-  
-  // Emoji de temperatura e ICP tag para escaneo visual
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  // Determinar urgencia de contacto según pain + otros factores
   let contactWindow = '⏰ CONTACTAR: En las próximas 48h';
   
   if (isIdealClient && answers.q1?.includes('Todo lo anterior')) {
     contactWindow = '🚨 CRISIS TOTAL + BUDGET - CONTACTAR INMEDIATO';
   } else if (isIdealClient && fastTrack) {
     contactWindow = '🚨 CLIENTE IDEAL - CONTACTAR URGENTE: En las próximas 2 horas';
-  } else if (answers.q1?.includes('No tengo clientes') && hasInvestment) {
-    contactWindow = '🎯 DOLOR AGUDO (sin leads) + BUDGET - CONTACTAR HOY';
-  } else if (answers.q1?.includes('Trabajo muchas horas') && score >= 85) {
+  } else if (answers.q1?.includes('Tenemos meses buenos') && hasInvestment && fastTrack) {
+    contactWindow = '🎯 INCONSISTENCIA + URGENCIA + BUDGET - CONTACTAR HOY';
+  } else if (answers.q1?.includes('Trabajamos muchas horas') && score >= 85) {
     contactWindow = '🔥 BURNOUT + SCORE ALTO - PRIORIDAD ALTA';
   } else if (isIdealClient) {
     contactWindow = '🎯 CLIENTE IDEAL - CONTACTAR HOY: Antes de las 20:00';
@@ -541,7 +539,6 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
     contactWindow = '🔥 CONTACTAR HOY: Antes de las 20:00';
   }
   
-  // Score visual actualizado (máximo 110)
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
   
   return `
@@ -557,8 +554,8 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente (<8K)'}
-${hasInvestment ? `💎 RECOMENDACIÓN: ${answers.q5 === '€8.000 - €15.000' ? 'TICKET 8K DIY' : answers.q5 === '€15.000 - €30.000' ? 'TICKET 15K DWY' : 'TICKET 30K PREMIUM'}` : ''}
+• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'}
+• Urgencia: ${answers.q6}
 • Decide: ${answers.q7}
 
 📞 CONTACTO:
@@ -578,32 +575,29 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const hasInvestment = answers.q5 !== 'Menos de €8.000';
-  const fastTrack = tags.some(t => t.includes('FAST-7D'));
-  const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
+  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const fastTrack = answers.q6?.includes('Esta semana');
+  const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const ticketLabel = getTicketLabel(answers);
   
-  // Solo objeciones REALES
   const realObjections: string[] = [];
-  if (!hasInvestment) realObjections.push('⚠️ Inversión insuficiente');
+  if (!hasInvestment) realObjections.push('⚠️ Sin inversión');
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
   
-  // Palancas críticas específicas por pain
   const painLevers = getPainCriticalLevers(answers.q1 || '', answers, score);
   const criticalOpportunities: string[] = [...painLevers];
   
-  // Añadir oportunidades genéricas solo si no están ya en painLevers
   if (score >= 85 && !painLevers.some(l => l.includes('SCORE ALTO'))) {
     criticalOpportunities.push('• HOT Lead - Prioridad máxima');
   }
   if (fastTrack && hasInvestment && !painLevers.some(l => l.includes('URGENCIA'))) {
-    criticalOpportunities.push('• Inversión + Urgencia = Cierre inmediato');
+    criticalOpportunities.push('• Inversión + Urgencia esta semana = Cierre inmediato');
   }
   if (authSolo) {
     criticalOpportunities.push('• Decisor único');
   }
   
-  // Estrategia en 1 línea
   let strategy = '';
   if (lowRevenue && hasInvestment && fastTrack) {
     strategy = 'CLIENTE IDEAL → Admisión directa si fit mínimo en primeros 15min (máximo potencial de crecimiento)';
@@ -628,9 +622,9 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 ⚡ RESUMEN INICIÁTICO:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${answers.q5} → ${answers.q5 === '€8.000 - €15.000' ? 'TICKET 8K DIY' : answers.q5 === '€15.000 - €30.000' ? 'TICKET 15K DWY' : 'TICKET 30K PREMIUM'}` : '❌ Insuficiente (<8K)'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
-• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
+• Urgencia: ${answers.q6}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
 ${realObjections.length > 0 ? `\n⚠️ FRICCIONES:\n${realObjections.map(o => `• ${o.replace('⚠️ ', '')}`).join('\n')}` : ''}
 
@@ -639,19 +633,18 @@ ${strategy}
   `.trim();
 }
 
-// Helper: Generar insights personalizados según respuestas del quiz (PAIN-FIRST)
+// Helper: Generar insights personalizados (PAIN-FIRST)
 function generatePersonalizedInsight(answers: QuizAnswers, score: number): string {
   const pain = answers.q1 || '';
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
-  const midRevenue = answers.q3 === '€2.500 - €5.000/mes' || answers.q3 === 'Más de €5.000/mes';
-  const hasMoney = answers.q5 !== 'Menos de €8.000';
-  const lowInvestment = answers.q5 === 'Menos de €8.000' || answers.q5 === '€8.000 - €15.000';
-  const fastTrack = answers.q6?.includes('Rápido');
-  const gradual = answers.q6?.includes('Gradual');
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
+  const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const isDIY = answers.q5 === 'Quiero hacerlo yo con guía paso a paso (desde €5K)';
+  const fastTrack = answers.q6?.includes('Esta semana');
+  const gradual = answers.q6?.includes('Este mes');
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
-  const soloDecision = answers.q7 === 'Solo yo';
+  const soloDecision = answers.q7?.includes('Solo yo');
   
-  // Pain-first approach: priorizar insights específicos por Q1
   const painInsight = painInsights[pain];
   if (painInsight) {
     if (score >= 85) return painInsight.hot;
@@ -659,7 +652,6 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return painInsight.cold;
   }
   
-  // Fallback: HOT Insights por situación específica
   if (lowRevenue && hasMoney) {
     return 'Cobras poco pero tienes para invertir en ti mismo. El problema no es la pasta. Es que nadie te enseñó a pedir más sin que te tiemble la voz.';
   }
@@ -676,9 +668,8 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return 'Tu perfil tiene todas las marcas de alguien listo para el siguiente nivel. Solo falta que decidas dar el paso.';
   }
   
-  // WARM Insights
-  if (lowInvestment && score >= 60) {
-    return 'No estás seguro de si puedes permitirte invertir. Normal. Cuando ves algo como "gasto", dudas. Cuando lo ves como lo que es, decides. En la evaluación descubrimos si tiene sentido para ti.';
+  if (isDIY && score >= 60) {
+    return 'Quieres hacerlo tú con guía. Bien. Pero si llevas meses intentándolo solo sin resultados, quizá el problema no es la guía. Es la ejecución. En la evaluación descubrimos si tiene sentido.';
   }
   
   if (!soloDecision && score >= 60) {
@@ -686,10 +677,9 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   if (gradual && score >= 60) {
-    return 'Eliges el camino gradual. Inteligente. Pero gradual no significa dudar eternamente. En la evaluación veremos si hay alineación real.';
+    return 'Tienes margen pero quieres moverte este mes. Inteligente. En la evaluación veremos si hay alineación real.';
   }
   
-  // COLD Insights
   if (!hasMoney && score < 60) {
     return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. El Círculo no es para quien no puede. Es para quien decide que tiene que hacerlo.';
   }
@@ -698,7 +688,6 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return 'Cobras poco y no tienes para invertir. Eso es un círculo vicioso. Necesitas romperlo. Pero primero necesitas creer que puedes cobrar 10 veces más por lo que ya haces.';
   }
   
-  // Default por score
   if (score >= 75) {
     return 'Tu perfil muestra que estás cerca. Muy cerca. Solo falta el último empujón.';
   } else if (score >= 60) {
@@ -708,7 +697,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
 }
 
-// Helper: Generar notas contextuales según perfil del lead (PAIN-FIRST)
+// Helper: Generar notas contextuales (PAIN-FIRST)
 function generateContextualNote(
   answers: QuizAnswers, 
   tags: string[], 
@@ -716,20 +705,17 @@ function generateContextualNote(
   score: number
 ): string {
   const pain = answers.q1 || '';
-  const fastTrack = answers.q6?.includes('Rápido');
+  const fastTrack = answers.q6?.includes('Esta semana');
   const socialMediaDependent = Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)');
   const isAutomator = answers.q2 === 'Automatizador';
-  const noSoloDecision = answers.q7 !== 'Solo yo';
+  const noSoloDecision = !answers.q7?.includes('Solo yo');
   
-  // Uso de "malito" con 30% de probabilidad en HOT/WARM
   const shouldUseMalito = (isHot || score >= 60) && Math.random() < 0.3;
   
-  // Pain-first notes (70% probabilidad)
   if (painContextualNotes[pain] && Math.random() < 0.7) {
     return painContextualNotes[pain];
   }
   
-  // Malito override (30% en HOT/WARM)
   if (shouldUseMalito) {
     if (score < 75) {
       return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial de miembro honorario si das el paso.';
@@ -738,7 +724,6 @@ function generateContextualNote(
     }
   }
   
-  // Fallback: notas contextuales por situación
   if (isHot && fastTrack) {
     return '⚡ Nota: Tu urgencia es real. Reserva en las próximas 8 horas y tendrás análisis preliminar en 24h.';
   }
@@ -763,27 +748,19 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const isWarm = tags.some(t => t.includes('CÍRCULO-WARM'));
   
-  // Identidades profesionales - actualizado para agencias
   const professionIdentity: Record<string, string> = {
     'Agencia de diseño / branding': 
       'Mientras otras agencias pelean por proyectos de 2.000€, hay estudios que cobran 15.000€ por lo mismo. Misma entrega. Distinta conversación.',
-    
     'Productora / Estudio audiovisual': 
       'Hay productoras que cobran 3.000€ por un vídeo. Y hay estudios que cobran 20.000€ por el mismo día de rodaje. Mismo equipo. Diferente forma de venderlo.',
-    
     'Estudio de desarrollo / automatización': 
       'Montar un proceso te paga 1.500€. Diseñar un sistema que escala un negocio sin que nadie toque nada te paga 25.000€. Mismo trabajo. Diferente forma de venderlo.',
-    
     'Otro tipo de agencia creativa': 
       'La habilidad ya la tiene tu equipo. Lo que falta es saber qué decir para que un cliente te pague lo que vale vuestro tiempo. Sin mendigar. Sin regateos. Sin clientes tóxicos.'
   };
   
   const identity = professionIdentity[answers.q2 || ''] || professionIdentity['Otro tipo de agencia creativa'];
-  
-  // Generar insight personalizado
   const personalizedInsight = generatePersonalizedInsight(answers, score);
-  
-  // Generar nota contextual
   const contextualNote = generateContextualNote(answers, tags, isHot, score);
   
   if (isHot) {
@@ -838,7 +815,6 @@ Si hay fit, recibirás el siguiente paso. Si no, al menos sabrás por qué.
 El Círculo
     `.trim();
   } else {
-    // COLD
     return `
 ${firstName}.
 
@@ -868,7 +844,6 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const pain = answers.q1 || '';
   
-  // Objetivos específicos por profesión - actualizado para agencias
   const professionGoals: Record<string, { goal: string; prep: string[] }> = {
     'Agencia de diseño / branding': {
       goal: 'convertir tu agencia en el estudio de referencia de tu nicho',
@@ -1021,26 +996,24 @@ El Círculo
 
 // ============= PRE-BOOKING FOLLOW-UPS SYSTEM =============
 
-// Agitación basada en score (sin mostrar puntuación)
 const scoreAgitations = {
-  hot: { // 90+
+  hot: {
     initial: 'Lo tienes todo para hacerlo.\nEl talento. La experiencia. Hasta el hambre.\n\nPero sigues aquí, dándole vueltas.',
     mid: 'Sabes exactamente lo que hay que hacer. Pero sigues sin hacerlo.',
     urgency: 'Lo tienes todo para hacerlo.\nPero "tenerlo todo" sin dar el paso es exactamente lo mismo que no tener nada.'
   },
-  qualified: { // 80-89
+  qualified: {
     initial: 'Sabes exactamente lo que hay que hacer.\nPero no lo haces.\n\nSigues puliendo el portfolio, optimizando la bio, esperando que el algoritmo te descubra.',
     mid: 'Sabes exactamente lo que hay que hacer. Pero sigues sin hacerlo.',
     urgency: 'El problema no es que no sepas qué hacer.\nEs que llevas meses (¿años?) sin hacerlo.'
   },
-  marginal: { // 75-79
-    initial: 'Llevas tanto tiempo así que ya te has convencido de que es normal.\n\nClientes que regatean. Ghosting de manual. Trabajar hasta las 23:47 por cuatro duros.\n\nNo es normal. Es lo que pasa cuando sabes hacer el trabajo pero no sabes venderlo.',
-    mid: 'Llevas tanto tiempo así que ya te has convencido de que es normal.',
-    urgency: 'Cada día que pasa sin cambiar nada es un día más convenciéndote de que esto es normal.\nNo lo es.'
+  marginal: {
+    initial: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal.\n\nClientes que regatean. Ghosting de manual. Trabajar hasta las 23:47 por cuatro duros.\n\nNo es normal. Es lo que pasa cuando sabéis hacer el trabajo pero no sabéis venderlo.',
+    mid: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal.',
+    urgency: 'Cada día que pasa sin cambiar nada es un día más convenciéndoos de que esto es normal.\nNo lo es.'
   }
 };
 
-// Casos de éxito por profesión - actualizado para agencias
 const successStoriesMap: Record<string, string> = {
   'Agencia de diseño / branding': 
     'Nico pasó de cobrar 200€ a más de 1.000€ por proyecto.\nFelipe consiguió sus primeras llamadas de venta para proyectos de 2.000€ y 5.000€ en 7 días.',
@@ -1052,91 +1025,86 @@ const successStoriesMap: Record<string, string> = {
     'Cris fue de lanzamientos fallidos a tiburona de ventas.\nUn solo cambio de mentalidad lo cambió todo.'
 };
 
-// Realidades cotidianas incómodas (sin anglicismos)
 const dailyRealities: Record<string, string[]> = {
-  'Mis clientes no tienen presupuesto': [
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': [
     'Probablemente ayer pasaste 2 horas en una videollamada con alguien que al final te pidió presupuesto "sin compromiso". Ya sabes cómo acaba eso.',
     'Esta mañana te despertaste pensando en cuántas propuestas has enviado esta semana que no han contestado. Ninguna llevaba tu precio real.',
     'Llevas 3 días dándole vueltas a si bajar el precio de ese proyecto. Ya sabes que aunque lo bajes, no te lo van a pagar.',
     'El domingo por la tarde revisaste tu cuenta bancaria. Luego abriste Instagram y viste a alguien de tu profesión cerrando proyectos de 5.000€. El lunes volviste a cobrar 400€.',
     'Ayer te llegó otro "me encanta tu trabajo pero ahora mismo no tengo presupuesto". Esta semana van tres. El mes pasado fueron once.'
   ],
-  'Trabajo muchas horas y encima estoy tieso': [
-    'Anoche te quedaste hasta las 00:37 terminando algo que cobras 600€. Hoy te levantaste cansado sabiendo que tienes tres proyectos más igual de mal pagados.',
-    'Esta semana trabajaste 52 horas. Cobraste menos que alguien que trabaja 20. Sabes hacer el trabajo. No sabes venderlo.',
-    'El viernes pasado enviaste el último entregable de la semana. Eran las 22:14. Has cobrado 1.200€ por 40 horas de trabajo. Haces las cuentas: 30€/hora. Y tú vales 10 veces eso.',
-    'Llevas dos semanas con un proyecto que te está consumiendo. Lo cobras 800€. Ya llevas metidas 35 horas y aún quedan revisiones. Sabes que vas a perder dinero pero ya es tarde para parar.',
-    'El domingo por la noche miraste tu agenda de la semana que viene. Está llena. Y aún así no llegas a fin de mes. Algo está roto.'
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': [
+    'Anoche os quedasteis hasta las 00:37 terminando algo que cobráis 600€. Hoy os levantasteis cansados sabiendo que tenéis tres proyectos más igual de mal pagados.',
+    'Esta semana trabajasteis 52 horas. Cobrasteis menos que alguien que trabaja 20. Sabéis hacer el trabajo. No sabéis venderlo.',
+    'El viernes pasado enviasteis el último entregable de la semana. Eran las 22:14. Habéis cobrado 1.200€ por 40 horas de trabajo. Hacéis las cuentas: 30€/hora. Y valéis 10 veces eso.',
+    'Lleváis dos semanas con un proyecto que os está consumiendo. Lo cobráis 800€. Ya lleváis metidas 35 horas y aún quedan revisiones. Sabéis que vais a perder dinero pero ya es tarde para parar.',
+    'El domingo por la noche mirasteis la agenda de la semana que viene. Está llena. Y aún así no llegáis a fin de mes. Algo está roto.'
   ],
-  'No tengo clientes suficientes (no sé ni por donde empezar)': [
-    'Llevas 11 días sin que nadie te escriba preguntando por tu trabajo. Actualizaste el portfolio hace 3 semanas. Optimizaste la biografía hace 10 días. Publicaste contenido "de valor" ayer. Nada.',
-    'Esta mañana abriste Instagram esperando un mensaje. Nada. Revisaste el correo. Nada. Miraste LinkedIn. Nada. Llevas 4 meses así.',
-    'El mes pasado conseguiste 2 clientes. Los dos llegaron por recomendación. Cuando se acaben estos proyectos, vuelta a cero. Sabes hacer el trabajo. No sabes conseguir clientes.',
-    'Ayer publicaste que "abrías agenda para nuevos proyectos". Sabes que está tan abierta como vacía. Y todos lo saben también.',
-    'Llevas 6 meses esperando que el algoritmo te descubra. Tienes el portfolio perfecto. La bio optimizada. El contenido impecable. Y cero leads.'
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': [
+    'Lleváis 11 días sin que nadie os escriba preguntando por vuestro trabajo. Actualizasteis el portfolio hace 3 semanas. Optimizasteis la biografía hace 10 días. Publicasteis contenido "de valor" ayer. Nada.',
+    'Esta mañana abristeis Instagram esperando un mensaje. Nada. Revisasteis el correo. Nada. Mirasteis LinkedIn. Nada. Lleváis 4 meses así.',
+    'El mes pasado conseguisteis 2 clientes. Los dos llegaron por recomendación. Cuando se acaben estos proyectos, vuelta a cero. Sabéis hacer el trabajo. No sabéis conseguir clientes.',
+    'Ayer publicasteis que "abríais agenda para nuevos proyectos". Sabéis que está tan abierta como vacía. Y todos lo saben también.',
+    'Lleváis 6 meses esperando que el algoritmo os descubra. Tenéis el portfolio perfecto. La bio optimizada. El contenido impecable. Y cero leads.'
   ],
-  'No sé cómo vender lo que hago sin que regateen': [
-    'La semana pasada enviaste una propuesta de 2.400€. Te contestaron "está un poco fuera de presupuesto, ¿tienes algo más económico?". Te adelantaste tú y bajaste a 1.800€. Aún no te han contestado.',
-    'Ayer pasaste 3 horas preparando un presupuesto detallado de 14 páginas. Lo enviaste. Te respondieron "gracias, lo vemos y te decimos". Ya sabes que es un no.',
-    'Esta mañana te llegó otro "me encanta pero es que ahora mismo...". Es el cuarto este mes. Todos te dijeron que sí al principio. Ninguno te pagó lo que pediste.',
-    'El viernes cerraste un proyecto de 1.200€. El cliente te dijo que era mucho. Le explicaste todo el trabajo que conlleva. Aceptó. Pero te quedaste con la sensación de que podrías haber cobrado el doble si hubieras sabido qué decir.',
-    'Llevas 3 días dándole vueltas a cómo presentar tu nuevo servicio. No sabes si poner precio en la web. No sabes cómo justificarlo. No sabes qué decir cuando te pregunten "¿y por qué tan caro?".'
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': [
+    'La semana pasada enviasteis una propuesta de 2.400€. Os contestaron "está un poco fuera de presupuesto, ¿tenéis algo más económico?". Os adelantasteis y bajasteis a 1.800€. Aún no os han contestado.',
+    'Ayer pasasteis 3 horas preparando un presupuesto detallado de 14 páginas. Lo enviasteis. Os respondieron "gracias, lo vemos y os decimos". Ya sabéis que es un no.',
+    'Esta mañana os llegó otro "me encanta pero es que ahora mismo...". Es el cuarto este mes. Todos os dijeron que sí al principio. Ninguno os pagó lo que pedisteis.',
+    'El viernes cerrasteis un proyecto de 1.200€. El cliente os dijo que era mucho. Le explicasteis todo el trabajo que conlleva. Aceptó. Pero os quedasteis con la sensación de que podríais haber cobrado el doble si hubierais sabido qué decir.',
+    'Lleváis 3 días dándole vueltas a cómo presentar vuestro nuevo servicio. No sabéis si poner precio en la web. No sabéis cómo justificarlo. No sabéis qué decir cuando os pregunten "¿y por qué tan caro?".'
   ],
-  'Todo lo anterior': [
-    'Esta semana trabajaste 47 horas. Cobraste 1.100€. Tienes el portfolio actualizado al milímetro. Cero leads nuevos. Y un cliente que lleva 5 días sin contestar si aprueba o no el presupuesto.',
-    'Anoche te quedaste hasta la 01:22 terminando un proyecto mal pagado. Esta mañana revisaste Instagram esperando algún lead. Nada. Abriste el correo. Un mensaje: "me encanta tu trabajo pero ahora mismo no tengo presupuesto".',
-    'Llevas 9 días sin que nadie te pregunte por tu trabajo. Tienes 3 proyectos activos mal pagados. Y acabas de actualizar la biografía por decimoquinta vez esperando que algo cambie.',
-    'El domingo hiciste cuentas: este mes has trabajado 180 horas y has cobrado 2.300€. Sabes que algo no funciona. Pero no sabes exactamente qué.',
-    'Ayer viste a alguien de tu profesión cerrar un proyecto de 7.000€. Tú llevas toda la semana negociando 600€ con alguien que probablemente te va a pedir descuento.'
+  'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': [
+    'Esta semana trabajasteis 47 horas. Cobrasteis 1.100€. Tenéis el portfolio actualizado al milímetro. Cero leads nuevos. Y un cliente que lleva 5 días sin contestar si aprueba o no el presupuesto.',
+    'Anoche os quedasteis hasta la 01:22 terminando un proyecto mal pagado. Esta mañana revisasteis Instagram esperando algún lead. Nada. Abristeis el correo. Un mensaje: "me encanta vuestro trabajo pero ahora mismo no tengo presupuesto".',
+    'Lleváis 9 días sin que nadie os pregunte por vuestro trabajo. Tenéis 3 proyectos activos mal pagados. Y acabáis de actualizar la biografía por decimoquinta vez esperando que algo cambie.',
+    'El domingo hicisteis cuentas: este mes habéis trabajado 180 horas y habéis cobrado 2.300€. Sabéis que algo no funciona. Pero no sabéis exactamente qué.',
+    'Ayer visteis a alguien de vuestra profesión cerrar un proyecto de 7.000€. Vosotros lleváis toda la semana negociando 600€ con alguien que probablemente os va a pedir descuento.'
   ]
 };
 
-// El miedo a actuar (según nivel de score)
 const fearCalls: Record<'hot' | 'qualified' | 'marginal', string[]> = {
   hot: [
-    'Lo tienes todo para hacerlo. El talento. La experiencia. El hambre.\n\nPero sigues aquí. Leyendo. Dándole vueltas. Esperando el momento perfecto que nunca llega.',
-    'Sabes exactamente lo que hay que hacer. Lo has sabido desde el primer mensaje.\n\nPero no lo haces.\n\nPorque hacer algo diferente da miedo. Aunque lo que haces ahora no funcione.',
-    'La única diferencia entre donde estás y donde quieres estar es una decisión.\n\nPero llevas días posponíendola. Porque es más fácil quedarse donde ya conoces el dolor.'
+    'Lo tenéis todo para hacerlo. El talento. La experiencia. El hambre.\n\nPero seguís aquí. Leyendo. Dándole vueltas. Esperando el momento perfecto que nunca llega.',
+    'Sabéis exactamente lo que hay que hacer. Lo habéis sabido desde el primer mensaje.\n\nPero no lo hacéis.\n\nPorque hacer algo diferente da miedo. Aunque lo que hacéis ahora no funcione.',
+    'La única diferencia entre donde estáis y donde queréis estar es una decisión.\n\nPero lleváis días posponiéndola. Porque es más fácil quedarse donde ya conocéis el dolor.'
   ],
   qualified: [
-    'Sabes lo que hay que hacer. Pero no lo haces.\n\nSigues puliendo el portfolio. Optimizando la biografía. Esperando que algo cambie sin que tú cambies nada.',
-    'Llevas meses sabiendo que esto no funciona. Pero es más fácil convencerte de que "en algún momento mejorará" que dar el paso y hacer algo diferente.',
-    'El problema no es que no sepas qué hacer.\n\nEs que sabes qué hacer y eliges no hacerlo. Porque da miedo. Aunque lo que haces ahora dé más miedo todavía.'
+    'Sabéis lo que hay que hacer. Pero no lo hacéis.\n\nSeguís puliendo el portfolio. Optimizando la biografía. Esperando que algo cambie sin que vosotros cambiéis nada.',
+    'Lleváis meses sabiendo que esto no funciona. Pero es más fácil convenceros de que "en algún momento mejorará" que dar el paso y hacer algo diferente.',
+    'El problema no es que no sepáis qué hacer.\n\nEs que sabéis qué hacer y elegís no hacerlo. Porque da miedo. Aunque lo que hacéis ahora dé más miedo todavía.'
   ],
   marginal: [
-    'Llevas tanto tiempo así que ya te has convencido de que es normal.\n\nQue los clientes regateen. Que te dejen en visto. Que trabajes hasta las 23:47 por cuatro duros.\n\nNo es normal. Es lo que pasa cuando sabes hacer el trabajo pero no sabes venderlo.',
-    'Cada día que pasa sin cambiar nada es un día más convenciéndote de que esto es lo que hay.\n\nNo lo es. Es lo que hay para quien no da el paso.',
-    'Llevas meses (¿años?) haciendo lo mismo esperando resultados diferentes.\n\nYa sabes que eso no funciona. Pero cambiar da más miedo que quedarse donde estás.'
+    'Lleváis tanto tiempo así que ya os habéis convencido de que es normal.\n\nQue los clientes regateen. Que os dejen en visto. Que trabajéis hasta las 23:47 por cuatro duros.\n\nNo es normal. Es lo que pasa cuando sabéis hacer el trabajo pero no sabéis venderlo.',
+    'Cada día que pasa sin cambiar nada es un día más convenciéndoos de que esto es lo que hay.\n\nNo lo es. Es lo que hay para quien no da el paso.',
+    'Lleváis meses (¿años?) haciendo lo mismo esperando resultados diferentes.\n\nYa sabéis que eso no funciona. Pero cambiar da más miedo que quedarse donde estáis.'
   ]
 };
 
-// Contrastes "mientras tú... mientras ellos..." (con nombres reales)
 const contrastStatements: Record<string, string> = {
-  'Mis clientes no tienen presupuesto': 
-    'Mientras tú negociabas 100€ de descuento con alguien que nunca iba a pagarte bien, Nico cerró un proyecto de 5.000€ con una sola llamada. Misma semana. Distinta conversación.',
-  'Trabajo muchas horas y encima estoy tieso': 
-    'Mientras tú te quedabas hasta las 23:47 terminando algo mal pagado, Dani cobró 2.000€ por su primer proyecto en el Círculo en 10 días. Mismo talento. Distinta forma de venderlo.',
-  'No tengo clientes suficientes (no sé ni por donde empezar)': 
-    'Mientras tú actualizabas el portfolio esperando que el algoritmo te descubra, Felipe tuvo sus primeras 2 llamadas de venta en 7 días para proyectos de 2.000€ y 5.000€. Misma habilidad. Sistema diferente.',
-  'No sé cómo vender lo que hago sin que regateen': 
-    'Mientras tú enviabas un presupuesto de 14 páginas y te comías un silencio, Cris cerró 3.000€ en una conversación preguntando "¿quién decide y cuándo?". Mismo servicio. Distinto pitch.',
-  'Todo lo anterior': 
-    'Mientras tú pulías el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Tú no. Todavía.'
+  'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': 
+    'Mientras vosotros negociabais 100€ de descuento con alguien que nunca iba a pagaros bien, Nico cerró un proyecto de 5.000€ con una sola llamada. Misma semana. Distinta conversación.',
+  'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': 
+    'Mientras vosotros os quedabais hasta las 23:47 terminando algo mal pagado, Dani cobró 2.000€ por su primer proyecto en el Círculo en 10 días. Mismo talento. Distinta forma de venderlo.',
+  'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': 
+    'Mientras vosotros actualizabais el portfolio esperando que el algoritmo os descubra, Felipe tuvo sus primeras 2 llamadas de venta en 7 días para proyectos de 2.000€ y 5.000€. Misma habilidad. Sistema diferente.',
+  'No sé cómo vender proyectos de 5 cifras sin que nos regateen': 
+    'Mientras vosotros enviabais un presupuesto de 14 páginas y os comíais un silencio, Cris cerró 3.000€ en una conversación preguntando "¿quién decide y cuándo?". Mismo servicio. Distinto pitch.',
+  'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': 
+    'Mientras vosotros pulíais el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Vosotros no. Todavía.'
 };
 
-// Helper: Determinar nivel de agitación según score
 function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
   if (score >= 90) return 'hot';
   if (score >= 80) return 'qualified';
   return 'marginal';
 }
 
-// Follow-Up #1: La realidad incómoda
 function generateFollowUp1(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
   const level = getAgitationLevel(score);
-  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior'];
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior (¿Pero de verdad se puede escalar esto?)'];
   const randomReality = realities[Math.floor(Math.random() * realities.length)];
   const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || painInsights[pain]?.warm || '';
   
@@ -1157,14 +1125,13 @@ El Círculo
   `.trim();
 }
 
-// Follow-Up #2: El patrón (miedo a actuar)
 function generateFollowUp2(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
   const level = getAgitationLevel(score);
   const fears = fearCalls[level];
   const randomFear = fears[Math.floor(Math.random() * fears.length)];
-  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior'];
+  const realities = dailyRealities[pain] || dailyRealities['Todo lo anterior (¿Pero de verdad se puede escalar esto?)'];
   const randomReality = realities[Math.floor(Math.random() * realities.length)];
   
   return `
@@ -1184,21 +1151,20 @@ El Círculo
   `.trim();
 }
 
-// Follow-Up #3: El contraste brutal
 function generateFollowUp3(name: string, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
-  const profession = answers.q2 || 'Otro servicio creativo';
-  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior'];
-  const successStory = successStoriesMap[profession] || successStoriesMap['Otro servicio creativo'];
+  const profession = answers.q2 || 'Otro tipo de agencia creativa';
+  const contrast = contrastStatements[pain] || contrastStatements['Todo lo anterior (¿Pero de verdad se puede escalar esto?)'];
+  const successStory = successStoriesMap[profession] || successStoriesMap['Otro tipo de agencia creativa'];
   
   return `
 ${firstName}.
 
 ${contrast}
 
-Misma semana que tú.
-Mismo talento que tú.
+Misma semana que vosotros.
+Mismo talento que vosotros.
 Distinta conversación.
 
 Los datos:
@@ -1207,19 +1173,18 @@ ${successStory}
 🔮 ÚNETE AL RITUAL
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Tú decides de qué lado estás.
+Vosotros decidís de qué lado estáis.
 
 —
 El Círculo
   `.trim();
 }
 
-// Follow-Up #4: La pregunta incómoda
 function generateFollowUp4(name: string, answers: QuizAnswers, score: number): string {
   const firstName = name.split(' ')[0];
   const pain = answers.q1 || '';
   const prepQuestions = painPrepQuestions[pain] || [];
-  const firstQuestion = prepQuestions[0] || '¿Cuánto tiempo más vas a seguir así?';
+  const firstQuestion = prepQuestions[0] || '¿Cuánto tiempo más vais a seguir así?';
   
   return `
 ${firstName}.
@@ -1227,12 +1192,12 @@ ${firstName}.
 Pregunta simple:
 ${firstQuestion}
 
-Si la respuesta te incomoda, ya sabes lo que hay que hacer.
+Si la respuesta os incomoda, ya sabéis lo que hay que hacer.
 
-Puedes seguir dándole vueltas.
-O puedes dar el paso.
+Podéis seguir dándole vueltas.
+O podéis dar el paso.
 
-Pero no puedes hacer las dos cosas.
+Pero no podéis hacer las dos cosas.
 
 🔮 AGENDA AQUÍ
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
@@ -1244,7 +1209,6 @@ El Círculo
   `.trim();
 }
 
-// Follow-Up #5: El cierre honesto
 function generateFollowUp5(name: string, answers: QuizAnswers): string {
   const firstName = name.split(' ')[0];
   
@@ -1255,9 +1219,9 @@ No vamos a insistir más.
 
 Si no era el momento, no pasa nada.
 
-Pero si lo era y no diste el paso, dentro de 6 meses seguirás exactamente igual.
+Pero si lo era y no disteis el paso, dentro de 6 meses seguiréis exactamente igual.
 
-La única diferencia es que habrás perdido 6 meses más.
+La única diferencia es que habréis perdido 6 meses más.
 
 Cobrando lo mismo.
 Trabajando igual de duro.
@@ -1268,7 +1232,7 @@ O peores.
 🔮 ESTO ES TODO
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Tú decides.
+Vosotros decidís.
 
 —
 El Círculo
@@ -1280,34 +1244,31 @@ El Círculo
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const hasInvestment = answers.q5 !== 'Menos de €1.500';
-  const fastTrack = tags.some(t => t.includes('FAST-7D'));
-  const authSolo = tags.some(t => t.includes('AUTH-SOLO'));
-  const lowRevenue = answers.q3 === 'Menos de €500/mes' || answers.q3 === '€500 - €1.500/mes';
+  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const fastTrack = answers.q6?.includes('Esta semana');
+  const authSolo = answers.q7?.includes('Solo yo');
+  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const ticketLabel = getTicketLabel(answers);
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD';
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
   
-  // Ángulos de apertura específicos por pain
   const painAngles = painOpeningAngles[answers.q1 || ''] || [];
   const openingAngles: string[] = [...painAngles];
   
-  // Añadir ángulos contextuales adicionales
-  if (answers.q6?.includes('Rápido')) {
-    openingAngles.push(`"El hecho de que busques ascenso rápido me dice que estás 100% ready. ¿Qué te frena ahora mismo?"`);
+  if (fastTrack) {
+    openingAngles.push(`"El hecho de que necesitéis esto esta semana me dice que estáis 100% ready. ¿Qué os frena ahora mismo?"`);
   }
   
   if (lowRevenue && hasInvestment) {
-    openingAngles.push(`"Ya facturas ${answers.q3}. Eso es base sólida. Con el sistema correcto, eso se multiplica x3 en 90 días. ¿Listo?"`);
+    openingAngles.push(`"Ya facturáis ${answers.q3}. Eso es base sólida. Con el sistema correcto, eso se multiplica x3 en 90 días. ¿Listos?"`);
   }
   
-  // Objeciones reales
   const potentialObjections: string[] = [];
-  if (!hasInvestment) potentialObjections.push('INVERSIÓN: "No puedo ahora" → ROI + casos rápidos');
-  if (!authSolo) potentialObjections.push('DECISIÓN: "Debo consultarlo" → Incluir a esa persona');
-  if (!fastTrack) potentialObjections.push('TIMING: "Ahora no puedo" → ¿Qué debe pasar para estar listo/a?');
+  if (!hasInvestment) potentialObjections.push('INVERSIÓN: "No podemos ahora" → ROI + casos rápidos');
+  if (!authSolo) potentialObjections.push('DECISIÓN: "Debemos consultarlo" → Incluir a esa persona');
+  if (!fastTrack) potentialObjections.push('TIMING: "Ahora no podemos" → ¿Qué debe pasar para estar listos?');
   
-  // Estrategia
   let closingStrategy = '';
   if (lowRevenue && hasInvestment && fastTrack) {
     closingStrategy = 'CLIENTE IDEAL - Dolor agudo + inversión + urgencia = MÁXIMA PRIORIDAD. Admite si hay fit mínimo.';
@@ -1333,8 +1294,8 @@ ${lowRevenue && hasInvestment ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + inversi
 📋 PERFIL DEL CANDIDATO:
 • Pain: ${answers.q1}
 • ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Urgencia: ${fastTrack ? '🚀 7 días' : answers.q6}
+• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Urgencia: ${answers.q6}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4[0] : answers.q4}${lowRevenue && hasInvestment ? '\n🚨 PERFIL IDEAL: Cobra poco + tiene inversión' : ''}
 
 🗝️ ÁNGULOS DE APERTURA:
@@ -1360,7 +1321,6 @@ ${closingStrategy}
 }
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -1368,7 +1328,6 @@ serve(async (req) => {
   try {
     const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId, isSkeptic }: LeadSubmission = await req.json();
     
-    // Initialize Supabase client at the top level for use throughout the function
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
@@ -1376,84 +1335,52 @@ serve(async (req) => {
     console.log('📥 ===== EDGE FUNCTION INVOKED =====');
     console.log('📋 Submission received:', {
       timestamp: new Date().toISOString(),
-      email: email,
-      hasWhatsapp: !!whatsapp,
-      whatsappValue: whatsapp || 'N/A',
-      name: name,
-      sessionId: sessionId || 'N/A',
-      qualified: qualified,
-      score: score,
-      isPartial: isPartialSubmission || false,
-      fbclid: fbclid || 'N/A',
-      providedGhlContactId: ghlContactId || 'none'
+      email, hasWhatsapp: !!whatsapp, name, sessionId: sessionId || 'N/A',
+      qualified, score, isPartial: isPartialSubmission || false,
+      fbclid: fbclid || 'N/A', providedGhlContactId: ghlContactId || 'none'
     });
     console.log('📝 Quiz answers:', JSON.stringify(answers, null, 2));
     
-    console.log('📊 Lead recibido:', { 
-      name, 
-      email, 
-      qualified, 
-      score, 
-      fbclid: fbclid || 'organic',
-      isPartialSubmission: isPartialSubmission || false,
-      ghlContactId: ghlContactId || 'none',
-      sessionId: sessionId || 'none'
-    });
-    
-    // Query VSL data if sessionId is provided
+    // Query VSL data
     let vslWatched = 'no';
     let vslPercentage = '0';
     let vslDuration = '0';
     
     if (sessionId) {
-      console.log('🎥 Consultando datos VSL para session_id:', sessionId);
-      
       const { data: vslData, error: vslError } = await supabase
-          .from('vsl_views')
-          .select('video_percentage_watched, view_duration_seconds')
-          .eq('session_id', sessionId)
-          .order('video_percentage_watched', { ascending: false })
-          .limit(1)
-          .single();
-        
-        if (!vslError && vslData) {
-          vslPercentage = vslData.video_percentage_watched?.toString() || '0';
-          vslDuration = vslData.view_duration_seconds?.toString() || '0';
-          vslWatched = parseInt(vslPercentage) > 10 ? 'yes' : 'no';
-          console.log('✅ Datos VSL encontrados:', { vslWatched, vslPercentage, vslDuration });
-        } else {
-          console.log('ℹ️ No se encontraron datos VSL para esta sesión');
-        }
+        .from('vsl_views')
+        .select('video_percentage_watched, view_duration_seconds')
+        .eq('session_id', sessionId)
+        .order('video_percentage_watched', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (!vslError && vslData) {
+        vslPercentage = vslData.video_percentage_watched?.toString() || '0';
+        vslDuration = vslData.view_duration_seconds?.toString() || '0';
+        vslWatched = parseInt(vslPercentage) > 10 ? 'yes' : 'no';
+      }
     }
     
-    // Validación anti-spam server-side
+    // Anti-spam
     const contactData: ContactData = { name, email, whatsapp };
     const spamCheck = isSpamSubmission(contactData);
     
     if (spamCheck.isSpam) {
-      console.log('Spam detected:', spamCheck.reason, { name, email, whatsapp });
+      console.log('Spam detected:', spamCheck.reason);
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: 'Invalid submission' 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400 
-        }
+        JSON.stringify({ success: false, error: 'Invalid submission' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
     
-    // Get secrets
     const GHL_API_TOKEN = Deno.env.get('GHL_API_TOKEN');
     const GHL_LOCATION_ID = Deno.env.get('GHL_LOCATION_ID');
     
     if (!GHL_API_TOKEN || !GHL_LOCATION_ID) {
-      console.error('Missing GHL credentials');
       throw new Error('Missing GHL credentials');
     }
     
-    // Type-safe constants after validation
     const ghlApiToken: string = GHL_API_TOKEN;
     const ghlLocationId: string = GHL_LOCATION_ID;
     
@@ -1463,37 +1390,23 @@ serve(async (req) => {
       'Content-Type': 'application/json'
     };
     
-    // Generate tags (incluye isSkeptic para tag de escéptico convertido)
     const tags = generateTags(answers, score, qualified, isPartialSubmission || false, isSkeptic || false);
     console.log('Generated tags:', tags);
     
-    // Determine contactId to use
     let contactId: string | null = ghlContactId || null;
     
-    // Si no tenemos ghlContactId, buscar por email
     if (!contactId && email) {
       const searchUrl = `https://services.leadconnectorhq.com/contacts/search?locationId=${ghlLocationId}&email=${encodeURIComponent(email)}`;
-      console.log('Searching for existing contact by email...');
-      
-      const searchResponse = await fetch(searchUrl, {
-        method: 'GET',
-        headers: ghlHeaders
-      });
+      const searchResponse = await fetch(searchUrl, { method: 'GET', headers: ghlHeaders });
       
       if (searchResponse.ok) {
         const searchData = await searchResponse.json();
         if (searchData.contacts && searchData.contacts.length > 0) {
           contactId = searchData.contacts[0].id;
-          console.log('Found existing contact:', contactId);
         }
       }
-    } else {
-      console.log('Using provided ghlContactId:', contactId);
     }
     
-    // contactData already defined above for spam check
-    
-    // Prepare contact payload
     const contactPayload = {
       firstName: name.split(' ')[0],
       lastName: name.split(' ').slice(1).join(' ') || '',
@@ -1512,6 +1425,7 @@ serve(async (req) => {
         { key: 'quiz_authority', field_value: answers.q7 || '' },
         { key: 'quiz_score', field_value: score.toString() },
         { key: 'lead_category', field_value: getLeadCategory(score, answers) },
+        { key: 'lead_tier', field_value: getLeadTier(answers) },
         { key: 'hardstop_triggered', field_value: getHardstopReason(answers, score) || 'none' },
         { key: 'quiz_qualified', field_value: qualified ? 'Sí' : 'No' },
         { key: 'circulo_score', field_value: score.toString() },
@@ -1532,79 +1446,36 @@ serve(async (req) => {
       ]
     };
     
-    // Prepare update payload (without locationId for PUT requests)
     const { locationId, ...updatePayload } = contactPayload;
     
-    // Log payload before sending to GHL
-    console.log('=== PAYLOAD SENT TO GHL ===');
-    console.log(JSON.stringify(contactPayload, null, 2));
-    console.log('=== END PAYLOAD ===');
-    
-    // Create or update contact
     let ghlResponse;
     if (contactId) {
-      // Update existing
       const updateUrl = `https://services.leadconnectorhq.com/contacts/${contactId}`;
-      const updateType = isPartialSubmission ? 'partial lead' : 'lead to complete (adding phone)';
       
-      console.log('🔄 ===== UPDATING EXISTING CONTACT =====');
-      console.log('📍 Update URL:', updateUrl);
-      console.log('📋 Update type:', updateType);
-      console.log('🎫 Contact ID:', contactId);
-      console.log('📦 Payload keys:', Object.keys(updatePayload));
-      console.log('⚠️ IMPORTANT: locationId excluded from update payload');
-      
-      // Si es la actualización final (no parcial), remover el tag PARCIAL
       if (!isPartialSubmission) {
-        // Filtrar tags para remover PARCIAL si existe
         updatePayload.tags = updatePayload.tags.filter(tag => !tag.includes('CÍRCULO-LEAD-PARCIAL'));
-        console.log('🏷️ Removed PARCIAL tag, final tags:', updatePayload.tags);
       }
       
-      console.log('📤 Sending PUT request to GHL...');
       ghlResponse = await fetch(updateUrl, {
         method: 'PUT',
         headers: ghlHeaders,
         body: JSON.stringify(updatePayload)
       });
-      console.log('✅ PUT request completed, status:', ghlResponse.status);
     } else {
-      // Create new
       const createUrl = 'https://services.leadconnectorhq.com/contacts/';
-      
-      console.log('🆕 ===== CREATING NEW CONTACT =====');
-      console.log('📍 Create URL:', createUrl);
-      console.log('📦 Payload includes locationId:', ghlLocationId);
-      console.log('📦 Payload keys:', Object.keys(contactPayload));
-      
-      console.log('📤 Sending POST request to GHL...');
       ghlResponse = await fetch(createUrl, {
         method: 'POST',
         headers: ghlHeaders,
         body: JSON.stringify(contactPayload)
       });
-      console.log('✅ POST request completed, status:', ghlResponse.status);
     }
     
     if (!ghlResponse.ok) {
       const errorText = await ghlResponse.text();
       let errorData;
+      try { errorData = JSON.parse(errorText); } catch (e) { errorData = null; }
       
-      try {
-        errorData = JSON.parse(errorText);
-      } catch (e) {
-        errorData = null;
-      }
-      
-      // Check if it's a duplicate contact error
-      if (ghlResponse.status === 400 && 
-          errorData?.meta?.contactId && 
-          errorData.message?.includes('duplicated contacts')) {
-        
-        console.log('Contact already exists (duplicate phone/email), updating instead...');
-        console.log('Existing contactId:', errorData.meta.contactId);
-        
-        // Update the existing contact instead
+      if (ghlResponse.status === 400 && errorData?.meta?.contactId && errorData.message?.includes('duplicated contacts')) {
         const updateUrl = `https://services.leadconnectorhq.com/contacts/${errorData.meta.contactId}`;
         const updateResponse = await fetch(updateUrl, {
           method: 'PUT',
@@ -1614,56 +1485,25 @@ serve(async (req) => {
         
         if (!updateResponse.ok) {
           const updateError = await updateResponse.text();
-          console.error('Failed to update existing contact:', updateError);
           throw new Error(`Failed to update contact: ${updateResponse.status} - ${updateError}`);
         }
         
-        const updatedContact = await updateResponse.json();
-        console.log('Successfully updated existing contact');
-        
         return new Response(
-          JSON.stringify({ 
-            success: true, 
-            contactId: errorData.meta.contactId,
-            tags: tags,
-            message: 'Contact updated successfully (duplicate resolved)'
-          }),
+          JSON.stringify({ success: true, contactId: errorData.meta.contactId, tags, message: 'Contact updated successfully (duplicate resolved)' }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       }
       
-      // If it's not a duplicate error, fail as before
-      console.error('=== GHL API ERROR ===');
-      console.error('Status:', ghlResponse.status);
-      console.error('Status Text:', ghlResponse.statusText);
-      console.error('Response:', errorText);
-      console.error('Payload sent:', JSON.stringify(contactPayload, null, 2));
-      console.error('=== END ERROR ===');
       throw new Error(`GHL API failed: ${ghlResponse.status} - ${errorText}`);
     }
     
     const ghlData = await ghlResponse.json();
     const finalContactId = ghlData.contact?.id || contactId;
     
-    console.log('🎉 ===== SUCCESS =====');
-    console.log('✅ GHL Response:', {
-      status: ghlResponse.status,
-      statusText: ghlResponse.statusText,
-      contactId: finalContactId,
-      operation: contactId ? 'UPDATE' : 'CREATE'
-    });
-    console.log('📧 Lead email:', email);
-    console.log('📱 Lead phone:', whatsapp || 'N/A');
-    console.log('🏷️ Tags applied:', tags);
-    console.log('===== END SUCCESS =====');
+    console.log('✅ GHL Success:', { contactId: finalContactId, operation: contactId ? 'UPDATE' : 'CREATE' });
     
-    // Track contact_form_submitted event if not a partial submission
+    // Track analytics
     if (!isPartialSubmission && sessionId) {
-      console.log('📊 [EDGE FUNCTION] Tracking contact_form_submitted event:', { 
-        sessionId,
-        timestamp: new Date().toISOString()
-      });
-      
       const { error: analyticsError } = await supabase
         .from('quiz_analytics')
         .insert({
@@ -1672,64 +1512,28 @@ serve(async (req) => {
           device_type: 'unknown',
           language: 'es-ES',
           quiz_state: {
-            q1: answers.q1,
-            q2: answers.q2,
-            q3: answers.q3,
-            q4: answers.q4,
-            q5: answers.q5,
-            q6: answers.q6,
-            q7: answers.q7,
-            name: name,
-            email: email,
-            whatsapp: whatsapp,
-            ghlContactId: finalContactId
+            q1: answers.q1, q2: answers.q2, q3: answers.q3,
+            q4: answers.q4, q5: answers.q5, q6: answers.q6, q7: answers.q7,
+            name, email, whatsapp, ghlContactId: finalContactId
           },
           ghl_contact_id: finalContactId
         });
       
       if (analyticsError) {
-        console.error('❌ [EDGE FUNCTION] Failed to track contact_form_submitted:', analyticsError);
-      } else {
-        console.log('✅ [EDGE FUNCTION] contact_form_submitted tracked successfully');
+        console.error('❌ Failed to track analytics:', analyticsError);
       }
-    } else {
-      console.log('⚠️ [EDGE FUNCTION] Skipping analytics tracking:', { 
-        isPartialSubmission, 
-        hasSessionId: !!sessionId 
-      });
     }
     
     return new Response(
-      JSON.stringify({
-        success: true,
-        contactId: finalContactId,
-        tags: tags,
-        message: contactId ? 'Contact updated successfully' : 'Contact created successfully'
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
+      JSON.stringify({ success: true, contactId: finalContactId, tags, message: contactId ? 'Contact updated successfully' : 'Contact created successfully' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
     
   } catch (error) {
-    console.error('❌ ===== FATAL ERROR =====');
-    console.error('❌ Error in submit-lead-to-ghl:', error);
-    console.error('❌ Error type:', error instanceof Error ? error.constructor.name : typeof error);
-    console.error('❌ Error message:', error instanceof Error ? error.message : String(error));
-    console.error('❌ Error stack:', error instanceof Error ? error.stack : 'N/A');
-    console.error('===== END FATAL ERROR =====');
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('❌ Fatal error:', error);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: errorMessage
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error occurred' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
 });

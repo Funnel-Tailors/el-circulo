@@ -31,7 +31,7 @@ export const RESULT_MESSAGES = {
   },
   notQualified: {
     title: "La Senda no es para ti",
-    description: "Esto no es un curso. No es para curiosos. No es para quienes aún no facturan o no tienen pasta para invertir en serio.",
-    footer: "Cuando dejes de trabajar por cuatro duros, quizá nos crucemos. O quizá no."
+    description: "Esto no es un curso. No es para curiosos. No es para quienes no pueden invertir, no tienen prisa o necesitan que otro les dé permiso para decidir.",
+    footer: "Cuando dejes de explorar y estés listo para ejecutar, quizá nos crucemos. O quizá no."
   }
 };
