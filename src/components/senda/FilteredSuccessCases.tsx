@@ -1,4 +1,4 @@
-import SuccessCase from "@/components/roadmap/SuccessCase";
+import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
 import { successCases } from "@/data/roadmap";
 import { filterSuccessCasesByProfession } from "@/lib/senda-personalization";
 import type { QuizState } from "@/types/quiz";
@@ -23,19 +23,15 @@ export const FilteredSuccessCases = ({ quizState }: FilteredSuccessCasesProps) =
         <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight text-foreground">
           MIEMBROS QUE ESTABAN
           <br />
-          <span className="text-2xl md:text-4xl">DONDE TÚ ESTÁS</span>
+          <span className="text-2xl md:text-4xl">DONDE TU ESTAS</span>
         </h2>
 
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Creativos como tú que decidieron recorrer la Senda
+          Creativos como tu que decidieron recorrer la Senda
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-        {filteredCases.map((caseData, index) => (
-          <SuccessCase key={index} index={index} {...caseData} />
-        ))}
-      </div>
+      <TestimonialsMarquee cases={filteredCases} />
 
       <div className="flex items-center justify-center gap-4 pt-8" aria-hidden="true">
         <div className="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>

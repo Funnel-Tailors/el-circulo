@@ -128,57 +128,60 @@ export const bonuses = [
   }
 ];
 
-export const successCases = [
+export interface SuccessCaseData {
+  name: string;
+  role: string; // Used internally for Senda filtering, not displayed
+  offer: string;
+  videoUrl: string;
+}
+
+export const successCases: SuccessCaseData[] = [
   {
     name: "Nico",
     role: "Diseñador Web",
     offer: "Elevate-Solo",
-    highlight: "x10",
     videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69090fa737c43a7bafb5b374.mp4",
-    results: [
-      "Multiplicó x10 su ticket medio",
-      "De 200€ a +1.000€ por proyecto",
-      "Factura miles de euros de forma consistente",
-      "Domina el momento del cierre sin miedo"
-    ]
   },
   {
     name: "Cris",
     role: "Estratega de Ventas",
     offer: "Embudo Express",
-    highlight: "3.000€",
     videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/69090fa732cf68e1f09e7a24.mp4",
-    results: [
-      "De tirar la toalla a cerrar 3.000€",
-      "Un solo cambio de mentalidad lo cambió todo",
-      "De lanzamientos fallidos a tiburona de ventas",
-      "Transformó su confianza en el cierre"
-    ]
   },
   {
     name: "Felipe",
     role: "Diseñador Gráfico",
     offer: "Funnel Boost & Brand Elevation",
-    highlight: "7 DÍAS",
     videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/690f8c3c3dca2f738043a62a.mov",
-    results: [
-      "Consiguió sus primeras dos llamadas de venta en 7 días para proyectos de 2.000 y 5.000€",
-      "Pasó de cero estrategia a tener sistema de captación",
-      "Transformó su posicionamiento hacia clientes premium",
-      "Domina el proceso de generación de leads cualificados"
-    ]
   },
   {
     name: "Ariadna",
     role: "Diseñadora Gráfica",
     offer: "Marca Raíz",
-    highlight: "CLARIDAD",
     videoUrl: "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/692f12bdaaad91bbaf5f3826.mp4",
-    results: [
-      "Pasó de vender servicios a tener una oferta clara y definida",
-      "Dejó de depender de la suerte para cerrar proyectos",
-      "Atrae clientes que valoran su trabajo (y lo pagan)",
-      "Transformó su mentalidad de 'a ver si hay suerte' a 'sé lo que ofrezco'"
-    ]
-  }
+  },
+  {
+    name: "Marta",
+    role: "Agencia de Contenido",
+    offer: "Método Vitini",
+    videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/699e4e4bfc2a80f5ae3307e3.mp4",
+  },
+  {
+    name: "Carlos",
+    role: "Agencia de Branding",
+    offer: "Sistema Coto",
+    videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/699e4e4b590acb7c9632bedc.mp4",
+  },
+  {
+    name: "Dani",
+    role: "Consultoría",
+    offer: "Cook Your Brand",
+    videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/69090fa737c43acb39b5b373.mp4",
+  },
 ];
+
+export const featuredInterview = {
+  name: "Nico",
+  role: "Diseñador Web",
+  videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/699e50ff373080f1eaef3935.mp4",
+};

@@ -403,6 +403,124 @@ All colors MUST be HSL.
   }
 }
 
+/* ============================================================================
+   TESTIMONIALS MARQUEE
+   CSS-driven infinite scroll for GPU compositor (60fps guaranteed).
+   ============================================================================ */
+@layer utilities {
+  .marquee-container {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 8%,
+      black 92%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 8%,
+      black 92%,
+      transparent 100%
+    );
+    isolation: isolate;
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 24px;
+    width: max-content;
+    will-change: transform;
+    contain: layout style;
+    animation: marquee-scroll 40s linear infinite;
+    padding: 16px 0 24px 0;
+  }
+
+  .marquee-paused {
+    animation-play-state: paused;
+  }
+
+  @keyframes marquee-scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 768px) {
+    .marquee-container {
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 5%,
+        black 95%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0%,
+        black 5%,
+        black 95%,
+        transparent 100%
+      );
+    }
+
+    .marquee-track {
+      gap: 16px;
+      animation-duration: 28s;
+    }
+  }
+
+  .marquee-track-fast {
+    animation-duration: 25s;
+  }
+
+  @media (max-width: 768px) {
+    .marquee-track-fast {
+      animation-duration: 18s;
+    }
+  }
+
+  /* Horizontal beam connector between marquee items */
+  .beam-connector-h {
+    width: 32px;
+    height: 2px;
+    flex-shrink: 0;
+    align-self: center;
+    background: linear-gradient(
+      to right,
+      transparent,
+      hsl(0 0% 100% / 0.3),
+      transparent
+    );
+    animation: pulse-line 2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      overflow-x: auto;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+      scroll-snap-type: x mandatory;
+    }
+
+    .marquee-track > * {
+      scroll-snap-align: start;
+    }
+
+    .marquee-container {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    .beam-connector-h {
+      animation: none;
+      opacity: 0.5;
+    }
+  }
+}
+
 @layer base {
   * {
     @apply border-border;

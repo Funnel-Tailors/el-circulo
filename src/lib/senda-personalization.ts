@@ -149,20 +149,30 @@ Prepárate completando el material de esta página ANTES de la llamada.`,
  * Actualizado para nuevas opciones de agencias
  */
 export const filterSuccessCasesByProfession = (profession: string | undefined) => {
-  if (!profession) return ['Nico', 'Felipe']; // Default: agencias diseño
+  if (!profession) return ['Nico', 'Felipe', 'Carlos']; // Default: agencias diseño
 
-  if (profession.toLowerCase().includes('agencia de diseño') || profession.toLowerCase().includes('branding')) {
-    return ['Nico', 'Felipe'];
+  const p = profession.toLowerCase();
+
+  if (p.includes('agencia de diseño') || p.includes('branding')) {
+    return ['Nico', 'Felipe', 'Carlos'];
   }
-  
-  if (profession.toLowerCase().includes('productora') || profession.toLowerCase().includes('audiovisual')) {
-    return ['Cris', 'Felipe'];
+
+  if (p.includes('productora') || p.includes('audiovisual')) {
+    return ['Cris', 'Felipe', 'Marta'];
   }
-  
-  if (profession.toLowerCase().includes('desarrollo') || profession.toLowerCase().includes('automatización')) {
-    return ['Felipe', 'Cris'];
+
+  if (p.includes('desarrollo') || p.includes('automatización')) {
+    return ['Felipe', 'Cris', 'Dani'];
+  }
+
+  if (p.includes('contenido') || p.includes('marketing')) {
+    return ['Marta', 'Cris', 'Nico'];
+  }
+
+  if (p.includes('consultor')) {
+    return ['Dani', 'Cris', 'Carlos'];
   }
 
   // Default: mix
-  return ['Nico', 'Cris'];
+  return ['Nico', 'Cris', 'Dani'];
 };

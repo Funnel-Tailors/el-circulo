@@ -3,12 +3,14 @@ import Starfield from "@/components/quiz/Starfield";
 import CircleHero from "@/components/roadmap/CircleHero";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import ConstellationTimeline from "@/components/roadmap/ConstellationTimeline";
-import BonusCard from "@/components/roadmap/BonusCard";
-import SuccessCase from "@/components/roadmap/SuccessCase";
+import { ArtefactoVisual } from "@/components/artefacto/ArtefactoVisual";
+import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
-import { roadmapDays, bonuses, successCases } from "@/data/roadmap";
+import { roadmapDays, successCases, featuredInterview } from "@/data/roadmap";
+import { LayoutDashboard, Workflow, Calendar, Mail, MessageCircle, Target, FileText, Globe, BarChart3, Bot } from "lucide-react";
 import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
 import { FAQSection } from "@/components/roadmap/FAQSection";
@@ -50,9 +52,8 @@ const Roadmap = () => {
           <ConstellationTimeline days={roadmapDays} />
 
           {/* ASCENDIDOS */}
-          <div className="mt-16">
+          <div className="mt-16 mb-8">
             <div className="text-center mb-12 animate-fade-in">
-              {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
                 <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
                 <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
@@ -62,12 +63,11 @@ const Roadmap = () => {
               <h2 className="text-4xl md:text-5xl font-display font-black mb-3 uppercase">
                 <span className="glow">ASCENDIDOS</span>
               </h2>
-              
+
               <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-                Consiguieron su objetivo de forma excepcional
+                Creativos que recorrieron la Senda y transformaron su negocio
               </p>
 
-              {/* Divider inferior */}
               <div className="flex items-center justify-center gap-4 mt-4" aria-hidden="true">
                 <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
                 <div className="text-muted-foreground text-xs">✦</div>
@@ -75,40 +75,26 @@ const Roadmap = () => {
               </div>
             </div>
 
-            {/* Grid de casos con animación staggered */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {successCases.map((case_, index) => (
-                <SuccessCase 
-                  key={case_.name} 
-                  name={case_.name}
-                  role={case_.role}
-                  offer={case_.offer}
-                  highlight={case_.highlight}
-                  videoUrl={case_.videoUrl}
-                  results={case_.results}
-                  index={index}
-                />
-              ))}
-            </div>
-
-            {/* CTA con link animado */}
-            <div className="text-center mt-10 animate-fade-in" style={{ animationDelay: '800ms' }}>
-              <p className="text-sm text-muted-foreground">
-                Y muchos más{" "}
-                <a 
-                  href="#footer" 
-                  className="text-foreground font-semibold relative inline-block after:content-[''] after:absolute after:w-full after:scale-x-0 after:h-0.5 after:bottom-0 after:left-0 after:bg-primary after:origin-bottom-right after:transition-transform after:duration-300 hover:after:scale-x-100 hover:after:origin-bottom-left"
-                >
-                  al fondo de la página
-                </a>
-              </p>
-            </div>
+            {/* Featured Interview 16:9 */}
+            <FeaturedInterview
+              name={featuredInterview.name}
+              role={featuredInterview.role}
+              videoUrl={featuredInterview.videoUrl}
+            />
           </div>
+        </div>
+      </div>
 
-          {/* LOS ARTEFACTOS */}
-          <div className="mt-24">
+      {/* Marquee - full bleed */}
+      <div className="mb-8">
+        <TestimonialsMarquee cases={successCases} />
+      </div>
+
+      <div className="container max-w-4xl mx-auto px-6 pb-12 relative z-10">
+        <div className="space-y-0">
+          {/* EL ARTEFACTO */}
+          <div className="mt-16 mb-8">
             <div className="text-center mb-8 animate-fade-in">
-              {/* Divider superior */}
               <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
                 <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
                 <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
@@ -116,31 +102,56 @@ const Roadmap = () => {
               </div>
 
               <h2 className="text-4xl md:text-5xl font-display font-black mb-3 uppercase">
-                LOS <span className="glow">ARTEFACTOS</span>
+                EL <span className="glow">ARTEFACTO</span>
               </h2>
-              
-              {/* Microcopy */}
-              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-                Herramientas adicionales para conseguir tu objetivo más rápido y trabajando menos
+
+              <p className="text-sm text-muted-foreground max-w-xl mx-auto mb-4">
+                Tu sistema de gestión personalizado para no perder ni una oportunidad
               </p>
-              
-              {/* Divider inferior */}
-              <div className="flex items-center justify-center gap-4 mt-4" aria-hidden="true">
+
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                <span className="text-xs text-muted-foreground/60">⟡</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Exclusivo miembros del Circulo</span>
+              </div>
+
+              <div className="flex items-center justify-center gap-4 mt-6" aria-hidden="true">
                 <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
                 <div className="text-muted-foreground text-xs">✦</div>
                 <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {bonuses.map((bonus, index) => (
-                <div key={bonus.title} style={{ animationDelay: `${index * 150}ms` }}>
-                  <BonusCard {...bonus} />
-                </div>
-              ))}
+            <div className="flex justify-center">
+              <ArtefactoVisual variant="hero" />
             </div>
           </div>
+        </div>
+      </div>
 
+      {/* Feature marquee - full bleed */}
+      <div className="mb-8">
+        <div className="marquee-container">
+          <div className="marquee-track marquee-track-fast">
+            {[...Array(2)].map((_, dupeIdx) => (
+              [{icon: LayoutDashboard, title: "CRM Completo"}, {icon: Workflow, title: "Automatizaciones"}, {icon: Calendar, title: "Calendario"}, {icon: Mail, title: "Email Marketing"}, {icon: MessageCircle, title: "WhatsApp"}, {icon: Target, title: "Pipelines"}, {icon: FileText, title: "Propuestas"}, {icon: Globe, title: "Funnels"}, {icon: BarChart3, title: "Reportes"}, {icon: Bot, title: "IA Integrada"}].map((feature, idx) => {
+                const Icon = feature.icon;
+                return (
+                  <div key={`${dupeIdx}-${idx}`} className="flex items-center">
+                    <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all">
+                      <Icon className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-foreground/80 font-medium whitespace-nowrap">{feature.title}</span>
+                    </div>
+                    <div className="beam-connector-h" />
+                  </div>
+                );
+              })
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="container max-w-4xl mx-auto px-6 pb-12 relative z-10">
+        <div className="space-y-0">
           <RoadmapFooter />
 
           {/* FAQ SECTION */}
