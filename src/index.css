@@ -480,6 +480,46 @@ All colors MUST be HSL.
     }
   }
 
+  /* JS-driven marquee track (replaces CSS animation for drag/swipe support) */
+  .marquee-track-js {
+    display: flex;
+    gap: 24px;
+    width: max-content;
+    will-change: transform;
+    contain: layout style;
+    padding: 16px 0 24px 0;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .marquee-track-js:active {
+    cursor: grabbing;
+  }
+
+  @media (max-width: 768px) {
+    .marquee-track-js {
+      gap: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track-js {
+      cursor: default;
+      overflow-x: auto;
+      width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+      scroll-snap-type: x mandatory;
+      will-change: auto;
+    }
+
+    .marquee-track-js > * {
+      scroll-snap-align: start;
+    }
+  }
+
   /* Horizontal beam connector between marquee items */
   .beam-connector-h {
     width: 32px;
