@@ -166,7 +166,7 @@ export const filterSuccessCasesByProfession = (profession: string | undefined) =
   }
 
   if (p.includes('contenido') || p.includes('marketing')) {
-    return ['Marta', 'Cris', 'Nico'];
+    return ['Marta', 'Cris', 'Nico', 'Cristóbal'];
   }
 
   if (p.includes('consultor')) {

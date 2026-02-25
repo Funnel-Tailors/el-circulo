@@ -178,6 +178,12 @@ export const successCases: SuccessCaseData[] = [
     offer: "Cook Your Brand",
     videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/69090fa737c43acb39b5b373.mp4",
   },
+  {
+    name: "Cristóbal",
+    role: "Agencia de Contenido",
+    offer: "Sistema 3D",
+    videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/699f3987ba06ae44dfd97000.mov",
+  },
 ];
 
 export const featuredInterview = {
