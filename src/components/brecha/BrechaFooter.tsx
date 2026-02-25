@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
-import { SkipTheLineOffer } from "./SkipTheLineOffer";
 
 interface BrechaFooterProps {
   showCalendar: boolean;
@@ -10,8 +9,6 @@ interface BrechaFooterProps {
   email?: string;
   phone?: string;
   eventDate: Date;
-  ghlPaymentUrl?: string;
-  onSkipTheLineClick?: () => void;
 }
 
 export const BrechaFooter = ({ 
@@ -22,8 +19,6 @@ export const BrechaFooter = ({
   email,
   phone,
   eventDate,
-  ghlPaymentUrl,
-  onSkipTheLineClick,
 }: BrechaFooterProps) => {
   const isExpired = eventDate.getTime() < Date.now();
 
@@ -85,7 +80,7 @@ export const BrechaFooter = ({
                 className="text-muted-foreground max-w-xl mx-auto mb-8"
               >
                 Tu viaje por La Brecha te ha otorgado una{" "}
-                <span className="text-foreground font-semibold">Beca Parcial de €500</span>. 
+                <span className="text-foreground font-semibold">Beca de €1.000</span>. 
                 Ahora tienes acceso exclusivo a El Círculo.
               </motion.p>
 
@@ -109,58 +104,30 @@ export const BrechaFooter = ({
                 </div>
                 <div className="mt-6 pt-4 border-t border-foreground/10 text-center">
                   <p className="text-muted-foreground text-sm">
-                    <span className="line-through opacity-60">€3,500</span>
-                    <span className="text-foreground font-bold text-lg mx-2">→ €3,000</span>
+                    <span className="line-through opacity-60">€6.000</span>
+                    <span className="text-foreground font-bold text-lg mx-2">→ €5.000</span>
                   </p>
-                  <p className="text-foreground/50 text-xs mt-1">Beca Parcial de €500 desbloqueada</p>
+                  <p className="text-foreground/50 text-xs mt-1">Beca de La Brecha desbloqueada</p>
+                  <p className="text-foreground/40 text-xs mt-1">Modalidad y ruta a medida en la llamada</p>
                 </div>
               </motion.div>
             </div>
 
-            {/* ===== UNIFIED VERTICAL LAYOUT: PAGO PRIMERO ===== */}
+            {/* ===== CALENDARIO DIRECTO ===== */}
             <div className="max-w-2xl mx-auto">
-              {/* Skip the Line CTA - PRIMERO */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-              >
-                <SkipTheLineOffer
-                  ghlPaymentUrl={ghlPaymentUrl}
-                  firstName={firstName}
-                  lastName={lastName}
-                  email={email}
-                  phone={phone}
-                  onCtaClick={onSkipTheLineClick}
-                />
-              </motion.div>
-
-              {/* Divider */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.2 }}
-                className="flex items-center gap-4 my-8"
-              >
-                <div className="flex-1 h-px bg-foreground/10" />
-                <span className="text-muted-foreground/40 text-sm">✦ O ✦</span>
-                <div className="flex-1 h-px bg-foreground/10" />
-              </motion.div>
-
-              {/* Calendar Section - DESPUÉS */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.4 }}
                 className="text-center mb-3"
               >
-                <span className="text-muted-foreground text-sm">¿Aún tienes dudas? Agenda una llamada</span>
+                <span className="text-muted-foreground text-sm">Agenda tu sesión de evaluación</span>
               </motion.div>
 
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.6 }}
+                transition={{ delay: 1.2 }}
                 className="glass-card-dark p-4 rounded-xl overflow-hidden"
               >
                 <GHLCalendarIframe 
@@ -174,7 +141,7 @@ export const BrechaFooter = ({
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
+              transition={{ delay: 1.4 }}
               className="mt-8 max-w-md mx-auto"
             >
               <div className="flex items-center justify-center gap-2 text-muted-foreground/60 text-sm">

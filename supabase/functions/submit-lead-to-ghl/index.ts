@@ -85,18 +85,8 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
   }
   
   // HARDSTOP: Revenue muy bajo
-  if (answers.q3 === "Menos de €2.000/mes") {
-    return "Revenue muy bajo (< €2K/mes agencia)";
-  }
-  
-  // HARDSTOP: Solo explorando
-  if (answers.q6?.includes("explorando")) {
-    return "Solo explorando, sin urgencia";
-  }
-  
-  // HARDSTOP: Necesita consultarlo después
-  if (answers.q7?.includes("consultarlo")) {
-    return "Necesita consultarlo después de la llamada";
+  if (answers.q3 === "Menos de €5.000/mes") {
+    return "Revenue insuficiente (< €5K/mes)";
   }
   
   // HARDSTOP: Decisión compartida + score bajo
@@ -217,8 +207,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     'Más de €20.000/mes': '💎 CÍRCULO-REV-20K+',
     '€10.000 - €20.000/mes': '💰 CÍRCULO-REV-10K-20K',
     '€5.000 - €10.000/mes': '💵 CÍRCULO-REV-5K-10K',
-    '€2.000 - €5.000/mes': '💸 CÍRCULO-REV-2K-5K',
-    'Menos de €2.000/mes': '🪙 CÍRCULO-REV-<2K'
+    'Menos de €5.000/mes': '🪙 CÍRCULO-REV-<5K'
   };
   if (answers.q3) tags.push(revenueMap[answers.q3] || '💰 CÍRCULO-REV-Unknown');
   
@@ -248,16 +237,14 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   // Urgency (Q6) — NEW
   const urgencyMap: Record<string, string> = {
     'Esta semana - estoy perdiendo dinero cada día que pasa': '🚀 CÍRCULO-URG-ThisWeek',
-    'Este mes - tengo margen pero quiero moverme': '📈 CÍRCULO-URG-ThisMonth',
-    'No tengo prisa, solo estoy explorando': '⏸️ CÍRCULO-URG-Exploring'
+    'Este mes - tengo margen pero quiero moverme': '📈 CÍRCULO-URG-ThisMonth'
   };
   if (answers.q6) tags.push(urgencyMap[answers.q6] || '⏸️ CÍRCULO-URG-Unknown');
   
   // Authority (Q7) — NEW
   const authorityMap: Record<string, string> = {
     'Solo yo - decido hoy si me convence': '👤 CÍRCULO-AUTH-SOLO',
-    'Con mi socio/pareja - ambos estaremos en la llamada': '👥 CÍRCULO-AUTH-SHARED',
-    'Necesito consultarlo después de la llamada': '🚫 CÍRCULO-AUTH-CONSULT-LATER'
+    'Con mi socio/pareja - ambos estaremos en la llamada': '👥 CÍRCULO-AUTH-SHARED'
   };
   if (answers.q7) tags.push(authorityMap[answers.q7] || '❓ CÍRCULO-AUTH-Unknown');
   
@@ -297,7 +284,7 @@ ${grouped.qualification.join('\n')}
 
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
   const fastTrack = answers.q6?.includes('Esta semana');
   const tier = getLeadTier(answers);
@@ -413,7 +400,7 @@ const painOpeningAngles: Record<string, string[]> = {
 
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
   const fastTrack = answers.q6?.includes('Esta semana');
   const tier = getLeadTier(answers);
@@ -513,7 +500,7 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
   const fastTrack = answers.q6?.includes('Esta semana');
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const tier = getLeadTier(answers);
   const ticketLabel = getTicketLabel(answers);
   
@@ -578,7 +565,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const ticketLabel = getTicketLabel(answers);
   
   const realObjections: string[] = [];
@@ -636,7 +623,7 @@ ${strategy}
 // Helper: Generar insights personalizados (PAIN-FIRST)
 function generatePersonalizedInsight(answers: QuizAnswers, score: number): string {
   const pain = answers.q1 || '';
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
   const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
   const isDIY = answers.q5 === 'Quiero hacerlo yo con guía paso a paso (desde €5K)';

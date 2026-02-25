@@ -63,7 +63,7 @@ const steps: QuizStep[] = [{
   id: "q3",
   question: "¿Cuánto factura tu agencia en un mes bueno?",
   type: "radio",
-  options: ["Menos de €2.000/mes", "€2.000 - €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
+  options: ["Menos de €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
   badge: "💰 Paso 3/7 - Tu Punto de Partida",
   subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
   motivator: {
@@ -105,8 +105,7 @@ const steps: QuizStep[] = [{
   type: "radio",
   options: [
     "Esta semana - estoy perdiendo dinero cada día que pasa",
-    "Este mes - tengo margen pero quiero moverme",
-    "No tengo prisa, solo estoy explorando"
+    "Este mes - tengo margen pero quiero moverme"
   ],
   badge: "⏱️ Paso 6/7 - Tu Urgencia",
   subtext: "No hay respuesta correcta. Pero sí hay una honesta.",
@@ -120,8 +119,7 @@ const steps: QuizStep[] = [{
   type: "radio",
   options: [
     "Solo yo - decido hoy si me convence",
-    "Con mi socio/pareja - ambos estaremos en la llamada",
-    "Necesito consultarlo después de la llamada"
+    "Con mi socio/pareja - ambos estaremos en la llamada"
   ],
   badge: "🔐 Paso 7/7 - Final",
   subtext: "Si decides con alguien más, ambos deben estar en la llamada",
@@ -266,7 +264,7 @@ const QuizSection = ({
           currency: 'EUR',
           custom_data: { revenue_bracket: value, high_ltv: true }
         });
-      } else if (value === "Menos de €2.000/mes") {
+      } else if (value === "Menos de €5.000/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
       }
     }
@@ -596,8 +594,7 @@ const QuizSection = ({
     if (state.q3 === "€5.000 - €10.000/mes") score += 30;
     else if (state.q3 === "€10.000 - €20.000/mes") score += 28;
     else if (state.q3 === "Más de €20.000/mes") score += 25;
-    else if (state.q3 === "€2.000 - €5.000/mes") score += 22;
-    else if (state.q3 === "Menos de €2.000/mes") score += 0;
+    else if (state.q3 === "Menos de €5.000/mes") score += 0;
 
     // Q4 - Acquisition (0-15 pts)
     if (Array.isArray(state.q4)) {
@@ -618,31 +615,20 @@ const QuizSection = ({
     // Q6 - Urgency (0-5 pts)
     if (state.q6?.includes("Esta semana")) score += 5;
     else if (state.q6?.includes("Este mes")) score += 4;
-    else if (state.q6?.includes("explorando")) score += 0;
 
     // Q7 - Authority (0-5 pts)
     if (state.q7?.includes("Solo yo")) score += 5;
     else if (state.q7?.includes("Con mi socio")) score += 3;
-    else if (state.q7?.includes("consultarlo")) score += 0;
     
     return Math.min(score, 100);
   };
 
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
     // HARDSTOP: Revenue demasiado bajo
-    if (state.q3 === "Menos de €2.000/mes") return true;
-    
-    // HARDSTOP: Revenue marginal + sin inversión
-    if (state.q3 === "€2.000 - €5.000/mes" && state.q5 === "Ahora mismo no puedo invertir en esto") return true;
+    if (state.q3 === "Menos de €5.000/mes") return true;
     
     // HARDSTOP: No puede invertir
     if (state.q5 === "Ahora mismo no puedo invertir en esto") return true;
-    
-    // HARDSTOP: Solo explorando
-    if (state.q6?.includes("explorando")) return true;
-    
-    // HARDSTOP: Necesita consultarlo después
-    if (state.q7?.includes("consultarlo")) return true;
     
     // HARDSTOP: Decisión compartida + score bajo
     if (state.q7?.includes("Con mi socio") && score < 85) return true;

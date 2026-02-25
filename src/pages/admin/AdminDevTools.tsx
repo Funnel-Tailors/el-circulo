@@ -7,7 +7,7 @@ import { VideoDropOverlay } from "@/components/senda/VideoDropOverlay";
 import { DropsInventory } from "@/components/senda/DropsInventory";
 import { RitualSequenceModal } from "@/components/senda/RitualSequenceModal";
 import { EndlessTools3D } from "@/components/senda/EndlessTools3D";
-import { SkipTheLineOffer } from "@/components/brecha/SkipTheLineOffer";
+
 import { toast } from "@/hooks/use-toast";
 
 // Drops config info for display
@@ -204,18 +204,13 @@ export default function AdminDevTools() {
               </div>
             </div>
 
-            {/* ===== SKIP THE LINE CTA - PRIMERO ===== */}
-            <SkipTheLineOffer
-              ghlPaymentUrl="https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2"
-              isPreview={true}
-              onCtaClick={() => console.log("Skip the line clicked (preview)")}
-            />
-
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-6">
-              <div className="flex-1 h-px bg-foreground/10" />
-              <span className="text-muted-foreground/40 text-sm">✦ O ✦</span>
-              <div className="flex-1 h-px bg-foreground/10" />
+            {/* Pricing con beca */}
+            <div className="text-center my-6">
+              <p className="text-muted-foreground text-sm">
+                <span className="line-through opacity-60">€6.000</span>
+                <span className="text-foreground font-bold text-lg mx-2">→ €5.000</span>
+              </p>
+              <p className="text-foreground/50 text-xs mt-1">Beca de La Brecha desbloqueada</p>
             </div>
 
             {/* ===== CALENDAR PLACEHOLDER - DESPUÉS ===== */}

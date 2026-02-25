@@ -23,11 +23,10 @@ const PROFESSION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const REVENUE_MAP: Record<string, { value: string; score: number }> = {
-  '🌑': { value: 'menos_500', score: 0 },
-  '🌒': { value: '500_1500', score: 5 },
-  '🌓': { value: '1500_3000', score: 15 },
-  '🌔': { value: '3000_6000', score: 20 },
-  '🌕': { value: 'mas_6000', score: 25 },
+  '🌑': { value: 'menos_5000', score: 0 },
+  '🌓': { value: '5000_10000', score: 15 },
+  '🌔': { value: '10000_20000', score: 20 },
+  '🌕': { value: 'mas_20000', score: 25 },
 }
 
 const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
@@ -39,10 +38,10 @@ const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const BUDGET_MAP: Record<string, { value: string; score: number; hardstop: boolean }> = {
-  '💧': { value: 'menos_500', score: 0, hardstop: true },
-  '💎': { value: '500_1500', score: 10, hardstop: false },
-  '⚡': { value: '1500_3000', score: 15, hardstop: false },
-  '🔮': { value: 'mas_3000', score: 25, hardstop: false },
+  '💧': { value: 'menos_5000', score: 0, hardstop: true },
+  '💎': { value: '5000_8000', score: 15, hardstop: false },
+  '⚡': { value: '8000_12000', score: 20, hardstop: false },
+  '🔮': { value: 'mas_15000', score: 25, hardstop: false },
 }
 
 const URGENCY_MAP: Record<string, { value: string; score: number }> = {
@@ -73,11 +72,10 @@ const PROFESSION_LITERAL_MAP: Record<string, string> = {
 }
 
 const REVENUE_LITERAL_MAP: Record<string, string> = {
-  'menos_500': 'Menos de €2.000/mes',
-  '500_1500': '€2.000 - €5.000/mes',
-  '1500_3000': '€5.000 - €10.000/mes',
-  '3000_6000': '€10.000 - €20.000/mes',
-  'mas_6000': 'Más de €20.000/mes',
+  'menos_5000': 'Menos de €5.000/mes',
+  '5000_10000': '€5.000 - €10.000/mes',
+  '10000_20000': '€10.000 - €20.000/mes',
+  'mas_20000': 'Más de €20.000/mes',
 }
 
 const ACQUISITION_LITERAL_MAP: Record<string, string> = {
@@ -89,10 +87,10 @@ const ACQUISITION_LITERAL_MAP: Record<string, string> = {
 }
 
 const BUDGET_LITERAL_MAP: Record<string, string> = {
-  'menos_500': 'Menos de €3.000',
-  '500_1500': '€3.000 - €5.000',
-  '1500_3000': '€5.000 - €8.000',
-  'mas_3000': 'Más de €8.000',
+  'menos_5000': 'Menos de €5.000',
+  '5000_8000': '€5.000 - €8.000',
+  '8000_12000': '€8.000 - €12.000',
+  'mas_15000': 'Más de €15.000',
 }
 
 const URGENCY_LITERAL_MAP: Record<string, string> = {
@@ -149,10 +147,10 @@ function parseMultipleEmojis(text: string, map: Record<string, { value: string; 
 }
 
 function determineTier(budgetValue: string, score: number): string {
-  if ((budgetValue === '3000_5000' || budgetValue === 'mas_5000') && score >= 90) {
+  if ((budgetValue === 'mas_15000') && score >= 90) {
     return 'premium'
   }
-  if (score >= 60) {
+  if ((budgetValue === '8000_12000' || budgetValue === 'mas_15000') && score >= 60) {
     return 'full_access'
   }
   return 'offer_only'
@@ -312,9 +310,9 @@ function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0]
   const isHot = score >= 85
-  const hasInvestment = answers.q5 !== 'Menos de €3.000'
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes'
-  const isIdealClient = lowRevenue && hasInvestment
+  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
+  const isIdealClient = midRevenue && hasInvestment
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️'
   
   let contactWindow = '⏰ CONTACTAR: En las próximas 48h'
@@ -330,14 +328,14 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
 ${tempEmoji} NUEVO LEAD BRECHA: ${firstName}
 
 ${contactWindow}
-${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Cobra poco + tiene inversión = Alto potencial\n' : ''}
+${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Sweet spot (€5-10K) + tiene inversión = Alto potencial\n' : ''}
 
 📊 SCORE: ${score}/110 ${scoreBar}
 
 💼 PERFIL:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
-• Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Factura: ${answers.q3}${midRevenue ? ' (Sweet spot — tracción + dolor)' : ''}
 • Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
 • Decide: ${answers.q7}
 
@@ -352,8 +350,8 @@ ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agen
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
-  const hasInvestment = answers.q5 !== 'Menos de €3.000'
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes'
+  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
   return `
@@ -366,7 +364,7 @@ VEREDICTO: ${score}/110 ${scoreBar}
 
 ⚡ RESUMEN:
 • Pain: ${answers.q1}
-• Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• Profesión: ${answers.q2} | Factura: ${answers.q3}${midRevenue ? ' (Sweet spot)' : ''}
 • Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
 • Decide: ${authSolo ? '✅ Solo' : answers.q7}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
@@ -511,16 +509,16 @@ El Círculo
 
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number): string {
   const firstName = contact.name.split(' ')[0]
-  const hasInvestment = answers.q5 !== 'Menos de €3.000'
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes'
+  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD'
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
   
   let closingStrategy = ''
-  if (lowRevenue && hasInvestment) {
-    closingStrategy = 'CLIENTE IDEAL - Dolor agudo + inversión = MÁXIMA PRIORIDAD.'
+  if (midRevenue && hasInvestment) {
+    closingStrategy = 'CLIENTE IDEAL - Sweet spot (€5-10K) + inversión = MÁXIMA PRIORIDAD.'
   } else if (score >= 85 && hasInvestment) {
     closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min.'
   } else if (score >= 75) {
@@ -537,7 +535,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
 
 📋 PERFIL DEL CANDIDATO:
 • Pain: ${answers.q1}
-• ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
+• ${answers.q2} | Factura: ${answers.q3}${midRevenue ? ' (Sweet spot)' : ''}
 • Inversión: ${hasInvestment ? '✅ OK' : '❌ NO'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
 
 🎯 ESTRATEGIA DE CIERRE:
@@ -1022,12 +1020,17 @@ Deno.serve(async (req) => {
       authority: authorityParsed,
     })
 
-    // Check for hardstops - SOLO budget menor a 500€ descalifica
+    // Check for hardstops
     let hardstopReason: string | null = null
     
     if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
-      console.log('HARDSTOP: Budget menor a €3.000 detectado')
+      console.log('HARDSTOP: Budget menor a €5.000 detectado')
+    }
+    
+    if (!hardstopReason && revenueParsed?.value === 'menos_5000') {
+      hardstopReason = 'low_revenue'
+      console.log('HARDSTOP: Revenue menor a €5.000/mes detectado')
     }
 
     // Calculate qualification score
