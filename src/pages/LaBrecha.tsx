@@ -166,10 +166,6 @@ const LaBrecha = () => {
             email={undefined}
             phone={undefined}
             eventDate={expiresAt || new Date(Date.now() + 48 * 60 * 60 * 1000)}
-            ghlPaymentUrl="https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2"
-            onSkipTheLineClick={() => {
-              updateProgress({ skip_the_line_clicked: true });
-            }}
           />
         </div>
       </div>
@@ -553,7 +549,6 @@ const LaBrecha = () => {
             showCalendar={allFragmentsCompleted}
             firstName={lead?.first_name || undefined}
             eventDate={expiresAt || new Date()}
-            ghlPaymentUrl="https://link.fastpaydirect.com/payment-link/6952889adf9e921526fae6d2"
           />
         </div>
       )}
