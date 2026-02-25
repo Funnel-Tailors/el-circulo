@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.sync-brecha-tags-bulk]
 verify_jwt = false
+
+[functions.sync-senda-tags]
+verify_jwt = false
+
+[functions.sync-senda-tags-bulk]
+verify_jwt = false

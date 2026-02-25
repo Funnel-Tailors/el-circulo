@@ -369,6 +369,51 @@ export const useSendaProgress = (token: string | null) => {
     }
   }, [token, loadFromLocalStorage, saveToLocalStorage]);
 
+  // Check if update contains important milestones that should trigger tag sync
+  const shouldSyncTags = (updates: Partial<SendaProgress>): boolean => {
+    const importantFields = [
+      'class1SequenceCompleted',
+      'class2SequenceCompleted',
+      'module3SequenceCompleted',
+      'module4SequenceCompleted',
+      'vaultUnlocked',
+      'module3Unlocked',
+      'module4Unlocked',
+      'journeyCompleted',
+      'skipTheLineShown',
+      'skipTheLineClicked',
+    ];
+    return importantFields.some(field => field in updates);
+  };
+
+  // Fire-and-forget sync to GHL (non-blocking)
+  const syncTagsToGHL = async (contactId: string) => {
+    try {
+      const { data: setting } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'brecha_sync_enabled')
+        .maybeSingle();
+
+      const syncEnabled = setting?.value === true || setting?.value === 'true';
+      if (!syncEnabled) {
+        console.log("[useSendaProgress] Tag sync disabled, skipping");
+        return;
+      }
+
+      const response = await supabase.functions.invoke('sync-senda-tags', {
+        body: { ghl_contact_id: contactId },
+      });
+      if (response.error) {
+        console.warn("[useSendaProgress] Tag sync failed:", response.error);
+      } else {
+        console.log("[useSendaProgress] Tags synced:", response.data?.tags_synced);
+      }
+    } catch (err) {
+      console.warn("[useSendaProgress] Tag sync error:", err);
+    }
+  };
+
   // Update progress (both DB and localStorage) - Fire-and-forget for performance
   const updateProgress = useCallback((updates: Partial<SendaProgress>) => {
     if (!token) return;
@@ -395,6 +440,11 @@ export const useSendaProgress = (token: string | null) => {
               ...dbUpdates,
             }).then(() => {});
           }
+        }
+
+        // If important milestone, sync tags to GHL (fire-and-forget)
+        if (shouldSyncTags(updates)) {
+          syncTagsToGHL(token);
         }
       });
   }, [token, progress, saveToLocalStorage]);
