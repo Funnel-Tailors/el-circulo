@@ -185,6 +185,9 @@ function generateTags(
     if (hardstopReason === 'low_budget') {
       toApply.push('brecha_low_budget')
     }
+    if (hardstopReason === 'inconsistent_revenue_budget') {
+      toApply.push('brecha_inconsistent')
+    }
     toRemove.push('brecha:qualified', 'brecha:pending')
   }
 
@@ -922,6 +925,35 @@ Deja un testimonio sobre lo que te ha parecido este fragmento y cómo lo vas a a
 Puede que El Consejo decida dejarte acceder.`
   }
   
+  if (hardstopReason === 'inconsistent_revenue_budget') {
+    return `${firstName}.
+
+Dices que facturas ${revenueLiteral?.toLowerCase() || 'mucho'}.
+
+Pero cuando te pregunto cuánto invertirías...
+
+"${budgetLiteral}"
+
+¿En serio?
+
+Alguien que factura lo que dices facturar no duda en invertir €5.000 en algo que le puede cambiar el negocio.
+
+A no ser que no factures lo que dices facturar.
+
+Las pruebas existen para filtrar a los que no están listos.
+Y acabas de suspender.
+
+Haz los deberes primero.
+Construye algo real.
+Demuestra que puedes generar antes de intentar jugar con los mayores.
+
+Te dejo un curso gratis para que empieces por donde deberías empezar:
+
+👉 https://www.youtube.com/watch?v=61r314WUaSw&t=3917s
+
+Cuando factures de verdad lo que dices facturar, sabrás dónde encontrarme.`
+  }
+
   return ''
 }
 
@@ -1031,6 +1063,12 @@ Deno.serve(async (req) => {
     if (!hardstopReason && revenueParsed?.value === 'menos_5000') {
       hardstopReason = 'low_revenue'
       console.log('HARDSTOP: Revenue menor a €5.000/mes detectado')
+    }
+
+    // Cross-validation: revenue alto + budget mínimo = mentiroso
+    if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_5000' && budgetParsed?.value === 'menos_5000') {
+      hardstopReason = 'inconsistent_revenue_budget'
+      console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
     }
 
     // Calculate qualification score
