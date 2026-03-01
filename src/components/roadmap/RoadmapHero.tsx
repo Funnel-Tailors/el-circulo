@@ -12,7 +12,7 @@ const RoadmapHero = () => {
       </h1>
 
       <p className="md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-sm">
-        un sistema paso a paso para que estés buscando clientes en 3 días (y tengas tu sistema en 7)
+        un sistema paso a paso para que estés buscando clientes en 5 días (y tengas tu sistema en 7)
       </p>
 
       {/* Bottom divider */}

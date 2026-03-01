@@ -180,7 +180,7 @@ const CircleHero = () => {
 
       {/* Pre-qualificación ICP */}
       <p className="text-sm md:text-base text-muted-foreground leading-[1em] italic">
-        Solo para dueños de <span className="text-foreground font-bold glow">agencia, estudio o productora</span> con equipo que quieren dejar de depender de la suerte para saber <span className="text-foreground font-bold glow">cuánto van a facturar el mes que viene</span>
+        Solo para dueños de <span className="text-foreground font-bold glow">agencia, estudio o productora</span> — de 1 a 5 personas — que quieren dejar de depender de la suerte para saber <span className="text-foreground font-bold glow">cuánto van a facturar el mes que viene</span>
       </p>
 
       {/* Hero Title + Subheadline */}
@@ -237,7 +237,7 @@ const CircleHero = () => {
 
         {/* Subheadline */}
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-          Un sistema para saber exactamente cuánto vas a generar el mes que viene — <span className="text-foreground font-bold">ejecutable en 3 días, optimizado en 7</span>
+          Un sistema para saber exactamente cuánto vas a generar el mes que viene — <span className="text-foreground font-bold">ejecutable en 5 días, optimizado en 7</span>
         </p>
       </div>
     </div>;

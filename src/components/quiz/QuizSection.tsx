@@ -49,7 +49,7 @@ const steps: QuizStep[] = [{
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
   motivator: {
     icon: "🎯",
-    text: "El 94% de miembros resuelve su mayor frustración en los primeros 30 días"
+    text: "Miembros como Nico, Cris y Dani resolvieron su mayor frustración en los primeros 30 días"
   }
 }, {
   id: "q2",
@@ -80,7 +80,7 @@ const steps: QuizStep[] = [{
   subtext: "Vamos a petar ese canal x3",
   motivator: {
     icon: "⚡",
-    text: "El 89% pasa de 'a ver si suena el teléfono' a 4-6 leads/semana"
+    text: "Los que solo tenían referidos empezaron a generar 4-6 leads/semana en el primer mes"
   }
 }, {
   id: "q5",
@@ -97,7 +97,7 @@ const steps: QuizStep[] = [{
   valueStack: null,
   motivator: {
     icon: "🔥",
-    text: "El 78% recupera su inversión x2 en 60 días. Cris pasó de tirar la toalla a cerrar 3.000€."
+    text: "Cris pasó de tirar la toalla a cerrar 3.000€. Felipe tuvo 2 llamadas de venta en 7 días."
   }
 }, {
   id: "q6",
