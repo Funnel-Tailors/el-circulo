@@ -19,6 +19,7 @@ import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/li
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
+  variant?: 'default' | 'v2';
 }
 interface QuizStep {
   id: string;
@@ -127,8 +128,10 @@ const steps: QuizStep[] = [{
 }];
 const QuizSection = ({
   onComplete,
-  onExit
+  onExit,
+  variant = 'default'
 }: QuizSectionProps) => {
+  const isV2 = variant === 'v2';
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, _setAnswers] = useState<QuizState>({});
   const answersRef = useRef<QuizState>({});
@@ -144,6 +147,7 @@ const QuizSection = ({
   const [showMicroCommitment, setShowMicroCommitment] = useState(false);
   const [microCommitChecks, setMicroCommitChecks] = useState({ time: false, investment: false, partner: false });
   const [pendingCompleteState, setPendingCompleteState] = useState<{ state: QuizState; qualified: boolean } | null>(null);
+  const [intentConfirmed, setIntentConfirmed] = useState(false);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -546,23 +550,32 @@ const QuizSection = ({
         ghlContactId: responseData?.contactId || null
       };
       
-      // Show micro-commitment screen instead of completing directly
-      setPendingCompleteState({ state: finalState, qualified: true });
-      setShowMicroCommitment(true);
-      setShowContactForm(false);
+      if (isV2) {
+        // V2: skip micro-commitment, go straight to result
+        onComplete(finalState, true);
+      } else {
+        // Show micro-commitment screen instead of completing directly
+        setPendingCompleteState({ state: finalState, qualified: true });
+        setShowMicroCommitment(true);
+        setShowContactForm(false);
+      }
     } catch (error) {
       console.error('💥 [ERROR] Failed to submit lead to GHL:', error);
-      
+
       toast({
         title: "⚠️ Error al guardar",
         description: "Hubo un problema al guardar tus datos, pero puedes continuar",
         variant: "destructive"
       });
-      
+
       const finalState = { ...answers, ...contactData, ghlContactId: null };
-      setPendingCompleteState({ state: finalState, qualified: true });
-      setShowMicroCommitment(true);
-      setShowContactForm(false);
+      if (isV2) {
+        onComplete(finalState, true);
+      } else {
+        setPendingCompleteState({ state: finalState, qualified: true });
+        setShowMicroCommitment(true);
+        setShowContactForm(false);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -661,8 +674,11 @@ const QuizSection = ({
               quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
               setTimeout(() => { handleNext(); }, 300);
             }} className="space-y-3">
-              {currentQuestion.options?.map(option => {
-                const isSkepticOption = isQ1 && option === skepticOption;
+              {(isV2 && isQ1
+                ? currentQuestion.options?.filter(opt => opt !== skepticOption)
+                : currentQuestion.options
+              )?.map(option => {
+                const isSkepticOption = !isV2 && isQ1 && option === skepticOption;
                 const isDisabledByChallenge = showSkepticChallenge && isSkepticOption;
                 const isHighlightedByChallenge = showSkepticChallenge && isQ1 && !isSkepticOption;
                 
@@ -686,8 +702,8 @@ const QuizSection = ({
               })}
             </RadioGroup>
             
-            {/* El Espejo */}
-            <Dialog open={showSkepticChallenge && isQ1} onOpenChange={() => {}}>
+            {/* El Espejo — only in default variant */}
+            <Dialog open={!isV2 && showSkepticChallenge && isQ1} onOpenChange={() => {}}>
               <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100vw-2rem)] sm:max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
                 <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   <div className="text-center space-y-2">
@@ -882,7 +898,7 @@ const QuizSection = ({
                 <Label className="text-sm font-semibold">
                   💬 Tu WhatsApp para enviarte la clase y recordatorios
                 </Label>
-                <div className="grid grid-cols-[140px_1fr] gap-2">
+                <div className={`grid gap-2 ${isV2 ? 'grid-cols-1 sm:grid-cols-[140px_1fr]' : 'grid-cols-[140px_1fr]'}`}>
                   <FormField control={form.control} name="countryCode" render={({ field }) => 
                     <FormItem>
                       <Select 
@@ -927,24 +943,40 @@ const QuizSection = ({
                 </div>
               </div>
 
-              <div className="text-left space-y-2 pt-2">
-                <ul className="text-xs text-muted-foreground space-y-2">
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">→</span>
-                    <span>Cómo <strong className="text-foreground">transformar lo que hace tu agencia en un servicio de un solo precio</strong> que los clientes se matan por pagar</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">→</span>
-                    <span>Cómo <strong className="text-foreground">pasar de proyectos de €2K a €10K+</strong> sin cambiar lo que entregáis — solo cómo lo vendéis</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-accent">→</span>
-                    <span>El <strong className="text-foreground">sistema exacto</strong> para que el cliente rata <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo a ti ni a tu equipo</strong></span>
-                  </li>
-                </ul>
-              </div>
+              {!isV2 && (
+                <div className="text-left space-y-2 pt-2">
+                  <ul className="text-xs text-muted-foreground space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="text-accent">→</span>
+                      <span>Cómo <strong className="text-foreground">transformar lo que hace tu agencia en un servicio de un solo precio</strong> que los clientes se matan por pagar</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-accent">→</span>
+                      <span>Cómo <strong className="text-foreground">pasar de proyectos de €2K a €10K+</strong> sin cambiar lo que entregáis — solo cómo lo vendéis</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-accent">→</span>
+                      <span>El <strong className="text-foreground">sistema exacto</strong> para que el cliente rata <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo a ti ni a tu equipo</strong></span>
+                    </li>
+                  </ul>
+                </div>
+              )}
 
-              <Button type="submit" disabled={isSubmitting} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
+              {isV2 && (
+                <label htmlFor="intent-confirm" className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
+                  <Checkbox
+                    id="intent-confirm"
+                    checked={intentConfirmed}
+                    onCheckedChange={(checked) => setIntentConfirmed(!!checked)}
+                    className="border-2 mt-0.5"
+                  />
+                  <span className="flex-1 text-sm text-foreground/90">
+                    Confirmo que voy a <strong className="text-foreground">consumir el contenido y asistir a la llamada</strong>. No quiero hacerle perder el tiempo a nadie.
+                  </span>
+                </label>
+              )}
+
+              <Button type="submit" disabled={isSubmitting || (isV2 && !intentConfirmed)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
                     <span className="animate-spin">⏳</span>
@@ -967,10 +999,10 @@ const QuizSection = ({
 
       <div className="space-y-4">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1 animate-pulse">
+            <div className={`inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1 ${isV2 ? '' : 'animate-pulse'}`}>
               <span className="text-base">⏱️</span>
               <span className="text-xs font-semibold text-foreground">
-                ~{(steps.length - currentStep) * 2}s para completar
+                {isV2 ? `Paso ${currentStep + 1}/${steps.length}` : `~${(steps.length - currentStep) * 2}s para completar`}
               </span>
             </div>
 
@@ -1000,9 +1032,11 @@ const QuizSection = ({
             </div>}
 
           <div className="flex gap-3 pt-4">
-            <Button onClick={handlePrevious} disabled={currentStep === 0} variant="outline" className="dark-button">
-              Anterior
-            </Button>
+            {!(isV2 && currentStep === 0) && (
+              <Button onClick={handlePrevious} disabled={currentStep === 0} variant="outline" className="dark-button">
+                Anterior
+              </Button>
+            )}
 
             <Button onClick={handleNext} disabled={!answers[currentQuestion.id as keyof QuizState] || Array.isArray(answers[currentQuestion.id as keyof QuizState]) && (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0} className="dark-button-primary flex-1">
               {isLastStep ? "Finalizar" : "Siguiente"}

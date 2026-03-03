@@ -134,7 +134,7 @@ const IndexV2 = () => {
             </div>
 
             <div className="bg-background/50 backdrop-blur-sm rounded-3xl p-8 border border-border/50">
-              {quizScreen === "quiz" && <QuizSection onComplete={handleCompleteQuiz} onExit={handleResetQuiz} />}
+              {quizScreen === "quiz" && <QuizSection variant="v2" onComplete={handleCompleteQuiz} onExit={handleResetQuiz} />}
               {quizScreen === "result" && <ResultSection isQualified={isQualified} quizState={quizState} onReset={handleResetQuiz} />}
             </div>
           </div>
