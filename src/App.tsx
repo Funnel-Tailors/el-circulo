@@ -11,7 +11,8 @@ import Senda from "./pages/Senda";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
 
-// Lazy load admin and heavy pages
+// Lazy load v2 landing and heavy pages
+const IndexV2 = lazy(() => import("./pages/IndexV2"));
 const LaBrecha = lazy(() => import("./pages/LaBrecha"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
@@ -39,6 +40,11 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/v2" element={
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <IndexV2 />
+            </Suspense>
+          } />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/senda" element={<Senda />} />
