@@ -11,7 +11,7 @@ export interface OverviewData {
 
 interface FetchOptions {
   intervalDays: number;
-  quizVersion: 'all' | 'v1' | 'v2';
+  quizVersion: 'all' | 'v1' | 'v2' | 'short';
 }
 
 const getEmptyData = (): OverviewData => ({

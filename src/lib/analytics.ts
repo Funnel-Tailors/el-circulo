@@ -313,6 +313,14 @@ class QuizAnalytics {
     });
   }
 
+  setQuizVersion(version: string): void {
+    this.quizVersion = version;
+  }
+
+  getQuizVersion(): string {
+    return this.quizVersion;
+  }
+
   getFbclid(): string | null {
     return this.fbclid;
   }

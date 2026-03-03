@@ -75,6 +75,7 @@ interface LeadSubmission {
   ghlContactId?: string;
   sessionId?: string;
   isSkeptic?: boolean;
+  quizVersion?: string;
 }
 
 // Helper: Detectar razón específica de hardstop
@@ -141,7 +142,7 @@ function getLeadCategory(score: number, answers: QuizAnswers): string {
   return 'C';
 }
 
-function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false, isSkeptic: boolean = false): string[] {
+function generateTags(answers: QuizAnswers, score: number, qualified: boolean, isPartial: boolean = false, isSkeptic: boolean = false, quizVersion: string = 'v2'): string[] {
   const tags: string[] = [];
   
   if (isSkeptic) tags.push('🪞 CÍRCULO-SKEPTIC-CONVERTED');
@@ -152,7 +153,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     tags.push('🟢 CÍRCULO-LEAD-COMPLETO');
   }
   
-  tags.push('🎯 CÍRCULO-SOURCE-Quiz2025-v2');
+  tags.push(`🎯 CÍRCULO-SOURCE-Quiz2025-${quizVersion}`);
   
   const category = getLeadCategory(score, answers);
   const categoryTags: Record<string, string> = {
@@ -1313,7 +1314,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId, isSkeptic }: LeadSubmission = await req.json();
+    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId, isSkeptic, quizVersion }: LeadSubmission = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -1377,7 +1378,7 @@ serve(async (req) => {
       'Content-Type': 'application/json'
     };
     
-    const tags = generateTags(answers, score, qualified, isPartialSubmission || false, isSkeptic || false);
+    const tags = generateTags(answers, score, qualified, isPartialSubmission || false, isSkeptic || false, quizVersion || 'v2');
     console.log('Generated tags:', tags);
     
     let contactId: string | null = ghlContactId || null;
@@ -1402,7 +1403,7 @@ serve(async (req) => {
       locationId: ghlLocationId,
       tags: tags,
       customFields: [
-        { key: 'quiz_version', field_value: 'v2' },
+        { key: 'quiz_version', field_value: quizVersion || 'v2' },
         { key: 'quiz_pain_point', field_value: answers.q1 || '' },
         { key: 'quiz_profession', field_value: answers.q2 || '' },
         { key: 'quiz_revenue', field_value: answers.q3 || '' },

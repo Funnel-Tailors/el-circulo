@@ -14,7 +14,7 @@ import { useAnalyticsData } from "@/hooks/useAnalyticsData";
 
 export default function AdminOverview() {
   const [dateRange, setDateRange] = useState("30");
-  const [quizVersion, setQuizVersion] = useState<"all" | "v1" | "v2">("all");
+  const [quizVersion, setQuizVersion] = useState<"all" | "v1" | "v2" | "short">("all");
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -115,6 +115,12 @@ export default function AdminOverview() {
                 <div className="flex items-center gap-2">
                   Quiz v2
                   <Badge variant="default" className="text-xs">Actual</Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="short">
+                <div className="flex items-center gap-2">
+                  Quiz Short
+                  <Badge variant="outline" className="text-xs">A/B</Badge>
                 </div>
               </SelectItem>
             </SelectContent>

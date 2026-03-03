@@ -132,6 +132,14 @@ const QuizSection = ({
   variant = 'default'
 }: QuizSectionProps) => {
   const isV2 = variant === 'v2';
+
+  useEffect(() => {
+    if (isV2) {
+      quizAnalytics.setQuizVersion('short');
+      return () => { quizAnalytics.setQuizVersion('v2'); };
+    }
+  }, [isV2]);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, _setAnswers] = useState<QuizState>({});
   const answersRef = useRef<QuizState>({});
@@ -505,7 +513,8 @@ const QuizSection = ({
       qualified,
       fbclid: quizAnalytics.getFbclid(),
       isPartialSubmission: false,
-      sessionId: quizAnalytics.getSessionId()
+      sessionId: quizAnalytics.getSessionId(),
+      quizVersion: quizAnalytics.getQuizVersion()
     };
 
     try {

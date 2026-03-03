@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AdminQuizFunnel() {
   const [dateRange, setDateRange] = useState("30");
-  const [quizVersion, setQuizVersion] = useState<"all" | "v1" | "v2">("all");
+  const [quizVersion, setQuizVersion] = useState<"all" | "v1" | "v2" | "short">("all");
 
   const { overviewData, loading, fetchOverview } = useAnalyticsData();
 
@@ -78,6 +78,12 @@ export default function AdminQuizFunnel() {
                 <div className="flex items-center gap-2">
                   Quiz v2
                   <Badge variant="default" className="text-xs">Actual</Badge>
+                </div>
+              </SelectItem>
+              <SelectItem value="short">
+                <div className="flex items-center gap-2">
+                  Quiz Short
+                  <Badge variant="outline" className="text-xs">A/B</Badge>
                 </div>
               </SelectItem>
             </SelectContent>
