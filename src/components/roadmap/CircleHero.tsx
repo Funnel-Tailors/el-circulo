@@ -2,7 +2,10 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 import { X } from "lucide-react";
-const CircleHero = () => {
+interface CircleHeroProps {
+  disableSticky?: boolean;
+}
+const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
   const handleScrollToQuiz = () => {
     // Track CTA click ANTES de trackQuizStart
     quizAnalytics.trackMetaPixelEvent('ViewContent', {
@@ -158,8 +161,9 @@ const CircleHero = () => {
 
   // (Duplicado eliminado - scroll tracking ya se hace en useEffect línea 91-131)
 
-  // Sticky video logic
+  // Sticky video logic (disabled in v2)
   useEffect(() => {
+    if (disableSticky) return;
     const container = videoContainerRef.current;
     if (!container) return;
     const observer = new IntersectionObserver(([entry]) => {

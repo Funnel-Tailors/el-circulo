@@ -68,7 +68,7 @@ const IndexV2 = () => {
 
       <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
         <div>
-          <CircleHero />
+          <CircleHero disableSticky />
         </div>
 
         {/* Testimonials marquee - full bleed */}
