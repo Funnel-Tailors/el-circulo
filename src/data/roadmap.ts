@@ -184,6 +184,12 @@ export const successCases: SuccessCaseData[] = [
     offer: "Sistema 3D",
     videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/699f3987ba06ae44dfd97000.mov",
   },
+  {
+    name: "Bruno",
+    role: "Agencia",
+    offer: "Thisisbrv",
+    videoUrl: "https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/69ac9669b2a2743efdf918b9.mp4",
+  },
 ];
 
 export const featuredInterview = {
