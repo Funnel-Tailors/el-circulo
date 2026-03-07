@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 
 // Lazy load v2 landing and heavy pages
 const IndexV2 = lazy(() => import("./pages/IndexV2"));
+const Carta = lazy(() => import("./pages/Carta"));
 const LaBrecha = lazy(() => import("./pages/LaBrecha"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
@@ -71,6 +72,12 @@ const App = () => (
             <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
           </Route>
           
+          <Route path="/carta" element={
+            <Suspense fallback={<div className="min-h-screen bg-[#1c1c1e]" />}>
+              <Carta />
+            </Suspense>
+          } />
+
           {/* Redirects */}
           <Route path="/analytics" element={<Navigate to="/admin" replace />} />
           <Route path="/test-vault" element={<Navigate to="/admin/dev" replace />} />

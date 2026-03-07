@@ -95,6 +95,7 @@ export default {
       fontFamily: {
         'display': ['"degular-display"', 'system-ui', '-apple-system', '"Inter"', 'Arial', 'sans-serif'],
         'text': ['"degular-text"', 'system-ui', '-apple-system', '"Inter"', 'Arial', 'sans-serif'],
+        'mono': ['"degular-mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       keyframes: {
         "accordion-down": {
