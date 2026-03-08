@@ -1,12 +1,12 @@
 const SalesLetter = () => (
   <article className="font-mono text-white/90 text-base md:text-lg leading-relaxed md:leading-loose space-y-6">
-    <h1 className="text-xl md:text-2xl font-bold text-white leading-tight">
+    <h1 className="text-2xl md:text-3xl font-bold text-white" style={{ lineHeight: '1em' }}>
       Por qué tus preciosas "marcas que conectan" no le durarían ni un asalto a un miembro del Círculo y el motivo principal por el que siempre les elegirían a ellos…
     </h1>
 
-    <p className="text-white/50 text-sm">Sobre alguien jugando al pinta y colorea.</p>
+    <p>Sobre alguien jugando al pinta y colorea.</p>
 
-    <p className="text-white/50 text-sm">Tutorial express:</p>
+    <p>Tutorial express:</p>
 
     <p>
       Hay un fenómeno demasiado habitual en el gremio del diseño (gráfico o no)
