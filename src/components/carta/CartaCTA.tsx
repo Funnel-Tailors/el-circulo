@@ -20,6 +20,7 @@ const CartaCTA = () => {
         className="inline-block px-8 py-4 bg-white text-[#1c1c1e] font-mono font-bold text-lg hover:bg-white/90 transition-colors duration-200"
       >
         Entrar al Círculo
+        <span className="block text-xs font-normal mt-1 opacity-70">La invitación será enviada automáticamente</span>
       </a>
     </div>
   );
