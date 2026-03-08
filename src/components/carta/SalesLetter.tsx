@@ -71,7 +71,7 @@ const SalesLetter = () => (
     </p>
 
     <p>
-      Un besito (y un enlace de pago que te enviaré si me escribes mmmm no sé patata por ejemplo)
+      Un besito (y un enlace de pago que te encontrarás después de toda esta gente que consiguió lo que vienes a buscar)
     </p>
   </article>
 );
