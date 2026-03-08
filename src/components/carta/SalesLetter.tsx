@@ -67,7 +67,7 @@ const SalesLetter = () => (
     </p>
 
     <p>
-      Pagarme la (irrisoria) cantidad de <strong className="text-white">5.000€</strong> ahora para que te enseñe cómo cerrar proyectos que te pagan hasta 10 veces eso - Sin llamadas ni darme la chapa con dudas que son más tus propias inseguridades.
+      Pagarme <strong className="text-white">3.000€</strong> por 30 días de acceso (suficientes para transformar tu negocio para siempre) y que te enseñe cómo cerrar proyectos que te pagan hasta 10 veces eso - Sin llamadas ni darme la chapa con dudas que son más tus propias inseguridades.
     </p>
 
     <p>
