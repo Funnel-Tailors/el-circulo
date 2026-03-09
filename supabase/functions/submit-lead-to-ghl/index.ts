@@ -1108,7 +1108,7 @@ ${randomReality}
 
 ${painInsight}
 
-🔮 RESERVA TU RITUAL DE EVALUACIÓN
+🔮 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Cuando quieras.
