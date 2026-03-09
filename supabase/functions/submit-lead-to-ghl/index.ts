@@ -127,13 +127,13 @@ function getLeadCategory(score: number, answers: QuizAnswers): string {
   
   const tier = getLeadTier(answers);
   
-  // A+: Score 95+, DFY/DWY, decide solo
-  if (score >= 95 && (tier === 'DFY' || tier === 'DWY') && answers.q7?.includes("Solo yo")) {
+  // A+: Score 95+, TRIMESTRAL/MENSUAL, decide solo
+  if (score >= 95 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL') && answers.q7?.includes("Solo yo")) {
     return 'A+';
   }
   
-  // A: Score 85+, DFY/DWY o decide solo
-  if (score >= 85 && (tier === 'DFY' || tier === 'DWY' || answers.q7?.includes("Solo yo"))) {
+  // A: Score 85+, TRIMESTRAL/MENSUAL o decide solo
+  if (score >= 85 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL' || answers.q7?.includes("Solo yo"))) {
     return 'A';
   }
   
