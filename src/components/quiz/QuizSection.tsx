@@ -78,7 +78,7 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q5",
-  question: "¿Cuánto estás dispuesto a invertir en tu agencia?",
+  question: "¿Cuánto estás dispuesto a invertir en escalar tu agencia?",
   type: "radio",
   options: [
     "Ahora mismo no puedo invertir en esto",
@@ -90,7 +90,7 @@ const steps: QuizStep[] = [{
   valueStack: null,
   motivator: {
     icon: "🔥",
-    text: "Cris pasó de tirar la toalla a cerrar 3.000€. Felipe tuvo 2 llamadas de venta en 7 días."
+    text: "FLOC facturó €80.000 en 4 días con €20/día en anuncios. Este es el sistema."
   }
 }, {
   id: "q6",
