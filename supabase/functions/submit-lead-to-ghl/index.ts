@@ -1134,7 +1134,7 @@ ${randomFear}
 
 ${randomReality}
 
-🔮 AGENDA TU SESIÓN
+🔮 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Solo si te suena.
