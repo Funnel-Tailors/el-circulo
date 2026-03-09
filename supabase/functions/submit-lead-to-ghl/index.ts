@@ -817,7 +817,7 @@ Tu evaluación revela fricciones importantes.
 
 No todos están listos para el Círculo. Y eso está bien.
 
-🔮 AGENDA UNA SESIÓN EXPLORATORIA
+🔮 AGENDA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 🎭 Un Miembro explorará si tiene sentido para ambos (30-45 min)
