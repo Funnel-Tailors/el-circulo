@@ -34,7 +34,9 @@ type EventType =
   | 'senda_vault_video_50'
   | 'senda_vault_video_complete'
   | 'senda_vault_assistant1_opened'
-  | 'senda_vault_assistant2_opened';
+  | 'senda_vault_assistant2_opened'
+  | 'cta_click'
+  | 'page_view';
 
 interface TrackEventParams {
   event_type: EventType;
