@@ -1163,7 +1163,7 @@ Distinta conversación.
 Los datos:
 ${successStory}
 
-🔮 ÚNETE AL RITUAL
+🔮 RESERVA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Vosotros decidís de qué lado estáis.
