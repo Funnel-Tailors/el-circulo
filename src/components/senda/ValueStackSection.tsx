@@ -34,7 +34,7 @@ export const ValueStackSection = () => {
         <h2 className="text-3xl md:text-5xl font-display font-black uppercase tracking-tight text-foreground">
           QUÉ VAS A CONSEGUIR
           <br />
-          <span className="text-2xl md:text-4xl">EN LA CONSULTA</span>
+          <span className="text-2xl md:text-4xl">EN EL CÍRCULO</span>
         </h2>
       </div>
 
