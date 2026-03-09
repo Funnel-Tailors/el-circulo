@@ -100,9 +100,12 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
 
 // Helper: Determinar tier del lead
 function getLeadTier(answers: QuizAnswers): string {
-  if (answers.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") return 'DFY';
-  if (answers.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") return 'DWY';
-  if (answers.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") return 'DIY';
+  if (answers.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") return 'TRIMESTRAL';
+  if (answers.q5 === "€3.000/mes — acceso completo al sistema") return 'MENSUAL';
+  // Legacy support
+  if (answers.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") return 'TRIMESTRAL';
+  if (answers.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") return 'TRIMESTRAL';
+  if (answers.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") return 'MENSUAL';
   return 'NONE';
 }
 
@@ -110,9 +113,8 @@ function getLeadTier(answers: QuizAnswers): string {
 function getTicketLabel(answers: QuizAnswers): string {
   const tier = getLeadTier(answers);
   const labels: Record<string, string> = {
-    'DFY': 'DFY (desde €15K)',
-    'DWY': 'DWY (desde €8K)',
-    'DIY': 'DIY (desde €5K)',
+    'TRIMESTRAL': 'Trimestral (€8K)',
+    'MENSUAL': 'Mensual (€3K/mes)',
     'NONE': 'Sin inversión'
   };
   return labels[tier] || 'Sin inversión';
@@ -125,13 +127,13 @@ function getLeadCategory(score: number, answers: QuizAnswers): string {
   
   const tier = getLeadTier(answers);
   
-  // A+: Score 95+, DFY/DWY, decide solo
-  if (score >= 95 && (tier === 'DFY' || tier === 'DWY') && answers.q7?.includes("Solo yo")) {
+  // A+: Score 95+, TRIMESTRAL/MENSUAL, decide solo
+  if (score >= 95 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL') && answers.q7?.includes("Solo yo")) {
     return 'A+';
   }
   
-  // A: Score 85+, DFY/DWY o decide solo
-  if (score >= 85 && (tier === 'DFY' || tier === 'DWY' || answers.q7?.includes("Solo yo"))) {
+  // A: Score 85+, TRIMESTRAL/MENSUAL o decide solo
+  if (score >= 85 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL' || answers.q7?.includes("Solo yo"))) {
     return 'A';
   }
   
@@ -226,11 +228,14 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Tier (Q5) — NEW
+  // Tier (Q5) — Updated pricing
   const investmentMap: Record<string, string> = {
-    'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-DFY',
-    'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-DWY',
-    'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-DIY',
+    '€8.000 trimestral — acceso + 1 año de Artefacto incluido': '💎 CÍRCULO-TIER-TRIMESTRAL',
+    '€3.000/mes — acceso completo al sistema': '💰 CÍRCULO-TIER-MENSUAL',
+    // Legacy
+    'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-TRIMESTRAL',
+    'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-TRIMESTRAL',
+    'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-MENSUAL',
     'Ahora mismo no puedo invertir en esto': '❌ CÍRCULO-TIER-NONE'
   };
   if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-TIER-Unknown');
@@ -627,7 +632,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
   const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
-  const isDIY = answers.q5 === 'Quiero hacerlo yo con guía paso a paso (desde €5K)';
+  const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
   const fastTrack = answers.q6?.includes('Esta semana');
   const gradual = answers.q6?.includes('Este mes');
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
@@ -656,11 +661,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return 'Tu perfil tiene todas las marcas de alguien listo para el siguiente nivel. Solo falta que decidas dar el paso.';
   }
   
-  if (isDIY && score >= 60) {
-    return 'Quieres hacerlo tú con guía. Bien. Pero si llevas meses intentándolo solo sin resultados, quizá el problema no es la guía. Es la ejecución. En la evaluación descubrimos si tiene sentido.';
-  }
-  
-  if (!soloDecision && score >= 60) {
+  if (score >= 60 && !soloDecision) {
     return 'Necesitas que alguien más dé el visto bueno. Eso está bien. Pero si quien decide no entiende el valor, vas a seguir estancado. O aprendes a vender la idea o traes a esa persona a la llamada.';
   }
   
@@ -763,7 +764,7 @@ ${identity}
 
 La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
 
-🔮 RESERVA TU RITUAL DE EVALUACIÓN
+🔮 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ Solo 3 espacios semanales para candidatos prioritarios
@@ -789,7 +790,7 @@ ${identity}
 
 ¿Listo/a para el salto o seguimos dándole vueltas?
 
-🔮 RESERVA TU SESIÓN DE EVALUACIÓN
+🔮 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ 3 espacios semanales para evaluaciones profundas
@@ -812,7 +813,7 @@ Tu evaluación revela fricciones importantes.
 
 No todos están listos para el Círculo. Y eso está bien.
 
-🔮 AGENDA UNA SESIÓN EXPLORATORIA
+🔮 AGENDA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 🎭 Un Miembro explorará si tiene sentido para ambos (30-45 min)
@@ -1103,7 +1104,7 @@ ${randomReality}
 
 ${painInsight}
 
-🔮 RESERVA TU RITUAL DE EVALUACIÓN
+🔮 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Cuando quieras.
@@ -1129,7 +1130,7 @@ ${randomFear}
 
 ${randomReality}
 
-🔮 AGENDA TU SESIÓN
+🔮 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Solo si te suena.
@@ -1158,7 +1159,7 @@ Distinta conversación.
 Los datos:
 ${successStory}
 
-🔮 ÚNETE AL RITUAL
+🔮 RESERVA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Vosotros decidís de qué lado estáis.
@@ -1187,7 +1188,7 @@ O podéis dar el paso.
 
 Pero no podéis hacer las dos cosas.
 
-🔮 AGENDA AQUÍ
+🔮 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 No hay prisa. Pero tampoco hay pausa.
@@ -1219,6 +1220,8 @@ O peores.
 
 🔮 ESTO ES TODO
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
+
+La opción de entrar directo con ventaja exclusiva sigue disponible en tu resultado.
 
 Vosotros decidís.
 

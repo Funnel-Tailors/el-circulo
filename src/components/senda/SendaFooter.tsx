@@ -9,7 +9,7 @@ export const SendaFooter = () => {
 
       <div className="glass-card-dark p-8 max-w-2xl mx-auto space-y-4">
         <p className="text-lg text-foreground font-semibold">
-          Nos vemos en el ritual de iniciación.
+          Nos vemos dentro del Círculo.
         </p>
 
         <p className="text-muted-foreground">

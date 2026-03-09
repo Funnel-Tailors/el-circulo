@@ -7,9 +7,9 @@ import {
 
 const faqs = [
   {
-    question: "€5.000 es mucho dinero. ¿Y si no funciona?",
+    question: "€3.000/mes es mucho dinero. ¿Y si no funciona?",
     answer:
-      "€5.000 es exactamente lo que cobras por un proyecto que te lleva 3 meses de revisiones infinitas con un cliente que te regateó hasta el alma. Ese es el problema. Este programa existe para que tu siguiente proyecto sea de €10.000-€15.000. Con UN solo cierre ya recuperaste la inversión. No dos. No cinco. Uno. La pregunta real no es si te lo puedes permitir. Es cuántos meses más te puedes permitir seguir cobrando €1.500 por brandings que valen €8.000.",
+      "€3.000 es exactamente lo que cobras por un proyecto que te lleva 3 meses de revisiones infinitas con un cliente que te regateó hasta el alma. Ese es el problema. Este programa existe para que tu siguiente proyecto sea de €10.000-€15.000. Con UN solo cierre ya recuperaste la inversión. No dos. No cinco. Uno. La pregunta real no es si te lo puedes permitir. Es cuántos meses más te puedes permitir seguir cobrando €1.500 por brandings que valen €8.000.",
   },
   {
     question: "Ya me he gastado dinero en cursos y masterminds que no sirvieron de nada.",

@@ -1,33 +1,26 @@
 export const RESULT_MESSAGES = {
   qualified: {
-    title: "Reserva tu ritual de iniciación",
+    title: "Tu plaza está lista",
     dataPreloaded: "✨ Tus datos ya están pre-cargados en el calendario",
     lastStep: "Último paso: Confirma tu horario",
-    bonusClass: {
-      title: "🎁 Bono al agendar:",
-      subtitle: "Crea Tu Oferta: Cómo cobrar 3 veces más haciendo lo mismo",
-      description: "Te la enviaremos por WhatsApp tras confirmar tu cita"
-    },
-    instructions: "📚 Ve la clase ANTES de la consulta para que podamos diseñar tu oferta premium personalizada en vivo",
-    benefits: [
-      { 
-        icon: "🎁", 
-        text: "Clase completa enviada a tu WhatsApp",
-        strong: '"Crea Tu Oferta"'
+    oto: {
+      trimestral: {
+        price: "€8.000",
+        label: "Trimestral",
+        bonus: "1 año de licencia del Artefacto incluida",
+        hook: "Esta opción solo existe aquí."
       },
-      { 
-        icon: "🔮", 
-        text: "Aplicación de la clase a TU negocio en la consulta"
-      },
-      { 
-        icon: "⚔️", 
-        text: "Auditoría de oferta personalizada en vivo"
-      },
-      { 
-        icon: "🎯", 
-        text: "Estrategia de posicionamiento premium diseñada para ti"
+      mensual: {
+        price: "€3.000/mes",
+        label: "Mensual",
+        bonus: "Paga 1 mes. Quédate 2.",
+        hook: "Tiempo de sobra para recuperarlo."
       }
-    ]
+    },
+    safetyNet: {
+      separator: "¿Necesitas hablar con alguien primero?",
+      note: "Las ventajas del pago directo no estarán disponibles en la llamada"
+    }
   },
   notQualified: {
     title: "La Senda no es para ti",

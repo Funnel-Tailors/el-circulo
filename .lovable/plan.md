@@ -1,128 +1,90 @@
 
 
-## Plan: Nuevo flujo — OTO primero, formulario solo como safety net
+## Plan: Cross-validation anti-mentira con copy brutal + redirección YouTube
 
-### El problema que has identificado
+### Contexto
 
-Ahora mismo el flujo es: Quiz → Formulario (nombre + WhatsApp) → Micro-commitment → Calendario + (propuesto) OTO debajo. 
+Cuando alguien dice facturar €5K-10K, €10K-20K o +€20K pero selecciona budget 💧 (<€5K), es mentira en una de las dos. En vez de darles acceso a nada, los mandamos al curso de YouTube con un mensaje que les deja claro que les hemos pillado.
 
-Pedir datos ANTES de enseñar la oferta no tiene sentido si el objetivo es que paguen directo. Los datos solo sirven para retargeting, pero si les enseñas primero el OTO sin fricción, los calientes pagan. Y los que no pagan, ENTONCES les pides datos como safety net.
+### Cambios en un solo archivo
 
-### Nuevo flujo
+**`supabase/functions/submit-brecha-lead/index.ts`**
 
-```text
-Quiz 7 preguntas
-    ↓
-qualified? → SÍ → Pantalla de resultado con OTO directo
-                    (sin pedir datos, botón de pago según Q5)
-                    ↓
-                    ¿No paga? (scroll / 30s timer)
-                    ↓
-                    Se revela formulario + calendario como safety net
-                    "¿Necesitas hablar con alguien primero?"
-                    ↓
-                    Submit formulario → GHL + secuencia follow-ups
-                    
-qualified? → NO → NotQualifiedResult (como ahora)
+#### 1. Nueva regla de cross-validation (después de línea 1034)
+
+Después del hardstop de `low_revenue`, añadir:
+
+```ts
+// Cross-validation: revenue alto + budget mínimo = mentiroso
+if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_5000' && budgetParsed?.value === 'menos_5000') {
+  hardstopReason = 'inconsistent_revenue_budget'
+  console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
+}
 ```
 
-### Cambios por archivo
+Esto cubre: `5000_10000`, `10000_20000`, `mas_20000` con budget `menos_5000`.
 
-#### 1. `src/types/quiz.ts` — Sin cambios (Q6/Q7 se mantienen)
+#### 2. Nuevo tag GHL (en `generateTags`, después de línea 187)
 
-#### 2. `src/components/quiz/QuizSection.tsx` — Simplificar salida
+```ts
+if (hardstopReason === 'inconsistent_revenue_budget') {
+  toApply.push('brecha_inconsistent')
+}
+```
 
-**Q5 opciones** (líneas 87-102): Cambiar a:
-- `"Ahora mismo no puedo invertir en esto"`
-- `"€3.000/mes — acceso completo al sistema"`
-- `"€8.000 trimestral — acceso + 1 año de Artefacto incluido"`
+#### 3. Mensaje DM brutal para inconsistentes (en `generateBrechaNotification`, antes del `return ''` de la línea 925)
 
-**Scoring Q5** (líneas 631-635): Trimestral = 37pts, Mensual = 30pts, No puedo = 0pts.
+Nuevo bloque para `hardstopReason === 'inconsistent_revenue_budget'`:
 
-**Flujo post-Q7** (líneas 454-465): Si qualified, ya NO muestra formulario. En su lugar, pasa directamente a `onComplete(answers, true)` SIN datos de contacto. El formulario se mueve al resultado.
+```ts
+if (hardstopReason === 'inconsistent_revenue_budget') {
+  return `${firstName}.
 
-**Eliminar**: `showContactForm`, `showMicroCommitment`, `microCommitChecks`, `pendingCompleteState`, `intentConfirmed`, `handleContactSubmit`, `handleMicroCommitConfirm` y todo el render del formulario (líneas 777-1000). Todo eso se mueve al resultado.
+Dices que facturas ${revenueLiteral?.toLowerCase() || 'mucho'}.
 
-**handleNext Q5/Q7 tracking**: Actualizar para los nuevos textos de Q5, eliminar refs a `isDFY`/`isDWY`/`isDIY`.
+Pero cuando te pregunto cuánto invertirías...
 
-#### 3. `src/components/quiz/result/QualifiedResult.tsx` — Reescritura completa
+"${budgetLiteral}"
 
-Nuevo componente con 3 fases:
+¿En serio?
 
-**Fase 1 (inmediata)**: OTO de pago directo
-- Headline: "Tu plaza está lista"
-- Social proof: "FLOC facturó €80K en 4 días. Proyectos de hasta €60K cerrados dentro."
-- OTO dinámico según `quizState.q5`:
-  - **Trimestral** (€8K): "1 año de licencia del Artefacto incluida. Esta opción solo existe aquí." Link: `https://link.fastpaydirect.com/payment-link/6917780ad14ec1206b5ae41a`
-  - **Mensual** (€3K): "Paga 1 mes. Quédate 2. Tiempo de sobra para recuperarlo." Link: `https://link.fastpaydirect.com/payment-link/69ae003d1934f9211e5d0fc1`
-- Nota: "Tras el pago recibirás acceso inmediato a la comunidad en tu email"
-- Botón de pago estilo `SkipTheLineOffer` (partículas, glow)
+Alguien que factura lo que dices facturar no duda en invertir €5.000 en algo que le puede cambiar el negocio.
 
-**Fase 2 (tras 30s o scroll)**: Safety net con formulario + calendario
-- Separador: "— ¿Necesitas hablar con alguien primero? —"
-- Formulario de contacto (nombre + WhatsApp) — mismo que el actual pero movido aquí
-- Tras submit → llama a `submit-lead-to-ghl` → muestra calendario GHL
-- Nota: "Las ventajas del pago directo no estarán disponibles en la llamada"
+A no ser que no factures lo que dices facturar.
 
-Este componente necesita:
-- Estado `showSafetyNet` que se activa con timer de 30s o al hacer scroll al fondo
-- Toda la lógica de submit que estaba en QuizSection (`handleContactSubmit`) se mueve aquí
-- Import del form schema, supabase client, analytics
+Las pruebas existen para filtrar a los que no están listos.
+Y acabas de suspender.
 
-#### 4. `src/constants/resultMessages.ts` — Actualizar copy
+Haz los deberes primero.
+Construye algo real.
+Demuestra que puedes generar antes de intentar jugar con los mayores.
 
-Eliminar refs a "ritual", "clase bonus", "calendario". Nuevo copy para OTO directo + safety net.
+Te dejo un curso gratis para que empieces por donde deberías empezar:
 
-#### 5. `supabase/functions/submit-lead-to-ghl/index.ts` — Edge function
+👉 https://www.youtube.com/watch?v=61r314WUaSw&t=3917s
 
-**`getLeadTier`** (líneas 102-107): `TRIMESTRAL` / `MENSUAL` / `NONE`
+Cuando factures de verdad lo que dices facturar, sabrás dónde encontrarme.`
+}
+```
 
-**`getTicketLabel`** (líneas 110-119): "Trimestral (€8K)" / "Mensual (€3K/mes)" / "Sin inversión"
+#### 4. Campo `brecha_url` vacío para inconsistentes
 
-**`getLeadCategory`** (líneas 122-143): Reemplazar refs a `DFY`/`DWY` por `TRIMESTRAL`/`MENSUAL`.
+Ya funciona automáticamente: como `hardstopReason` existe, `isQualified = false`, y el `brechaUrl` no se usa en el DM. El campo `brecha_url` en GHL queda vacío, así que aunque el lead intente acceder no tiene token.
 
-**`generateTags` > `investmentMap`** (líneas ~230): Nuevas claves con los textos exactos de Q5.
+### Resultado
 
-**`generateClientNotification`** (líneas 734-828): Cambiar todos los "RESERVA TU RITUAL" / "SESIÓN DE EVALUACIÓN" por "RESERVA TU LLAMADA". Estos mensajes solo los reciben los que dejaron datos (safety net), así que el copy de "llamada" es correcto.
+- **Revenue alto + budget mínimo** = descalificado con mensaje brutal que les llama mentirosos y les manda al curso de YouTube
+- **Tag `brecha_inconsistent`** aparece automáticamente en GHL para tracking
+- **Sin cambios en GHL automations** -- solo un tag nuevo
+- **Sin cambios en frontend** -- estos leads nunca reciben URL de La Brecha
+- **`low_revenue` y `low_budget`** siguen funcionando exactamente igual que antes
 
-**Follow-ups 1-5** (líneas 1091-1228): Cambiar todos los "RESERVA TU RITUAL" / "AGENDA AQUÍ" / "ÚNETE AL RITUAL" por "RESERVA TU LLAMADA". Añadir en follow-up 3 y 5 mención del OTO: "La opción de entrar directo con ventaja exclusiva sigue disponible en tu resultado."
+### Copy del mensaje
 
-**`generateCloserNotification`**: Actualizar `ticketLabel`.
-
-**`generateInternalNotification`**: Actualizar `ticketLabel`.
-
-**`generateCloserPreCallNotification`**: Actualizar `ticketLabel`, eliminar refs a `isDIY`.
-
-**`generateAutoAnalysis`** (~línea 286): Eliminar ref a `isDIY`.
-
-**Custom fields** (líneas 1405-1434): `lead_tier` ya se actualiza automáticamente vía `getLeadTier()`.
-
-#### 6. `src/components/roadmap/FAQSection.tsx` — Precios actualizados
-
-- FAQ 1: "€5.000" → "€3.000/mes"
-- Eliminar refs a "consulta 1:1"
-- Nueva FAQ: "¿Por qué hay ventajas que no existen en la llamada?" → "Porque si necesitas que te convenzan, esas ventajas no son para ti."
-
-#### 7. `src/lib/senda-personalization.ts` — Limpiar refs a "consulta"
-
-Cambiar ~8 strings que dicen "En la consulta diseñaremos..." por "Con el sistema del Círculo..."
-
-#### 8. Componentes Senda (`ValueStackSection`, `SendaFooter`, `Module4Section`)
-
-Cambiar "consulta" / "ritual de iniciación" por "El Círculo" / "llamada estratégica".
-
-### Incentivos por camino (tabla final)
-
-| Camino | Precio | Bonus exclusivo | Disponible |
-|--------|--------|----------------|------------|
-| OTO Trimestral | €8.000 | 1 año Artefacto incluido | Solo en resultado |
-| OTO Mensual | €3.000 | Paga 1, quédate 2 | Solo en resultado |
-| Llamada (safety net) | €3.000/mes | Nada extra | Solo tras dejar datos |
-
-### Lo que NO cambia
-- Q1-Q4, Q6, Q7: intactos
-- Lógica del Espejo: intacta
-- Scoring Q6/Q7: intacto
-- Post-booking notification: intacta (solo la ven los que agendan)
-- `dailyRealities`, `fearCalls`, `contrastStatements`: intactos
+El tono es directo y sin complacencia:
+1. Les devuelve su propia respuesta contradictoria
+2. Les dice que han suspendido las pruebas
+3. "Haz los deberes primero" + "jugar con los mayores" = les pone en su sitio
+4. Les da el curso de YouTube como "empieza por donde deberías empezar"
+5. Cierra con "cuando factures de verdad" = puerta abierta pero con condiciones
 

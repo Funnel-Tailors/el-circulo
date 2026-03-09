@@ -360,7 +360,7 @@ const Module4Section = ({
               </span>
             </div>
             <p className="text-foreground/40 text-sm mt-4">
-              Ahora tienes todas las herramientas. El siguiente paso es la llamada.
+              Ahora tienes todas las herramientas. El siguiente paso es entrar.
             </p>
           </motion.div>
         )}
