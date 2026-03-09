@@ -100,9 +100,12 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
 
 // Helper: Determinar tier del lead
 function getLeadTier(answers: QuizAnswers): string {
-  if (answers.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") return 'DFY';
-  if (answers.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") return 'DWY';
-  if (answers.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") return 'DIY';
+  if (answers.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") return 'TRIMESTRAL';
+  if (answers.q5 === "€3.000/mes — acceso completo al sistema") return 'MENSUAL';
+  // Legacy support
+  if (answers.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") return 'TRIMESTRAL';
+  if (answers.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") return 'TRIMESTRAL';
+  if (answers.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") return 'MENSUAL';
   return 'NONE';
 }
 
@@ -110,9 +113,8 @@ function getLeadTier(answers: QuizAnswers): string {
 function getTicketLabel(answers: QuizAnswers): string {
   const tier = getLeadTier(answers);
   const labels: Record<string, string> = {
-    'DFY': 'DFY (desde €15K)',
-    'DWY': 'DWY (desde €8K)',
-    'DIY': 'DIY (desde €5K)',
+    'TRIMESTRAL': 'Trimestral (€8K)',
+    'MENSUAL': 'Mensual (€3K/mes)',
     'NONE': 'Sin inversión'
   };
   return labels[tier] || 'Sin inversión';
