@@ -7,7 +7,7 @@ const deliverables = [
   {
     icon: "🔮",
     title: "APLICACIÓN PERSONALIZADA",
-    description: "Diseño de tu oferta adaptada a TU negocio en la consulta"
+    description: 'Diseño de tu oferta adaptada a TU negocio con el Asistente IA'
   },
   {
     icon: "⚔️",
