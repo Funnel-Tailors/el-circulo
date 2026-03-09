@@ -1,21 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
+
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
@@ -85,15 +78,14 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q5",
-  question: "¿Cómo quieres implementar tu sistema?",
+  question: "¿Cuánto estás dispuesto a invertir en tu agencia?",
   type: "radio",
   options: [
     "Ahora mismo no puedo invertir en esto",
-    "Quiero hacerlo yo con guía paso a paso (desde €5K)",
-    "Quiero que me ayudéis a implementarlo (desde €8K)",
-    "Quiero que lo hagáis todo por mí (desde €15K)"
+    "€3.000/mes — acceso completo al sistema",
+    "€8.000 trimestral — acceso + 1 año de Artefacto incluido"
   ],
-  badge: "💎 Paso 5/7 - Tu Modo de Ascensión",
+  badge: "💎 Paso 5/7 - Tu Inversión",
   subtext: "Elige la modalidad que encaja con tu situación actual",
   valueStack: null,
   motivator: {
@@ -148,66 +140,9 @@ const QuizSection = ({
     _setAnswers(newAnswers);
   };
   const [showExitDialog, setShowExitDialog] = useState(false);
-  const [showContactForm, setShowContactForm] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [quizStartTime] = useState(Date.now());
   const [showSkepticChallenge, setShowSkepticChallenge] = useState(false);
-  const [showMicroCommitment, setShowMicroCommitment] = useState(false);
-  const [microCommitChecks, setMicroCommitChecks] = useState({ time: false, investment: false, partner: false });
-  const [pendingCompleteState, setPendingCompleteState] = useState<{ state: QuizState; qualified: boolean } | null>(null);
-  const [intentConfirmed, setIntentConfirmed] = useState(false);
 
-  const form = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
-    defaultValues: {
-      name: "",
-      countryCode: "+34",
-      phone: "",
-      website: ""
-    }
-  });
-
-  const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
-
-  useEffect(() => {
-    const detectCountry = () => {
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const timezoneMap: Record<string, string> = {
-        'Europe/Madrid': '+34',
-        'America/Mexico_City': '+52',
-        'America/Argentina/Buenos_Aires': '+54',
-        'America/Bogota': '+57',
-        'America/Santiago': '+56',
-        'America/Lima': '+51',
-        'America/New_York': '+1',
-        'America/Los_Angeles': '+1',
-        'America/Chicago': '+1',
-        'America/Guayaquil': '+593',
-        'America/Sao_Paulo': '+55',
-        'America/Costa_Rica': '+506',
-      };
-      const detectedCode = timezoneMap[timezone] || '+34';
-      form.setValue('countryCode', detectedCode);
-      setSelectedCountryCode(detectedCode);
-    };
-    detectCountry();
-  }, [form]);
-
-  const getPhonePlaceholder = (code: string): string => {
-    const placeholders: Record<string, string> = {
-      '+34': '612 34 56 78',
-      '+52': '55 1234 5678',
-      '+54': '11 1234 5678',
-      '+57': '300 123 4567',
-      '+56': '9 1234 5678',
-      '+51': '987 654 321',
-      '+1': '202 555 0123',
-      '+593': '98 123 4567',
-      '+55': '11 98765 4321',
-      '+506': '8888 8888',
-    };
-    return placeholders[code] || '600 000 000';
-  };
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   useEffect(() => {
@@ -216,11 +151,6 @@ const QuizSection = ({
       quizAnalytics.startStep(step.id, currentStep);
     }
   }, [currentStep]);
-  useEffect(() => {
-    if (showContactForm) {
-      quizAnalytics.viewContactForm();
-    }
-  }, [showContactForm]);
 
   const handleNext = () => {
     const currentAnswer = answersRef.current[currentQuestion.id as keyof QuizState];
@@ -370,9 +300,9 @@ const QuizSection = ({
         const decisionMaker = value;
         
         const isHighRevenue = ['€5.000 - €10.000/mes', '€10.000 - €20.000/mes', 'Más de €20.000/mes'].includes(revenueBracket);
-        const isDFY = investmentCapacity === "Quiero que lo hagáis todo por mí (desde €15K)";
-        const isDWY = investmentCapacity === "Quiero que me ayudéis a implementarlo (desde €8K)";
-        const isICPMatch = isHighRevenue && (isDFY || isDWY);
+        const isTrimestral = investmentCapacity === "€8.000 trimestral — acceso + 1 año de Artefacto incluido";
+        const isMensual = investmentCapacity === "€3.000/mes — acceso completo al sistema";
+        const isICPMatch = isHighRevenue && (isTrimestral || isMensual);
         const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
         
         let cartValue = 0;
@@ -421,8 +351,8 @@ const QuizSection = ({
             decision_maker: decisionMaker,
             is_icp_match: isICPMatch,
             is_high_revenue: isHighRevenue,
-            is_dfy: isDFY,
-            is_dwy: isDWY,
+            is_trimestral: isTrimestral,
+            is_mensual: isMensual,
             has_acquisition_system: hasAcquisitionSystem,
             quiz_completion_time_seconds: quizCompletionTimeSeconds,
             utm_source: quizAnalytics.utmParams.utm_source || 'direct',
@@ -452,14 +382,12 @@ const QuizSection = ({
     }
 
     if (isLastStep) {
-      const score = calculateScore(answers);
-      const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
+      const finalAnswers = { ...answers, [currentQuestion.id]: currentAnswer };
+      const score = calculateScore(finalAnswers);
+      const qualified = score >= 75 && !hasAutoDisqualify(finalAnswers, score);
       
-      if (qualified) {
-        setShowContactForm(true);
-      } else {
-        onComplete(answers, false);
-      }
+      // Pass directly to result — no contact form here
+      onComplete(finalAnswers, qualified);
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -467,132 +395,6 @@ const QuizSection = ({
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
-    }
-  };
-  const handleContactSubmit = async (data: ContactFormData) => {
-    console.log('📋 [FORM SUBMIT] Starting submission process...');
-
-    if (data.website && data.website.length > 0) {
-      console.log('🤖 [HONEYPOT] Bot detected');
-      toast({ title: "Error", description: "Hubo un problema. Por favor intenta de nuevo más tarde.", variant: "destructive" });
-      return;
-    }
-
-    const lastSubmit = localStorage.getItem('lastSubmitTime');
-    const submitCount = parseInt(localStorage.getItem('submitCount') || '0');
-    const now = Date.now();
-    
-    if (lastSubmit) {
-      const timeDiff = now - parseInt(lastSubmit);
-      const thirtyMinutes = 30 * 60 * 1000;
-      if (timeDiff < thirtyMinutes && submitCount >= 5) {
-        toast({ title: "Demasiados intentos", description: "Por favor espera unos minutos antes de intentar de nuevo", variant: "destructive" });
-        return;
-      }
-      if (timeDiff > thirtyMinutes) {
-        localStorage.setItem('submitCount', '1');
-      } else {
-        localStorage.setItem('submitCount', (submitCount + 1).toString());
-      }
-    } else {
-      localStorage.setItem('submitCount', '1');
-    }
-    localStorage.setItem('lastSubmitTime', now.toString());
-    setIsSubmitting(true);
-
-    const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
-    const contactData = { name: data.name, whatsapp: fullPhone };
-
-    const score = calculateScore(answers);
-    const qualified = score >= 75 && !hasAutoDisqualify(answers, score);
-    
-    const edgeFunctionPayload = {
-      ...contactData,
-      answers,
-      score,
-      qualified,
-      fbclid: quizAnalytics.getFbclid(),
-      isPartialSubmission: false,
-      sessionId: quizAnalytics.getSessionId(),
-      quizVersion: quizAnalytics.getQuizVersion()
-    };
-
-    try {
-      const { data: responseData, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
-        body: edgeFunctionPayload
-      });
-      
-      if (error) throw error;
-      
-      if (!responseData?.contactId) {
-        quizAnalytics.trackValidationError('contact_form', 'missing_contact_id', 'Edge function did not return contactId');
-      }
-      
-      try {
-        await quizAnalytics.submitContactForm();
-      } catch (error) {
-        console.error('⚠️ [ANALYTICS] Failed to track form submission (non-blocking):', error);
-      }
-      
-      quizAnalytics.completeQuiz();
-      
-      // Meta Pixel Lead enrichment
-      const revenueAnswer = answers.q3 as string;
-      const budgetAnswer = answers.q5 as string;
-      const isICP = revenueAnswer === "€5.000 - €10.000/mes" 
-        || revenueAnswer === "€10.000 - €20.000/mes"
-        || revenueAnswer === "Más de €20.000/mes";
-      const hasBudget = budgetAnswer !== "Ahora mismo no puedo invertir en esto";
-
-      let leadValue = 1000;
-      if (isICP && hasBudget) leadValue = 2000;
-      else if (isICP) leadValue = 1500;
-      else if (hasBudget) leadValue = 1200;
-
-      quizAnalytics.enrichLeadEvent(leadValue, isICP, revenueAnswer, hasBudget);
-      
-      toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados correctamente" });
-      
-      const finalState = {
-        ...answers,
-        ...contactData,
-        ghlContactId: responseData?.contactId || null
-      };
-      
-      if (isV2) {
-        // V2: skip micro-commitment, go straight to result
-        onComplete(finalState, true);
-      } else {
-        // Show micro-commitment screen instead of completing directly
-        setPendingCompleteState({ state: finalState, qualified: true });
-        setShowMicroCommitment(true);
-        setShowContactForm(false);
-      }
-    } catch (error) {
-      console.error('💥 [ERROR] Failed to submit lead to GHL:', error);
-
-      toast({
-        title: "⚠️ Error al guardar",
-        description: "Hubo un problema al guardar tus datos, pero puedes continuar",
-        variant: "destructive"
-      });
-
-      const finalState = { ...answers, ...contactData, ghlContactId: null };
-      if (isV2) {
-        onComplete(finalState, true);
-      } else {
-        setPendingCompleteState({ state: finalState, qualified: true });
-        setShowMicroCommitment(true);
-        setShowContactForm(false);
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleMicroCommitConfirm = () => {
-    if (pendingCompleteState) {
-      onComplete(pendingCompleteState.state, pendingCompleteState.qualified);
     }
   };
 
@@ -628,10 +430,9 @@ const QuizSection = ({
       else if (methodCount >= 4) score += 8;
     }
 
-    // Q5 - Tier/Investment (0-37 pts) — DFY=37, DWY=30, DIY=20, none=0
-    if (state.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") score += 37;
-    else if (state.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") score += 30;
-    else if (state.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") score += 20;
+    // Q5 - Tier/Investment (0-37 pts) — Trimestral=37, Mensual=30, none=0
+    if (state.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") score += 37;
+    else if (state.q5 === "€3.000/mes — acceso completo al sistema") score += 30;
     else if (state.q5 === "Ahora mismo no puedo invertir en esto") score += 0;
 
     // Q6 - Urgency (0-5 pts)
@@ -773,233 +574,6 @@ const QuizSection = ({
     }
   };
 
-  // Micro-commitment screen
-  if (showMicroCommitment) {
-    const firstName = (pendingCompleteState?.state.name || '').split(' ')[0];
-    const tier = answers.q5 as string;
-    const needsPartner = answers.q7?.includes("Con mi socio");
-    
-    const allChecked = microCommitChecks.time && microCommitChecks.investment && (!needsPartner || microCommitChecks.partner);
-
-    return (
-      <div className="w-full space-y-6 animate-fade-in">
-        <div className="text-center space-y-3">
-          <h2 className="text-2xl md:text-3xl font-display font-black leading-tight">
-            Perfecto, <span className="glow">{firstName}</span>
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Antes de reservar tu llamada, confirma lo siguiente:
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <label 
-            htmlFor="mc-time"
-            className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-          >
-            <Checkbox 
-              id="mc-time" 
-              checked={microCommitChecks.time}
-              onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, time: !!checked }))}
-              className="border-2 mt-0.5"
-            />
-            <span className="flex-1 text-sm">
-              Puedo dedicar <strong className="text-foreground">30 minutos sin interrupciones</strong> a la llamada
-            </span>
-          </label>
-
-          <label 
-            htmlFor="mc-investment"
-            className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-          >
-            <Checkbox 
-              id="mc-investment" 
-              checked={microCommitChecks.investment}
-              onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, investment: !!checked }))}
-              className="border-2 mt-0.5"
-            />
-            <span className="flex-1 text-sm">
-              Tengo la <strong className="text-foreground">capacidad de inversión</strong> que indiqué
-              <span className="block text-xs text-muted-foreground mt-1">{tier}</span>
-            </span>
-          </label>
-
-          {needsPartner && (
-            <label 
-              htmlFor="mc-partner"
-              className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors"
-            >
-              <Checkbox 
-                id="mc-partner" 
-                checked={microCommitChecks.partner}
-                onCheckedChange={(checked) => setMicroCommitChecks(prev => ({ ...prev, partner: !!checked }))}
-                className="border-2 mt-0.5"
-              />
-              <span className="flex-1 text-sm">
-                Mi <strong className="text-foreground">socio/pareja estará presente</strong> en la llamada
-              </span>
-            </label>
-          )}
-        </div>
-
-        <Button 
-          onClick={handleMicroCommitConfirm}
-          disabled={!allChecked}
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all disabled:opacity-40"
-          size="lg"
-        >
-          Confirmo — Reservar mi llamada →
-        </Button>
-      </div>
-    );
-  }
-
-  if (showContactForm) {
-    return <div className="w-full space-y-4 animate-fade-in">
-        <div className="space-y-4">
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-4 py-1.5">
-              <span className="text-xs font-semibold text-foreground">🔓 Eres digno de cruzar el umbral</span>
-            </div>
-            
-            <h2 className="text-2xl md:text-3xl font-display font-black leading-[1em]">
-              <span className="glow">Artefacto desbloqueado</span>
-            </h2>
-            
-            <p className="text-sm text-foreground/90 max-w-lg mx-auto leading-[1em]">
-              <em>Clase secreta desbloqueada como bonus.</em> Esta clase no existe para el resto. Solo los que demuestran que van en serio la reciben.
-            </p>
-
-            <div className="flex items-center justify-center text-xs">
-              <span className="font-semibold glow">⚡ Enviada instantáneamente al agendar</span>
-            </div>
-          </div>
-
-          <Form {...form}>
-            <form 
-              onSubmit={form.handleSubmit(handleContactSubmit)} 
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  form.handleSubmit(handleContactSubmit)();
-                }
-              }}
-              className="space-y-4"
-            >
-              <FormField control={form.control} name="website" render={({ field }) => 
-                <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
-                  <FormLabel>Website</FormLabel>
-                  <FormControl><Input {...field} type="text" autoComplete="off" tabIndex={-1} /></FormControl>
-                </FormItem>
-              } />
-
-              <FormField control={form.control} name="name" render={({ field }) => 
-                <FormItem>
-                  <FormLabel className="text-sm">Nombre completo</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              } />
-
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  💬 Tu WhatsApp para enviarte la clase y recordatorios
-                </Label>
-                <div className={`grid gap-2 ${isV2 ? 'grid-cols-1 sm:grid-cols-[140px_1fr]' : 'grid-cols-[140px_1fr]'}`}>
-                  <FormField control={form.control} name="countryCode" render={({ field }) => 
-                    <FormItem>
-                      <Select 
-                        onValueChange={(value) => { field.onChange(value); setSelectedCountryCode(value); }} 
-                        value={field.value}
-                        disabled={isSubmitting}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark-button text-base" disabled={isSubmitting}>
-                            <SelectValue placeholder="País" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-popover max-h-[300px]">
-                          {TOP_COUNTRY_CODES.map(country => 
-                            <SelectItem key={country.code} value={country.code} className="cursor-pointer">
-                              {country.flag} {country.code}
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  } />
-
-                  <FormField control={form.control} name="phone" render={({ field }) => 
-                    <FormItem>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="tel" 
-                          placeholder={getPhonePlaceholder(selectedCountryCode)} 
-                          autoComplete="tel-national"
-                          inputMode="numeric"
-                          pattern="[0-9\s\-]*"
-                          disabled={isSubmitting}
-                          className="dark-button text-base" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  } />
-                </div>
-              </div>
-
-              {!isV2 && (
-                <div className="text-left space-y-2 pt-2">
-                  <ul className="text-xs text-muted-foreground space-y-2">
-                    <li className="flex items-start gap-2">
-                      <span className="text-accent">→</span>
-                      <span>Cómo <strong className="text-foreground">transformar lo que hace tu agencia en un servicio de un solo precio</strong> que los clientes se matan por pagar</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-accent">→</span>
-                      <span>Cómo <strong className="text-foreground">pasar de proyectos de €2K a €10K+</strong> sin cambiar lo que entregáis — solo cómo lo vendéis</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-accent">→</span>
-                      <span>El <strong className="text-foreground">sistema exacto</strong> para que el cliente rata <strong className="text-foreground">ni siquiera llegue a hacerte perder el tiempo a ti ni a tu equipo</strong></span>
-                    </li>
-                  </ul>
-                </div>
-              )}
-
-              {isV2 && (
-                <label htmlFor="intent-confirm" className="flex items-start space-x-3 dark-card p-4 rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
-                  <Checkbox
-                    id="intent-confirm"
-                    checked={intentConfirmed}
-                    onCheckedChange={(checked) => setIntentConfirmed(!!checked)}
-                    className="border-2 mt-0.5"
-                  />
-                  <span className="flex-1 text-sm text-foreground/90">
-                    Confirmo que voy a <strong className="text-foreground">consumir el contenido y asistir a la llamada</strong>. No quiero hacerle perder el tiempo a nadie.
-                  </span>
-                </label>
-              )}
-
-              <Button type="submit" disabled={isSubmitting || (isV2 && !intentConfirmed)} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" size="lg">
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-spin">⏳</span>
-                    Enviando tus datos...
-                  </span>
-                ) : (
-                  '📅 Agendar Mi Ritual →'
-                )}
-              </Button>
-            </form>
-          </Form>
-        </div>
-      </div>;
-  }
   return <>
     <div className="w-full space-y-4 animate-fade-in">
       {currentStep === 0 && <></>}
