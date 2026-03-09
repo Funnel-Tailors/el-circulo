@@ -768,7 +768,7 @@ ${identity}
 
 La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
 
-🔮 RESERVA TU RITUAL DE EVALUACIÓN
+🔮 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ Solo 3 espacios semanales para candidatos prioritarios
