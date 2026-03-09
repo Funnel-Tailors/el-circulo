@@ -661,11 +661,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
     return 'Tu perfil tiene todas las marcas de alguien listo para el siguiente nivel. Solo falta que decidas dar el paso.';
   }
   
-  if (isDIY && score >= 60) {
-    return 'Quieres hacerlo tú con guía. Bien. Pero si llevas meses intentándolo solo sin resultados, quizá el problema no es la guía. Es la ejecución. En la evaluación descubrimos si tiene sentido.';
-  }
-  
-  if (!soloDecision && score >= 60) {
+  if (score >= 60 && !soloDecision) {
     return 'Necesitas que alguien más dé el visto bueno. Eso está bien. Pero si quien decide no entiende el valor, vas a seguir estancado. O aprendes a vender la idea o traes a esa persona a la llamada.';
   }
   
