@@ -11,7 +11,7 @@ interface AnswerDistributionProps {
     percentage: number;
   }>;
   loading: boolean;
-  quizVersion: 'all' | 'v1' | 'v2';
+  quizVersion: string;
 }
 
 const AnswerDistribution = ({ data, loading, quizVersion }: AnswerDistributionProps) => {
