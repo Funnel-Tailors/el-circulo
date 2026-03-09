@@ -1192,7 +1192,7 @@ O podéis dar el paso.
 
 Pero no podéis hacer las dos cosas.
 
-🔮 AGENDA AQUÍ
+🔮 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 No hay prisa. Pero tampoco hay pausa.
