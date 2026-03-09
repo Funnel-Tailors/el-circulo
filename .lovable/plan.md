@@ -1,90 +1,36 @@
 
 
-## Plan: Cross-validation anti-mentira con copy brutal + redirección YouTube
+## Análisis: Copy de Q5 y uso de FLOC
 
-### Contexto
+### Estado actual
 
-Cuando alguien dice facturar €5K-10K, €10K-20K o +€20K pero selecciona budget 💧 (<€5K), es mentira en una de las dos. En vez de darles acceso a nada, los mandamos al curso de YouTube con un mensaje que les deja claro que les hemos pillado.
+**Q5 pregunta**: `"¿Cuánto estás dispuesto a invertir en tu agencia?"`
+**Motivator**: `"Cris pasó de tirar la toalla a cerrar 3.000€. Felipe tuvo 2 llamadas de venta en 7 días."`
 
-### Cambios en un solo archivo
+FLOC se usa en:
+- **QualifiedResult.tsx**: "FLOC facturó €80K en 4 días. Proyectos de hasta €60K cerrados dentro."
+- **MiniFAQSection.tsx**: "FLOC cerró un proyecto de branding de €20.000 con menos de 3 días de anuncios."
 
-**`supabase/functions/submit-brecha-lead/index.ts`**
+No se usa en Q5 actualmente.
 
-#### 1. Nueva regla de cross-validation (después de línea 1034)
+### Propuesta
 
-Después del hardstop de `low_revenue`, añadir:
+Meter FLOC en el **motivator de Q5** para que justo antes de elegir precio vean el caso más potente. El dato de "€20/día en publicidad" haría el contraste brutal con los €3K/mes de inversión.
 
-```ts
-// Cross-validation: revenue alto + budget mínimo = mentiroso
-if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_5000' && budgetParsed?.value === 'menos_5000') {
-  hardstopReason = 'inconsistent_revenue_budget'
-  console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
+**Cambio en QuizSection.tsx línea 92-93**:
+
+```
+motivator: {
+  icon: "🔥",
+  text: "FLOC facturó €80.000 en 4 días con €20/día en anuncios. Este es el sistema."
 }
 ```
 
-Esto cubre: `5000_10000`, `10000_20000`, `mas_20000` con budget `menos_5000`.
+También se puede hacer más aspiracional la pregunta misma:
 
-#### 2. Nuevo tag GHL (en `generateTags`, después de línea 187)
-
-```ts
-if (hardstopReason === 'inconsistent_revenue_budget') {
-  toApply.push('brecha_inconsistent')
-}
+```
+question: "¿Cuánto estás dispuesto a invertir en escalar tu agencia?"
 ```
 
-#### 3. Mensaje DM brutal para inconsistentes (en `generateBrechaNotification`, antes del `return ''` de la línea 925)
-
-Nuevo bloque para `hardstopReason === 'inconsistent_revenue_budget'`:
-
-```ts
-if (hardstopReason === 'inconsistent_revenue_budget') {
-  return `${firstName}.
-
-Dices que facturas ${revenueLiteral?.toLowerCase() || 'mucho'}.
-
-Pero cuando te pregunto cuánto invertirías...
-
-"${budgetLiteral}"
-
-¿En serio?
-
-Alguien que factura lo que dices facturar no duda en invertir €5.000 en algo que le puede cambiar el negocio.
-
-A no ser que no factures lo que dices facturar.
-
-Las pruebas existen para filtrar a los que no están listos.
-Y acabas de suspender.
-
-Haz los deberes primero.
-Construye algo real.
-Demuestra que puedes generar antes de intentar jugar con los mayores.
-
-Te dejo un curso gratis para que empieces por donde deberías empezar:
-
-👉 https://www.youtube.com/watch?v=61r314WUaSw&t=3917s
-
-Cuando factures de verdad lo que dices facturar, sabrás dónde encontrarme.`
-}
-```
-
-#### 4. Campo `brecha_url` vacío para inconsistentes
-
-Ya funciona automáticamente: como `hardstopReason` existe, `isQualified = false`, y el `brechaUrl` no se usa en el DM. El campo `brecha_url` en GHL queda vacío, así que aunque el lead intente acceder no tiene token.
-
-### Resultado
-
-- **Revenue alto + budget mínimo** = descalificado con mensaje brutal que les llama mentirosos y les manda al curso de YouTube
-- **Tag `brecha_inconsistent`** aparece automáticamente en GHL para tracking
-- **Sin cambios en GHL automations** -- solo un tag nuevo
-- **Sin cambios en frontend** -- estos leads nunca reciben URL de La Brecha
-- **`low_revenue` y `low_budget`** siguen funcionando exactamente igual que antes
-
-### Copy del mensaje
-
-El tono es directo y sin complacencia:
-1. Les devuelve su propia respuesta contradictoria
-2. Les dice que han suspendido las pruebas
-3. "Haz los deberes primero" + "jugar con los mayores" = les pone en su sitio
-4. Les da el curso de YouTube como "empieza por donde deberías empezar"
-5. Cierra con "cuando factures de verdad" = puerta abierta pero con condiciones
+Un solo archivo, 2 líneas.
 
