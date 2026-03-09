@@ -33,11 +33,11 @@ const steps: QuizStep[] = [{
   question: "¿Cuál es tu MAYOR FRUSTRACIÓN ahora mismo?",
   type: "radio",
   options: [
-    "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)",
-    "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo",
-    "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)",
-    "No sé cómo vender proyectos de 5 cifras sin que nos regateen",
-    "Todo lo anterior (¿Pero de verdad se puede escalar esto?)"
+    "Clientes por recomendación que pagan poco (y los nuevos son iguales)",
+    "Muchas horas, poco margen — el esfuerzo no cuadra",
+    "Meses buenos seguidos de meses muertos",
+    "No sé vender proyectos de 5 cifras sin que regateen",
+    "Todo lo anterior"
   ],
   badge: "💥 Paso 1/7 - Tu Punto de Dolor",
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
