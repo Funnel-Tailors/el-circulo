@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,10 +14,23 @@ import { quizAnalytics } from "@/lib/analytics";
 import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
+import { useEffect, useRef } from "react";
 
 const OTO_LINKS = {
   trimestral: "https://link.fastpaydirect.com/payment-link/6917780ad14ec1206b5ae41a",
   mensual: "https://link.fastpaydirect.com/payment-link/69ae003d1934f9211e5d0fc1",
+};
+
+// Generate random positions for particles
+const generateParticles = (count: number) => {
+  return Array.from({ length: count }).map((_, i) => ({
+    id: i,
+    startX: Math.random() * 100,
+    delay: Math.random() * 2.5,
+    duration: 2 + Math.random() * 1.5,
+    driftX: (Math.random() - 0.5) * 30,
+    size: 6 + Math.random() * 4,
+  }));
 };
 
 interface QualifiedResultProps {
@@ -30,18 +45,14 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
   const [ghlContactId, setGhlContactId] = useState<string | null>(null);
   const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
   const safetyNetRef = useRef<HTMLDivElement>(null);
+  const particles = useMemo(() => generateParticles(14), []);
 
   const isTrimestral = quizState.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido";
   const paymentLink = isTrimestral ? OTO_LINKS.trimestral : OTO_LINKS.mensual;
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
-    defaultValues: {
-      name: "",
-      countryCode: "+34",
-      phone: "",
-      website: ""
-    }
+    defaultValues: { name: "", countryCode: "+34", phone: "", website: "" }
   });
 
   // Auto-detect country
@@ -56,25 +67,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     form.setValue('countryCode', detected);
     setSelectedCountryCode(detected);
   }, [form]);
-
-  // Timer: reveal safety net after 30s
-  useEffect(() => {
-    const timer = setTimeout(() => setShowSafetyNet(true), 30000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Scroll detection: reveal safety net if user scrolls near bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollBottom = window.innerHeight + window.scrollY;
-      const docHeight = document.documentElement.scrollHeight;
-      if (scrollBottom > docHeight - 200) {
-        setShowSafetyNet(true);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const getPhonePlaceholder = (code: string): string => {
     const placeholders: Record<string, string> = {
@@ -129,23 +121,14 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     try {
       const { data: responseData, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
         body: {
-          name: data.name,
-          whatsapp: fullPhone,
-          answers: quizState,
-          score,
-          qualified: true,
-          fbclid: quizAnalytics.getFbclid(),
-          isPartialSubmission: false,
-          sessionId: quizAnalytics.getSessionId(),
-          quizVersion: quizAnalytics.getQuizVersion()
+          name: data.name, whatsapp: fullPhone, answers: quizState, score,
+          qualified: true, fbclid: quizAnalytics.getFbclid(), isPartialSubmission: false,
+          sessionId: quizAnalytics.getSessionId(), quizVersion: quizAnalytics.getQuizVersion()
         }
       });
-
       if (error) throw error;
-
       try { await quizAnalytics.submitContactForm(); } catch (e) { /* non-blocking */ }
       quizAnalytics.completeQuiz();
-
       toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados" });
       setGhlContactId(responseData?.contactId || null);
       setContactSubmitted(true);
@@ -158,83 +141,114 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
   }, [quizState]);
 
-  // Parse name for calendar
   const [firstName = '', ...lastNameParts] = (contactSubmitted ? form.getValues('name') : '').split(' ');
   const lastName = lastNameParts.join(' ');
 
   return (
     <div className="space-y-6">
       {/* ═══════════════════════════════════════
-          FASE 1: OTO DE PAGO DIRECTO
+          FASE 1: OTO FANCY
       ═══════════════════════════════════════ */}
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
-          Tu plaza está <span className="glow">lista</span>
-        </h2>
-        
-        <p className="text-sm text-muted-foreground max-w-md mx-auto">
-          FLOC facturó €80K en 4 días. Proyectos de hasta €60K cerrados dentro.
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.6 }}
+        className="text-center space-y-4"
+      >
+        {/* Badge */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-foreground/20 bg-foreground/5">
+          <Zap className="w-3 h-3 text-foreground/70" />
+          <span className="text-foreground/70 text-xs font-medium tracking-wide">SOLO AHORA</span>
+        </div>
 
-      {/* OTO Card */}
-      <div className="glass-card-dark p-6 rounded-xl border border-primary/30 space-y-4">
+        {/* Headline */}
+        <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
+          Has demostrado ser <span className="glow">Digno</span>
+        </h2>
+
+        {/* Dynamic pricing */}
         {isTrimestral ? (
-          <>
-            <div className="text-center space-y-2">
-              <span className="text-xs text-primary font-semibold tracking-widest uppercase">Trimestral</span>
-              <p className="text-2xl font-display font-black text-foreground">€8.000</p>
-              <p className="text-sm text-foreground/80">
-                1 año de licencia del Artefacto incluida.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Esta opción solo existe aquí.
-              </p>
-            </div>
-          </>
+          <div className="space-y-1">
+            <p className="text-2xl font-display font-black text-foreground">€8.000</p>
+            <p className="text-sm text-foreground/80">1 año de licencia del Artefacto incluida.</p>
+            <p className="text-xs text-muted-foreground">Esta opción solo existe aquí.</p>
+          </div>
         ) : (
-          <>
-            <div className="text-center space-y-2">
-              <span className="text-xs text-primary font-semibold tracking-widest uppercase">Mensual</span>
-              <p className="text-2xl font-display font-black text-foreground">€3.000<span className="text-base font-normal text-muted-foreground">/mes</span></p>
-              <p className="text-sm text-foreground/80">
-                Paga 1 mes. Quédate 2.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Tiempo de sobra para recuperarlo.
-              </p>
-            </div>
-          </>
+          <div className="space-y-1">
+            <p className="text-2xl font-display font-black text-foreground">
+              €3.000<span className="text-base font-normal text-muted-foreground">/mes</span>
+            </p>
+            <p className="text-sm text-foreground/80">Paga 1 mes. Quédate 2.</p>
+            <p className="text-xs text-muted-foreground">Tiempo de sobra para recuperarlo.</p>
+          </div>
         )}
 
-        <a
-          href={paymentLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <Button
-            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-5 font-bold shadow-lg hover:shadow-xl transition-all relative overflow-hidden"
-            size="lg"
-          >
-            <span className="relative z-10">Entrar ahora →</span>
-          </Button>
-        </a>
+        {/* Mega CTA with particles */}
+        <div className="relative w-full max-w-md mx-auto pt-2">
+          {particles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute pointer-events-none text-foreground/70 z-20"
+              style={{ left: `${particle.startX}%`, top: 0, fontSize: `${particle.size}px` }}
+              initial={{ y: 0, x: 0, opacity: 0 }}
+              animate={{ y: [0, -80], x: [0, particle.driftX], opacity: [0, 0.9, 0.6, 0] }}
+              transition={{ duration: particle.duration, delay: particle.delay, repeat: Infinity, ease: "easeOut" }}
+            >
+              ✦
+            </motion.div>
+          ))}
 
-        <p className="text-xs text-muted-foreground text-center">
-          Tras el pago recibirás acceso inmediato a la comunidad en tu email
+          <a href={paymentLink} target="_blank" rel="noopener noreferrer" className="block">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="relative w-full py-4 px-8 rounded-lg font-bold transition-colors
+                         bg-foreground text-background hover:bg-foreground/90
+                         ring-1 ring-foreground/60
+                         animate-glow-pulse-intense"
+            >
+              <span className="block text-lg">
+                {isTrimestral ? "ENTRA POR €8.000" : "ENTRA POR €3.000"}
+              </span>
+              <span className="block text-xs opacity-70 mt-0.5">(Sólo aquí, solo ahora)</span>
+            </motion.button>
+          </a>
+        </div>
+
+        <p className="text-muted-foreground/40 text-xs">
+          Acceso inmediato tras el pago. Sin esperas.
         </p>
-      </div>
+      </motion.div>
 
       {/* ═══════════════════════════════════════
-          FASE 2: SAFETY NET (formulario + calendario)
+          FASE 2: SAFETY NET (manual trigger)
       ═══════════════════════════════════════ */}
-      {showSafetyNet && (
-        <div ref={safetyNetRef} className="animate-fade-in space-y-6 pt-4">
+      {!showSafetyNet ? (
+        <div className="text-center space-y-2 pt-2">
+          <Button
+            variant="ghost"
+            onClick={() => setShowSafetyNet(true)}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Prefiero hablar con alguien primero
+          </Button>
+          <p className="text-muted-foreground/50 text-[11px] max-w-xs mx-auto">
+            {isTrimestral
+              ? "Perderás 1 año de licencia del Artefacto (valor: €708)"
+              : "Perderás 1 mes gratis incluido (valor: €3.000)"}
+          </p>
+        </div>
+      ) : (
+        <motion.div
+          ref={safetyNetRef}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-6 pt-4"
+        >
           {/* Separator */}
           <div className="flex items-center gap-4">
             <div className="h-px flex-1 bg-border"></div>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">¿Necesitas hablar con alguien primero?</span>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">Agenda una llamada</span>
             <div className="h-px flex-1 bg-border"></div>
           </div>
 
@@ -244,11 +258,13 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                 Deja tus datos y agenda una llamada estratégica
               </p>
               <p className="text-xs text-muted-foreground text-center">
-                Las ventajas del pago directo no estarán disponibles en la llamada
+                {isTrimestral
+                  ? "Las ventajas del pago directo (1 año de Artefacto gratis) no estarán disponibles en la llamada"
+                  : "Las ventajas del pago directo (1 mes extra gratis) no estarán disponibles en la llamada"}
               </p>
 
               <Form {...form}>
-                <form 
+                <form
                   onSubmit={form.handleSubmit(handleContactSubmit)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -258,14 +274,14 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                   }}
                   className="space-y-4"
                 >
-                  <FormField control={form.control} name="website" render={({ field }) => 
+                  <FormField control={form.control} name="website" render={({ field }) =>
                     <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
                       <FormLabel>Website</FormLabel>
                       <FormControl><Input {...field} type="text" autoComplete="off" tabIndex={-1} /></FormControl>
                     </FormItem>
                   } />
 
-                  <FormField control={form.control} name="name" render={({ field }) => 
+                  <FormField control={form.control} name="name" render={({ field }) =>
                     <FormItem>
                       <FormLabel className="text-sm">Nombre completo</FormLabel>
                       <FormControl>
@@ -276,14 +292,12 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                   } />
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-semibold">
-                      💬 Tu WhatsApp
-                    </Label>
+                    <Label className="text-sm font-semibold">💬 Tu WhatsApp</Label>
                     <div className="grid gap-2 grid-cols-[140px_1fr]">
-                      <FormField control={form.control} name="countryCode" render={({ field }) => 
+                      <FormField control={form.control} name="countryCode" render={({ field }) =>
                         <FormItem>
-                          <Select 
-                            onValueChange={(value) => { field.onChange(value); setSelectedCountryCode(value); }} 
+                          <Select
+                            onValueChange={(value) => { field.onChange(value); setSelectedCountryCode(value); }}
                             value={field.value}
                             disabled={isSubmitting}
                           >
@@ -293,7 +307,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="bg-popover max-h-[300px]">
-                              {TOP_COUNTRY_CODES.map(country => 
+                              {TOP_COUNTRY_CODES.map(country =>
                                 <SelectItem key={country.code} value={country.code} className="cursor-pointer">
                                   {country.flag} {country.code}
                                 </SelectItem>
@@ -304,18 +318,18 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                         </FormItem>
                       } />
 
-                      <FormField control={form.control} name="phone" render={({ field }) => 
+                      <FormField control={form.control} name="phone" render={({ field }) =>
                         <FormItem>
                           <FormControl>
-                            <Input 
-                              {...field} 
-                              type="tel" 
-                              placeholder={getPhonePlaceholder(selectedCountryCode)} 
+                            <Input
+                              {...field}
+                              type="tel"
+                              placeholder={getPhonePlaceholder(selectedCountryCode)}
                               autoComplete="tel-national"
                               inputMode="numeric"
                               pattern="[0-9\s\-]*"
                               disabled={isSubmitting}
-                              className="dark-button text-base" 
+                              className="dark-button text-base"
                             />
                           </FormControl>
                           <FormMessage />
@@ -324,10 +338,10 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                     </div>
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    disabled={isSubmitting} 
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" 
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
                     {isSubmitting ? (
@@ -343,7 +357,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
               </Form>
             </div>
           ) : (
-            /* Calendar after submit */
             <div className="space-y-4">
               <GHLCalendarIframe
                 calendarId="8C2kck4NCnEihznxvL29"
@@ -354,7 +367,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
               />
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Back button */}
