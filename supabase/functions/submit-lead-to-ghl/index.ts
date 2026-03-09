@@ -794,7 +794,7 @@ ${identity}
 
 ¿Listo/a para el salto o seguimos dándole vueltas?
 
-🔮 RESERVA TU SESIÓN DE EVALUACIÓN
+🔮 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ 3 espacios semanales para evaluaciones profundas
