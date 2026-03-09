@@ -228,11 +228,14 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Tier (Q5) — NEW
+  // Tier (Q5) — Updated pricing
   const investmentMap: Record<string, string> = {
-    'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-DFY',
-    'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-DWY',
-    'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-DIY',
+    '€8.000 trimestral — acceso + 1 año de Artefacto incluido': '💎 CÍRCULO-TIER-TRIMESTRAL',
+    '€3.000/mes — acceso completo al sistema': '💰 CÍRCULO-TIER-MENSUAL',
+    // Legacy
+    'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-TRIMESTRAL',
+    'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-TRIMESTRAL',
+    'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-MENSUAL',
     'Ahora mismo no puedo invertir en esto': '❌ CÍRCULO-TIER-NONE'
   };
   if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-TIER-Unknown');
