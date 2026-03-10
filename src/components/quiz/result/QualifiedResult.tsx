@@ -166,22 +166,12 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           Has demostrado ser <span className="glow">Digno</span>
         </h2>
 
-        {/* Dynamic pricing */}
-        {isTrimestral ? (
-          <div className="space-y-1">
-            <p className="text-2xl font-display font-black text-foreground">€8.000</p>
-            <p className="text-sm text-foreground/80">1 año de licencia del Artefacto incluida.</p>
-            <p className="text-xs text-muted-foreground">Esta opción solo existe aquí.</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <p className="text-2xl font-display font-black text-foreground">
-              €3.000<span className="text-base font-normal text-muted-foreground">/mes</span>
-            </p>
-            <p className="text-sm text-foreground/80">Paga 1 mes. Quédate 2.</p>
-            <p className="text-xs text-muted-foreground">Tiempo de sobra para recuperarlo.</p>
-          </div>
-        )}
+        {/* Exclusive bonus */}
+        <p className="text-sm text-foreground/80">
+          {isTrimestral
+            ? "1 año de Artefacto incluido — solo aquí"
+            : "Paga 1 mes. Quédate 2 — solo aquí"}
+        </p>
 
         {/* Mega CTA with particles */}
         <div className="relative w-full max-w-md mx-auto pt-2">
