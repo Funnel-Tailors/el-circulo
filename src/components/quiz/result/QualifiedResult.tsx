@@ -316,7 +316,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                               inputMode="numeric"
                               pattern="[0-9\s\-]*"
                               disabled={isSubmitting}
-                              className="dark-button text-base"
+                              className="dark-button"
                             />
                           </FormControl>
                           <FormMessage />
