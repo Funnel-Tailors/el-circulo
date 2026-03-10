@@ -259,7 +259,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                       form.handleSubmit(handleContactSubmit)();
                     }
                   }}
-                  className="space-y-4"
+                  className="space-y-3"
                 >
                   <FormField control={form.control} name="website" render={({ field }) =>
                     <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
