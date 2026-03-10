@@ -243,10 +243,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           </div>
 
           {!contactSubmitted ? (
-            <div className="space-y-4">
-              <p className="text-sm text-foreground/70 text-center">
-                Deja tus datos y agenda una llamada estratégica
-              </p>
+            <div className="space-y-3">
               <p className="text-xs text-muted-foreground text-center">
                 {isTrimestral
                   ? "Las ventajas del pago directo (1 año de Artefacto gratis) no estarán disponibles en la llamada"
