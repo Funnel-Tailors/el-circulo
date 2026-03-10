@@ -328,7 +328,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm py-3 font-bold shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
                     {isSubmitting ? (
