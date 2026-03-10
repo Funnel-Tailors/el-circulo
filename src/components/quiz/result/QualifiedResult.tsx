@@ -289,7 +289,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                             disabled={isSubmitting}
                           >
                             <FormControl>
-                              <SelectTrigger className="dark-button text-base" disabled={isSubmitting}>
+                              <SelectTrigger className="dark-button" disabled={isSubmitting}>
                                 <SelectValue placeholder="País" />
                               </SelectTrigger>
                             </FormControl>
