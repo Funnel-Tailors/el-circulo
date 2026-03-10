@@ -280,7 +280,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold">💬 Tu WhatsApp</Label>
-                    <div className="grid gap-2 grid-cols-[140px_1fr]">
+                    <div className="grid gap-1.5 grid-cols-[140px_1fr]">
                       <FormField control={form.control} name="countryCode" render={({ field }) =>
                         <FormItem>
                           <Select
