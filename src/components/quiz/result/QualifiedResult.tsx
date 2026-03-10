@@ -233,7 +233,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           ref={safetyNetRef}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-6 pt-4"
+          className="space-y-4 pt-2"
         >
           {/* Separator */}
           <div className="flex items-center gap-4">
