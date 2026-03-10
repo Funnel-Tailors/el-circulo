@@ -166,22 +166,12 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           Has demostrado ser <span className="glow">Digno</span>
         </h2>
 
-        {/* Dynamic pricing */}
-        {isTrimestral ? (
-          <div className="space-y-1">
-            <p className="text-2xl font-display font-black text-foreground">€8.000</p>
-            <p className="text-sm text-foreground/80">1 año de licencia del Artefacto incluida.</p>
-            <p className="text-xs text-muted-foreground">Esta opción solo existe aquí.</p>
-          </div>
-        ) : (
-          <div className="space-y-1">
-            <p className="text-2xl font-display font-black text-foreground">
-              €3.000<span className="text-base font-normal text-muted-foreground">/mes</span>
-            </p>
-            <p className="text-sm text-foreground/80">Paga 1 mes. Quédate 2.</p>
-            <p className="text-xs text-muted-foreground">Tiempo de sobra para recuperarlo.</p>
-          </div>
-        )}
+        {/* Exclusive bonus */}
+        <p className="text-sm text-foreground/80">
+          {isTrimestral
+            ? "1 año de Artefacto incluido — solo aquí"
+            : "Paga 1 mes. Quédate 2 — solo aquí"}
+        </p>
 
         {/* Mega CTA with particles */}
         <div className="relative w-full max-w-md mx-auto pt-2">
@@ -243,7 +233,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           ref={safetyNetRef}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-6 pt-4"
+          className="space-y-4 pt-2"
         >
           {/* Separator */}
           <div className="flex items-center gap-4">
@@ -253,10 +243,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           </div>
 
           {!contactSubmitted ? (
-            <div className="space-y-4">
-              <p className="text-sm text-foreground/70 text-center">
-                Deja tus datos y agenda una llamada estratégica
-              </p>
+            <div className="space-y-3">
               <p className="text-xs text-muted-foreground text-center">
                 {isTrimestral
                   ? "Las ventajas del pago directo (1 año de Artefacto gratis) no estarán disponibles en la llamada"
@@ -272,7 +259,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                       form.handleSubmit(handleContactSubmit)();
                     }
                   }}
-                  className="space-y-4"
+                  className="space-y-3"
                 >
                   <FormField control={form.control} name="website" render={({ field }) =>
                     <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
@@ -285,7 +272,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                     <FormItem>
                       <FormLabel className="text-sm">Nombre completo</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
+                        <Input {...field} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -293,7 +280,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
 
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold">💬 Tu WhatsApp</Label>
-                    <div className="grid gap-2 grid-cols-[140px_1fr]">
+                    <div className="grid gap-1.5 grid-cols-[140px_1fr]">
                       <FormField control={form.control} name="countryCode" render={({ field }) =>
                         <FormItem>
                           <Select
@@ -302,7 +289,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                             disabled={isSubmitting}
                           >
                             <FormControl>
-                              <SelectTrigger className="dark-button text-base" disabled={isSubmitting}>
+                              <SelectTrigger className="dark-button" disabled={isSubmitting}>
                                 <SelectValue placeholder="País" />
                               </SelectTrigger>
                             </FormControl>
@@ -329,7 +316,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                               inputMode="numeric"
                               pattern="[0-9\s\-]*"
                               disabled={isSubmitting}
-                              className="dark-button text-base"
+                              className="dark-button"
                             />
                           </FormControl>
                           <FormMessage />
@@ -341,7 +328,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-sm py-3 font-bold shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
                     {isSubmitting ? (

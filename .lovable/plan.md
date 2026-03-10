@@ -1,39 +1,90 @@
 
 
-## Plan: Compactar form móvil + quitar precio redundante, mostrar bonus
+## Plan: Cross-validation anti-mentira con copy brutal + redirección YouTube
 
-### Cambios en `QualifiedResult.tsx`
+### Contexto
 
-**1. Quitar precio duplicado, reemplazar con bonus exclusivo** (líneas 169-184)
+Cuando alguien dice facturar €5K-10K, €10K-20K o +€20K pero selecciona budget 💧 (<€5K), es mentira en una de las dos. En vez de darles acceso a nada, los mandamos al curso de YouTube con un mensaje que les deja claro que les hemos pillado.
 
-El precio ya está en el botón ("ENTRA POR €8.000" / "ENTRA POR €3.000"), así que la sección de precio arriba es redundante. Reemplazar con el bonus exclusivo:
+### Cambios en un solo archivo
 
-- Trimestral: `"1 año de Artefacto incluido — solo aquí"`  
-- Mensual: `"Paga 1 mes. Quédate 2 — solo aquí"`
+**`supabase/functions/submit-brecha-lead/index.ts`**
 
-Una sola línea de texto `text-sm text-foreground/80` en vez del bloque de 3 líneas con precio grande.
+#### 1. Nueva regla de cross-validation (después de línea 1034)
 
-**2. Compactar spacing del form para móvil** (líneas 266-357)
+Después del hardstop de `low_revenue`, añadir:
 
-- Form wrapper: `space-y-4` → `space-y-3`
-- Phone grid gap: `gap-2` → `gap-1.5`
-- Submit button: `py-4` → `py-3`
-- Labels: añadir `text-xs` en móvil
-- Inputs: quitar `text-base` (que fuerza 16px zoom en iOS), usar tamaño default más compacto
-
-**3. Compactar spacing general del safety net**
-
-- `space-y-6 pt-4` → `space-y-4 pt-2`
-- Quitar el párrafo descriptivo ("Deja tus datos y agenda...") — redundante con el separador "Agenda una llamada"
-
-### Resultado visual OTO
-```text
-      ⚡ SOLO AHORA
-  Has demostrado ser [Digno]
-  1 año de Artefacto incluido — solo aquí
-
-  [  ENTRA POR €8.000  ]  ← precio solo aquí
+```ts
+// Cross-validation: revenue alto + budget mínimo = mentiroso
+if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_5000' && budgetParsed?.value === 'menos_5000') {
+  hardstopReason = 'inconsistent_revenue_budget'
+  console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
+}
 ```
 
-Un solo archivo.
+Esto cubre: `5000_10000`, `10000_20000`, `mas_20000` con budget `menos_5000`.
+
+#### 2. Nuevo tag GHL (en `generateTags`, después de línea 187)
+
+```ts
+if (hardstopReason === 'inconsistent_revenue_budget') {
+  toApply.push('brecha_inconsistent')
+}
+```
+
+#### 3. Mensaje DM brutal para inconsistentes (en `generateBrechaNotification`, antes del `return ''` de la línea 925)
+
+Nuevo bloque para `hardstopReason === 'inconsistent_revenue_budget'`:
+
+```ts
+if (hardstopReason === 'inconsistent_revenue_budget') {
+  return `${firstName}.
+
+Dices que facturas ${revenueLiteral?.toLowerCase() || 'mucho'}.
+
+Pero cuando te pregunto cuánto invertirías...
+
+"${budgetLiteral}"
+
+¿En serio?
+
+Alguien que factura lo que dices facturar no duda en invertir €5.000 en algo que le puede cambiar el negocio.
+
+A no ser que no factures lo que dices facturar.
+
+Las pruebas existen para filtrar a los que no están listos.
+Y acabas de suspender.
+
+Haz los deberes primero.
+Construye algo real.
+Demuestra que puedes generar antes de intentar jugar con los mayores.
+
+Te dejo un curso gratis para que empieces por donde deberías empezar:
+
+👉 https://www.youtube.com/watch?v=61r314WUaSw&t=3917s
+
+Cuando factures de verdad lo que dices facturar, sabrás dónde encontrarme.`
+}
+```
+
+#### 4. Campo `brecha_url` vacío para inconsistentes
+
+Ya funciona automáticamente: como `hardstopReason` existe, `isQualified = false`, y el `brechaUrl` no se usa en el DM. El campo `brecha_url` en GHL queda vacío, así que aunque el lead intente acceder no tiene token.
+
+### Resultado
+
+- **Revenue alto + budget mínimo** = descalificado con mensaje brutal que les llama mentirosos y les manda al curso de YouTube
+- **Tag `brecha_inconsistent`** aparece automáticamente en GHL para tracking
+- **Sin cambios en GHL automations** -- solo un tag nuevo
+- **Sin cambios en frontend** -- estos leads nunca reciben URL de La Brecha
+- **`low_revenue` y `low_budget`** siguen funcionando exactamente igual que antes
+
+### Copy del mensaje
+
+El tono es directo y sin complacencia:
+1. Les devuelve su propia respuesta contradictoria
+2. Les dice que han suspendido las pruebas
+3. "Haz los deberes primero" + "jugar con los mayores" = les pone en su sitio
+4. Les da el curso de YouTube como "empieza por donde deberías empezar"
+5. Cierra con "cuando factures de verdad" = puerta abierta pero con condiciones
 
