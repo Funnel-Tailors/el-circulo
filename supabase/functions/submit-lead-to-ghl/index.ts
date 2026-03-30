@@ -580,8 +580,8 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   if (score >= 85 && !painLevers.some(l => l.includes('SCORE ALTO'))) {
     criticalOpportunities.push('• HOT Lead - Prioridad máxima');
   }
-  if (fastTrack && hasInvestment && !painLevers.some(l => l.includes('URGENCIA'))) {
-    criticalOpportunities.push('• Inversión + Urgencia esta semana = Cierre inmediato');
+  if (fastTrack && !painLevers.some(l => l.includes('URGENCIA'))) {
+    criticalOpportunities.push('• Urgencia esta semana = Prioridad máxima');
   }
   if (authSolo) {
     criticalOpportunities.push('• Decisor único');
