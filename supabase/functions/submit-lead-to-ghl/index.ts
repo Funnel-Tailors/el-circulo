@@ -128,22 +128,20 @@ function getLeadCategory(score: number, answers: QuizAnswers): string {
   const hardstop = getHardstopReason(answers, score);
   if (hardstop) return 'DQ';
   
-  const tier = getLeadTier(answers);
-  
-  // A+: Score 95+, TRIMESTRAL/MENSUAL, decide solo
-  if (score >= 95 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL') && answers.q7?.includes("Solo yo")) {
+  // A+: Score 90+, decide solo
+  if (score >= 90 && answers.q7?.includes("Solo yo")) {
     return 'A+';
   }
   
-  // A: Score 85+, TRIMESTRAL/MENSUAL o decide solo
-  if (score >= 85 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL' || answers.q7?.includes("Solo yo"))) {
+  // A: Score 80+, decide solo
+  if (score >= 80 && answers.q7?.includes("Solo yo")) {
     return 'A';
   }
   
-  // B: Score 75+
-  if (score >= 75) return 'B';
+  // B: Score 70+
+  if (score >= 70) return 'B';
   
-  // C: Score < 75
+  // C: Score < 70
   return 'C';
 }
 
