@@ -36,8 +36,8 @@ const loadGHLScript = (
   script.type = 'text/javascript';
   script.async = true;
   
-  let scriptTimeoutId: NodeJS.Timeout;
-  let ghlCheckTimeoutId: NodeJS.Timeout;
+  let scriptTimeoutId: ReturnType<typeof setTimeout>;
+  let ghlCheckTimeoutId: ReturnType<typeof setTimeout>;
   
   // Timeout general para el script
   scriptTimeoutId = setTimeout(() => {
