@@ -1212,10 +1212,8 @@ Con los mismos clientes de siempre.
 
 O peores.
 
-🔮 ESTO ES TODO
+🔮 ÚLTIMA OPORTUNIDAD
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
-
-La opción de entrar directo con ventaja exclusiva sigue disponible en tu resultado.
 
 Vosotros decidís.
 
