@@ -689,7 +689,7 @@ function generateContextualNote(
 ): string {
   const pain = answers.q1 || '';
   const fastTrack = answers.q6?.includes('Esta semana');
-  const socialMediaDependent = Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)');
+  const socialMediaDependent = Array.isArray(answers.q4) && (answers.q4.includes('Contenido orgánico (redes/web)') || answers.q4.includes('Contenido orgánico'));
   const isAutomator = answers.q2 === 'Automatizador';
   const noSoloDecision = !answers.q7?.includes('Solo yo');
   
