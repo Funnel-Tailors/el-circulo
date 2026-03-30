@@ -1249,16 +1249,15 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   }
   
   const potentialObjections: string[] = [];
-  if (!hasInvestment) potentialObjections.push('INVERSIÓN: "No podemos ahora" → ROI + casos rápidos');
   if (!authSolo) potentialObjections.push('DECISIÓN: "Debemos consultarlo" → Incluir a esa persona');
   if (!fastTrack) potentialObjections.push('TIMING: "Ahora no podemos" → ¿Qué debe pasar para estar listos?');
   
   let closingStrategy = '';
-  if (lowRevenue && hasInvestment && fastTrack) {
-    closingStrategy = 'CLIENTE IDEAL - Dolor agudo + inversión + urgencia = MÁXIMA PRIORIDAD. Admite si hay fit mínimo.';
-  } else if (isHot && hasInvestment && fastTrack) {
+  if (lowRevenue && fastTrack) {
+    closingStrategy = 'CLIENTE CON DOLOR AGUDO - Urgencia máxima. Admite si hay fit mínimo.';
+  } else if (isHot && fastTrack) {
     closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
-  } else if (score >= 75) {
+  } else if (score >= 70) {
     closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
     closingStrategy = 'EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
