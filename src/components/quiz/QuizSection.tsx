@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
@@ -16,8 +15,9 @@ interface QuizSectionProps {
 }
 interface QuizStep {
   id: string;
+  stateKey: string; // key in QuizState where answer is stored
   question: string;
-  type: "radio" | "checkbox";
+  type: "radio";
   options: string[];
   description?: string;
   badge?: string;
@@ -28,8 +28,10 @@ interface QuizStep {
     text: string;
   } | null;
 }
+
 const steps: QuizStep[] = [{
   id: "q1",
+  stateKey: "q1",
   question: "¿Cuál es tu MAYOR FRUSTRACIÓN ahora mismo?",
   type: "radio",
   options: [
@@ -39,7 +41,7 @@ const steps: QuizStep[] = [{
     "No sé cómo vender proyectos de 5 cifras sin que nos regateen",
     "Todo lo anterior (¿Pero de verdad se puede escalar esto?)"
   ],
-  badge: "💥 Paso 1/7 - Tu Punto de Dolor",
+  badge: "💥 Paso 1/5 - Tu Punto de Dolor",
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
   motivator: {
     icon: "🎯",
@@ -47,18 +49,20 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q2",
+  stateKey: "q2",
   question: "¿A qué te dedicas hoy?",
   type: "radio",
   options: ["Agencia de diseño / branding", "Productora / Estudio audiovisual", "Estudio de desarrollo / automatización", "Otro tipo de agencia creativa"],
-  badge: "🎯 Paso 2/7 - Tu Especialidad",
+  badge: "🎯 Paso 2/5 - Tu Especialidad",
   subtext: "Tu especialidad dicta tu camino de ascenso",
   motivator: null
 }, {
   id: "q3",
+  stateKey: "q3",
   question: "¿Cuánto factura tu agencia en un mes bueno?",
   type: "radio",
   options: ["Menos de €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
-  badge: "💰 Paso 3/7 - Tu Punto de Partida",
+  badge: "💰 Paso 3/5 - Tu Punto de Partida",
   subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
   motivator: {
     icon: "🚀",
@@ -66,58 +70,33 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q4",
-  question: "¿Cómo consigues clientes ahora mismo?",
-  description: "Puedes marcar varias",
-  type: "checkbox",
-  options: ["Recomendaciones", "Contenido orgánico", "Anuncios pagados", "Cold outreach", "Aún no tengo un sistema"],
-  badge: "🔍 Paso 4/7 - Tu Sistema Actual",
-  subtext: "Vamos a petar ese canal x3",
-  motivator: {
-    icon: "⚡",
-    text: "Los que solo tenían referidos empezaron a generar 4-6 leads/semana en el primer mes"
-  }
-}, {
-  id: "q5",
-  question: "¿Cuánto estás dispuesto a invertir en tu agencia?",
-  type: "radio",
-  options: [
-    "Ahora mismo no puedo invertir en esto",
-    "€3.000/mes — acceso completo al sistema",
-    "€8.000 trimestral — acceso + 1 año de Artefacto incluido"
-  ],
-  badge: "💎 Paso 5/7 - Tu Inversión",
-  subtext: "Elige la modalidad que encaja con tu situación actual",
-  valueStack: null,
-  motivator: {
-    icon: "🔥",
-    text: "Cris pasó de tirar la toalla a cerrar 3.000€. Felipe tuvo 2 llamadas de venta en 7 días."
-  }
-}, {
-  id: "q6",
+  stateKey: "q6", // Maps to q6 in state for edge function compatibility
   question: "¿Cuándo necesitas tener esto funcionando?",
   type: "radio",
   options: [
     "Esta semana - estoy perdiendo dinero cada día que pasa",
     "Este mes - tengo margen pero quiero moverme"
   ],
-  badge: "⏱️ Paso 6/7 - Tu Urgencia",
+  badge: "⏱️ Paso 4/5 - Tu Urgencia",
   subtext: "No hay respuesta correcta. Pero sí hay una honesta.",
   motivator: {
     icon: "🔥",
     text: "Los que implementan en 7 días recuperan la inversión 3x más rápido"
   }
 }, {
-  id: "q7",
+  id: "q5",
+  stateKey: "q7", // Maps to q7 in state for edge function compatibility
   question: "¿Quién toma la decisión final sobre esta inversión?",
   type: "radio",
   options: [
     "Solo yo - decido hoy si me convence",
     "Con mi socio/pareja - ambos estaremos en la llamada"
   ],
-  badge: "🔐 Paso 7/7 - Final",
+  badge: "🔐 Paso 5/5 - Final",
   subtext: "Si decides con alguien más, ambos deben estar en la llamada",
   motivator: null
 }];
+
 const QuizSection = ({
   onComplete,
   onExit,
@@ -145,6 +124,7 @@ const QuizSection = ({
 
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
+  
   useEffect(() => {
     const step = steps[currentStep];
     if (step) {
@@ -153,7 +133,8 @@ const QuizSection = ({
   }, [currentStep]);
 
   const handleNext = () => {
-    const currentAnswer = answersRef.current[currentQuestion.id as keyof QuizState];
+    const stateKey = currentQuestion.stateKey as keyof QuizState;
+    const currentAnswer = answersRef.current[stateKey];
     if (!currentAnswer || Array.isArray(currentAnswer) && currentAnswer.length === 0) {
       return;
     }
@@ -211,77 +192,37 @@ const QuizSection = ({
       }
     }
 
-    // Track Q4
+    // Track Q4 (urgency, stored as q6)
     if (currentQuestion.id === 'q4') {
-      const value = currentAnswer as string[];
-      quizAnalytics.trackMetaPixelEvent('ViewContent', {
-        content_type: 'quiz',
-        content_name: 'Acquisition Methods Answered',
-        content_category: 'quiz_q4_acquisition',
-        value: 250,
-        currency: 'EUR',
-        custom_data: {
-          acquisition_methods: value,
-          has_system: !value.includes('Aún no tengo un sistema'),
-          question_number: 4
-        }
-      });
-    }
-
-    // Track Q5 - Investment/Tier
-    if (currentQuestion.id === 'q5') {
-      const value = currentAnswer as string;
-      
-      if (value !== "Ahora mismo no puedo invertir en esto") {
-        quizAnalytics.trackBudgetQualified(value);
-        quizAnalytics.trackMetaPixelEvent('ViewContent', {
-          content_type: 'quiz',
-          content_name: 'Budget Capacity Qualified',
-          content_category: 'quiz_q5_budget_qualified',
-          value: 400,
-          currency: 'EUR',
-          custom_data: {
-            investment_capacity: value,
-            budget_ready: true,
-            question_number: 5
-          }
-        });
-      } else {
-        quizAnalytics.trackBudgetDisqualified();
-      }
-    }
-
-    // Track Q6 - Urgency
-    if (currentQuestion.id === 'q6') {
       const value = currentAnswer as string;
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'Urgency Level Identified',
-        content_category: 'quiz_q6_urgency',
+        content_category: 'quiz_q4_urgency',
         value: value.includes('Esta semana') ? 500 : 350,
         currency: 'EUR',
         custom_data: {
           urgency_level: value,
           high_urgency: value.includes('Esta semana'),
-          question_number: 6
+          question_number: 4
         }
       });
     }
 
-    // Track Q7 - Decision Maker + AddToCart
-    if (currentQuestion.id === 'q7') {
+    // Track Q5 (decision maker, stored as q7) + AddToCart
+    if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
       
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'Decision Maker Confirmed',
-        content_category: 'quiz_q7_decision_maker',
+        content_category: 'quiz_q5_decision_maker',
         value: 600,
         currency: 'EUR',
         custom_data: {
           is_decision_maker: value.includes('Solo yo'),
           decision_maker_type: value,
-          question_number: 7,
+          question_number: 5,
           ready_for_form: true
         }
       });
@@ -290,20 +231,14 @@ const QuizSection = ({
       const finalScore = calculateScore(tempAnswers);
       const isDisqualified = hasAutoDisqualify(tempAnswers, finalScore);
       
-      if (finalScore >= 75 && !isDisqualified) {
+      if (finalScore >= 70 && !isDisqualified) {
         const painPoint = tempAnswers.q1 as string;
         const profession = tempAnswers.q2 as string;
         const revenueBracket = tempAnswers.q3 as string;
-        const acquisitionMethods = tempAnswers.q4 as string[];
-        const investmentCapacity = tempAnswers.q5 as string;
         const urgency = tempAnswers.q6 as string;
         const decisionMaker = value;
         
         const isHighRevenue = ['€5.000 - €10.000/mes', '€10.000 - €20.000/mes', 'Más de €20.000/mes'].includes(revenueBracket);
-        const isTrimestral = investmentCapacity === "€8.000 trimestral — acceso + 1 año de Artefacto incluido";
-        const isMensual = investmentCapacity === "€3.000/mes — acceso completo al sistema";
-        const isICPMatch = isHighRevenue && (isTrimestral || isMensual);
-        const hasAcquisitionSystem = acquisitionMethods?.length > 0 && !acquisitionMethods.includes('Aún no tengo un sistema');
         
         let cartValue = 0;
         let qualificationLevel = '';
@@ -345,15 +280,9 @@ const QuizSection = ({
             pain_point: painPoint,
             profession: profession,
             revenue_bracket: revenueBracket,
-            acquisition_methods: acquisitionMethods?.join(', ') || '',
-            investment_capacity: investmentCapacity,
             urgency: urgency,
             decision_maker: decisionMaker,
-            is_icp_match: isICPMatch,
             is_high_revenue: isHighRevenue,
-            is_trimestral: isTrimestral,
-            is_mensual: isMensual,
-            has_acquisition_system: hasAcquisitionSystem,
             quiz_completion_time_seconds: quizCompletionTimeSeconds,
             utm_source: quizAnalytics.utmParams.utm_source || 'direct',
             utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
@@ -364,17 +293,17 @@ const QuizSection = ({
           }
         });
         
-        console.log('✅ AddToCart disparado (Q7 - Score Completo):', {
+        console.log('✅ AddToCart disparado (Q5 - Score Completo):', {
           score: finalScore,
           value: cartValue,
           level: qualificationLevel,
           conversionProb,
-          allAnswersIncluded: 'Q1-Q7'
+          allAnswersIncluded: 'Q1-Q3,Q6,Q7'
         });
       } else {
         console.log('⚠️ AddToCart NO disparado - Usuario descalificado:', {
           score: finalScore,
-          threshold: 75,
+          threshold: 70,
           isDisqualified,
           reason: isDisqualified ? 'auto_disqualify' : 'low_score'
         });
@@ -382,16 +311,16 @@ const QuizSection = ({
     }
 
     if (isLastStep) {
-      const finalAnswers = { ...answers, [currentQuestion.id]: currentAnswer };
+      const finalAnswers = { ...answers, [currentQuestion.stateKey]: currentAnswer };
       const score = calculateScore(finalAnswers);
-      const qualified = score >= 75 && !hasAutoDisqualify(finalAnswers, score);
+      const qualified = score >= 70 && !hasAutoDisqualify(finalAnswers, score);
       
-      // Pass directly to result — no contact form here
       onComplete(finalAnswers, qualified);
     } else {
       setCurrentStep(prev => prev + 1);
     }
   };
+
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
@@ -401,47 +330,32 @@ const QuizSection = ({
   const calculateScore = (state: QuizState): number => {
     let score = 0;
 
-    // Q1 - Pain Point (0-8 pts)
-    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 8;
-    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 8;
-    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 8;
-    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 8;
-    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 7;
+    // Q1 - Pain Point (0-15 pts)
+    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 15;
+    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 15;
+    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 15;
+    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 15;
+    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 13;
 
-    // Q2 - Profesión (0-10 pts)
-    if (state.q2 === "Agencia de diseño / branding") score += 10;
-    else if (state.q2 === "Productora / Estudio audiovisual") score += 10;
-    else if (state.q2 === "Estudio de desarrollo / automatización") score += 10;
-    else if (state.q2 === "Otro tipo de agencia creativa") score += 9;
+    // Q2 - Profesión (0-15 pts)
+    if (state.q2 === "Agencia de diseño / branding") score += 15;
+    else if (state.q2 === "Productora / Estudio audiovisual") score += 15;
+    else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
+    else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
 
-    // Q3 - Revenue (0-30 pts)
-    if (state.q3 === "€5.000 - €10.000/mes") score += 30;
-    else if (state.q3 === "€10.000 - €20.000/mes") score += 28;
-    else if (state.q3 === "Más de €20.000/mes") score += 25;
+    // Q3 - Revenue (0-45 pts)
+    if (state.q3 === "€5.000 - €10.000/mes") score += 45;
+    else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
+    else if (state.q3 === "Más de €20.000/mes") score += 38;
     else if (state.q3 === "Menos de €5.000/mes") score += 0;
 
-    // Q4 - Acquisition (0-15 pts)
-    if (Array.isArray(state.q4)) {
-      const hasNoSystem = state.q4.includes("Aún no tengo un sistema");
-      const methodCount = state.q4.filter(m => m !== "Aún no tengo un sistema").length;
-      if (hasNoSystem) score += 15;
-      else if (methodCount === 1 || methodCount === 2) score += 12;
-      else if (methodCount === 3) score += 10;
-      else if (methodCount >= 4) score += 8;
-    }
+    // Q6 - Urgency (0-15 pts) — stored as q6
+    if (state.q6?.includes("Esta semana")) score += 15;
+    else if (state.q6?.includes("Este mes")) score += 12;
 
-    // Q5 - Tier/Investment (0-37 pts) — Trimestral=37, Mensual=30, none=0
-    if (state.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") score += 37;
-    else if (state.q5 === "€3.000/mes — acceso completo al sistema") score += 30;
-    else if (state.q5 === "Ahora mismo no puedo invertir en esto") score += 0;
-
-    // Q6 - Urgency (0-5 pts)
-    if (state.q6?.includes("Esta semana")) score += 5;
-    else if (state.q6?.includes("Este mes")) score += 4;
-
-    // Q7 - Authority (0-5 pts)
-    if (state.q7?.includes("Solo yo")) score += 5;
-    else if (state.q7?.includes("Con mi socio")) score += 3;
+    // Q7 - Authority (0-10 pts) — stored as q7
+    if (state.q7?.includes("Solo yo")) score += 10;
+    else if (state.q7?.includes("Con mi socio")) score += 7;
     
     return Math.min(score, 100);
   };
@@ -450,11 +364,8 @@ const QuizSection = ({
     // HARDSTOP: Revenue demasiado bajo
     if (state.q3 === "Menos de €5.000/mes") return true;
     
-    // HARDSTOP: No puede invertir
-    if (state.q5 === "Ahora mismo no puedo invertir en esto") return true;
-    
     // HARDSTOP: Decisión compartida + score bajo
-    if (state.q7?.includes("Con mi socio") && score < 85) return true;
+    if (state.q7?.includes("Con mi socio") && score < 80) return true;
     
     return false;
   };
@@ -462,116 +373,102 @@ const QuizSection = ({
   const renderInput = () => {
     const skepticOption = "Todo lo anterior (¿Pero de verdad se puede escalar esto?)";
     const isQ1 = currentQuestion.id === 'q1';
+    const stateKey = currentQuestion.stateKey as keyof QuizState;
     
-    switch (currentQuestion.type) {
-      case "radio":
-        return (
-          <>
-            <RadioGroup value={answers[currentQuestion.id as keyof QuizState] as string || ""} onValueChange={value => {
-              if (isQ1 && value === skepticOption) {
-                setShowSkepticChallenge(true);
-                quizAnalytics.trackEvent({ event_type: 'skeptic_challenged', step_id: 'q1', answer_value: value });
-                return;
-              }
-              
-              if (isQ1 && showSkepticChallenge) {
-                setShowSkepticChallenge(false);
-                quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: value });
-              }
-              
-              const updatedAnswers = { ...answers, [currentQuestion.id]: value };
-              setAnswers(updatedAnswers);
-              quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
-              setTimeout(() => { handleNext(); }, 300);
-            }} className="space-y-3">
-              {(isV2 && isQ1
-                ? currentQuestion.options?.filter(opt => opt !== skepticOption)
-                : currentQuestion.options
-              )?.map(option => {
-                const isSkepticOption = !isV2 && isQ1 && option === skepticOption;
-                const isDisabledByChallenge = showSkepticChallenge && isSkepticOption;
-                const isHighlightedByChallenge = showSkepticChallenge && isQ1 && !isSkepticOption;
-                
-                return (
-                  <div 
-                    key={option} 
-                    className={`flex items-center space-x-3 dark-card p-3 rounded-lg transition-all cursor-pointer ${
-                      isDisabledByChallenge 
-                        ? 'opacity-40 line-through cursor-not-allowed' 
-                        : isHighlightedByChallenge
-                          ? 'hover:bg-accent/50 ring-1 ring-foreground/30 bg-background/40'
-                          : 'hover:bg-accent/50'
-                    }`}
-                  >
-                    <RadioGroupItem value={option} id={option} className="border-2" disabled={isDisabledByChallenge} />
-                    <Label htmlFor={option} className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-                      {option}
-                    </Label>
-                  </div>
-                );
-              })}
-            </RadioGroup>
+    return (
+      <>
+        <RadioGroup value={answers[stateKey] as string || ""} onValueChange={value => {
+          if (isQ1 && value === skepticOption) {
+            setShowSkepticChallenge(true);
+            quizAnalytics.trackEvent({ event_type: 'skeptic_challenged', step_id: 'q1', answer_value: value });
+            return;
+          }
+          
+          if (isQ1 && showSkepticChallenge) {
+            setShowSkepticChallenge(false);
+            quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: value });
+          }
+          
+          const updatedAnswers = { ...answers, [currentQuestion.stateKey]: value };
+          setAnswers(updatedAnswers);
+          quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
+          setTimeout(() => { handleNext(); }, 300);
+        }} className="space-y-3">
+          {(isV2 && isQ1
+            ? currentQuestion.options?.filter(opt => opt !== skepticOption)
+            : currentQuestion.options
+          )?.map(option => {
+            const isSkepticOption = !isV2 && isQ1 && option === skepticOption;
+            const isDisabledByChallenge = showSkepticChallenge && isSkepticOption;
+            const isHighlightedByChallenge = showSkepticChallenge && isQ1 && !isSkepticOption;
             
-            {/* El Espejo — only in default variant */}
-            <Dialog open={!isV2 && showSkepticChallenge && isQ1} onOpenChange={() => {}}>
-              <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100vw-2rem)] sm:max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
-                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                  <div className="text-center space-y-2">
-                    <span className="text-foreground/60 text-lg">⟡</span>
-                    <h3 className="text-xl sm:text-2xl font-display font-black text-foreground glow">El Espejo</h3>
-                  </div>
-                  
-                  <div className="space-y-3 text-foreground/90 text-xs sm:text-sm leading-relaxed">
-                    <p><span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.</p>
-                    <p>Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.</p>
-                    <p>Mira, yo no estoy aquí para convencerte de nada.</p>
-                    <p>Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.</p>
-                    <p>O que crees que me importan algo tus barreras mentales. Que las derribe otro.</p>
-                    <p className="font-medium text-foreground">Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.</p>
-                  </div>
-                  
-                  <div className="pt-4 border-t border-border/30 space-y-3">
-                    <div className="text-center space-y-1">
-                      <p className="text-foreground font-semibold text-sm">¿Cuál es tu problema REAL?</p>
-                      <p className="text-foreground/50 text-xs">👇 Elige (ahora prestando atención)</p>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      {steps[0].options?.filter(opt => opt !== skepticOption).map((option) => (
-                        <button
-                          key={option}
-                          onClick={() => {
-                            setAnswers({ ...answers, q1: option, isSkeptic: true });
-                            quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: option });
-                            quizAnalytics.answerStep('q1', 0, option);
-                            setShowSkepticChallenge(false);
-                            setCurrentStep(1);
-                          }}
-                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 text-xs sm:text-sm text-foreground/90 hover:text-foreground"
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            return (
+              <div 
+                key={option} 
+                className={`flex items-center space-x-3 dark-card p-3 rounded-lg transition-all cursor-pointer ${
+                  isDisabledByChallenge 
+                    ? 'opacity-40 line-through cursor-not-allowed' 
+                    : isHighlightedByChallenge
+                      ? 'hover:bg-accent/50 ring-1 ring-foreground/30 bg-background/40'
+                      : 'hover:bg-accent/50'
+                }`}
+              >
+                <RadioGroupItem value={option} id={option} className="border-2" disabled={isDisabledByChallenge} />
+                <Label htmlFor={option} className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                  {option}
+                </Label>
+              </div>
+            );
+          })}
+        </RadioGroup>
+        
+        {/* El Espejo — only in default variant */}
+        <Dialog open={!isV2 && showSkepticChallenge && isQ1} onOpenChange={() => {}}>
+          <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100vw-2rem)] sm:max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+              <div className="text-center space-y-2">
+                <span className="text-foreground/60 text-lg">⟡</span>
+                <h3 className="text-xl sm:text-2xl font-display font-black text-foreground glow">El Espejo</h3>
+              </div>
+              
+              <div className="space-y-3 text-foreground/90 text-xs sm:text-sm leading-relaxed">
+                <p><span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.</p>
+                <p>Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.</p>
+                <p>Mira, yo no estoy aquí para convencerte de nada.</p>
+                <p>Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.</p>
+                <p>O que crees que me importan algo tus barreras mentales. Que las derribe otro.</p>
+                <p className="font-medium text-foreground">Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.</p>
+              </div>
+              
+              <div className="pt-4 border-t border-border/30 space-y-3">
+                <div className="text-center space-y-1">
+                  <p className="text-foreground font-semibold text-sm">¿Cuál es tu problema REAL?</p>
+                  <p className="text-foreground/50 text-xs">👇 Elige (ahora prestando atención)</p>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </>
-        );
-      case "checkbox":
-        return <div className="space-y-3">
-            {currentQuestion.options?.map(option => <div key={option} className="flex items-center space-x-3 dark-card p-3 rounded-lg hover:bg-accent/50 transition-colors cursor-pointer">
-                <Checkbox id={option} checked={(answers.q4 as string[] || []).includes(option)} onCheckedChange={checked => {
-              const current = answers.q4 as string[] || [];
-              const updated = checked ? [...current, option] : current.filter(v => v !== option);
-              setAnswers({ ...answers, q4: updated });
-              quizAnalytics.answerStep(currentQuestion.id, currentStep, updated.join(', '));
-            }} className="border-2" />
-                <Label htmlFor={option} className="flex-1 cursor-pointer text-base">{option}</Label>
-              </div>)}
-          </div>;
-    }
+                
+                <div className="space-y-2">
+                  {steps[0].options?.filter(opt => opt !== skepticOption).map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => {
+                        setAnswers({ ...answers, q1: option, isSkeptic: true });
+                        quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: option });
+                        quizAnalytics.answerStep('q1', 0, option);
+                        setShowSkepticChallenge(false);
+                        setCurrentStep(1);
+                      }}
+                      className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 text-xs sm:text-sm text-foreground/90 hover:text-foreground"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
   };
 
   return <>
@@ -621,7 +518,7 @@ const QuizSection = ({
               </Button>
             )}
 
-            <Button onClick={handleNext} disabled={!answers[currentQuestion.id as keyof QuizState] || Array.isArray(answers[currentQuestion.id as keyof QuizState]) && (answers[currentQuestion.id as keyof QuizState] as string[]).length === 0} className="dark-button-primary flex-1">
+            <Button onClick={handleNext} disabled={!answers[currentQuestion.stateKey as keyof QuizState] || Array.isArray(answers[currentQuestion.stateKey as keyof QuizState]) && (answers[currentQuestion.stateKey as keyof QuizState] as string[]).length === 0} className="dark-button-primary flex-1">
               {isLastStep ? "Finalizar" : "Siguiente"}
             </Button>
         </div>
