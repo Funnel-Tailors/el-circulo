@@ -117,7 +117,7 @@ export const useVideoDrops = ({
   const [activeDrop, setActiveDrop] = useState<Drop | null>(null);
   const [shownDropIds, setShownDropIds] = useState<Set<string>>(new Set());
   
-  const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const dropTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const allCapturedFiredRef = useRef(false);
   const initializedRef = useRef(false);
   const lastCheckRef = useRef(0);
