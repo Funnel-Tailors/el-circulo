@@ -1270,16 +1270,15 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
 ⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
 Evalúa si este candidato debe cruzar el umbral.
 Esto no es una venta. Es un ritual de evaluación.
-${lowRevenue && hasInvestment ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + inversión confirmada = MÁXIMA PRIORIDAD' : ''}
+${lowRevenue ? '\n🚨 CANDIDATO CON DOLOR AGUDO: Revenue bajo + urgencia = MÁXIMA PRIORIDAD' : ''}
 
 ⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
 
 📋 PERFIL DEL CANDIDATO:
 • Pain: ${answers.q1}
 • ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Urgencia: ${answers.q6}
-• Adquisición: ${Array.isArray(answers.q4) ? answers.q4[0] : answers.q4}${lowRevenue && hasInvestment ? '\n🚨 PERFIL IDEAL: Cobra poco + tiene inversión' : ''}
+• Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Urgencia: ${answers.q6}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4[0]}` : ''}
 
 🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
