@@ -611,9 +611,8 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 ⚡ RESUMEN INICIÁTICO:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
-• Urgencia: ${answers.q6}
+• Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Urgencia: ${answers.q6}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4.join(', ')}` : ''}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
 ${realObjections.length > 0 ? `\n⚠️ FRICCIONES:\n${realObjections.map(o => `• ${o.replace('⚠️ ', '')}`).join('\n')}` : ''}
 
