@@ -100,6 +100,8 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
 
 // Helper: Determinar tier del lead
 function getLeadTier(answers: QuizAnswers): string {
+  // If q5 not answered (new 5-question quiz), default to CALL
+  if (!answers.q5) return 'CALL';
   if (answers.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") return 'TRIMESTRAL';
   if (answers.q5 === "€3.000/mes — acceso completo al sistema") return 'MENSUAL';
   // Legacy support
@@ -113,11 +115,12 @@ function getLeadTier(answers: QuizAnswers): string {
 function getTicketLabel(answers: QuizAnswers): string {
   const tier = getLeadTier(answers);
   const labels: Record<string, string> = {
+    'CALL': 'Llamada estratégica',
     'TRIMESTRAL': 'Trimestral (€8K)',
     'MENSUAL': 'Mensual (€3K/mes)',
-    'NONE': 'Sin inversión'
+    'NONE': 'Llamada estratégica'
   };
-  return labels[tier] || 'Sin inversión';
+  return labels[tier] || 'Llamada estratégica';
 }
 
 // Helper: Categorizar leads (A+/A/B/C/DQ)
