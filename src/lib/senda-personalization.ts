@@ -86,6 +86,22 @@ export const generateSendaPersonalization = (quizState: QuizState): Personalizat
     };
   }
 
+  // Combo 5: TODO LO ANTERIOR
+  if (q1.includes('Todo lo anterior')) {
+    const intensity = hasInvestment ? 'Tenéis para invertir en vuestra agencia. Usadlo bien.' : 'La solución no requiere más dinero. Requiere claridad.';
+    return {
+      heroHeadline: 'Crisis total = oportunidad total',
+      heroSubtext: `Entenderéis por qué tu agencia cobra poco, trabaja mucho, y cómo revertirlo con una oferta premium.`,
+      painHeadline: 'TODAS LAS FRICCIONES A LA VEZ',
+      painBody: `Todos los problemas al mismo tiempo. Sin clientes, sin precio, sin tiempo, sin sistema. ${intensity}\n\nCon el sistema del Círculo priorizaréis lo crítico: la oferta de tu agencia. Todo lo demás (captación, cierre, escala) viene DESPUÉS de tener una oferta que valga la pena vender.`,
+      painBullets: [
+        `La oferta premium de tu agencia estructurada para vender sin experiencia`,
+        `Cómo 3x el ticket medio de tu estudio con un simple reframe de posicionamiento`,
+        `El orden exacto para implementarlo todo sin overwhelm`
+      ]
+    };
+  }
+
   // FALLBACK: Sin quiz_state
   if (!q1 && !q2 && !q3) {
     return {

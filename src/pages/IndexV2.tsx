@@ -3,6 +3,7 @@ import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import { MiniFAQSection } from "@/components/roadmap/MiniFAQSection";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { successCases } from "@/data/roadmap";
@@ -104,6 +105,9 @@ const IndexV2 = () => {
               Asciende ahora
             </Button>
           </div>
+
+          {/* Mini FAQ Section */}
+          <MiniFAQSection />
 
           {/* Quiz Section */}
           <div id="quiz-section" ref={quizSectionRef} className="mt-16 scroll-mt-16 md:scroll-mt-8">

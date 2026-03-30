@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+
 interface QuizSectionProps {
   onComplete: (state: QuizState, qualified: boolean) => void;
   onExit: () => void;
@@ -31,10 +33,11 @@ const steps: QuizStep[] = [{
   question: "¿Cuál es tu MAYOR FRUSTRACIÓN ahora mismo?",
   type: "radio",
   options: [
-    "Clientes por recomendación que pagan poco (y los nuevos son iguales)",
-    "Muchas horas, poco margen — el esfuerzo no cuadra",
-    "Meses buenos seguidos de meses muertos",
-    "No sé vender proyectos de 5 cifras sin que regateen"
+    "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)",
+    "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo",
+    "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)",
+    "No sé cómo vender proyectos de 5 cifras sin que nos regateen",
+    "Todo lo anterior (¿Pero de verdad se puede escalar esto?)"
   ],
   badge: "💥 Paso 1/7 - Tu Punto de Dolor",
   subtext: "Necesitamos saber qué te está frenando para diseñar tu ruta exacta",
@@ -75,7 +78,7 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q5",
-  question: "¿Cuánto estás dispuesto a invertir en escalar tu agencia?",
+  question: "¿Cuánto estás dispuesto a invertir en tu agencia?",
   type: "radio",
   options: [
     "Ahora mismo no puedo invertir en esto",
@@ -87,7 +90,7 @@ const steps: QuizStep[] = [{
   valueStack: null,
   motivator: {
     icon: "🔥",
-    text: "FLOC facturó €80.000 en 4 días con €20/día en anuncios. Este es el sistema."
+    text: "Cris pasó de tirar la toalla a cerrar 3.000€. Felipe tuvo 2 llamadas de venta en 7 días."
   }
 }, {
   id: "q6",
@@ -138,10 +141,7 @@ const QuizSection = ({
   };
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [quizStartTime] = useState(Date.now());
-  const [showMicroCommitment, setShowMicroCommitment] = useState(false);
-  const [microCommitChecks, setMicroCommitChecks] = useState({ time: false, investment: false, partner: false });
-  const [pendingCompleteState, setPendingCompleteState] = useState<{ state: QuizState; qualified: boolean } | null>(null);
-  const [intentConfirmed, setIntentConfirmed] = useState(false);
+  const [showSkepticChallenge, setShowSkepticChallenge] = useState(false);
 
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
@@ -164,9 +164,11 @@ const QuizSection = ({
       quizAnalytics.trackPainPoint(value);
       
       let painValue = 150;
-      if (value === "Muchas horas, poco margen — el esfuerzo no cuadra") {
+      if (value === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") {
+        painValue = 250;
+      } else if (value === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") {
         painValue = 200;
-      } else if (value === "Clientes por recomendación que pagan poco (y los nuevos son iguales)") {
+      } else if (value === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") {
         painValue = 180;
       }
       
@@ -400,10 +402,11 @@ const QuizSection = ({
     let score = 0;
 
     // Q1 - Pain Point (0-8 pts)
-    if (state.q1 === "No sé vender proyectos de 5 cifras sin que regateen") score += 8;
-    else if (state.q1 === "Muchas horas, poco margen — el esfuerzo no cuadra") score += 8;
-    else if (state.q1 === "Meses buenos seguidos de meses muertos") score += 8;
-    else if (state.q1 === "Clientes por recomendación que pagan poco (y los nuevos son iguales)") score += 7;
+    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 8;
+    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 8;
+    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 8;
+    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 8;
+    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 7;
 
     // Q2 - Profesión (0-10 pts)
     if (state.q2 === "Agencia de diseño / branding") score += 10;
@@ -457,27 +460,104 @@ const QuizSection = ({
   };
 
   const renderInput = () => {
+    const skepticOption = "Todo lo anterior (¿Pero de verdad se puede escalar esto?)";
+    const isQ1 = currentQuestion.id === 'q1';
+    
     switch (currentQuestion.type) {
       case "radio":
         return (
-          <RadioGroup value={answers[currentQuestion.id as keyof QuizState] as string || ""} onValueChange={value => {
-            const updatedAnswers = { ...answers, [currentQuestion.id]: value };
-            setAnswers(updatedAnswers);
-            quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
-            setTimeout(() => { handleNext(); }, 300);
-          }} className="space-y-3">
-            {currentQuestion.options?.map(option => (
-              <div
-                key={option}
-                className="flex items-center space-x-3 dark-card p-3 rounded-lg transition-all cursor-pointer hover:bg-accent/50"
-              >
-                <RadioGroupItem value={option} id={option} className="border-2" />
-                <Label htmlFor={option} className="flex-1 text-base cursor-pointer">
-                  {option}
-                </Label>
-              </div>
-            ))}
-          </RadioGroup>
+          <>
+            <RadioGroup value={answers[currentQuestion.id as keyof QuizState] as string || ""} onValueChange={value => {
+              if (isQ1 && value === skepticOption) {
+                setShowSkepticChallenge(true);
+                quizAnalytics.trackEvent({ event_type: 'skeptic_challenged', step_id: 'q1', answer_value: value });
+                return;
+              }
+              
+              if (isQ1 && showSkepticChallenge) {
+                setShowSkepticChallenge(false);
+                quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: value });
+              }
+              
+              const updatedAnswers = { ...answers, [currentQuestion.id]: value };
+              setAnswers(updatedAnswers);
+              quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
+              setTimeout(() => { handleNext(); }, 300);
+            }} className="space-y-3">
+              {(isV2 && isQ1
+                ? currentQuestion.options?.filter(opt => opt !== skepticOption)
+                : currentQuestion.options
+              )?.map(option => {
+                const isSkepticOption = !isV2 && isQ1 && option === skepticOption;
+                const isDisabledByChallenge = showSkepticChallenge && isSkepticOption;
+                const isHighlightedByChallenge = showSkepticChallenge && isQ1 && !isSkepticOption;
+                
+                return (
+                  <div 
+                    key={option} 
+                    className={`flex items-center space-x-3 dark-card p-3 rounded-lg transition-all cursor-pointer ${
+                      isDisabledByChallenge 
+                        ? 'opacity-40 line-through cursor-not-allowed' 
+                        : isHighlightedByChallenge
+                          ? 'hover:bg-accent/50 ring-1 ring-foreground/30 bg-background/40'
+                          : 'hover:bg-accent/50'
+                    }`}
+                  >
+                    <RadioGroupItem value={option} id={option} className="border-2" disabled={isDisabledByChallenge} />
+                    <Label htmlFor={option} className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                      {option}
+                    </Label>
+                  </div>
+                );
+              })}
+            </RadioGroup>
+            
+            {/* El Espejo — only in default variant */}
+            <Dialog open={!isV2 && showSkepticChallenge && isQ1} onOpenChange={() => {}}>
+              <DialogContent className="glass-card-dark border-border/40 max-w-[calc(100vw-2rem)] sm:max-w-md p-0 [&>button]:hidden max-h-[90vh] overflow-y-auto">
+                <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+                  <div className="text-center space-y-2">
+                    <span className="text-foreground/60 text-lg">⟡</span>
+                    <h3 className="text-xl sm:text-2xl font-display font-black text-foreground glow">El Espejo</h3>
+                  </div>
+                  
+                  <div className="space-y-3 text-foreground/90 text-xs sm:text-sm leading-relaxed">
+                    <p><span className="font-semibold text-foreground">"Todo lo anterior"</span> no es una respuesta.</p>
+                    <p>Es un grito desesperado de alguien que se siente víctima. Qué difícil este mundillo, ¿eh? De la petanca no se puede vivir.</p>
+                    <p>Mira, yo no estoy aquí para convencerte de nada.</p>
+                    <p>Si después de todo lo que has visto sigues dudando de si esto funciona...es que no has prestado suficiente atención.</p>
+                    <p>O que crees que me importan algo tus barreras mentales. Que las derribe otro.</p>
+                    <p className="font-medium text-foreground">Ven cuando estés dispuesto a ganar Dinero, no a buscar consuelo.</p>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-border/30 space-y-3">
+                    <div className="text-center space-y-1">
+                      <p className="text-foreground font-semibold text-sm">¿Cuál es tu problema REAL?</p>
+                      <p className="text-foreground/50 text-xs">👇 Elige (ahora prestando atención)</p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {steps[0].options?.filter(opt => opt !== skepticOption).map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => {
+                            setAnswers({ ...answers, q1: option, isSkeptic: true });
+                            quizAnalytics.trackEvent({ event_type: 'skeptic_converted', step_id: 'q1', answer_value: option });
+                            quizAnalytics.answerStep('q1', 0, option);
+                            setShowSkepticChallenge(false);
+                            setCurrentStep(1);
+                          }}
+                          className="w-full text-left dark-card p-3 rounded-lg hover:bg-accent/50 text-xs sm:text-sm text-foreground/90 hover:text-foreground"
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
         );
       case "checkbox":
         return <div className="space-y-3">
