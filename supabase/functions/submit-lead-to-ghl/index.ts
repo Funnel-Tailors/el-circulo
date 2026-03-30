@@ -588,9 +588,9 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   }
   
   let strategy = '';
-  if (lowRevenue && hasInvestment && fastTrack) {
-    strategy = 'CLIENTE IDEAL → Admisión directa si fit mínimo en primeros 15min (máximo potencial de crecimiento)';
-  } else if (score >= 85 && hasInvestment && fastTrack) {
+  if (lowRevenue && fastTrack) {
+    strategy = 'CLIENTE CON DOLOR AGUDO → Admisión directa si fit mínimo en primeros 15min';
+  } else if (score >= 85 && fastTrack) {
     strategy = 'ADMISIÓN DIRECTA si fit en primeros 15min';
   } else if (score >= 75) {
     strategy = 'EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
