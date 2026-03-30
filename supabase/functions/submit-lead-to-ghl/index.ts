@@ -626,7 +626,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const pain = answers.q1 || '';
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
-  const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const gradual = answers.q6?.includes('Este mes');
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
