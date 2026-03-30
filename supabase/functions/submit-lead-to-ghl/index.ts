@@ -546,7 +546,6 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'}
 • Urgencia: ${answers.q6}
 • Decide: ${answers.q7}
 
