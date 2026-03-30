@@ -80,7 +80,7 @@ interface LeadSubmission {
 
 // Helper: Detectar razón específica de hardstop
 function getHardstopReason(answers: QuizAnswers, score: number): string | null {
-  // HARDSTOP: No puede invertir
+  // HARDSTOP (legacy only): No puede invertir — only if q5 was actually answered
   if (answers.q5 === "Ahora mismo no puedo invertir en esto") {
     return "Sin capacidad de inversión";
   }
@@ -91,7 +91,7 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
   }
   
   // HARDSTOP: Decisión compartida + score bajo
-  if (answers.q7?.includes("Con mi socio") && score < 85) {
+  if (answers.q7?.includes("Con mi socio") && score < 80) {
     return "Falta autoridad de decisión + score bajo";
   }
   
