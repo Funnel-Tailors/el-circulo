@@ -505,11 +505,9 @@ const painPrepQuestions: Record<string, string[]> = {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const tier = getLeadTier(answers);
-  const ticketLabel = getTicketLabel(answers);
   
   const isIdealClient = lowRevenue && hasInvestment;
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️';
