@@ -566,14 +566,12 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const ticketLabel = getTicketLabel(answers);
   
   const realObjections: string[] = [];
-  if (!hasInvestment) realObjections.push('⚠️ Sin inversión');
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
   
   const painLevers = getPainCriticalLevers(answers.q1 || '', answers, score);
