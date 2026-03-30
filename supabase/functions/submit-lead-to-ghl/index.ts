@@ -292,7 +292,7 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const tier = getLeadTier(answers);
   
