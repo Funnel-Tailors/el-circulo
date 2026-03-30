@@ -557,7 +557,7 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agendar segunda sesión si hay potencial'}
 
 🔗 ACCIÓN INMEDIATA:
-${hasInvestment ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar para explorar situación'}
+→ Enviar link de booking directo por WhatsApp
   `.trim();
 }
 
