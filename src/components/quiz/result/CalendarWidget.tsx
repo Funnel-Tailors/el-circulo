@@ -22,7 +22,7 @@ export const CalendarWidget = ({ isLoading, error }: CalendarWidgetProps) => {
     <div className="space-y-3">
       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center">
         <p className="text-xs text-blue-200/90">
-          {RESULT_MESSAGES.qualified.dataPreloaded}
+          {RESULT_MESSAGES.qualified.postSubmit}
         </p>
       </div>
 

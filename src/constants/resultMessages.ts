@@ -1,26 +1,10 @@
 export const RESULT_MESSAGES = {
   qualified: {
     title: "Tu plaza está lista",
-    dataPreloaded: "✨ Tus datos ya están pre-cargados en el calendario",
-    lastStep: "Último paso: Confirma tu horario",
-    oto: {
-      trimestral: {
-        price: "€8.000",
-        label: "Trimestral",
-        bonus: "1 año de licencia del Artefacto incluida",
-        hook: "Esta opción solo existe aquí."
-      },
-      mensual: {
-        price: "€3.000/mes",
-        label: "Mensual",
-        bonus: "Paga 1 mes. Quédate 2.",
-        hook: "Tiempo de sobra para recuperarlo."
-      }
-    },
-    safetyNet: {
-      separator: "¿Necesitas hablar con alguien primero?",
-      note: "Las ventajas del pago directo no estarán disponibles en la llamada"
-    }
+    subtitle: "Agenda tu llamada estratégica",
+    socialProof: "FLOC facturó €80K en 4 días. Proyectos de hasta €60K cerrados dentro.",
+    formCta: "📅 Reservar llamada estratégica →",
+    postSubmit: "✨ Tus datos ya están pre-cargados en el calendario"
   },
   notQualified: {
     title: "La Senda no es para ti",

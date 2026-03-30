@@ -80,7 +80,7 @@ interface LeadSubmission {
 
 // Helper: Detectar razón específica de hardstop
 function getHardstopReason(answers: QuizAnswers, score: number): string | null {
-  // HARDSTOP: No puede invertir
+  // HARDSTOP (legacy only): No puede invertir — only if q5 was actually answered
   if (answers.q5 === "Ahora mismo no puedo invertir en esto") {
     return "Sin capacidad de inversión";
   }
@@ -91,7 +91,7 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
   }
   
   // HARDSTOP: Decisión compartida + score bajo
-  if (answers.q7?.includes("Con mi socio") && score < 85) {
+  if (answers.q7?.includes("Con mi socio") && score < 80) {
     return "Falta autoridad de decisión + score bajo";
   }
   
@@ -100,6 +100,8 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
 
 // Helper: Determinar tier del lead
 function getLeadTier(answers: QuizAnswers): string {
+  // If q5 not answered (new 5-question quiz), default to CALL
+  if (!answers.q5) return 'CALL';
   if (answers.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") return 'TRIMESTRAL';
   if (answers.q5 === "€3.000/mes — acceso completo al sistema") return 'MENSUAL';
   // Legacy support
@@ -113,11 +115,12 @@ function getLeadTier(answers: QuizAnswers): string {
 function getTicketLabel(answers: QuizAnswers): string {
   const tier = getLeadTier(answers);
   const labels: Record<string, string> = {
+    'CALL': 'Llamada estratégica',
     'TRIMESTRAL': 'Trimestral (€8K)',
     'MENSUAL': 'Mensual (€3K/mes)',
-    'NONE': 'Sin inversión'
+    'NONE': 'Llamada estratégica'
   };
-  return labels[tier] || 'Sin inversión';
+  return labels[tier] || 'Llamada estratégica';
 }
 
 // Helper: Categorizar leads (A+/A/B/C/DQ)
@@ -125,22 +128,20 @@ function getLeadCategory(score: number, answers: QuizAnswers): string {
   const hardstop = getHardstopReason(answers, score);
   if (hardstop) return 'DQ';
   
-  const tier = getLeadTier(answers);
-  
-  // A+: Score 95+, TRIMESTRAL/MENSUAL, decide solo
-  if (score >= 95 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL') && answers.q7?.includes("Solo yo")) {
+  // A+: Score 90+, decide solo
+  if (score >= 90 && answers.q7?.includes("Solo yo")) {
     return 'A+';
   }
   
-  // A: Score 85+, TRIMESTRAL/MENSUAL o decide solo
-  if (score >= 85 && (tier === 'TRIMESTRAL' || tier === 'MENSUAL' || answers.q7?.includes("Solo yo"))) {
+  // A: Score 80+, decide solo
+  if (score >= 80 && answers.q7?.includes("Solo yo")) {
     return 'A';
   }
   
-  // B: Score 75+
-  if (score >= 75) return 'B';
+  // B: Score 70+
+  if (score >= 70) return 'B';
   
-  // C: Score < 75
+  // C: Score < 70
   return 'C';
 }
 
@@ -291,7 +292,7 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const tier = getLeadTier(answers);
   
@@ -407,7 +408,7 @@ const painOpeningAngles: Record<string, string[]> = {
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const tier = getLeadTier(answers);
   
@@ -504,11 +505,9 @@ const painPrepQuestions: Record<string, string[]> = {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const tier = getLeadTier(answers);
-  const ticketLabel = getTicketLabel(answers);
   
   const isIdealClient = lowRevenue && hasInvestment;
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️';
@@ -547,7 +546,6 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'}
 • Urgencia: ${answers.q6}
 • Decide: ${answers.q7}
 
@@ -559,7 +557,7 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agendar segunda sesión si hay potencial'}
 
 🔗 ACCIÓN INMEDIATA:
-${hasInvestment ? '→ Enviar link de booking directo por WhatsApp' : '→ Llamar para explorar situación'}
+→ Enviar link de booking directo por WhatsApp
   `.trim();
 }
 
@@ -568,14 +566,12 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
-  const ticketLabel = getTicketLabel(answers);
   
   const realObjections: string[] = [];
-  if (!hasInvestment) realObjections.push('⚠️ Sin inversión');
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
   
   const painLevers = getPainCriticalLevers(answers.q1 || '', answers, score);
@@ -584,17 +580,17 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   if (score >= 85 && !painLevers.some(l => l.includes('SCORE ALTO'))) {
     criticalOpportunities.push('• HOT Lead - Prioridad máxima');
   }
-  if (fastTrack && hasInvestment && !painLevers.some(l => l.includes('URGENCIA'))) {
-    criticalOpportunities.push('• Inversión + Urgencia esta semana = Cierre inmediato');
+  if (fastTrack && !painLevers.some(l => l.includes('URGENCIA'))) {
+    criticalOpportunities.push('• Urgencia esta semana = Prioridad máxima');
   }
   if (authSolo) {
     criticalOpportunities.push('• Decisor único');
   }
   
   let strategy = '';
-  if (lowRevenue && hasInvestment && fastTrack) {
-    strategy = 'CLIENTE IDEAL → Admisión directa si fit mínimo en primeros 15min (máximo potencial de crecimiento)';
-  } else if (score >= 85 && hasInvestment && fastTrack) {
+  if (lowRevenue && fastTrack) {
+    strategy = 'CLIENTE CON DOLOR AGUDO → Admisión directa si fit mínimo en primeros 15min';
+  } else if (score >= 85 && fastTrack) {
     strategy = 'ADMISIÓN DIRECTA si fit en primeros 15min';
   } else if (score >= 75) {
     strategy = 'EVALUACIÓN PROFUNDA → Diseñar Sprint → Decidir admisión';
@@ -615,9 +611,8 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 ⚡ RESUMEN INICIÁTICO:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
-• Urgencia: ${answers.q6}
+• Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Urgencia: ${answers.q6}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4.join(', ')}` : ''}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
 ${realObjections.length > 0 ? `\n⚠️ FRICCIONES:\n${realObjections.map(o => `• ${o.replace('⚠️ ', '')}`).join('\n')}` : ''}
 
@@ -631,7 +626,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const pain = answers.q1 || '';
   const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
-  const hasMoney = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const gradual = answers.q6?.includes('Este mes');
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
@@ -694,7 +689,7 @@ function generateContextualNote(
 ): string {
   const pain = answers.q1 || '';
   const fastTrack = answers.q6?.includes('Esta semana');
-  const socialMediaDependent = Array.isArray(answers.q4) && answers.q4.includes('Contenido orgánico (redes/web)');
+  const socialMediaDependent = Array.isArray(answers.q4) && (answers.q4.includes('Contenido orgánico (redes/web)') || answers.q4.includes('Contenido orgánico'));
   const isAutomator = answers.q2 === 'Automatizador';
   const noSoloDecision = !answers.q7?.includes('Solo yo');
   
@@ -1217,10 +1212,8 @@ Con los mismos clientes de siempre.
 
 O peores.
 
-🔮 ESTO ES TODO
+🔮 ÚLTIMA OPORTUNIDAD
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
-
-La opción de entrar directo con ventaja exclusiva sigue disponible en tu resultado.
 
 Vosotros decidís.
 
@@ -1234,11 +1227,10 @@ El Círculo
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const hasInvestment = answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
-  const lowRevenue = answers.q3 === 'Menos de €2.000/mes' || answers.q3 === '€2.000 - €5.000/mes';
-  const ticketLabel = getTicketLabel(answers);
+  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD';
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
@@ -1255,16 +1247,15 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   }
   
   const potentialObjections: string[] = [];
-  if (!hasInvestment) potentialObjections.push('INVERSIÓN: "No podemos ahora" → ROI + casos rápidos');
   if (!authSolo) potentialObjections.push('DECISIÓN: "Debemos consultarlo" → Incluir a esa persona');
   if (!fastTrack) potentialObjections.push('TIMING: "Ahora no podemos" → ¿Qué debe pasar para estar listos?');
   
   let closingStrategy = '';
-  if (lowRevenue && hasInvestment && fastTrack) {
-    closingStrategy = 'CLIENTE IDEAL - Dolor agudo + inversión + urgencia = MÁXIMA PRIORIDAD. Admite si hay fit mínimo.';
-  } else if (isHot && hasInvestment && fastTrack) {
+  if (lowRevenue && fastTrack) {
+    closingStrategy = 'CLIENTE CON DOLOR AGUDO - Urgencia máxima. Admite si hay fit mínimo.';
+  } else if (isHot && fastTrack) {
     closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
-  } else if (score >= 75) {
+  } else if (score >= 70) {
     closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
     closingStrategy = 'EXPLORACIÓN - Aporta valor, identifica gaps. Si hay potencial, agenda seguimiento.';
@@ -1277,16 +1268,15 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
 ⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
 Evalúa si este candidato debe cruzar el umbral.
 Esto no es una venta. Es un ritual de evaluación.
-${lowRevenue && hasInvestment ? '\n🚨 CANDIDATO PREMIUM: Dolor agudo + inversión confirmada = MÁXIMA PRIORIDAD' : ''}
+${lowRevenue ? '\n🚨 CANDIDATO CON DOLOR AGUDO: Revenue bajo + urgencia = MÁXIMA PRIORIDAD' : ''}
 
 ⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
 
 📋 PERFIL DEL CANDIDATO:
 • Pain: ${answers.q1}
 • ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Inversión: ${hasInvestment ? `✅ ${ticketLabel}` : '❌ Sin inversión'} | Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Urgencia: ${answers.q6}
-• Adquisición: ${Array.isArray(answers.q4) ? answers.q4[0] : answers.q4}${lowRevenue && hasInvestment ? '\n🚨 PERFIL IDEAL: Cobra poco + tiene inversión' : ''}
+• Decide: ${authSolo ? '✅ Solo' : answers.q7}
+• Urgencia: ${answers.q6}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4[0]}` : ''}
 
 🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
