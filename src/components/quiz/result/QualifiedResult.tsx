@@ -134,7 +134,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     } finally {
       setIsSubmitting(false);
     }
-  }, [quizState]);
+  }, [quizState, calculateScore]);
 
   // Parse name for calendar
   const [firstName = '', ...lastNameParts] = (contactSubmitted ? form.getValues('name') : '').split(' ');
