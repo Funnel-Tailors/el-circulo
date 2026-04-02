@@ -36,7 +36,8 @@ type EventType =
   | 'senda_vault_assistant1_opened'
   | 'senda_vault_assistant2_opened'
   | 'cta_click'
-  | 'page_view';
+  | 'page_view'
+  | 'calendar_view';
 
 interface TrackEventParams {
   event_type: EventType;

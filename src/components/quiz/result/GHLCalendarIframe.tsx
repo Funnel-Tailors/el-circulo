@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { RESULT_MESSAGES } from "@/constants/resultMessages";
+import { quizAnalytics } from "@/lib/analytics";
 
 interface GHLCalendarIframeProps {
   calendarId: string;
@@ -9,6 +10,8 @@ interface GHLCalendarIframeProps {
   lastName?: string;
   email?: string;
   phone?: string;
+  quizScore?: number;
+  qualificationLevel?: string;
 }
 
 export const GHLCalendarIframe = ({ 
@@ -16,7 +19,9 @@ export const GHLCalendarIframe = ({
   firstName = '', 
   lastName = '', 
   email = '', 
-  phone = '' 
+  phone = '',
+  quizScore,
+  qualificationLevel
 }: GHLCalendarIframeProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -41,6 +46,25 @@ export const GHLCalendarIframe = ({
   const handleLoad = () => {
     console.log('✅ [GHL IFRAME] Calendario cargado correctamente');
     setIsLoading(false);
+
+    // Fire Schedule Meta event — optimization target for Meta
+    quizAnalytics.trackMetaPixelEvent('Schedule', {
+      content_name: 'Strategic Call Calendar',
+      content_category: 'booking_intent',
+      value: 5000,
+      currency: 'EUR',
+      quiz_score: quizScore,
+      qualification_level: qualificationLevel,
+    });
+
+    // Internal Supabase tracking
+    quizAnalytics.trackEvent({
+      event_type: 'calendar_view' as any,
+      step_id: 'calendar',
+      answer_value: qualificationLevel || 'unknown',
+    });
+
+    console.log('📅 [SCHEDULE] Meta Schedule event fired — value €5,000');
   };
 
   const handleError = () => {

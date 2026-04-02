@@ -246,19 +246,19 @@ const QuizSection = ({
         let conversionProb = 0;
         
         if (finalScore >= 90) {
-          cartValue = 30000;
+          cartValue = 50000;
           qualificationLevel = 'premium_qualified';
-          predictedLTV = 90000;
+          predictedLTV = 120000;
           conversionProb = 0.85;
         } else if (finalScore >= 80) {
-          cartValue = 15000;
+          cartValue = 30000;
           qualificationLevel = 'qualified';
-          predictedLTV = 45000;
+          predictedLTV = 60000;
           conversionProb = 0.70;
         } else {
-          cartValue = 8000;
+          cartValue = 15000;
           qualificationLevel = 'marginal';
-          predictedLTV = 24000;
+          predictedLTV = 36000;
           conversionProb = 0.50;
         }
         

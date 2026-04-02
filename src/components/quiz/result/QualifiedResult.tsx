@@ -35,6 +35,12 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
   });
 
+  // Fire contact_form_viewed on mount
+  useEffect(() => {
+    quizAnalytics.viewContactForm();
+    console.log('👁️ [TRACKING] contact_form_viewed fired');
+  }, []);
+
   // Auto-detect country
   useEffect(() => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -56,6 +62,27 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     return placeholders[code] || '600 000 000';
   };
 
+  const calculateScore = useCallback((state: QuizState): number => {
+    let score = 0;
+    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 15;
+    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 15;
+    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 15;
+    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 15;
+    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 13;
+    if (state.q2 === "Agencia de diseño / branding") score += 15;
+    else if (state.q2 === "Productora / Estudio audiovisual") score += 15;
+    else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
+    else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
+    if (state.q3 === "€5.000 - €10.000/mes") score += 45;
+    else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
+    else if (state.q3 === "Más de €20.000/mes") score += 38;
+    if (state.q6?.includes("Esta semana")) score += 15;
+    else if (state.q6?.includes("Este mes")) score += 12;
+    if (state.q7?.includes("Solo yo")) score += 10;
+    else if (state.q7?.includes("Con mi socio")) score += 7;
+    return Math.min(score, 100);
+  }, []);
+
   const handleContactSubmit = useCallback(async (data: ContactFormData) => {
     if (data.website && data.website.length > 0) {
       toast({ title: "Error", description: "Hubo un problema.", variant: "destructive" });
@@ -64,32 +91,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
 
     setIsSubmitting(true);
     const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
-
-    const calculateScore = (state: QuizState): number => {
-      let score = 0;
-      // Q1 - Pain (0-15)
-      if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 15;
-      else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 15;
-      else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 15;
-      else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 15;
-      else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 13;
-      // Q2 - Profession (0-15)
-      if (state.q2 === "Agencia de diseño / branding") score += 15;
-      else if (state.q2 === "Productora / Estudio audiovisual") score += 15;
-      else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
-      else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
-      // Q3 - Revenue (0-45)
-      if (state.q3 === "€5.000 - €10.000/mes") score += 45;
-      else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
-      else if (state.q3 === "Más de €20.000/mes") score += 38;
-      // Q6 - Urgency (0-15)
-      if (state.q6?.includes("Esta semana")) score += 15;
-      else if (state.q6?.includes("Este mes")) score += 12;
-      // Q7 - Authority (0-10)
-      if (state.q7?.includes("Solo yo")) score += 10;
-      else if (state.q7?.includes("Con mi socio")) score += 7;
-      return Math.min(score, 100);
-    };
 
     const score = calculateScore(quizState);
 
@@ -113,6 +114,16 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       try { await quizAnalytics.submitContactForm(); } catch (e) { /* non-blocking */ }
       quizAnalytics.completeQuiz();
 
+      // Fire InitiateCheckout — strong signal for Meta
+      quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
+        content_name: 'Strategic Call Booking',
+        content_category: 'qualified_lead',
+        value: 3000,
+        currency: 'EUR',
+        quiz_score: score,
+      });
+      console.log('💳 [TRACKING] InitiateCheckout fired — value €3,000');
+
       toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados" });
       setGhlContactId(responseData?.contactId || null);
       setContactSubmitted(true);
@@ -123,7 +134,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     } finally {
       setIsSubmitting(false);
     }
-  }, [quizState]);
+  }, [quizState, calculateScore]);
 
   // Parse name for calendar
   const [firstName = '', ...lastNameParts] = (contactSubmitted ? form.getValues('name') : '').split(' ');
@@ -256,6 +267,8 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
             lastName={lastName}
             email=""
             phone={form.getValues('countryCode') + form.getValues('phone').replace(/[\s-]/g, '')}
+            quizScore={calculateScore(quizState)}
+            qualificationLevel={calculateScore(quizState) >= 90 ? 'premium_qualified' : calculateScore(quizState) >= 80 ? 'qualified' : 'marginal'}
           />
         </div>
       )}
