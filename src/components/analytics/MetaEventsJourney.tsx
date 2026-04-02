@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Eye, Play, ShoppingCart, CheckCircle, TrendingUp, ArrowDown, XCircle } from 'lucide-react';
+import { Eye, Play, ShoppingCart, CheckCircle, TrendingUp, ArrowDown, XCircle, CreditCard, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 interface MetaEventData {
@@ -15,14 +15,16 @@ interface MetaEventData {
   vsl_75_percent: number;
   vsl_100_percent: number;
   
-  // Quiz Journey (Q1-Q7)
+  // Quiz Journey (5-step: Q1-Q3 + Q4 urgency + Q5 decision maker)
   pageviews: number;
   quiz_engagement: number;
   icp_match: number;
-  quiz_q4_acquisition: number;
-  quiz_q5_budget_qualified: number;
-  quiz_q6_urgency: number;
-  quiz_q7_decision_maker: number;
+  quiz_q4_urgency: number;
+  quiz_q5_decision_maker: number;
+  
+  // Legacy (kept for backward compat)
+  quiz_q4_acquisition?: number;
+  quiz_q5_budget_qualified?: number;
   
   // Disqualifications
   disqualified_low_revenue: number;
@@ -30,6 +32,8 @@ interface MetaEventData {
   
   // Conversions
   addtocart: number;
+  initiate_checkout: number;
+  schedule: number;
   lead: number;
 }
 
@@ -228,58 +232,58 @@ const MetaEventsJourney = ({ data, loading }: MetaEventsJourneyProps) => {
       conversionRate: data.quiz_engagement > 0 ? (data.icp_match / data.quiz_engagement) * 100 : 0
     },
     {
-      icon: <Play className="h-5 w-5 text-blue-600 dark:text-blue-400" />,
-      title: "ViewContent: Q4 Acquisition",
-      subtitle: "Métodos de captación",
-      count: data.quiz_q4_acquisition ?? 0,
-      value: "value: 250€ | content_category: quiz_q4_acquisition",
-      gradient: "border-blue-500/40 bg-gradient-to-br from-blue-100/80 to-transparent dark:from-blue-900/30 dark:border-blue-400/40",
-      conversionRate: data.icp_match > 0 ? (data.quiz_q4_acquisition / data.icp_match) * 100 : 0
-    },
-    {
-      icon: <Play className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
-      title: "ViewContent: Q5 Budget Qualified",
-      subtitle: "Capacidad de inversión confirmada",
-      count: data.quiz_q5_budget_qualified ?? 0,
-      value: "value: 400€ | content_category: quiz_q5_budget_qualified",
-      gradient: "border-violet-500/40 bg-gradient-to-br from-violet-100/80 to-transparent dark:from-violet-900/30 dark:border-violet-400/40",
-      conversionRate: data.quiz_q4_acquisition > 0 ? (data.quiz_q5_budget_qualified / data.quiz_q4_acquisition) * 100 : 0
-    },
-    {
       icon: <Play className="h-5 w-5 text-fuchsia-600 dark:text-fuchsia-400" />,
-      title: "ViewContent: Q6 Urgency",
+      title: "ViewContent: Q4 Urgency",
       subtitle: "Nivel de urgencia identificado",
-      count: data.quiz_q6_urgency ?? 0,
-      value: "value: 350-500€ | content_category: quiz_q6_urgency",
+      count: data.quiz_q4_urgency ?? 0,
+      value: "value: 350-500€ | content_category: quiz_q4_urgency",
       gradient: "border-fuchsia-500/40 bg-gradient-to-br from-fuchsia-100/80 to-transparent dark:from-fuchsia-900/30 dark:border-fuchsia-400/40",
-      conversionRate: data.quiz_q5_budget_qualified > 0 ? (data.quiz_q6_urgency / data.quiz_q5_budget_qualified) * 100 : 0
+      conversionRate: data.icp_match > 0 ? (data.quiz_q4_urgency / data.icp_match) * 100 : 0
     },
     {
       icon: <CheckCircle className="h-5 w-5 text-pink-600 dark:text-pink-400" />,
-      title: "ViewContent: Q7 Decision Maker",
+      title: "ViewContent: Q5 Decision Maker",
       subtitle: "Tomador de decisión confirmado",
-      count: data.quiz_q7_decision_maker ?? 0,
-      value: "value: 600€ | content_category: quiz_q7_decision_maker",
+      count: data.quiz_q5_decision_maker ?? 0,
+      value: "value: 600€ | content_category: quiz_q5_decision_maker",
       gradient: "border-pink-500/40 bg-gradient-to-br from-pink-100/80 to-transparent dark:from-pink-900/30 dark:border-pink-400/40",
-      conversionRate: data.quiz_q6_urgency > 0 ? (data.quiz_q7_decision_maker / data.quiz_q6_urgency) * 100 : 0
+      conversionRate: data.quiz_q4_urgency > 0 ? (data.quiz_q5_decision_maker / data.quiz_q4_urgency) * 100 : 0
     },
     {
       icon: <ShoppingCart className="h-5 w-5 text-orange-600 dark:text-orange-400" />,
       title: "AddToCart",
-      subtitle: "Usuario cualificado - Listo para form",
+      subtitle: "Quiz completado — cualificado (€15K-50K)",
       count: data.addtocart ?? 0,
-      value: "value: 4000€ | content_category: qualified_checkout",
+      value: "value: 15K-50K€ | content_category: qualified_checkout",
       gradient: "border-orange-500/40 bg-gradient-to-br from-orange-100/80 to-transparent dark:from-orange-900/30 dark:border-orange-400/40",
-      conversionRate: data.quiz_q7_decision_maker > 0 ? (data.addtocart / data.quiz_q7_decision_maker) * 100 : 0
+      conversionRate: data.quiz_q5_decision_maker > 0 ? (data.addtocart / data.quiz_q5_decision_maker) * 100 : 0
+    },
+    {
+      icon: <CreditCard className="h-5 w-5 text-amber-600 dark:text-amber-400" />,
+      title: "InitiateCheckout",
+      subtitle: "Formulario de contacto enviado",
+      count: data.initiate_checkout ?? 0,
+      value: "value: 3,000€ | content_category: qualified_lead",
+      gradient: "border-amber-500/40 bg-gradient-to-br from-amber-100/80 to-transparent dark:from-amber-900/30 dark:border-amber-400/40",
+      conversionRate: data.addtocart > 0 ? (data.initiate_checkout / data.addtocart) * 100 : 0
+    },
+    {
+      icon: <Calendar className="h-5 w-5 text-teal-600 dark:text-teal-400" />,
+      title: "Schedule",
+      subtitle: "Calendario cargado — listo para agendar",
+      count: data.schedule ?? 0,
+      value: "value: 5,000€ | content_category: booking_intent",
+      gradient: "border-teal-500/40 bg-gradient-to-br from-teal-100/80 to-transparent dark:from-teal-900/30 dark:border-teal-400/40",
+      conversionRate: data.initiate_checkout > 0 ? (data.schedule / data.initiate_checkout) * 100 : 0
     },
     {
       icon: <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />,
       title: "Lead",
-      subtitle: "Formulario completado con ICP data",
+      subtitle: "Contacto creado en GHL",
       count: data.lead ?? 0,
-      value: "value: 1500-2000€ | content_category: qualified_lead",
+      value: "value: 1,500-2,000€ | content_category: qualified_lead",
       gradient: "border-emerald-600/40 bg-gradient-to-br from-emerald-100/80 to-transparent dark:from-emerald-900/30 dark:border-emerald-600/40",
-      conversionRate: data.addtocart > 0 ? (data.lead / data.addtocart) * 100 : 0,
+      conversionRate: data.schedule > 0 ? (data.lead / data.schedule) * 100 : 0,
       isLast: true
     }
   ];

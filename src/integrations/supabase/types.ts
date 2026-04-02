@@ -1128,14 +1128,23 @@ export type Database = {
           quiz_completion_rate: number
         }[]
       }
-      get_meta_events_journey: {
-        Args: {
-          filter_quiz_version?: string
-          interval_days: number
-          offset_days?: number
-        }
-        Returns: Json
-      }
+      get_meta_events_journey:
+        | {
+            Args: {
+              filter_quiz_version?: string
+              interval_days: number
+              offset_days?: number
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              filter_quiz_version?: string
+              interval_days: number
+              offset_days?: number
+            }
+            Returns: Json
+          }
       get_meta_pixel_coverage: {
         Args: { interval_days: number; quiz_version_filter?: string }
         Returns: Json

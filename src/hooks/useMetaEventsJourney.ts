@@ -14,14 +14,16 @@ interface MetaEventData {
   vsl_75_percent: number;
   vsl_100_percent: number;
   
-  // Quiz Journey (Q1-Q7)
+  // Quiz Journey (5-step)
   pageviews: number;
   quiz_engagement: number;
   icp_match: number;
-  quiz_q4_acquisition: number;
-  quiz_q5_budget_qualified: number;
-  quiz_q6_urgency: number;
-  quiz_q7_decision_maker: number;
+  quiz_q4_urgency: number;
+  quiz_q5_decision_maker: number;
+  
+  // Legacy
+  quiz_q4_acquisition?: number;
+  quiz_q5_budget_qualified?: number;
   
   // Disqualifications
   disqualified_low_revenue: number;
@@ -29,6 +31,8 @@ interface MetaEventData {
   
   // Conversions
   addtocart: number;
+  initiate_checkout: number;
+  schedule: number;
   lead: number;
 }
 
