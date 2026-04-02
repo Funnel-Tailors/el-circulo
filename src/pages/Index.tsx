@@ -15,8 +15,6 @@ import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
 import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
-import { quizAnalytics } from "@/lib/analytics";
-import { Button } from "@/components/ui/button";
 const Index = () => {
   const [quizState, setQuizState] = useState<QuizState>({});
   const [isQualified, setIsQualified] = useState(false);
