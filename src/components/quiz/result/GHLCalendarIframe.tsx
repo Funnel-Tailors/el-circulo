@@ -46,6 +46,25 @@ export const GHLCalendarIframe = ({
   const handleLoad = () => {
     console.log('✅ [GHL IFRAME] Calendario cargado correctamente');
     setIsLoading(false);
+
+    // Fire Schedule Meta event — optimization target for Meta
+    quizAnalytics.trackMetaPixelEvent('Schedule', {
+      content_name: 'Strategic Call Calendar',
+      content_category: 'booking_intent',
+      value: 5000,
+      currency: 'EUR',
+      quiz_score: quizScore,
+      qualification_level: qualificationLevel,
+    });
+
+    // Internal Supabase tracking
+    quizAnalytics.trackEvent({
+      event_type: 'calendar_view' as any,
+      step_id: 'calendar',
+      answer_value: qualificationLevel || 'unknown',
+    });
+
+    console.log('📅 [SCHEDULE] Meta Schedule event fired — value €5,000');
   };
 
   const handleError = () => {
