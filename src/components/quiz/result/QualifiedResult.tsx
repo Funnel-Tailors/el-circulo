@@ -35,6 +35,12 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
   });
 
+  // Fire contact_form_viewed on mount
+  useEffect(() => {
+    quizAnalytics.viewContactForm();
+    console.log('👁️ [TRACKING] contact_form_viewed fired');
+  }, []);
+
   // Auto-detect country
   useEffect(() => {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
