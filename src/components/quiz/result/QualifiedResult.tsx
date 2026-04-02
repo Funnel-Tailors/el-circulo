@@ -119,6 +119,16 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       try { await quizAnalytics.submitContactForm(); } catch (e) { /* non-blocking */ }
       quizAnalytics.completeQuiz();
 
+      // Fire InitiateCheckout — strong signal for Meta
+      quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
+        content_name: 'Strategic Call Booking',
+        content_category: 'qualified_lead',
+        value: 3000,
+        currency: 'EUR',
+        quiz_score: score,
+      });
+      console.log('💳 [TRACKING] InitiateCheckout fired — value €3,000');
+
       toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados" });
       setGhlContactId(responseData?.contactId || null);
       setContactSubmitted(true);
