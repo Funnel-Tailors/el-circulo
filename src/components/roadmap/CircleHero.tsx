@@ -190,9 +190,9 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          Cierra proyectos de <span className="glow">5–10.000€</span> en menos de 30 días
+          Cierra proyectos de más de <span className="glow">10.000€</span> en menos de 30 días
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">El sistema que te dice exactamente qué hacer cada día para dejar de depender de la suerte</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Con un sistema paso a paso que tendrás funcionando en una semana</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
