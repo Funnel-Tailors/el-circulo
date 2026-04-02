@@ -5,17 +5,14 @@ import CircleHero from "@/components/roadmap/CircleHero";
 import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import StellarTimeline from "@/components/roadmap/StellarTimeline";
-import { ArtefactoVisual } from "@/components/artefacto/ArtefactoVisual";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
 import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { roadmapDays, successCases, featuredInterview } from "@/data/roadmap";
-import { LayoutDashboard, Workflow, Calendar, Mail, MessageCircle, Target, FileText, Globe, BarChart3, Bot } from "lucide-react";
 import type { QuizState } from "@/types/quiz";
 import { PainSection } from "@/components/roadmap/PainSection";
-import { FAQSection } from "@/components/roadmap/FAQSection";
 import { quizAnalytics } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 const Index = () => {
@@ -90,10 +87,10 @@ const Index = () => {
             <StellarTimeline days={roadmapDays} />
           </div>
 
-          {/* CTA #2: Botón simple */}
+          {/* CTA after roadmap */}
           <div className="flex justify-center my-12">
             <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">
-              Accede al ritual →
+              Quiero entrar →
             </Button>
           </div>
 
@@ -138,83 +135,6 @@ const Index = () => {
         </div>
 
         <div className="container max-w-4xl mx-auto px-6">
-
-          {/* CTA #3: Botón simple */}
-          <div className="flex justify-center my-12">
-            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">Asciende ahora</Button>
-          </div>
-
-          {/* EL ARTEFACTO */}
-          <div className="mt-16 mb-8">
-            <div className="text-center mb-8 animate-fade-in">
-              <div className="flex items-center justify-center gap-4 mb-4" aria-hidden="true">
-                <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
-                <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
-                <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
-              </div>
-
-              <h2 className="text-4xl md:text-5xl font-display font-black mb-3 uppercase">
-                EL <span className="glow">ARTEFACTO</span>
-              </h2>
-
-              <p className="text-sm text-muted-foreground max-w-xl mx-auto mb-4">
-                Tu sistema de gestión personalizado para no perder ni una oportunidad
-              </p>
-
-              {/* Exclusivity badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
-                <span className="text-xs text-muted-foreground/60">⟡</span>
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Exclusivo miembros del Circulo</span>
-              </div>
-
-              <div className="flex items-center justify-center gap-4 mt-6" aria-hidden="true">
-                <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
-                <div className="text-muted-foreground text-xs">✦</div>
-                <div className="h-px w-16 bg-gradient-to-l from-transparent to-border"></div>
-              </div>
-            </div>
-
-            {/* ArtefactoVisual */}
-            <div className="flex justify-center">
-              <ArtefactoVisual variant="hero" />
-            </div>
-          </div>
-        </div>
-
-        {/* Feature marquee - full bleed */}
-        <div className="mb-8">
-          <div className="marquee-container">
-            <div className="marquee-track marquee-track-fast">
-              {[...Array(2)].map((_, dupeIdx) => (
-                [{icon: LayoutDashboard, title: "CRM Completo"}, {icon: Workflow, title: "Automatizaciones"}, {icon: Calendar, title: "Calendario"}, {icon: Mail, title: "Email Marketing"}, {icon: MessageCircle, title: "WhatsApp"}, {icon: Target, title: "Pipelines"}, {icon: FileText, title: "Propuestas"}, {icon: Globe, title: "Funnels"}, {icon: BarChart3, title: "Reportes"}, {icon: Bot, title: "IA Integrada"}].map((feature, idx) => {
-                  const Icon = feature.icon;
-                  return (
-                    <div key={`${dupeIdx}-${idx}`} className="flex items-center">
-                      {/* Feature mini-card */}
-                      <div className="flex-shrink-0 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/8 transition-all">
-                        <Icon className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm text-foreground/80 font-medium whitespace-nowrap">{feature.title}</span>
-                      </div>
-                      {/* Beam connector */}
-                      <div className="beam-connector-h" />
-                    </div>
-                  );
-                })
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="container max-w-4xl mx-auto px-6">
-          {/* CTA #4 */}
-          <div className="flex justify-center my-12">
-            <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">Accede al ritual</Button>
-          </div>
-
-          <RoadmapFooter />
-
-          {/* FAQ SECTION */}
-          <FAQSection />
 
           {/* QUIZ SECTION */}
           <div id="quiz-section" ref={quizSectionRef} className="mt-16 scroll-mt-16 md:scroll-mt-8">
