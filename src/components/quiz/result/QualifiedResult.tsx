@@ -272,6 +272,8 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
             lastName={lastName}
             email=""
             phone={form.getValues('countryCode') + form.getValues('phone').replace(/[\s-]/g, '')}
+            quizScore={calculateScore(quizState)}
+            qualificationLevel={calculateScore(quizState) >= 90 ? 'premium_qualified' : calculateScore(quizState) >= 80 ? 'qualified' : 'marginal'}
           />
         </div>
       )}
