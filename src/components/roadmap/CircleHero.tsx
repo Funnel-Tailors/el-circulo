@@ -184,15 +184,15 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
 
       {/* Pre-qualificación ICP */}
       <p className="text-sm md:text-base text-muted-foreground leading-[1em] italic">
-        Solo para dueños de <span className="text-foreground font-bold glow">agencia, estudio o productora</span> — de 1 a 5 personas — que quieren dejar de depender de la suerte para saber <span className="text-foreground font-bold glow">cuánto van a facturar el mes que viene</span>
+        Solo para dueños de <span className="text-foreground font-bold glow">agencia, estudio o productora</span> de 1 a 5 personas
       </p>
 
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          El método (no tan) secreto para cerrar proyectos de <span className="glow">5 cifras</span> esta misma semana (y en todas las que vengan)
+          Cierra proyectos de <span className="glow">5–10.000€</span> en menos de 30 días
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">y cómo aplicarlo para tener un negocio de verdad - en menos de 7 días</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">El sistema que te dice exactamente qué hacer cada día para dejar de depender de la suerte</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
@@ -231,18 +231,6 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
         <Button onClick={handleScrollToQuiz} size="lg" className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold">
           Quiero entrar
         </Button>
-      </div>
-
-      {/* Logo EL CÍRCULO */}
-      <div className="space-y-4 mt-12">
-        <h1 className="text-6xl md:text-8xl font-display font-black uppercase tracking-tight glow whitespace-nowrap">
-          EL CÍRCULO
-        </h1>
-
-        {/* Subheadline */}
-        <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-          Un sistema para saber exactamente cuánto vas a generar el mes que viene — <span className="text-foreground font-bold">ejecutable en 5 días, optimizado en 7</span>
-        </p>
       </div>
     </div>;
 };
