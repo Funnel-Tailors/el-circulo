@@ -19,7 +19,9 @@ export const GHLCalendarIframe = ({
   firstName = '', 
   lastName = '', 
   email = '', 
-  phone = '' 
+  phone = '',
+  quizScore,
+  qualificationLevel
 }: GHLCalendarIframeProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
