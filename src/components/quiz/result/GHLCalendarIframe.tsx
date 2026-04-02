@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { RESULT_MESSAGES } from "@/constants/resultMessages";
+import { quizAnalytics } from "@/lib/analytics";
 
 interface GHLCalendarIframeProps {
   calendarId: string;
@@ -9,6 +10,8 @@ interface GHLCalendarIframeProps {
   lastName?: string;
   email?: string;
   phone?: string;
+  quizScore?: number;
+  qualificationLevel?: string;
 }
 
 export const GHLCalendarIframe = ({ 
