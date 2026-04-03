@@ -146,19 +146,6 @@ const ScreenshotMarquee = () => {
 
   if (images.length === 0) return null;
 
-  // Desktop: 5 rows marquee
-  const ROW_COUNT = 5;
-  const rows: string[][] = Array.from({ length: ROW_COUNT }, () => []);
-  images.forEach((img, i) => rows[i % ROW_COUNT].push(img));
-
-  const rowConfigs = [
-    { speed: 45, reverse: false },
-    { speed: 35, reverse: true },
-    { speed: 50, reverse: false },
-    { speed: 38, reverse: true },
-    { speed: 48, reverse: false },
-  ];
-
   return (
     <>
       <div ref={sectionRef} className="w-full">
@@ -167,8 +154,8 @@ const ScreenshotMarquee = () => {
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
         >
-          {/* Desktop: multi-row marquee */}
-          <div className="hidden md:block space-y-3">
+          {/* Desktop: 3-column masonry */}
+          <div className="hidden md:block">
             {rows.map((rowImages, i) => (
               <MarqueeRow
                 key={i}
