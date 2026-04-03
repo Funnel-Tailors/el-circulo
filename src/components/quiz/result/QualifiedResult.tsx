@@ -12,7 +12,7 @@ import { quizAnalytics } from "@/lib/analytics";
 import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
-import { RESULT_MESSAGES } from "@/constants/resultMessages";
+import { RESULT_MESSAGES, PAIN_HEADLINES } from "@/constants/resultMessages";
 
 interface QualifiedResultProps {
   quizState: QuizState;
@@ -35,11 +35,16 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
   });
 
-  // Fire contact_form_viewed on mount
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Fire contact_form_viewed on mount + auto-focus name
   useEffect(() => {
     quizAnalytics.viewContactForm();
     console.log('👁️ [TRACKING] contact_form_viewed fired');
+    setTimeout(() => nameInputRef.current?.focus(), 300);
   }, []);
+
+  const personalizedTitle = PAIN_HEADLINES[quizState.q1 || ''] || RESULT_MESSAGES.qualified.title;
 
   // Auto-detect country
   useEffect(() => {
@@ -145,7 +150,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       {/* Header */}
       <div className="text-center space-y-4">
         <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
-          {RESULT_MESSAGES.qualified.title} — <span className="glow">{RESULT_MESSAGES.qualified.subtitle}</span>
+          {personalizedTitle} — <span className="glow">{RESULT_MESSAGES.qualified.subtitle}</span>
         </h2>
         
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -182,7 +187,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                 <FormItem>
                   <FormLabel className="text-sm">Nombre completo</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
+                    <Input {...field} ref={(e) => { field.ref(e); (nameInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e; }} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -236,6 +241,10 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                   } />
                 </div>
               </div>
+
+              <p className="text-xs text-muted-foreground text-center">
+                {RESULT_MESSAGES.qualified.trustSignal}
+              </p>
 
               <Button 
                 type="submit" 
