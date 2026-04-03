@@ -186,7 +186,9 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
               <FormField control={form.control} name="name" render={({ field }) => 
                 <FormItem>
                   <FormLabel className="text-sm">Nombre completo</FormLabel>
+                  <FormControl>
                     <Input {...field} ref={(e) => { field.ref(e); (nameInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e; }} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               } />
