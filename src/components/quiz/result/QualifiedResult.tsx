@@ -187,7 +187,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                 <FormItem>
                   <FormLabel className="text-sm">Nombre completo</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
+                    <Input {...field} ref={nameInputRef} placeholder="Juan Pérez" autoComplete="name" disabled={isSubmitting} className="dark-button text-base" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
