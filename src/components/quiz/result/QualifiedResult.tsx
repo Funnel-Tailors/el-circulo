@@ -35,11 +35,16 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
   });
 
-  // Fire contact_form_viewed on mount
+  const nameInputRef = useRef<HTMLInputElement>(null);
+
+  // Fire contact_form_viewed on mount + auto-focus name
   useEffect(() => {
     quizAnalytics.viewContactForm();
     console.log('👁️ [TRACKING] contact_form_viewed fired');
+    setTimeout(() => nameInputRef.current?.focus(), 300);
   }, []);
+
+  const personalizedTitle = PAIN_HEADLINES[quizState.q1 || ''] || RESULT_MESSAGES.qualified.title;
 
   // Auto-detect country
   useEffect(() => {
