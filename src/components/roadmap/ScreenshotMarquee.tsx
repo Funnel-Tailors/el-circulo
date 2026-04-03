@@ -101,24 +101,39 @@ const ScreenshotMarquee = () => {
     setLightboxSrc(src);
   }, []);
 
-  // Split images into 3 rows round-robin
-  const rows: string[][] = [[], [], []];
-  images.forEach((img, i) => rows[i % 3].push(img));
+  // Split images into 5 rows round-robin for maximum volume
+  const ROW_COUNT = 5;
+  const rows: string[][] = Array.from({ length: ROW_COUNT }, () => []);
+  images.forEach((img, i) => rows[i % ROW_COUNT].push(img));
 
   if (images.length === 0) return null;
 
+  const rowConfigs = [
+    { speed: 45, reverse: false },
+    { speed: 35, reverse: true },
+    { speed: 50, reverse: false },
+    { speed: 38, reverse: true },
+    { speed: 48, reverse: false },
+  ];
+
   return (
     <>
-      <div ref={sectionRef} className="w-full space-y-4">
+      <div ref={sectionRef} className="w-full space-y-3">
         <motion.div
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : { opacity: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-          className="space-y-4"
+          className="space-y-3"
         >
-          <MarqueeRow images={rows[0]} speed={50} onImageClick={handleImageClick} />
-          <MarqueeRow images={rows[1]} speed={40} reverse onImageClick={handleImageClick} />
-          <MarqueeRow images={rows[2]} speed={55} onImageClick={handleImageClick} />
+          {rows.map((rowImages, i) => (
+            <MarqueeRow
+              key={i}
+              images={rowImages}
+              speed={rowConfigs[i].speed}
+              reverse={rowConfigs[i].reverse}
+              onImageClick={handleImageClick}
+            />
+          ))}
         </motion.div>
       </div>
 
