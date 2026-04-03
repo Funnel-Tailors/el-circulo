@@ -150,7 +150,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       {/* Header */}
       <div className="text-center space-y-4">
         <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
-          {RESULT_MESSAGES.qualified.title} — <span className="glow">{RESULT_MESSAGES.qualified.subtitle}</span>
+          {personalizedTitle} — <span className="glow">{RESULT_MESSAGES.qualified.subtitle}</span>
         </h2>
         
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
