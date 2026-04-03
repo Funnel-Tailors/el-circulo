@@ -1,28 +1,32 @@
 
 
-## Plan: Hero above-the-fold optimizado
+## Plan: Implementar copys personalizados en QualifiedResult
 
-### Cambios en `src/components/roadmap/CircleHero.tsx`
+### Cambios
 
-Reestructurar el hero con esta jerarquía:
+**1. `src/constants/resultMessages.ts`** — Añadir mapa de headlines por dolor Q1 y trust signal
 
-```text
-[5 estrellas]
-[Pre-cualificación ICP — "Solo para dueños de agencia, estudio o productora de 1 a 5 personas"]
-[HEADLINE — "Cierra proyectos de 5–10.000€ en menos de 30 días"]
-[Subheadline — "El sistema que te dice exactamente qué hacer cada día para dejar de depender de la suerte"]
-[VSL video]
-[CTA — "Quiero entrar"]
-```
+**2. `src/components/quiz/result/QualifiedResult.tsx`** — 3 cambios:
+- Headline personalizado según `quizState.q1` (mapa dolor → título)
+- Trust signal "🔒 Solo usamos tu WhatsApp para confirmar la llamada" encima del botón submit
+- Auto-focus en el campo nombre al montar
 
-**Cambios concretos:**
-1. Acortar pre-cualificación ICP a una línea
-2. Nuevo headline result-driven
-3. Nueva subheadline (mecanismo)
-4. Un solo CTA debajo del video
-5. Sin micro social proof
-6. Eliminar bloque duplicado "EL CÍRCULO" + subheadline inferior
+**3. `src/components/quiz/result/NotQualifiedResult.tsx`** — Sin cambios (se mantiene la variante B brutal tal cual)
 
-### Archivo modificado (1)
-`src/components/roadmap/CircleHero.tsx`
+### Copy exacto por dolor (Q1)
+
+| Respuesta Q1 | Headline |
+|---|---|
+| "Mis clientes vienen por recomendación..." | Deja de heredar clientes rácanos |
+| "Trabajamos muchas horas y el margen no justifica..." | Más margen, menos horas |
+| "Tenemos meses buenos pero luego nos estampamos..." | Se acabó depender de la suerte |
+| "No sé cómo vender proyectos de 5 cifras..." | Proyectos de 5 cifras sin regateos |
+| "Todo lo anterior..." | Todo cambia en 30 días |
+| Fallback | Tu plaza está lista |
+
+Subtitle fijo: "Agenda tu llamada estratégica"
+
+### Archivos modificados (2)
+- `src/constants/resultMessages.ts`
+- `src/components/quiz/result/QualifiedResult.tsx`
 
