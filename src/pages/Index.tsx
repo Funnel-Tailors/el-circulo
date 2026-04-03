@@ -6,6 +6,7 @@ import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import StellarTimeline from "@/components/roadmap/StellarTimeline";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
@@ -132,6 +133,11 @@ const Index = () => {
         {/* Marquee - full bleed, breaks out of container */}
         <div className="mt-10 mb-8">
           <TestimonialsMarquee cases={successCases} />
+
+          {/* Screenshot testimonials cloud */}
+          <div className="mt-10">
+            <ScreenshotMarquee />
+          </div>
         </div>
 
         <div className="container max-w-4xl mx-auto px-6">
