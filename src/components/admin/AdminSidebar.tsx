@@ -9,6 +9,7 @@ import {
   LogOut,
   Palette,
   Sparkles,
+  Image,
 } from "lucide-react";
 import {
   Sidebar,
