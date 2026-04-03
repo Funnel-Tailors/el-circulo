@@ -3,15 +3,6 @@ import { motion, useInView } from "framer-motion";
 import { X } from "lucide-react";
 import { useTestimonialScreenshots } from "@/hooks/useTestimonialScreenshots";
 
-// Size variants for organic cloud feel (desktop marquee)
-const SIZE_PATTERN: Array<"sm" | "md" | "lg"> = ["md", "sm", "lg", "sm", "md", "lg", "sm", "md", "sm", "lg"];
-
-const sizeClasses = {
-  sm: "w-[160px] md:w-[180px]",
-  md: "w-[200px] md:w-[240px]",
-  lg: "w-[240px] md:w-[300px]",
-};
-
 const glassStyle = {
   background: "rgba(0, 0, 0, 0.55)",
   backdropFilter: "blur(16px)",
