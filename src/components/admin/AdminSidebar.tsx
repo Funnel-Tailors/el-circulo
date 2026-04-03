@@ -9,6 +9,7 @@ import {
   LogOut,
   Palette,
   Sparkles,
+  Image,
 } from "lucide-react";
 import {
   Sidebar,
@@ -76,6 +77,12 @@ const navItems = [
     url: "/admin/premium",
     icon: Sparkles,
     description: "Efectos Linear/Raycast",
+  },
+  {
+    title: "Testimonios",
+    url: "/admin/testimonials",
+    icon: Image,
+    description: "Screenshots marquee",
   },
 ];
 

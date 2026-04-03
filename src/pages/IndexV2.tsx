@@ -3,6 +3,7 @@ import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import { MiniFAQSection } from "@/components/roadmap/MiniFAQSection";
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
@@ -96,6 +97,11 @@ const IndexV2 = () => {
           </div>
 
           <TestimonialsMarquee cases={successCases} />
+
+          {/* Screenshot testimonials cloud */}
+          <div className="mt-10">
+            <ScreenshotMarquee />
+          </div>
         </div>
 
         <div className="container max-w-4xl mx-auto px-6">

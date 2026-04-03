@@ -24,6 +24,7 @@ const AdminBrecha = lazy(() => import("./pages/admin/AdminBrecha"));
 const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
 const Showcase = lazy(() => import("./pages/admin/Showcase"));
 const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="dev" element={<Suspense fallback={<AdminFallback />}><AdminDevTools /></Suspense>} />
             <Route path="showcase" element={<Suspense fallback={<AdminFallback />}><Showcase /></Suspense>} />
             <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
+            <Route path="testimonials" element={<Suspense fallback={<AdminFallback />}><AdminTestimonials /></Suspense>} />
           </Route>
           
           <Route path="/carta" element={
