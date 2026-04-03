@@ -42,50 +42,39 @@ const Lightbox = ({ src, onClose }: { src: string; onClose: () => void }) => (
   </div>
 );
 
-// ─── Desktop: Single marquee row ─────────────────────────────────────────────
-const MarqueeRow = ({
+// ─── Desktop: 3-column masonry grid ──────────────────────────────────────────
+const DesktopGrid = ({
   images,
-  reverse,
-  speed,
   onImageClick,
 }: {
   images: string[];
-  reverse?: boolean;
-  speed: number;
   onImageClick: (src: string) => void;
 }) => {
-  const doubled = [...images, ...images];
+  const cols: string[][] = [[], [], []];
+  images.forEach((src, i) => cols[i % 3].push(src));
 
   return (
-    <div className="marquee-container overflow-hidden">
-      <div
-        className={`flex gap-4 w-max ${reverse ? "marquee-track-reverse" : "marquee-track"}`}
-        style={{ animationDuration: `${speed}s` }}
-      >
-        {doubled.map((src, i) => {
-          const sizeKey = SIZE_PATTERN[i % SIZE_PATTERN.length];
-          return (
+    <div className="flex gap-4 px-4">
+      {cols.map((col, ci) => (
+        <div key={ci} className={`flex-1 flex flex-col gap-4 ${ci === 1 ? "mt-8" : ci === 2 ? "mt-4" : ""}`}>
+          {col.map((src, i) => (
             <div
-              key={`${i}-${src}`}
-              className={`flex-shrink-0 ${sizeClasses[sizeKey]} group cursor-pointer`}
+              key={`d${ci}-${i}`}
+              className="rounded-2xl overflow-hidden cursor-pointer group"
+              style={glassStyle}
               onClick={() => onImageClick(src)}
             >
-              <div
-                className="rounded-2xl overflow-hidden transition-all duration-300 group-hover:scale-[1.04]"
-                style={glassStyle}
-              >
-                <img
-                  src={src}
-                  alt="Testimonio de cliente"
-                  className="w-full h-auto object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
-              </div>
+              <img
+                src={src}
+                alt="Testimonio de cliente"
+                className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                loading="lazy"
+                decoding="async"
+              />
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ))}
     </div>
   );
 };
