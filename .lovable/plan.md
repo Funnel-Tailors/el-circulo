@@ -1,32 +1,60 @@
 
 
-## Plan: Implementar copys personalizados en QualifiedResult
+## Plan: Screenshot Testimonials Multi-Row Marquee
 
-### Cambios
+### What we're building
+A standalone `ScreenshotMarquee` component that displays screenshot testimonials in 3 rows scrolling in alternating directions (left, right, left) at different speeds. Cards have varying sizes for an organic "cloud" feel. Designed to scale from 10 to 83+ images.
 
-**1. `src/constants/resultMessages.ts`** — Añadir mapa de headlines por dolor Q1 y trust signal
+### Architecture
 
-**2. `src/components/quiz/result/QualifiedResult.tsx`** — 3 cambios:
-- Headline personalizado según `quizState.q1` (mapa dolor → título)
-- Trust signal "🔒 Solo usamos tu WhatsApp para confirmar la llamada" encima del botón submit
-- Auto-focus en el campo nombre al montar
+**New files:**
+1. `src/components/roadmap/ScreenshotMarquee.tsx` — Main component with 3 CSS-animated rows
+2. `src/data/screenshot-testimonials.ts` — Data array with image paths and optional metadata (name, size hint)
 
-**3. `src/components/quiz/result/NotQualifiedResult.tsx`** — Sin cambios (se mantiene la variante B brutal tal cual)
+**Modified files:**
+3. `src/index.css` — Add `marquee-track-reverse` keyframe (right-to-left already exists, need left-to-right)
 
-### Copy exacto por dolor (Q1)
+### How it works
 
-| Respuesta Q1 | Headline |
-|---|---|
-| "Mis clientes vienen por recomendación..." | Deja de heredar clientes rácanos |
-| "Trabajamos muchas horas y el margen no justifica..." | Más margen, menos horas |
-| "Tenemos meses buenos pero luego nos estampamos..." | Se acabó depender de la suerte |
-| "No sé cómo vender proyectos de 5 cifras..." | Proyectos de 5 cifras sin regateos |
-| "Todo lo anterior..." | Todo cambia en 30 días |
-| Fallback | Tu plaza está lista |
+- **3 rows**, each with a CSS `marquee-scroll` animation:
+  - Row 1: left direction, 50s speed
+  - Row 2: right direction (reverse keyframe), 40s speed  
+  - Row 3: left direction, 55s speed
+- **Images split** into 3 groups distributed round-robin for balance
+- **Card sizes**: 3 variants (sm: 180px, md: 240px, lg: 300px width) assigned via a simple pattern to create visual variety
+- **Lazy loading**: All images use `loading="lazy"` and `decoding="async"`
+- **Doubled arrays** for seamless loop (same pattern as existing marquee)
+- **Glass card style**: Same `rgba(0,0,0,0.55)` + `backdrop-blur` treatment as the video marquee cards
+- **Click to expand**: Optional lightbox on click (simple state toggle with a larger overlay)
+- **Hover**: Pauses the row, slight scale-up on the card
+- **Reuses** existing `.marquee-container` mask for fade edges
 
-Subtitle fijo: "Agenda tu llamada estratégica"
+### Image storage
+- Copy all uploaded images to `src/assets/testimonials/` for Vite bundling and optimization
+- Data file maps filename to size variant
 
-### Archivos modificados (2)
-- `src/constants/resultMessages.ts`
-- `src/components/quiz/result/QualifiedResult.tsx`
+### CSS additions
+```css
+@keyframes marquee-scroll-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.marquee-track-reverse {
+  animation: marquee-scroll-reverse 40s linear infinite;
+}
+```
+
+### Usage (standalone, import anywhere)
+```tsx
+import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
+<ScreenshotMarquee />
+```
+
+### Files changed summary
+| File | Action |
+|------|--------|
+| `src/assets/testimonials/*.{png,jpg}` | Copy 10 uploaded images |
+| `src/data/screenshot-testimonials.ts` | New — image list + size hints |
+| `src/components/roadmap/ScreenshotMarquee.tsx` | New — 3-row marquee component |
+| `src/index.css` | Add reverse keyframe + track class |
 
