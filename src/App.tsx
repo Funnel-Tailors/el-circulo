@@ -24,6 +24,7 @@ const AdminBrecha = lazy(() => import("./pages/admin/AdminBrecha"));
 const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
 const Showcase = lazy(() => import("./pages/admin/Showcase"));
 const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 
 const queryClient = new QueryClient();
 
