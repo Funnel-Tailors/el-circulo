@@ -12,7 +12,7 @@ import { quizAnalytics } from "@/lib/analytics";
 import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
-import { RESULT_MESSAGES } from "@/constants/resultMessages";
+import { RESULT_MESSAGES, PAIN_HEADLINES } from "@/constants/resultMessages";
 
 interface QualifiedResultProps {
   quizState: QuizState;
