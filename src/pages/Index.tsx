@@ -6,6 +6,7 @@ import ClientBubble from "@/components/roadmap/ClientBubble";
 import RoadmapHero from "@/components/roadmap/RoadmapHero";
 import StellarTimeline from "@/components/roadmap/StellarTimeline";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import RoadmapFooter from "@/components/roadmap/RoadmapFooter";
 import QuizSection from "@/components/quiz/QuizSection";
