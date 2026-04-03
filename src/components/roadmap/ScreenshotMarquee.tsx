@@ -156,15 +156,7 @@ const ScreenshotMarquee = () => {
         >
           {/* Desktop: 3-column masonry */}
           <div className="hidden md:block">
-            {rows.map((rowImages, i) => (
-              <MarqueeRow
-                key={i}
-                images={rowImages}
-                speed={rowConfigs[i].speed}
-                reverse={rowConfigs[i].reverse}
-                onImageClick={handleImageClick}
-              />
-            ))}
+            <DesktopGrid images={images} onImageClick={handleImageClick} />
           </div>
 
           {/* Mobile: 2-column masonry grid */}
