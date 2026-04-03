@@ -242,6 +242,10 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                 </div>
               </div>
 
+              <p className="text-xs text-muted-foreground text-center">
+                {RESULT_MESSAGES.qualified.trustSignal}
+              </p>
+
               <Button 
                 type="submit" 
                 disabled={isSubmitting} 
