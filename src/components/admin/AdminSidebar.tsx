@@ -78,6 +78,12 @@ const navItems = [
     icon: Sparkles,
     description: "Efectos Linear/Raycast",
   },
+  {
+    title: "Testimonios",
+    url: "/admin/testimonials",
+    icon: Image,
+    description: "Screenshots marquee",
+  },
 ];
 
 export function AdminSidebar() {
