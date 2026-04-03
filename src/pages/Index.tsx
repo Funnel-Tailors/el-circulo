@@ -133,6 +133,11 @@ const Index = () => {
         {/* Marquee - full bleed, breaks out of container */}
         <div className="mt-10 mb-8">
           <TestimonialsMarquee cases={successCases} />
+
+          {/* Screenshot testimonials cloud */}
+          <div className="mt-10">
+            <ScreenshotMarquee />
+          </div>
         </div>
 
         <div className="container max-w-4xl mx-auto px-6">
