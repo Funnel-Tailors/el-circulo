@@ -4,7 +4,7 @@ import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
 import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
-import { MiniFAQSection } from "@/components/roadmap/MiniFAQSection";
+
 import QuizSection from "@/components/quiz/QuizSection";
 import ResultSection from "@/components/quiz/ResultSection";
 import { successCases } from "@/data/roadmap";
