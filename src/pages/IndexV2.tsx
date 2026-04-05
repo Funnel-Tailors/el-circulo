@@ -112,8 +112,6 @@ const IndexV2 = () => {
             </Button>
           </div>
 
-          {/* Mini FAQ Section */}
-          <MiniFAQSection />
 
           {/* Quiz Section */}
           <div id="quiz-section" ref={quizSectionRef} className="mt-16 scroll-mt-16 md:scroll-mt-8">
