@@ -229,8 +229,9 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       {/* CTA Button - justo debajo del VSL */}
       <div className="pt-4">
         <Button onClick={handleScrollToQuiz} size="lg" className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold">
-          Quiero entrar
+          Agenda tu auditoría gratuita
         </Button>
+        <p className="text-xs text-muted-foreground mt-2">Conmigo. 1 a 1. Sin compromiso.</p>
       </div>
     </div>;
 };
