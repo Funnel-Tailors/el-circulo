@@ -190,9 +190,9 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          Cierra proyectos de más de <span className="glow">10.000€</span> en menos de 30 días
+          El sistema que usan las agencias para cerrar proyectos de <span className="glow">5.000 a 10.000€</span> cada mes
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Con un sistema paso a paso que tendrás funcionando en una semana</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Implementado en una semana — resultados en menos de 90 días</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
@@ -229,8 +229,9 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       {/* CTA Button - justo debajo del VSL */}
       <div className="pt-4">
         <Button onClick={handleScrollToQuiz} size="lg" className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold">
-          Quiero entrar
+          Agenda tu auditoría gratuita
         </Button>
+        <p className="text-xs text-muted-foreground mt-2">Conmigo. 1 a 1. Sin compromiso.</p>
       </div>
     </div>;
 };

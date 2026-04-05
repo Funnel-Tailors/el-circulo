@@ -91,7 +91,7 @@ const Index = () => {
           {/* CTA after roadmap */}
           <div className="flex justify-center my-12">
             <Button onClick={handleScrollToQuiz} size="lg" className="font-bold text-lg dark-button-primary">
-              Quiero entrar →
+              Agenda tu auditoría gratuita →
             </Button>
           </div>
 
