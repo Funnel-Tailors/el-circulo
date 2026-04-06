@@ -870,7 +870,7 @@ ${firstName}.
 
 Tu espacio está asegurado.
 
-⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes del ritual.
+⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes de la llamada.
 
 📜 PREPARA ESTO:
 
@@ -885,28 +885,28 @@ Tu situación actual:
 • 2-3 desafíos que necesitas resolver
 • Dónde quieres estar en 3 meses
 
-🔮 Logística:
+📅 Logística:
 • Lugar sin interrupciones
 • Cámara encendida
 • Libreta
 • Agua o café. 45-60 min
 
-🎭 QUÉ SUCEDERÁ:
+👤 QUÉ SUCEDERÁ:
 
-El Miembro Honorario evaluará tu candidatura. No es una llamada de ventas.
+Un miembro del equipo evaluará tu candidatura. No es una llamada de ventas.
 
 • Análisis sin filtros de tu situación
 • Identificación de las 2-3 palancas con mayor impacto
 • Diseño de tu Sprint de Ascensión (si hay alineación)
-• Decisión sobre tu entrada al Círculo
+• Decisión sobre tu entrada
 
 ⏳ Si no puedes asistir, avisa con 24h. Hay lista de espera.
 
-El enlace llegará 1h antes del ritual.
+El enlace llegará 1h antes.
 
 🎓 ACCEDE A TU MATERIAL:
 
-Antes del ritual, completa la clase de preparación (40 mins):
+Antes de la llamada, completa la clase de preparación (40 mins):
 
 🔗 https://vendenautomatico.com/senda?token={{contact.id}}
 
@@ -915,9 +915,6 @@ Contiene:
 • Asistente IA exclusivo para diseñar tu oferta
 
 ⚠️ Completa ANTES de la llamada o no podremos avanzar.
-
-—
-El Círculo
     `.trim();
   } else {
     return `
