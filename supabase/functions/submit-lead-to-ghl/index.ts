@@ -1172,6 +1172,8 @@ function generateFollowUp5(name: string, answers: QuizAnswers): string {
   return `
 ${firstName}.
 
+Tu acceso preferente ha expirado.
+
 No vamos a insistir más.
 
 Si no era el momento, no pasa nada.
@@ -1186,13 +1188,10 @@ Con los mismos clientes de siempre.
 
 O peores.
 
-🔮 ÚLTIMA OPORTUNIDAD
+📞 ÚLTIMA OPORTUNIDAD
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Vosotros decidís.
-
-—
-El Círculo
   `.trim();
 }
 
