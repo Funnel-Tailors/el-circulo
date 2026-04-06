@@ -66,7 +66,7 @@ const steps: QuizStep[] = [{
   subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
   motivator: {
     icon: "🚀",
-    text: "Agencias que facturan €5K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
+    text: "Agencias que facturan €3K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
   }
 }, {
   id: "q4",
