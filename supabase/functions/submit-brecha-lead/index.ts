@@ -1059,7 +1059,7 @@ Deno.serve(async (req) => {
     
     if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
-      console.log('HARDSTOP: Budget menor a €5.000 detectado')
+      console.log('HARDSTOP: Budget menor a €3.000 detectado')
     }
     
     if (!hardstopReason && revenueParsed?.value === 'menos_5000') {
