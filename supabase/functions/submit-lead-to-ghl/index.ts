@@ -757,21 +757,18 @@ Tu evaluación revela algo que la mayoría nunca verá.
 
 ${identity}
 
-La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
+La pregunta no es si puedes. Es cuándo decides dar el paso.
 
-🔮 RESERVA TU LLAMADA ESTRATÉGICA
+📞 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ Solo 3 espacios semanales para candidatos prioritarios
-🎭 Un Miembro Honorario evaluará tu caso específico (60 min)
+👤 Un miembro del equipo evaluará tu caso específico (60 min)
 🗝️ Tienes 48h de acceso preferente antes de liberar tu plaza
 
 ${contextualNote}
 
-El portal cierra en 48h.
-
-—
-El Círculo
+Tu acceso preferente cierra en 48h.
     `.trim();
   } else if (isWarm) {
     return `
@@ -785,18 +782,15 @@ ${identity}
 
 ¿Listo/a para el salto o seguimos dándole vueltas?
 
-🔮 RESERVA TU LLAMADA ESTRATÉGICA
+📞 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ 3 espacios semanales para evaluaciones profundas
-🎭 Un Miembro Honorario evaluará si hay alineación real (45-60 min)
+👤 Un miembro del equipo evaluará si hay alineación real (45-60 min)
 
 ${contextualNote}
 
 Si hay fit, recibirás el siguiente paso. Si no, al menos sabrás por qué.
-
-—
-El Círculo
     `.trim();
   } else {
     return `
@@ -806,19 +800,16 @@ Tu evaluación revela fricciones importantes.
 
 ⚔️ ${personalizedInsight}
 
-No todos están listos para el Círculo. Y eso está bien.
+No todos están listos. Y eso está bien.
 
-🔮 AGENDA TU LLAMADA ESTRATÉGICA
+📅 AGENDA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-🎭 Un Miembro explorará si tiene sentido para ambos (30-45 min)
+👤 Un miembro del equipo explorará si tiene sentido para ambos (30-45 min)
 
 ${contextualNote}
 
 Si hay potencial, lo veremos. Si no, te ahorras meses de frustraciones.
-
-—
-El Círculo
     `.trim();
   }
 }
