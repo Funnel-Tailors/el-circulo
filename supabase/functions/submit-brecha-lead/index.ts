@@ -938,7 +938,7 @@ Pero cuando te pregunto cuánto invertirías...
 
 ¿En serio?
 
-Alguien que factura lo que dices facturar no duda en invertir €5.000 en algo que le puede cambiar el negocio.
+Alguien que factura lo que dices facturar no duda en invertir €3.000 en algo que le puede cambiar el negocio.
 
 A no ser que no factures lo que dices facturar.
 
