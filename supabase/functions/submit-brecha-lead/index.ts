@@ -355,7 +355,7 @@ ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agen
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
-  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
   const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
