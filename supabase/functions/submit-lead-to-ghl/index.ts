@@ -339,29 +339,29 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
 // Pain-specific content objects
 const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
   'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': {
-    hot: 'El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco — y atraen más de lo mismo. Los miembros del Círculo dejan de depender de esas cadenas y empiezan a atraer clientes que pagan €10K+ sin pestañear.',
+    hot: 'El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco — y atraen más de lo mismo. Nuestras agencias dejan de depender de esas cadenas y empiezan a atraer clientes que pagan €10K+ sin pestañear.',
     warm: 'Las recomendaciones son el síntoma, no la causa. Si tus clientes actuales pagan poco, sus referidos pagarán igual o menos. Eso se arregla cambiando el tipo de cliente que atraes.',
     cold: 'Si todos tus clientes vienen de otros que pagaron poco, estás atrapado en un ciclo. Antes de escalar, necesitas romper esa cadena.'
   },
   'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': {
-    hot: 'Ese tren de que todo el equipo trabaje hasta tarde por márgenes de mierda tiene una parada. Las agencias del Círculo cobran €10K+ por proyecto trabajando la mitad. No es magia. Es saber cobrar por transformación, no por horas.',
+    hot: 'Ese tren de que todo el equipo trabaje hasta tarde por márgenes de mierda tiene una parada. Las agencias que trabajan con nosotros cobran €10K+ por proyecto trabajando la mitad. No es magia. Es saber cobrar por transformación, no por horas.',
     warm: 'Trabajar más horas no va a aumentar el margen. Necesitáis cobrar más por el mismo esfuerzo. Eso requiere cambiar lo que vendéis y cómo lo vendéis.',
     cold: 'Ese burnout colectivo no se arregla con más eficiencia. Necesitáis primero creer que podéis cobrar 5x más por lo que ya entregáis.'
   },
   'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': {
-    hot: 'Esa montaña rusa de meses buenos y estampazos tiene una salida. Los miembros del Círculo tienen 4-6 leads semanales sin depender de la suerte. Sistema predecible. Facturación constante.',
+    hot: 'Esa montaña rusa de meses buenos y estampazos tiene una salida. Nuestras agencias tienen 4-6 leads semanales sin depender de la suerte. Sistema predecible. Facturación constante.',
     warm: 'Depender de la suerte es síntoma de no tener sistema. El 89% de agencias no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
     cold: 'Si un mes bueno es cuestión de suerte, estáis apostando en lugar de construyendo. Antes de escalar, necesitáis un sistema predecible.'
   },
   'No sé cómo vender proyectos de 5 cifras sin que nos regateen': {
-    hot: 'Os regatean porque vendéis entregables en lugar de transformación. Las agencias del Círculo dicen su precio de €10K+ sin tartamudear y el cliente aún piensa que es una ganga.',
+    hot: 'Os regatean porque vendéis entregables en lugar de transformación. Las agencias que trabajan con nosotros dicen su precio de €10K+ sin tartamudear y el cliente aún piensa que es una ganga.',
     warm: 'El regateo pasa cuando vendéis servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
     cold: 'Os regatean porque no sabéis defender vuestro valor. Antes de subir precios, necesitáis aprender a vender diferente.'
   },
   'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': {
     hot: 'Todas las fricciones a la vez y aún así tenéis para invertir en la agencia. Eso dice mucho. Las agencias que deciden salir de ahí, salen. Las que exploran eternamente, se quedan.',
-    warm: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal. Las agencias del Círculo hace tiempo que trascendieron esa mierda. Y vosotros estáis a un ritual de distancia.',
-    cold: 'Todas las fricciones a la vez. O os hundís o cruzáis el umbral. No hay punto medio. Pero primero necesitáis decidir si estáis listos.'
+    warm: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal. Las agencias que trabajan con nosotros hace tiempo que trascendieron esa mierda. Y vosotros estáis a una llamada de distancia.',
+    cold: 'Todas las fricciones a la vez. O os hundís o dais el paso. No hay punto medio. Pero primero necesitáis decidir si estáis listos.'
   }
 };
 
