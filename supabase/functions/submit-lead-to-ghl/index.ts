@@ -86,8 +86,8 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
   }
   
   // HARDSTOP: Revenue muy bajo
-  if (answers.q3 === "Menos de €5.000/mes") {
-    return "Revenue insuficiente (< €5K/mes)";
+  if (answers.q3 === "Menos de €3.000/mes") {
+    return "Revenue insuficiente (< €3K/mes)";
   }
   
   // HARDSTOP: Decisión compartida + score bajo
