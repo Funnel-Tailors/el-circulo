@@ -1084,13 +1084,10 @@ ${randomReality}
 
 ${painInsight}
 
-🔮 RESERVA TU LLAMADA ESTRATÉGICA
+📞 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Cuando quieras.
-
-—
-El Círculo
+Tu acceso preferente caduca en menos de 24h. Después, tu plaza se libera.
   `.trim();
 }
 
