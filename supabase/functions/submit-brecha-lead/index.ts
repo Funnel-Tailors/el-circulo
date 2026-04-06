@@ -23,10 +23,11 @@ const PROFESSION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const REVENUE_MAP: Record<string, { value: string; score: number }> = {
-  '🌑': { value: 'menos_5000', score: 0 },
-  '🌓': { value: '5000_10000', score: 15 },
-  '🌔': { value: '10000_20000', score: 20 },
-  '🌕': { value: 'mas_20000', score: 25 },
+  '🌑': { value: 'menos_3000', score: 0 },
+  '🌓': { value: '3000_5000', score: 10 },
+  '🌔': { value: '5000_10000', score: 15 },
+  '🌕': { value: '10000_20000', score: 20 },
+  '⭐': { value: 'mas_20000', score: 25 },
 }
 
 const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
