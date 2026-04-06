@@ -23,15 +23,11 @@ export const BrechaFooter = ({
   const isExpired = eventDate.getTime() < Date.now();
 
   const valueStackItems = [
-    "Onboarding 1-1 de bienvenida conmigo",
-    "Directos cada semana",
-    "Chat 24/7",
-    "Hoja de ruta: crear y lanzar en 3 días",
-    "El embudo de los 70.000€",
-    "Clases: Automatizaciones, Social Funnels, Landings, VSLs validados",
-    "Creación de asistentes IA + IA generativa para creativos",
+    "Onboarding 1-1 conmigo",
+    "Directos cada semana + Chat 24/7",
+    "Hoja de ruta: lanzar en 3 días",
+    "Automatizaciones, Social Funnels, IA generativa",
     "El Artefacto — 20 días gratis",
-    "Y mucho más cada semana",
   ];
 
   return (
