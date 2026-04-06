@@ -61,7 +61,7 @@ const steps: QuizStep[] = [{
   stateKey: "q3",
   question: "¿Cuánto factura tu agencia en un mes bueno?",
   type: "radio",
-  options: ["Menos de €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
+  options: ["Menos de €3.000/mes", "€3.000 - €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
   badge: "💰 Paso 3/5 - Tu Punto de Partida",
   subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
   motivator: {
