@@ -1159,13 +1159,10 @@ O podéis dar el paso.
 
 Pero no podéis hacer las dos cosas.
 
-🔮 AGENDA TU LLAMADA
+📞 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-No hay prisa. Pero tampoco hay pausa.
-
-—
-El Círculo
+Tu evaluación se archiva en horas. No hay segunda vuelta.
   `.trim();
 }
 
