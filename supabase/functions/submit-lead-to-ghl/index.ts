@@ -932,15 +932,15 @@ Tu situación actual:
 • 2-3 desafíos principales
 • Dónde quieres estar en 3 meses
 
-🔮 Logística:
+📅 Logística:
 • Lugar sin interrupciones
 • Cámara encendida
 • Libreta
 • 45-60 min
 
-🎭 QUÉ SUCEDERÁ:
+👤 QUÉ SUCEDERÁ:
 
-Un Miembro Honorario explorará si hay alineación con el Círculo.
+Un miembro del equipo explorará si hay alineación.
 
 Cuanto mejor preparado vengas, más claridad obtendrás.
 
@@ -950,7 +950,7 @@ El enlace llegará 1h antes.
 
 🎓 ACCEDE A TU MATERIAL:
 
-Antes del ritual, completa la clase de preparación (40 mins):
+Antes de la llamada, completa la clase de preparación (40 mins):
 
 🔗 https://vendenautomatico.com/senda?token={{contact.id}}
 
@@ -959,9 +959,6 @@ Contiene:
 • Asistente IA exclusivo para diseñar tu oferta
 
 ⚠️ Completa ANTES de la llamada o no podremos avanzar.
-
-—
-El Círculo
     `.trim();
   }
 }
