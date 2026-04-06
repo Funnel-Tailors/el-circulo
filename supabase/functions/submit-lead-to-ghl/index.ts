@@ -1223,7 +1223,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   if (!authSolo) potentialObjections.push('DECISIÓN: "Debemos consultarlo" → Incluir a esa persona');
   if (!fastTrack) potentialObjections.push('TIMING: "Ahora no podemos" → ¿Qué debe pasar para estar listos?');
   
-  const closingStrategy = '';
+  let closingStrategy = '';
   if (lowRevenue && fastTrack) {
     closingStrategy = 'CLIENTE CON DOLOR AGUDO - Urgencia máxima. Admite si hay fit mínimo.';
   } else if (isHot && fastTrack) {
