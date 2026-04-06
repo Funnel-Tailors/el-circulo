@@ -1107,13 +1107,10 @@ ${randomFear}
 
 ${randomReality}
 
-🔮 AGENDA TU LLAMADA
+📞 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Solo si te suena.
-
-—
-El Círculo
+Quedan horas. No días. Después, tu evaluación se archiva.
   `.trim();
 }
 
