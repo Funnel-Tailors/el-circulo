@@ -23,15 +23,11 @@ export const BrechaFooter = ({
   const isExpired = eventDate.getTime() < Date.now();
 
   const valueStackItems = [
-    "Onboarding 1-1 de bienvenida conmigo",
-    "Directos cada semana",
-    "Chat 24/7",
-    "Hoja de ruta: crear y lanzar en 3 días",
-    "El embudo de los 70.000€",
-    "Clases: Automatizaciones, Social Funnels, Landings, VSLs validados",
-    "Creación de asistentes IA + IA generativa para creativos",
+    "Onboarding 1-1 conmigo",
+    "Directos cada semana + Chat 24/7",
+    "Hoja de ruta: lanzar en 3 días",
+    "Automatizaciones, Social Funnels, IA generativa",
     "El Artefacto — 20 días gratis",
-    "Y mucho más cada semana",
   ];
 
   return (
@@ -104,8 +100,8 @@ export const BrechaFooter = ({
                 </div>
                 <div className="mt-6 pt-4 border-t border-foreground/10 text-center">
                   <p className="text-muted-foreground text-sm">
-                    <span className="line-through opacity-60">€6.000</span>
-                    <span className="text-foreground font-bold text-lg mx-2">→ €5.000</span>
+                    <span className="line-through opacity-60">€4.500</span>
+                    <span className="text-foreground font-bold text-lg mx-2">→ €3.000 / 3 meses</span>
                   </p>
                   <p className="text-foreground/50 text-xs mt-1">Beca de La Brecha desbloqueada</p>
                   <p className="text-foreground/40 text-xs mt-1">Modalidad y ruta a medida en la llamada</p>
@@ -121,7 +117,7 @@ export const BrechaFooter = ({
                 transition={{ delay: 1 }}
                 className="text-center mb-3"
               >
-                <span className="text-muted-foreground text-sm">Agenda tu sesión de evaluación</span>
+                <span className="text-muted-foreground text-sm">Agenda tu auditoría gratuita</span>
               </motion.div>
 
               <motion.div 

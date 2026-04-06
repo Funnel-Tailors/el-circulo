@@ -61,12 +61,12 @@ const steps: QuizStep[] = [{
   stateKey: "q3",
   question: "¿Cuánto factura tu agencia en un mes bueno?",
   type: "radio",
-  options: ["Menos de €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
+  options: ["Menos de €3.000/mes", "€3.000 - €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
   badge: "💰 Paso 3/5 - Tu Punto de Partida",
   subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
   motivator: {
     icon: "🚀",
-    text: "Agencias que facturan €5K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
+    text: "Agencias que facturan €3K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
   }
 }, {
   id: "q4",
@@ -174,7 +174,9 @@ const QuizSection = ({
     // Track Q3
     if (currentQuestion.id === 'q3') {
       const value = currentAnswer as string;
-      if (value === "€5.000 - €10.000/mes") {
+      if (value === "€3.000 - €5.000/mes") {
+        quizAnalytics.trackICPMatch(value);
+      } else if (value === "€5.000 - €10.000/mes") {
         quizAnalytics.trackICPMatch(value);
       } else if (value === "€10.000 - €20.000/mes") {
         quizAnalytics.trackICPMatch(value);
@@ -187,7 +189,7 @@ const QuizSection = ({
           currency: 'EUR',
           custom_data: { revenue_bracket: value, high_ltv: true }
         });
-      } else if (value === "Menos de €5.000/mes") {
+      } else if (value === "Menos de €3.000/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
       }
     }
@@ -347,7 +349,8 @@ const QuizSection = ({
     if (state.q3 === "€5.000 - €10.000/mes") score += 45;
     else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
     else if (state.q3 === "Más de €20.000/mes") score += 38;
-    else if (state.q3 === "Menos de €5.000/mes") score += 0;
+    else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
+    else if (state.q3 === "Menos de €3.000/mes") score += 0;
 
     // Q6 - Urgency (0-15 pts) — stored as q6
     if (state.q6?.includes("Esta semana")) score += 15;
@@ -362,7 +365,7 @@ const QuizSection = ({
 
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
     // HARDSTOP: Revenue demasiado bajo
-    if (state.q3 === "Menos de €5.000/mes") return true;
+    if (state.q3 === "Menos de €3.000/mes") return true;
     
     // HARDSTOP: Decisión compartida + score bajo
     if (state.q7?.includes("Con mi socio") && score < 80) return true;

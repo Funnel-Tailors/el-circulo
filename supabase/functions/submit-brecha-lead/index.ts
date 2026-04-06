@@ -23,10 +23,11 @@ const PROFESSION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const REVENUE_MAP: Record<string, { value: string; score: number }> = {
-  '🌑': { value: 'menos_5000', score: 0 },
-  '🌓': { value: '5000_10000', score: 15 },
-  '🌔': { value: '10000_20000', score: 20 },
-  '🌕': { value: 'mas_20000', score: 25 },
+  '🌑': { value: 'menos_3000', score: 0 },
+  '🌓': { value: '3000_5000', score: 10 },
+  '🌔': { value: '5000_10000', score: 15 },
+  '🌕': { value: '10000_20000', score: 20 },
+  '⭐': { value: 'mas_20000', score: 25 },
 }
 
 const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
@@ -38,7 +39,7 @@ const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const BUDGET_MAP: Record<string, { value: string; score: number; hardstop: boolean }> = {
-  '💧': { value: 'menos_5000', score: 0, hardstop: true },
+  '💧': { value: 'menos_3000', score: 0, hardstop: true },
   '💎': { value: '5000_8000', score: 15, hardstop: false },
   '⚡': { value: '8000_12000', score: 20, hardstop: false },
   '🔮': { value: 'mas_15000', score: 25, hardstop: false },
@@ -72,7 +73,8 @@ const PROFESSION_LITERAL_MAP: Record<string, string> = {
 }
 
 const REVENUE_LITERAL_MAP: Record<string, string> = {
-  'menos_5000': 'Menos de €5.000/mes',
+  'menos_3000': 'Menos de €3.000/mes',
+  '3000_5000': '€3.000 - €5.000/mes',
   '5000_10000': '€5.000 - €10.000/mes',
   '10000_20000': '€10.000 - €20.000/mes',
   'mas_20000': 'Más de €20.000/mes',
@@ -87,7 +89,7 @@ const ACQUISITION_LITERAL_MAP: Record<string, string> = {
 }
 
 const BUDGET_LITERAL_MAP: Record<string, string> = {
-  'menos_5000': 'Menos de €5.000',
+  'menos_3000': 'Menos de €3.000',
   '5000_8000': '€5.000 - €8.000',
   '8000_12000': '€8.000 - €12.000',
   'mas_15000': 'Más de €15.000',
@@ -313,7 +315,7 @@ function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0]
   const isHot = score >= 85
-  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
   const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const isIdealClient = midRevenue && hasInvestment
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️'
@@ -353,7 +355,7 @@ ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agen
 
 function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
-  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
   const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
@@ -512,7 +514,7 @@ El Círculo
 
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number): string {
   const firstName = contact.name.split(' ')[0]
-  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
   const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
@@ -936,7 +938,7 @@ Pero cuando te pregunto cuánto invertirías...
 
 ¿En serio?
 
-Alguien que factura lo que dices facturar no duda en invertir €5.000 en algo que le puede cambiar el negocio.
+Alguien que factura lo que dices facturar no duda en invertir €3.000 en algo que le puede cambiar el negocio.
 
 A no ser que no factures lo que dices facturar.
 
@@ -1057,16 +1059,16 @@ Deno.serve(async (req) => {
     
     if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
-      console.log('HARDSTOP: Budget menor a €5.000 detectado')
+      console.log('HARDSTOP: Budget menor a €3.000 detectado')
     }
     
-    if (!hardstopReason && revenueParsed?.value === 'menos_5000') {
+    if (!hardstopReason && revenueParsed?.value === 'menos_3000') {
       hardstopReason = 'low_revenue'
-      console.log('HARDSTOP: Revenue menor a €5.000/mes detectado')
+      console.log('HARDSTOP: Revenue menor a €3.000/mes detectado')
     }
 
     // Cross-validation: revenue alto + budget mínimo = mentiroso
-    if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_5000' && budgetParsed?.value === 'menos_5000') {
+    if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_3000' && budgetParsed?.value === 'menos_3000') {
       hardstopReason = 'inconsistent_revenue_budget'
       console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
     }
