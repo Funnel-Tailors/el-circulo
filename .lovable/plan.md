@@ -1,63 +1,59 @@
 
 
-## Sincronizar pricing €3K/3meses y DQ <€3K en todo el sistema
+## Eliminar "— El Círculo" y rebajar misticismo en nurturing + notificaciones
 
-Ya que la automatización de Instagram ya está adaptada, solo queda sincronizar el código. Cambios en **7 archivos**.
+### Contexto
+Todas las notificaciones y follow-ups terminan con `—\nEl Círculo` como firma formal. Se cambia a un cierre conversacional sin firma, más directo. También se rebaja el vocabulario místico ("ritual", "portal", "umbral", "Miembro Honorario") en estas mismas funciones.
 
----
+### Cambios en `supabase/functions/submit-lead-to-ghl/index.ts`
 
-### 1. Quiz Q3 — `src/components/quiz/QuizSection.tsx`
+**A. Eliminar firma "— El Círculo" en 10 lugares:**
 
-**Opciones (línea 64):** Cambiar de 4 a 5 opciones:
-- `"Menos de €3.000/mes"` (DQ) — antes era "Menos de €5.000/mes"
-- `"€3.000 - €5.000/mes"` (nuevo rango, no DQ)
-- `"€5.000 - €10.000/mes"` (se mantiene)
-- `"€10.000 - €20.000/mes"` (se mantiene)
-- `"Más de €20.000/mes"` (se mantiene)
+| Función | Línea aprox. | Cierre actual | Cierre nuevo |
+|---|---|---|---|
+| notification_client HOT | 773 | `—\nEl Círculo` | Sin firma (termina con la frase anterior) |
+| notification_client WARM | 799 | `—\nEl Círculo` | Sin firma |
+| notification_client COLD | 821 | `—\nEl Círculo` | Sin firma |
+| post_booking HOT | 929 | `—\nEl Círculo` | Sin firma |
+| post_booking WARM/COLD | 976 | `—\nEl Círculo` | Sin firma |
+| followup_1 | 1107-1108 | `—\nEl Círculo` | Sin firma |
+| followup_2 | 1133-1134 | `—\nEl Círculo` | Sin firma |
+| followup_3 | 1162-1163 | `—\nEl Círculo` | Sin firma |
+| followup_4 | 1191-1192 | `—\nEl Círculo` | Sin firma |
+| followup_5 | 1221-1222 | `—\nEl Círculo` | Sin firma |
 
-**Motivator (línea 69):** Adaptar texto al nuevo rango.
+**B. Rebajar vocabulario místico en notificaciones:**
 
-**Analytics tracking Q3 (líneas 175-192):** Actualizar string match de `"Menos de €5.000/mes"` → `"Menos de €3.000/mes"` para DQ. Añadir tracking para `"€3.000 - €5.000/mes"` como ICP match.
+- `"Miembro Honorario evaluará"` → `"Un miembro del equipo evaluará"`
+- `"portal cierra en 48h"` → `"Tu acceso preferente cierra en 48h"`
+- `"cruzar el umbral"` → `"dar el paso"`
+- `"Antes del ritual, completa"` → `"Antes de la llamada, completa"`
+- `"El enlace llegará 1h antes del ritual"` → `"El enlace llegará 1h antes"`
+- `"No todos están listos para el Círculo"` → `"No todos están listos. Y eso está bien."`
+- `"🔮"` en CTAs → `"📞"` o `"📅"` (más terrenal)
+- `"🎭"` en logística → `"👤"`
 
-### 2. Qualified Result scoring — `src/components/quiz/result/QualifiedResult.tsx`
+**C. Añadir urgencia 48h progresiva en follow-ups (del plan anterior):**
 
-Añadir case `"€3.000 - €5.000/mes"` → +20 pts. El case `"€5.000 - €10.000/mes"` se mantiene en +45.
+- Follow-up 1: cierre `"Cuando quieras."` → `"Tu acceso preferente caduca en menos de 24h. Después, tu plaza se libera."`
+- Follow-up 2: cierre `"Solo si te suena."` → `"Quedan horas. No días. Después, tu evaluación se archiva."`
+- Follow-up 3: cierre `"Vosotros decidís de qué lado estáis."` → `"Vosotros decidís. Pero decidid hoy."`
+- Follow-up 4: cierre `"No hay prisa. Pero tampoco hay pausa."` → `"Tu evaluación se archiva en horas. No hay segunda vuelta."`
+- Follow-up 5: añadir `"Tu acceso preferente ha expirado."` al inicio del cierre
 
-### 3. Edge Function Quiz — `supabase/functions/submit-lead-to-ghl/index.ts`
+**D. Fix residual €5K → €3K** en `generateCloserPreCallNotification` (línea ~1234)
 
-- **Hardstop (línea 89):** `"Menos de €5.000/mes"` → `"Menos de €3.000/mes"`
-- **Revenue tag map (línea 210-214):** Añadir `"€3.000 - €5.000/mes": '💵 CÍRCULO-REV-3K-5K'`, cambiar `"Menos de €5.000/mes"` → `"Menos de €3.000/mes"`
-- **Todas las comparaciones `lowRevenue`** (líneas 294, 410, 510, 572, 627): `"Menos de €5.000/mes"` → `"Menos de €3.000/mes"`
-
-### 4. Edge Function Brecha — `supabase/functions/submit-brecha-lead/index.ts`
-
-- **REVENUE_MAP (línea 26):** `'🌑'` → `menos_3000` (ya adaptado en tu automatización, ahora sincronizamos el código). Añadir nuevo emoji para `3000_5000` si lo tienes en la automatización, o mantener `🌑` como <€3K.
-- **REVENUE_LITERAL_MAP (línea 74-78):** `'menos_5000'` → `'menos_3000': 'Menos de €3.000/mes'`, añadir `'3000_5000': '€3.000 - €5.000/mes'`
-- **BUDGET_MAP (línea 41):** `'💧'` → `menos_3000` con hardstop. Actualizar `BUDGET_LITERAL_MAP` (línea 90).
-- **hasInvestment comparisons (líneas 316, 356, 515):** `'Menos de €5.000'` → `'Menos de €3.000'`
-- **Copy línea 939:** `"invertir €5.000"` → `"invertir €3.000"`
-- **Logs líneas 1060, 1065:** Actualizar mensajes de hardstop a €3.000
-
-### 5. BrechaFooter — `src/components/brecha/BrechaFooter.tsx`
-
-- Value stack: reducir de 9 a 5 items esenciales
-- Pricing: ~~€4.500~~ → **€3.000 / 3 meses** (con "Beca de La Brecha")
-- CTA sobre calendario: "Agenda tu auditoría gratuita"
-
-### 6. FAQSection — `src/components/roadmap/FAQSection.tsx`
-
-- Línea 10: `"€3.000/mes es mucho dinero"` → `"€3.000 es mucho dinero. ¿Y si no funciona?"` (quitar el "/mes", ya no es mensual)
-- Adaptar respuesta para que quede claro que es €3K total por 3 meses
-
-### 7. MiniFAQSection — `src/components/roadmap/MiniFAQSection.tsx`
-
-- Línea 10: `"€5.000 es mucho dinero"` → `"€3.000 es mucho dinero. ¿Y si no funciona?"`
-- Adaptar respuesta al nuevo pricing €3K/3 meses
+**E. Inline references "El Círculo" en copy de insights (líneas 342-364, 668, 680):**
+- `"Los miembros del Círculo"` → `"Las agencias que trabajan con nosotros"` o `"Nuestras agencias"`
+- `"El Círculo no es para quien no puede"` → `"Esto no es para quien no puede"`
+- `"El Círculo es para los que ejecutan"` → `"Esto es para los que ejecutan"`
 
 ---
 
-### No se toca
+### Archivo: 1 solo (`submit-lead-to-ghl/index.ts`). Redeploy automático.
 
-- `src/lib/brecha-personalization.ts` — las referencias a €3.000 ahí hablan del precio de proyectos del cliente, no del programa.
-- Automatización de Instagram — ya adaptada por tu cuenta.
+### Lo que se mantiene
+- "El Círculo" como nombre del programa en tags, campos de GHL y en la landing (no en mensajes al lead)
+- Estructura narrativa de los follow-ups
+- Tracking y lógica de scoring
 
