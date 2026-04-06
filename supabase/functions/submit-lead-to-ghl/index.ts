@@ -702,9 +702,9 @@ function generateContextualNote(
   
   if (shouldUseMalito) {
     if (score < 75) {
-      return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial de miembro honorario si das el paso.';
+      return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial si das el paso.';
     } else {
-      return '🧙‍♂️ Nota: Ya no eres un malito. Estás a un ritual de distancia de ser Miembro Honorario.';
+      return '🧙‍♂️ Nota: Ya no eres un malito. Estás a una llamada de distancia de ser parte del equipo.';
     }
   }
   
