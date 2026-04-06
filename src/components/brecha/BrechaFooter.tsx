@@ -117,7 +117,7 @@ export const BrechaFooter = ({
                 transition={{ delay: 1 }}
                 className="text-center mb-3"
               >
-                <span className="text-muted-foreground text-sm">Agenda tu sesión de evaluación</span>
+                <span className="text-muted-foreground text-sm">Agenda tu auditoría gratuita</span>
               </motion.div>
 
               <motion.div 

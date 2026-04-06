@@ -7,9 +7,9 @@ import {
 
 const miniFaqs = [
   {
-    question: "€5.000 es mucho dinero. ¿Y si no funciona?",
+    question: "€3.000 es mucho dinero. ¿Y si no funciona?",
     answer:
-      "FLOC cerró un proyecto de branding de €20.000 con menos de 3 días de anuncios. Con UN solo cierre ya recuperó la inversión cuatro veces. Si tú no lo consigues con el mismo sistema, igual el problema no es el precio. Es que hay creativos que ejecutan y creativos que buscan excusas. La pregunta real no es si te lo puedes permitir. Es cuántos meses más te puedes permitir seguir cobrando €1.500 por proyectos que valen €8.000.",
+      "FLOC cerró un proyecto de branding de €20.000 con menos de 3 días de anuncios. Con UN solo cierre ya recuperó la inversión siete veces. €3.000 por 3 meses de sistema completo. Si tú no lo consigues con el mismo sistema, igual el problema no es el precio. Es que hay creativos que ejecutan y creativos que buscan excusas. La pregunta real no es si te lo puedes permitir. Es cuántos meses más te puedes permitir seguir cobrando €1.500 por proyectos que valen €8.000.",
   },
   {
     question: "Ya me he gastado dinero en cursos y masterminds que no sirvieron de nada.",

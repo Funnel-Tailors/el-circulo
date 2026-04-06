@@ -365,7 +365,7 @@ const QuizSection = ({
 
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
     // HARDSTOP: Revenue demasiado bajo
-    if (state.q3 === "Menos de €5.000/mes") return true;
+    if (state.q3 === "Menos de €3.000/mes") return true;
     
     // HARDSTOP: Decisión compartida + score bajo
     if (state.q7?.includes("Con mi socio") && score < 80) return true;
