@@ -1235,12 +1235,12 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   }
   
   return `
-🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/110 ${scoreBar} | ${scoreEmoji}
+📋 EVALUACIÓN PRE-LLAMADA: ${firstName} | ${score}/110 ${scoreBar} | ${scoreEmoji}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
-Evalúa si este candidato debe cruzar el umbral.
-Esto no es una venta. Es un ritual de evaluación.
+⚔️ BRIEFING PARA EL CLOSER
+Evalúa si este candidato encaja.
+Esto no es una venta. Es una evaluación.
 ${lowRevenue ? '\n🚨 CANDIDATO CON DOLOR AGUDO: Revenue bajo + urgencia = MÁXIMA PRIORIDAD' : ''}
 
 ⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
@@ -1260,12 +1260,12 @@ ${potentialObjections.length > 0 ? potentialObjections.map((obj, i) => `${i + 1}
 🎯 ESTRATEGIA DE CIERRE:
 ${closingStrategy}
 
-✅ PREPARACIÓN PRE-RITUAL:
+✅ PREPARACIÓN PRE-LLAMADA:
 • Análisis completo revisado (notification_internal)
 • Calendario y link de pago listos
 • Link de Zoom confirmado
 
-🎭 OBJETIVOS DEL RITUAL:
+📞 OBJETIVOS DE LA LLAMADA:
 1. Evaluar fit real (primeros 15 min)
 2. Diseñar Sprint de Ascensión si hay alineación
 3. ${isHot ? 'Decidir admisión / Identificar next steps según score' : 'Identificar next steps'}
