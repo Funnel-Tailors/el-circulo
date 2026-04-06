@@ -665,7 +665,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   if (!hasMoney && score < 60) {
-    return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. El Círculo no es para quien no puede. Es para quien decide que tiene que hacerlo.';
+    return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. Esto no es para quien no puede. Es para quien decide que tiene que hacerlo.';
   }
   
   if (lowRevenue && !hasMoney) {
