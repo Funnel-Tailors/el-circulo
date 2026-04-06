@@ -73,7 +73,8 @@ const PROFESSION_LITERAL_MAP: Record<string, string> = {
 }
 
 const REVENUE_LITERAL_MAP: Record<string, string> = {
-  'menos_5000': 'Menos de €5.000/mes',
+  'menos_3000': 'Menos de €3.000/mes',
+  '3000_5000': '€3.000 - €5.000/mes',
   '5000_10000': '€5.000 - €10.000/mes',
   '10000_20000': '€10.000 - €20.000/mes',
   'mas_20000': 'Más de €20.000/mes',
