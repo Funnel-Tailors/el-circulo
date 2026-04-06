@@ -89,7 +89,7 @@ const ACQUISITION_LITERAL_MAP: Record<string, string> = {
 }
 
 const BUDGET_LITERAL_MAP: Record<string, string> = {
-  'menos_5000': 'Menos de €5.000',
+  'menos_3000': 'Menos de €3.000',
   '5000_8000': '€5.000 - €8.000',
   '8000_12000': '€8.000 - €12.000',
   'mas_15000': 'Más de €15.000',
