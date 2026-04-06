@@ -514,7 +514,7 @@ El Círculo
 
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number): string {
   const firstName = contact.name.split(' ')[0]
-  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
   const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const authSolo = answers.q7 === 'Solo yo'
   
