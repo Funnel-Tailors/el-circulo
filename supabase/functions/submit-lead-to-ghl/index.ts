@@ -1223,11 +1223,11 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   if (!authSolo) potentialObjections.push('DECISIÓN: "Debemos consultarlo" → Incluir a esa persona');
   if (!fastTrack) potentialObjections.push('TIMING: "Ahora no podemos" → ¿Qué debe pasar para estar listos?');
   
-  let closingStrategy = '';
+  const closingStrategy = '';
   if (lowRevenue && fastTrack) {
     closingStrategy = 'CLIENTE CON DOLOR AGUDO - Urgencia máxima. Admite si hay fit mínimo.';
   } else if (isHot && fastTrack) {
-    closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
+    closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo.';
   } else if (score >= 70) {
     closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
