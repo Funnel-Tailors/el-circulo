@@ -677,7 +677,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   } else if (score >= 60) {
     return 'Hay potencial, pero también fricciones que necesitamos resolver antes de que avances.';
   } else {
-    return 'Tu perfil muestra más dudas que decisiones. El Círculo es para los que ejecutan, no para los que exploran eternamente.';
+    return 'Tu perfil muestra más dudas que decisiones. Esto es para los que ejecutan, no para los que exploran eternamente.';
   }
 }
 
