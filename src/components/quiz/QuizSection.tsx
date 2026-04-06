@@ -349,7 +349,8 @@ const QuizSection = ({
     if (state.q3 === "€5.000 - €10.000/mes") score += 45;
     else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
     else if (state.q3 === "Más de €20.000/mes") score += 38;
-    else if (state.q3 === "Menos de €5.000/mes") score += 0;
+    else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
+    else if (state.q3 === "Menos de €3.000/mes") score += 0;
 
     // Q6 - Urgency (0-15 pts) — stored as q6
     if (state.q6?.includes("Esta semana")) score += 15;
