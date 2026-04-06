@@ -1060,7 +1060,7 @@ const contrastStatements: Record<string, string> = {
   'No sé cómo vender proyectos de 5 cifras sin que nos regateen': 
     'Mientras vosotros enviabais un presupuesto de 14 páginas y os comíais un silencio, Cris cerró 3.000€ en una conversación preguntando "¿quién decide y cuándo?". Mismo servicio. Distinto pitch.',
   'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': 
-    'Mientras vosotros pulíais el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Vosotros no. Todavía.'
+    'Mientras vosotros pulíais el portfolio hasta las 2am, nuestras agencias vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Vosotros no. Todavía.'
 };
 
 function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
