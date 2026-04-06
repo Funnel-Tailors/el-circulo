@@ -570,7 +570,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
-  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
   const realObjections: string[] = [];
   if (!authSolo) realObjections.push('⚠️ Decisión compartida');
