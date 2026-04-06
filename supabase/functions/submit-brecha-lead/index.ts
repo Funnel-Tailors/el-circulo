@@ -39,7 +39,7 @@ const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const BUDGET_MAP: Record<string, { value: string; score: number; hardstop: boolean }> = {
-  '💧': { value: 'menos_5000', score: 0, hardstop: true },
+  '💧': { value: 'menos_3000', score: 0, hardstop: true },
   '💎': { value: '5000_8000', score: 15, hardstop: false },
   '⚡': { value: '8000_12000', score: 20, hardstop: false },
   '🔮': { value: 'mas_15000', score: 25, hardstop: false },
