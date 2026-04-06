@@ -408,7 +408,7 @@ const painOpeningAngles: Record<string, string[]> = {
 
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
-  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const tier = getLeadTier(answers);
