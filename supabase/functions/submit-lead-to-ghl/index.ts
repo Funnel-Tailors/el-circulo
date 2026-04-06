@@ -1203,7 +1203,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
-  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD';
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
