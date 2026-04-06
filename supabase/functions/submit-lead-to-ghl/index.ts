@@ -211,7 +211,8 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     'Más de €20.000/mes': '💎 CÍRCULO-REV-20K+',
     '€10.000 - €20.000/mes': '💰 CÍRCULO-REV-10K-20K',
     '€5.000 - €10.000/mes': '💵 CÍRCULO-REV-5K-10K',
-    'Menos de €5.000/mes': '🪙 CÍRCULO-REV-<5K'
+    '€3.000 - €5.000/mes': '💵 CÍRCULO-REV-3K-5K',
+    'Menos de €3.000/mes': '🪙 CÍRCULO-REV-<3K'
   };
   if (answers.q3) tags.push(revenueMap[answers.q3] || '💰 CÍRCULO-REV-Unknown');
   
