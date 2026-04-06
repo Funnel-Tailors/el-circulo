@@ -315,7 +315,7 @@ function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0]
   const isHot = score >= 85
-  const hasInvestment = answers.q5 !== 'Menos de €5.000'
+  const hasInvestment = answers.q5 !== 'Menos de €3.000'
   const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
   const isIdealClient = midRevenue && hasInvestment
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️'
