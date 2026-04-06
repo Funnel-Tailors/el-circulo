@@ -339,29 +339,29 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
 // Pain-specific content objects
 const painInsights: Record<string, { hot: string; warm: string; cold: string }> = {
   'Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)': {
-    hot: 'El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco — y atraen más de lo mismo. Los miembros del Círculo dejan de depender de esas cadenas y empiezan a atraer clientes que pagan €10K+ sin pestañear.',
+    hot: 'El problema no son las recomendaciones. Es que vienen de clientes que pagaron poco — y atraen más de lo mismo. Nuestras agencias dejan de depender de esas cadenas y empiezan a atraer clientes que pagan €10K+ sin pestañear.',
     warm: 'Las recomendaciones son el síntoma, no la causa. Si tus clientes actuales pagan poco, sus referidos pagarán igual o menos. Eso se arregla cambiando el tipo de cliente que atraes.',
     cold: 'Si todos tus clientes vienen de otros que pagaron poco, estás atrapado en un ciclo. Antes de escalar, necesitas romper esa cadena.'
   },
   'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo': {
-    hot: 'Ese tren de que todo el equipo trabaje hasta tarde por márgenes de mierda tiene una parada. Las agencias del Círculo cobran €10K+ por proyecto trabajando la mitad. No es magia. Es saber cobrar por transformación, no por horas.',
+    hot: 'Ese tren de que todo el equipo trabaje hasta tarde por márgenes de mierda tiene una parada. Las agencias que trabajan con nosotros cobran €10K+ por proyecto trabajando la mitad. No es magia. Es saber cobrar por transformación, no por horas.',
     warm: 'Trabajar más horas no va a aumentar el margen. Necesitáis cobrar más por el mismo esfuerzo. Eso requiere cambiar lo que vendéis y cómo lo vendéis.',
     cold: 'Ese burnout colectivo no se arregla con más eficiencia. Necesitáis primero creer que podéis cobrar 5x más por lo que ya entregáis.'
   },
   'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)': {
-    hot: 'Esa montaña rusa de meses buenos y estampazos tiene una salida. Los miembros del Círculo tienen 4-6 leads semanales sin depender de la suerte. Sistema predecible. Facturación constante.',
+    hot: 'Esa montaña rusa de meses buenos y estampazos tiene una salida. Nuestras agencias tienen 4-6 leads semanales sin depender de la suerte. Sistema predecible. Facturación constante.',
     warm: 'Depender de la suerte es síntoma de no tener sistema. El 89% de agencias no tiene proceso de adquisición. Eso tiene solución exacta si decides implementarlo.',
     cold: 'Si un mes bueno es cuestión de suerte, estáis apostando en lugar de construyendo. Antes de escalar, necesitáis un sistema predecible.'
   },
   'No sé cómo vender proyectos de 5 cifras sin que nos regateen': {
-    hot: 'Os regatean porque vendéis entregables en lugar de transformación. Las agencias del Círculo dicen su precio de €10K+ sin tartamudear y el cliente aún piensa que es una ganga.',
+    hot: 'Os regatean porque vendéis entregables en lugar de transformación. Las agencias que trabajan con nosotros dicen su precio de €10K+ sin tartamudear y el cliente aún piensa que es una ganga.',
     warm: 'El regateo pasa cuando vendéis servicio en lugar de resultado. Eso se arregla cambiando la conversación. No el precio.',
     cold: 'Os regatean porque no sabéis defender vuestro valor. Antes de subir precios, necesitáis aprender a vender diferente.'
   },
   'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': {
     hot: 'Todas las fricciones a la vez y aún así tenéis para invertir en la agencia. Eso dice mucho. Las agencias que deciden salir de ahí, salen. Las que exploran eternamente, se quedan.',
-    warm: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal. Las agencias del Círculo hace tiempo que trascendieron esa mierda. Y vosotros estáis a un ritual de distancia.',
-    cold: 'Todas las fricciones a la vez. O os hundís o cruzáis el umbral. No hay punto medio. Pero primero necesitáis decidir si estáis listos.'
+    warm: 'Lleváis tanto tiempo así que ya os habéis convencido de que es normal. Las agencias que trabajan con nosotros hace tiempo que trascendieron esa mierda. Y vosotros estáis a una llamada de distancia.',
+    cold: 'Todas las fricciones a la vez. O os hundís o dais el paso. No hay punto medio. Pero primero necesitáis decidir si estáis listos.'
   }
 };
 
@@ -371,11 +371,11 @@ const painContextualNotes: Record<string, string> = {
   'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo':
     '🔥 Nota: Ese burnout de todo el equipo trabajando por poco tiene fecha de caducidad. Decidid cuándo.',
   'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)':
-    '🎲 Nota: La suerte no escala. Un sistema sí. Los miembros del Círculo tienen 4-6 leads semanales sin depender de los astros.',
+    '🎲 Nota: La suerte no escala. Un sistema sí. Nuestras agencias tienen 4-6 leads semanales sin depender de los astros.',
   'No sé cómo vender proyectos de 5 cifras sin que nos regateen':
     '🎯 Nota: Os regatean porque vendéis entregables, no transformación. Eso se arregla cambiando 3 frases en vuestro pitch.',
   'Todo lo anterior (¿Pero de verdad se puede escalar esto?)':
-    '⚡ Nota: Todas las fricciones a la vez. O os hundís o cruzáis el umbral. No hay punto medio.'
+    '⚡ Nota: Todas las fricciones a la vez. O os hundís o dais el paso. No hay punto medio.'
 };
 
 const painOpeningAngles: Record<string, string[]> = {
@@ -665,7 +665,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   if (!hasMoney && score < 60) {
-    return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. El Círculo no es para quien no puede. Es para quien decide que tiene que hacerlo.';
+    return 'Sin pasta para invertir en ti mismo, es difícil que alguien más invierta en ti. Esto no es para quien no puede. Es para quien decide que tiene que hacerlo.';
   }
   
   if (lowRevenue && !hasMoney) {
@@ -677,7 +677,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   } else if (score >= 60) {
     return 'Hay potencial, pero también fricciones que necesitamos resolver antes de que avances.';
   } else {
-    return 'Tu perfil muestra más dudas que decisiones. El Círculo es para los que ejecutan, no para los que exploran eternamente.';
+    return 'Tu perfil muestra más dudas que decisiones. Esto es para los que ejecutan, no para los que exploran eternamente.';
   }
 }
 
@@ -702,9 +702,9 @@ function generateContextualNote(
   
   if (shouldUseMalito) {
     if (score < 75) {
-      return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial de miembro honorario si das el paso.';
+      return '🧙‍♂️ Nota: Todavía eres un malito. Pero con potencial si das el paso.';
     } else {
-      return '🧙‍♂️ Nota: Ya no eres un malito. Estás a un ritual de distancia de ser Miembro Honorario.';
+      return '🧙‍♂️ Nota: Ya no eres un malito. Estás a una llamada de distancia de ser parte del equipo.';
     }
   }
   
@@ -757,21 +757,18 @@ Tu evaluación revela algo que la mayoría nunca verá.
 
 ${identity}
 
-La pregunta no es si puedes. Es cuándo decides cruzar el umbral.
+La pregunta no es si puedes. Es cuándo decides dar el paso.
 
-🔮 RESERVA TU LLAMADA ESTRATÉGICA
+📞 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ Solo 3 espacios semanales para candidatos prioritarios
-🎭 Un Miembro Honorario evaluará tu caso específico (60 min)
+👤 Un miembro del equipo evaluará tu caso específico (60 min)
 🗝️ Tienes 48h de acceso preferente antes de liberar tu plaza
 
 ${contextualNote}
 
-El portal cierra en 48h.
-
-—
-El Círculo
+Tu acceso preferente cierra en 48h.
     `.trim();
   } else if (isWarm) {
     return `
@@ -785,18 +782,15 @@ ${identity}
 
 ¿Listo/a para el salto o seguimos dándole vueltas?
 
-🔮 RESERVA TU LLAMADA ESTRATÉGICA
+📞 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 ⏳ 3 espacios semanales para evaluaciones profundas
-🎭 Un Miembro Honorario evaluará si hay alineación real (45-60 min)
+👤 Un miembro del equipo evaluará si hay alineación real (45-60 min)
 
 ${contextualNote}
 
 Si hay fit, recibirás el siguiente paso. Si no, al menos sabrás por qué.
-
-—
-El Círculo
     `.trim();
   } else {
     return `
@@ -806,19 +800,16 @@ Tu evaluación revela fricciones importantes.
 
 ⚔️ ${personalizedInsight}
 
-No todos están listos para el Círculo. Y eso está bien.
+No todos están listos. Y eso está bien.
 
-🔮 AGENDA TU LLAMADA ESTRATÉGICA
+📅 AGENDA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-🎭 Un Miembro explorará si tiene sentido para ambos (30-45 min)
+👤 Un miembro del equipo explorará si tiene sentido para ambos (30-45 min)
 
 ${contextualNote}
 
 Si hay potencial, lo veremos. Si no, te ahorras meses de frustraciones.
-
-—
-El Círculo
     `.trim();
   }
 }
@@ -879,7 +870,7 @@ ${firstName}.
 
 Tu espacio está asegurado.
 
-⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes del ritual.
+⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes de la llamada.
 
 📜 PREPARA ESTO:
 
@@ -894,28 +885,28 @@ Tu situación actual:
 • 2-3 desafíos que necesitas resolver
 • Dónde quieres estar en 3 meses
 
-🔮 Logística:
+📅 Logística:
 • Lugar sin interrupciones
 • Cámara encendida
 • Libreta
 • Agua o café. 45-60 min
 
-🎭 QUÉ SUCEDERÁ:
+👤 QUÉ SUCEDERÁ:
 
-El Miembro Honorario evaluará tu candidatura. No es una llamada de ventas.
+Un miembro del equipo evaluará tu candidatura. No es una llamada de ventas.
 
 • Análisis sin filtros de tu situación
 • Identificación de las 2-3 palancas con mayor impacto
 • Diseño de tu Sprint de Ascensión (si hay alineación)
-• Decisión sobre tu entrada al Círculo
+• Decisión sobre tu entrada
 
 ⏳ Si no puedes asistir, avisa con 24h. Hay lista de espera.
 
-El enlace llegará 1h antes del ritual.
+El enlace llegará 1h antes.
 
 🎓 ACCEDE A TU MATERIAL:
 
-Antes del ritual, completa la clase de preparación (40 mins):
+Antes de la llamada, completa la clase de preparación (40 mins):
 
 🔗 https://vendenautomatico.com/senda?token={{contact.id}}
 
@@ -924,9 +915,6 @@ Contiene:
 • Asistente IA exclusivo para diseñar tu oferta
 
 ⚠️ Completa ANTES de la llamada o no podremos avanzar.
-
-—
-El Círculo
     `.trim();
   } else {
     return `
@@ -944,15 +932,15 @@ Tu situación actual:
 • 2-3 desafíos principales
 • Dónde quieres estar en 3 meses
 
-🔮 Logística:
+📅 Logística:
 • Lugar sin interrupciones
 • Cámara encendida
 • Libreta
 • 45-60 min
 
-🎭 QUÉ SUCEDERÁ:
+👤 QUÉ SUCEDERÁ:
 
-Un Miembro Honorario explorará si hay alineación con el Círculo.
+Un miembro del equipo explorará si hay alineación.
 
 Cuanto mejor preparado vengas, más claridad obtendrás.
 
@@ -962,7 +950,7 @@ El enlace llegará 1h antes.
 
 🎓 ACCEDE A TU MATERIAL:
 
-Antes del ritual, completa la clase de preparación (40 mins):
+Antes de la llamada, completa la clase de preparación (40 mins):
 
 🔗 https://vendenautomatico.com/senda?token={{contact.id}}
 
@@ -971,9 +959,6 @@ Contiene:
 • Asistente IA exclusivo para diseñar tu oferta
 
 ⚠️ Completa ANTES de la llamada o no podremos avanzar.
-
-—
-El Círculo
     `.trim();
   }
 }
@@ -1075,7 +1060,7 @@ const contrastStatements: Record<string, string> = {
   'No sé cómo vender proyectos de 5 cifras sin que nos regateen': 
     'Mientras vosotros enviabais un presupuesto de 14 páginas y os comíais un silencio, Cris cerró 3.000€ en una conversación preguntando "¿quién decide y cuándo?". Mismo servicio. Distinto pitch.',
   'Todo lo anterior (¿Pero de verdad se puede escalar esto?)': 
-    'Mientras vosotros pulíais el portfolio hasta las 2am, los miembros del Círculo vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Vosotros no. Todavía.'
+    'Mientras vosotros pulíais el portfolio hasta las 2am, nuestras agencias vendían proyectos de 5.000€ sin enseñarlo. Mismo talento. Ellos saben venderlo. Vosotros no. Todavía.'
 };
 
 function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
@@ -1099,13 +1084,10 @@ ${randomReality}
 
 ${painInsight}
 
-🔮 RESERVA TU LLAMADA ESTRATÉGICA
+📞 RESERVA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Cuando quieras.
-
-—
-El Círculo
+Tu acceso preferente caduca en menos de 24h. Después, tu plaza se libera.
   `.trim();
 }
 
@@ -1125,13 +1107,10 @@ ${randomFear}
 
 ${randomReality}
 
-🔮 AGENDA TU LLAMADA
+📞 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Solo si te suena.
-
-—
-El Círculo
+Quedan horas. No días. Después, tu evaluación se archiva.
   `.trim();
 }
 
@@ -1154,13 +1133,10 @@ Distinta conversación.
 Los datos:
 ${successStory}
 
-🔮 RESERVA TU LLAMADA
+📞 RESERVA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Vosotros decidís de qué lado estáis.
-
-—
-El Círculo
+Vosotros decidís. Pero decidid hoy.
   `.trim();
 }
 
@@ -1183,13 +1159,10 @@ O podéis dar el paso.
 
 Pero no podéis hacer las dos cosas.
 
-🔮 AGENDA TU LLAMADA
+📞 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-No hay prisa. Pero tampoco hay pausa.
-
-—
-El Círculo
+Tu evaluación se archiva en horas. No hay segunda vuelta.
   `.trim();
 }
 
@@ -1198,6 +1171,8 @@ function generateFollowUp5(name: string, answers: QuizAnswers): string {
   
   return `
 ${firstName}.
+
+Tu acceso preferente ha expirado.
 
 No vamos a insistir más.
 
@@ -1213,13 +1188,10 @@ Con los mismos clientes de siempre.
 
 O peores.
 
-🔮 ÚLTIMA OPORTUNIDAD
+📞 ÚLTIMA OPORTUNIDAD
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
 Vosotros decidís.
-
-—
-El Círculo
   `.trim();
 }
 
@@ -1231,7 +1203,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
   const fastTrack = answers.q6?.includes('Esta semana');
   const authSolo = answers.q7?.includes('Solo yo');
-  const lowRevenue = answers.q3 === 'Menos de €5.000/mes';
+  const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD';
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11));
@@ -1255,7 +1227,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   if (lowRevenue && fastTrack) {
     closingStrategy = 'CLIENTE CON DOLOR AGUDO - Urgencia máxima. Admite si hay fit mínimo.';
   } else if (isHot && fastTrack) {
-    closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo al Círculo.';
+    closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min. Si hay alineación total, admítelo.';
   } else if (score >= 70) {
     closingStrategy = 'EVALUACIÓN PROFUNDA - Explora perfil, diseña Sprint personalizado. Admite si hay compromiso claro.';
   } else {
@@ -1263,12 +1235,12 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   }
   
   return `
-🎭 RITUAL DE EVALUACIÓN: ${firstName} | ${score}/110 ${scoreBar} | ${scoreEmoji}
+📋 EVALUACIÓN PRE-LLAMADA: ${firstName} | ${score}/110 ${scoreBar} | ${scoreEmoji}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚔️ ERES UN MIEMBRO HONORARIO DEL CÍRCULO
-Evalúa si este candidato debe cruzar el umbral.
-Esto no es una venta. Es un ritual de evaluación.
+⚔️ BRIEFING PARA EL CLOSER
+Evalúa si este candidato encaja.
+Esto no es una venta. Es una evaluación.
 ${lowRevenue ? '\n🚨 CANDIDATO CON DOLOR AGUDO: Revenue bajo + urgencia = MÁXIMA PRIORIDAD' : ''}
 
 ⏰ 45-60 min | 📞 ${contact.whatsapp || 'Sin WhatsApp'} | ✉️ ${contact.email}
@@ -1288,12 +1260,12 @@ ${potentialObjections.length > 0 ? potentialObjections.map((obj, i) => `${i + 1}
 🎯 ESTRATEGIA DE CIERRE:
 ${closingStrategy}
 
-✅ PREPARACIÓN PRE-RITUAL:
+✅ PREPARACIÓN PRE-LLAMADA:
 • Análisis completo revisado (notification_internal)
 • Calendario y link de pago listos
 • Link de Zoom confirmado
 
-🎭 OBJETIVOS DEL RITUAL:
+📞 OBJETIVOS DE LA LLAMADA:
 1. Evaluar fit real (primeros 15 min)
 2. Diseñar Sprint de Ascensión si hay alineación
 3. ${isHot ? 'Decidir admisión / Identificar next steps según score' : 'Identificar next steps'}
