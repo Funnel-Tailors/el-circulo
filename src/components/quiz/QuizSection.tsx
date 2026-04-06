@@ -174,7 +174,9 @@ const QuizSection = ({
     // Track Q3
     if (currentQuestion.id === 'q3') {
       const value = currentAnswer as string;
-      if (value === "€5.000 - €10.000/mes") {
+      if (value === "€3.000 - €5.000/mes") {
+        quizAnalytics.trackICPMatch(value);
+      } else if (value === "€5.000 - €10.000/mes") {
         quizAnalytics.trackICPMatch(value);
       } else if (value === "€10.000 - €20.000/mes") {
         quizAnalytics.trackICPMatch(value);
@@ -187,7 +189,7 @@ const QuizSection = ({
           currency: 'EUR',
           custom_data: { revenue_bracket: value, high_ltv: true }
         });
-      } else if (value === "Menos de €5.000/mes") {
+      } else if (value === "Menos de €3.000/mes") {
         quizAnalytics.trackLowRevenueDisqualified();
       }
     }
