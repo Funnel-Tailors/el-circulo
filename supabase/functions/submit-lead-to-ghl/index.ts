@@ -1133,13 +1133,10 @@ Distinta conversación.
 Los datos:
 ${successStory}
 
-🔮 RESERVA TU LLAMADA
+📞 RESERVA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Vosotros decidís de qué lado estáis.
-
-—
-El Círculo
+Vosotros decidís. Pero decidid hoy.
   `.trim();
 }
 
