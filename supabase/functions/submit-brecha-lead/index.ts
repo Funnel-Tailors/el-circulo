@@ -1062,13 +1062,13 @@ Deno.serve(async (req) => {
       console.log('HARDSTOP: Budget menor a €3.000 detectado')
     }
     
-    if (!hardstopReason && revenueParsed?.value === 'menos_5000') {
+    if (!hardstopReason && revenueParsed?.value === 'menos_3000') {
       hardstopReason = 'low_revenue'
-      console.log('HARDSTOP: Revenue menor a €5.000/mes detectado')
+      console.log('HARDSTOP: Revenue menor a €3.000/mes detectado')
     }
 
     // Cross-validation: revenue alto + budget mínimo = mentiroso
-    if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_5000' && budgetParsed?.value === 'menos_5000') {
+    if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_3000' && budgetParsed?.value === 'menos_3000') {
       hardstopReason = 'inconsistent_revenue_budget'
       console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
     }
