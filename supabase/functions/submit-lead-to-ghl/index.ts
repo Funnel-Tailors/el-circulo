@@ -371,11 +371,11 @@ const painContextualNotes: Record<string, string> = {
   'Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo':
     '🔥 Nota: Ese burnout de todo el equipo trabajando por poco tiene fecha de caducidad. Decidid cuándo.',
   'Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)':
-    '🎲 Nota: La suerte no escala. Un sistema sí. Los miembros del Círculo tienen 4-6 leads semanales sin depender de los astros.',
+    '🎲 Nota: La suerte no escala. Un sistema sí. Nuestras agencias tienen 4-6 leads semanales sin depender de los astros.',
   'No sé cómo vender proyectos de 5 cifras sin que nos regateen':
     '🎯 Nota: Os regatean porque vendéis entregables, no transformación. Eso se arregla cambiando 3 frases en vuestro pitch.',
   'Todo lo anterior (¿Pero de verdad se puede escalar esto?)':
-    '⚡ Nota: Todas las fricciones a la vez. O os hundís o cruzáis el umbral. No hay punto medio.'
+    '⚡ Nota: Todas las fricciones a la vez. O os hundís o dais el paso. No hay punto medio.'
 };
 
 const painOpeningAngles: Record<string, string[]> = {
