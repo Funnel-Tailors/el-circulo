@@ -181,7 +181,7 @@ export function ContentEditModal({
                     id="assistant_name"
                     value={formData.assistant_name}
                     onChange={(e) => setFormData(prev => ({ ...prev, assistant_name: e.target.value }))}
-                    placeholder="Ej: Acólito del Tributo"
+                    placeholder="Ej: Asistente de Oferta"
                   />
                 </div>
               </div>

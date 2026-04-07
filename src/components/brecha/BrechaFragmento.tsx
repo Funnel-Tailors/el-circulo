@@ -13,32 +13,32 @@ import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 // Assistant configurations for fragments 1 and 2 (formato AgentConstellation)
 const FRAGMENT_AGENTS: Record<1 | 2, AgentGroup> = {
   1: {
-    id: "frag1-acolito",
-    title: "Acólito del Tributo",
+    id: "frag1-assistant",
+    title: "Asistente de Oferta",
     layout: "single",
     agents: [
       {
         id: "tributo",
-        name: "Acólito del Tributo",
+        name: "Asistente de Oferta",
         description: "Define una oferta por la que cobrar 5 cifras",
         url: "https://chatgpt.com/g/g-6809dc1e5108819194b0bccf15a275e8-001-ofertas",
         icon: "💰",
-        lockMessage: "Completa el ritual para despertar al Acólito",
+        lockMessage: "Completa la secuencia para desbloquear",
       },
     ],
   },
   2: {
-    id: "frag2-acolito",
-    title: "Acólito de la Voz",
+    id: "frag2-assistant",
+    title: "Asistente de Avatar",
     layout: "single",
     agents: [
       {
         id: "voz",
-        name: "Acólito de la Voz",
+        name: "Asistente de Avatar",
         description: "Encuentra a quien pague esas 5 cifras por tu trabajo",
         url: "https://chatgpt.com/g/g-6809dd7ea5e88191ad371f04685a8f6f-002-avatar",
         icon: "🪞",
-        lockMessage: "Completa el ritual para despertar al Acólito",
+        lockMessage: "Completa la secuencia para desbloquear",
       },
     ],
   },
@@ -339,7 +339,7 @@ export const BrechaFragmento = ({
             <AgentConstellation
               group={agentGroup}
               unlockState={{
-                [agentGroup.agents[0].id]: progress.sequence_completed
+                [agentGroup.agents[0].id]: (progress.assistant_unlocked || progress.sequence_completed)
                   ? 'unlocked'
                   : (progress.ritual_accepted ? 'pending' : 'locked'),
               }}
