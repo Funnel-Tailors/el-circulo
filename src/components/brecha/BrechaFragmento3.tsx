@@ -21,37 +21,37 @@ import { VideoControlsLimited } from "@/components/brecha/VideoControlsLimited";
 const VIDEO_1_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c6ba7a35b20bc919233.mp4";
 const VIDEO_2_URL = "https://storage.googleapis.com/msgsndr/83pruKn109rLBViefs9A/media/68a61c742e6d103270ef1685.mp4";
 
-// GPT Assistants - Acólitos de la Voz (formato AgentConstellation)
-const ACOLITOS_VOZ: AgentGroup = {
-  id: "frag3-acolitos",
-  title: "Acólitos de la Voz",
+// GPT Assistants (formato AgentConstellation)
+const FRAG3_ASSISTANTS: AgentGroup = {
+  id: "frag3-assistants",
+  title: "Asistentes IA",
   layout: "triangle",
   agents: [
     {
       id: "reclamo",
-      name: "Acólito del Reclamo",
+      name: "Asistente de Anuncios",
       description: "Las palabras exactas para llegar a tu cliente",
       url: "https://chatgpt.com/g/g-68972dce4d6081919017a23b9a1984df-anuncios-express-el-circulo",
       icon: "📢",
-      lockMessage: "Completa la secuencia ritual",
+      lockMessage: "Completa la secuencia",
       connectsTo: ["muro", "clausura"],
     },
     {
       id: "muro",
-      name: "Acólito del Muro",
+      name: "Asistente de Formularios",
       description: "Formularios que filtran a quien no va a pagar",
       url: "https://chatgpt.com/g/g-68972fc1d97081918fe2af2820a000bb-formularios-express-el-circulo",
-      icon: "🧱",
-      lockMessage: "Completa la secuencia ritual",
+      icon: "📋",
+      lockMessage: "Completa la secuencia",
       connectsTo: ["clausura"],
     },
     {
       id: "clausura",
-      name: "Acólito de Clausura",
+      name: "Asistente de Cierre",
       description: "Guiones que cierran ventas sin rogar",
       url: "https://chatgpt.com/g/g-6899f7887c648191925f790ccceb8299-guiones-de-venta-el-circulo",
-      icon: "🔐",
-      lockMessage: "Completa la secuencia ritual",
+      icon: "🎯",
+      lockMessage: "Completa la secuencia",
     },
   ],
 };
@@ -548,14 +548,14 @@ export const BrechaFragmento3 = ({
           <div className="h-px w-24 bg-gradient-to-l from-transparent to-foreground/20" />
         </motion.div>
 
-        {/* 3 GPT Assistants - Constelación de Acólitos */}
+        {/* 3 GPT Assistants */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.6, duration: 0.8 }}
         >
           <AgentConstellation
-            group={ACOLITOS_VOZ}
+            group={FRAG3_ASSISTANTS}
             unlockState={{
               reclamo: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
               muro: assistantsUnlocked ? 'unlocked' : (video1Completed ? 'pending' : 'locked'),
