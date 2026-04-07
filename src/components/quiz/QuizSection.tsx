@@ -497,7 +497,7 @@ const QuizSection = ({
   };
 
   return <>
-    <div className="w-full space-y-4 animate-fade-in">
+    <div ref={quizRef} className="w-full space-y-4 animate-fade-in">
       {currentStep === 0 && <></>}
 
       <ProgressBar current={currentStep + 1} total={steps.length} />
