@@ -190,9 +190,9 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          El sistema que usan las agencias para cerrar proyectos de <span className="glow">5.000 a 10.000€</span> cada mes
+          Consigue clientes de <span className="glow">5.000€+</span> cada mes de forma predecible en menos de 90 días
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Implementado en una semana — resultados en menos de 90 días</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">Con un comercial 24/7 que vende por ti implementado en menos de 7 días</p>
       </div>
 
       {/* VSL Container con glow pulsante */}
