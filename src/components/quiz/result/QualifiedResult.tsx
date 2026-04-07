@@ -130,6 +130,13 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       });
       console.log('💳 [TRACKING] InitiateCheckout fired — value €3,000');
 
+      // Fire Lead event — critical for Meta optimization (was missing!)
+      const revenueRange = quizState.q3 || 'unknown';
+      const icpMatch = revenueRange === '1.000€ - 2.500€';
+      const leadValue = icpMatch ? 3000 : 1500;
+      quizAnalytics.enrichLeadEvent(leadValue, icpMatch, revenueRange, true);
+      console.log('🎯 [TRACKING] Lead event fired — value €' + leadValue);
+
       toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados" });
       setGhlContactId(responseData?.contactId || null);
       setContactSubmitted(true);

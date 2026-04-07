@@ -125,9 +125,31 @@ const QuizSection = ({
   const currentQuestion = steps[currentStep];
   const isLastStep = currentStep === steps.length - 1;
   
+  const quizRef = useRef<HTMLDivElement>(null);
+  const hasTrackedFirstStep = useRef(false);
+
+  // Track step views — for q1, only when quiz is visible in viewport
   useEffect(() => {
     const step = steps[currentStep];
-    if (step) {
+    if (!step) return;
+
+    if (currentStep === 0 && !hasTrackedFirstStep.current) {
+      // Use IntersectionObserver so q1 only fires when actually visible
+      const el = quizRef.current;
+      if (!el) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && !hasTrackedFirstStep.current) {
+            hasTrackedFirstStep.current = true;
+            quizAnalytics.startStep(step.id, 0);
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.3 }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    } else if (currentStep > 0) {
       quizAnalytics.startStep(step.id, currentStep);
     }
   }, [currentStep]);
@@ -475,7 +497,7 @@ const QuizSection = ({
   };
 
   return <>
-    <div className="w-full space-y-4 animate-fade-in">
+    <div ref={quizRef} className="w-full space-y-4 animate-fade-in">
       {currentStep === 0 && <></>}
 
       <ProgressBar current={currentStep + 1} total={steps.length} />
