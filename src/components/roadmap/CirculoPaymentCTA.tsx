@@ -3,11 +3,14 @@ import { Zap } from "lucide-react";
 import { useMemo } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 
-const PAYMENT_URL = "https://link.fastpaydirect.com/payment-link/69eb4d75557558e89e5231de";
+const DEFAULT_PAYMENT_URL = "https://link.fastpaydirect.com/payment-link/69eb4d75557558e89e5231de";
 
 interface CirculoPaymentCTAProps {
   variant?: "full" | "compact";
-  source: "hero" | "final_cta" | string;
+  source: "hero" | "final_cta" | "carta" | string;
+  paymentUrl?: string;
+  ctaLabel?: string;
+  ctaSubLabel?: string;
 }
 
 const generateParticles = (count: number) =>
@@ -20,7 +23,13 @@ const generateParticles = (count: number) =>
     size: 6 + Math.random() * 4,
   }));
 
-export const CirculoPaymentCTA = ({ variant = "full", source }: CirculoPaymentCTAProps) => {
+export const CirculoPaymentCTA = ({
+  variant = "full",
+  source,
+  paymentUrl = DEFAULT_PAYMENT_URL,
+  ctaLabel = "ENTRAR AL CÍRCULO POR €149",
+  ctaSubLabel = "Acceso inmediato tras el pago",
+}: CirculoPaymentCTAProps) => {
   const particles = useMemo(() => generateParticles(14), []);
 
   const handleClick = () => {
@@ -36,7 +45,7 @@ export const CirculoPaymentCTA = ({ variant = "full", source }: CirculoPaymentCT
     } catch (e) {
       // non-blocking
     }
-    window.open(PAYMENT_URL, "_blank", "noopener,noreferrer");
+    window.open(paymentUrl, "_blank", "noopener,noreferrer");
   };
 
   const FancyButton = (
