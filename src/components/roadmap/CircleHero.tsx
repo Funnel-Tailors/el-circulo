@@ -1,46 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 import { X } from "lucide-react";
+import CirculoPaymentCTA from "./CirculoPaymentCTA";
 interface CircleHeroProps {
   disableSticky?: boolean;
 }
 const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
-  const handleScrollToQuiz = () => {
-    // Track CTA click ANTES de trackQuizStart
-    quizAnalytics.trackMetaPixelEvent('ViewContent', {
-      content_type: 'cta',
-      content_name: 'CTA Clicked - Quiz Intent',
-      content_category: 'high_intent_signal',
-      value: 300,
-      currency: 'EUR',
-      custom_data: {
-        cta_text: 'Quiero entrar',
-        cta_location: 'hero_section',
-        time_to_click_seconds: Math.floor(performance.now() / 1000)
-      }
-    });
-
-    // Track quiz start when CTA is clicked
-    quizAnalytics.trackQuizStart();
-    setTimeout(() => {
-      const quizSection = document.getElementById('quiz-section');
-      if (quizSection) {
-        const isMobile = window.innerWidth < 768;
-        const offset = isMobile ? 80 : 100;
-        const yOffset = -offset;
-        const y = quizSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
-        try {
-          window.scrollTo({
-            top: y,
-            behavior: 'smooth'
-          });
-        } catch (e) {
-          window.scrollTo(0, y);
-        }
-      }
-    }, 100);
-  };
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
@@ -228,10 +193,7 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
 
       {/* CTA Button - justo debajo del VSL */}
       <div className="pt-4">
-        <Button onClick={handleScrollToQuiz} size="lg" className="dark-button-primary text-lg px-12 py-6 rounded-2xl font-bold">
-          Agenda tu auditoría gratuita
-        </Button>
-        <p className="text-xs text-muted-foreground mt-2">Conmigo. 1 a 1. Sin compromiso.</p>
+        <CirculoPaymentCTA variant="compact" source="hero" />
       </div>
     </div>;
 };
