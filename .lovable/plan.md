@@ -1,54 +1,86 @@
 
+## Convertir landing en flujo transaccional directo (€149)
 
-## Renombrar "Acólitos" y fix bug de desbloqueo en La Brecha
+Quitar el quiz completo. Sustituir todos los CTAs por el botón fancy estilo OTO que abre directo `https://link.fastpaydirect.com/payment-link/69eb4d75557558e89e5231de` en nueva pestaña.
 
-### Problema 1: Nombres "Acólito" siguen en live
-Los componentes de **Senda** ya fueron actualizados (usan "Asistente IA Exclusivo", "Anuncios Express", etc.), pero los de **Brecha** siguen hardcodeados con los nombres antiguos.
+### 1. Nuevo: `src/components/roadmap/CirculoPaymentCTA.tsx`
 
-### Problema 2: Bug de desbloqueo
-En `BrechaFragmento.tsx`, el estado de unlock del asistente se basa **solo** en `progress.sequence_completed` (línea 342). El campo `progress.assistant_unlocked` se pasa como prop pero **nunca se usa** en la lógica de unlock. Si alguien marca `assistant_unlocked = true` en la DB sin que `sequence_completed` sea true, el botón sigue bloqueado.
+Componente reutilizable basado en `SkipTheLineOffer` (badge, glow intenso, partículas flotantes, `animate-glow-pulse-intense`).
 
-**Fix**: Usar `progress.assistant_unlocked || progress.sequence_completed` como condición de desbloqueo.
-
----
-
-### Cambios
-
-**Archivo 1: `src/components/brecha/BrechaFragmento.tsx`**
-
-Renombrar asistentes de Fragmentos 1 y 2:
-- Frag 1: `"Acólito del Tributo"` → `"Asistente de Oferta"` (title + name)
-- Frag 1 description: mantener `"Define una oferta por la que cobrar 5 cifras"`
-- Frag 1 lockMessage: `"Completa el ritual para despertar al Acólito"` → `"Completa la secuencia para desbloquear"`
-- Frag 2: `"Acólito de la Voz"` → `"Asistente de Avatar"` (title + name)
-- Frag 2 lockMessage: igual cambio
-
-Fix bug unlock (línea 342):
-```
-progress.assistant_unlocked || progress.sequence_completed
-  ? 'unlocked'
-  : (progress.ritual_accepted ? 'pending' : 'locked')
+**Props:**
+```ts
+{
+  variant?: 'full' | 'compact';  // full = bloque completo con título/precio, compact = solo botón fancy (para Hero)
+  source: string;                 // 'hero' | 'final_cta' — para tracking
+}
 ```
 
-**Archivo 2: `src/components/brecha/BrechaFragmento3.tsx`**
+**Constante interna:**
+```ts
+const PAYMENT_URL = "https://link.fastpaydirect.com/payment-link/69eb4d75557558e89e5231de";
+```
 
-Renombrar los 3 asistentes del Fragmento 3:
-- `"Acólito del Reclamo"` → `"Asistente de Anuncios"`
-- `"Acólito del Muro"` → `"Asistente de Formularios"`
-- `"Acólito de Clausura"` → `"Asistente de Cierre"`
-- Title grupo: `"Acólitos de la Voz"` → `"Asistentes IA"`
-- lockMessages: `"Completa la secuencia ritual"` → `"Completa la secuencia"`
-- Comentarios: limpiar referencias a "Acólitos"
+**Variant `full`:**
+- Badge `ACCESO INMEDIATO`
+- Título: `Tu acceso al Círculo está listo`
+- Descripción: `Sin llamadas. Sin esperas. Entras hoy.`
+- Precio: `€149` (pago único)
+- Botón fancy: `ENTRAR AL CÍRCULO POR €149` + `Acceso inmediato tras el pago`
+- Disclaimer abajo
 
-**Archivo 3: `src/config/journey-defaults.ts`**
+**Variant `compact`:**
+- Solo el botón fancy con partículas + glow (sin badge ni título)
+- Mismo texto del botón
 
-Actualizar los defaults de Brecha para que coincidan:
-- Frag 1: `"Acólito del Tributo"` → `"Asistente de Oferta"`
-- Frag 2: `"Acólito de la Voz"` → `"Asistente de Avatar"`
-- Frag 3 assistants: mismos cambios que arriba
-- Cambiar iconos místicos: 🧱 → 📋, 🔐 → 🎯
+**onClick:** tracking + `window.open(PAYMENT_URL, '_blank', 'noopener,noreferrer')`
 
-**Archivo 4: `src/components/admin/ContentEditModal.tsx`**
+### 2. `src/components/roadmap/CircleHero.tsx`
 
-- Placeholder: `"Ej: Acólito del Tributo"` → `"Ej: Asistente de Oferta"`
+- Sustituir `<Button>Agenda tu auditoría gratuita</Button>` + subtexto por `<CirculoPaymentCTA variant="compact" source="hero" />`
+- Eliminar `handleScrollToQuiz` (ya no hay quiz)
+- Mantener tracking `ViewContent` (CTA Click €300) dentro del onClick del nuevo CTA
 
+### 3. `src/pages/IndexV2.tsx` (y `src/pages/Index.tsx` si tiene la misma estructura)
+
+Eliminar:
+- Imports: `QuizSection`, `ResultSection`, `QuizState`, `Button`
+- Estados: `quizState`, `isQualified`, `quizScreen`, `quizSectionRef`, `hasTrackedQuizInView`
+- Funciones: `handleCompleteQuiz`, `handleResetQuiz`, `handleScrollToQuiz`
+- IntersectionObserver del quiz
+- Bloque `<div id="quiz-section">` completo (header "ENTRA AL CIRCULO" + container del quiz)
+- Botón intermedio "Agenda tu auditoría gratuita" tras testimonios
+
+Añadir:
+- `<CirculoPaymentCTA variant="full" source="final_cta" />` al final, después del `ScreenshotMarquee`
+
+### 4. Tracking
+
+En el `onClick` del CTA (ambos variants):
+```ts
+quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
+  content_name: 'Círculo €149 Direct Purchase',
+  content_category: 'lowticket_purchase',
+  value: 149,
+  currency: 'EUR',
+  custom_data: { cta_source: source }
+});
+quizAnalytics.enrichLeadEvent(149, true, 'lowticket', true);
+```
+
+### 5. Sin tocar
+
+- `QualifiedResult.tsx`, `NotQualifiedResult.tsx`, `QuizSection.tsx`, `GHLCalendarIframe`, edge function `submit-lead-to-ghl` → se mantienen en el repo sin uso (por si quieres reactivar para A/B o un funnel paralelo)
+- Hero VSL, testimonios marquee, screenshots, mini-FAQ → intactos
+- Pre-cualificación ICP del Hero ("Solo para dueños de agencia...") → intacta
+
+### Estructura final
+
+```
+Hero (estrellas + ICP + título + VSL + CTA fancy €149 → abre pago)
+  ↓
+ASCENDIDOS (testimonios marquee)
+  ↓
+ScreenshotMarquee
+  ↓
+CirculoPaymentCTA full (badge + precio + CTA fancy €149 → abre pago)
+```
