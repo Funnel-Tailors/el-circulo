@@ -86,8 +86,8 @@ export const CirculoPaymentCTA = ({
                    ring-1 ring-foreground/60
                    animate-glow-pulse-intense"
       >
-        <span className="block text-lg">ENTRAR AL CÍRCULO POR €149</span>
-        <span className="block text-xs opacity-70 mt-0.5">Acceso inmediato tras el pago</span>
+        <span className="block text-lg">{ctaLabel}</span>
+        <span className="block text-xs opacity-70 mt-0.5">{ctaSubLabel}</span>
       </motion.button>
     </div>
   );
