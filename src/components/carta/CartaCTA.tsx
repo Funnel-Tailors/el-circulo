@@ -1,27 +1,17 @@
-import { quizAnalytics } from "@/lib/analytics";
+import CirculoPaymentCTA from "@/components/roadmap/CirculoPaymentCTA";
 
-const PAYMENT_URL = "https://link.fastpaydirect.com/payment-link/69ae003d1934f9211e5d0fc1";
+const CARTA_PAYMENT_URL = "https://link.fastpaydirect.com/payment-link/69ae003d1934f9211e5d0fc1";
 
 const CartaCTA = () => {
-  const handleClick = () => {
-    quizAnalytics.trackEvent({
-      event_type: 'cta_click',
-      step_id: 'carta_payment',
-    });
-  };
-
   return (
-    <div className="text-center py-16 md:py-24 px-6 font-mono">
-      <a
-        href={PAYMENT_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleClick}
-        className="inline-block px-8 py-4 bg-white text-[#1c1c1e] font-mono font-bold text-lg hover:bg-white/90 transition-colors duration-200"
-      >
-        Entrar al Círculo
-        <span className="block text-xs font-normal mt-1 opacity-70">La invitación será enviada automáticamente</span>
-      </a>
+    <div className="py-16 md:py-24 px-6">
+      <CirculoPaymentCTA
+        variant="full"
+        source="carta"
+        paymentUrl={CARTA_PAYMENT_URL}
+        ctaLabel="ENTRAR AL CÍRCULO"
+        ctaSubLabel="La invitación será enviada automáticamente"
+      />
     </div>
   );
 };
