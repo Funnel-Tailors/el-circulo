@@ -35,6 +35,25 @@ function isInvalidEmail(email: string): { invalid: boolean; reason?: string } {
   return { invalid: false };
 }
 
+async function applyLeadMagnetTags(
+  contactId: string,
+  headers: Record<string, string>,
+) {
+  const response = await fetch(
+    `https://services.leadconnectorhq.com/contacts/${contactId}/tags`,
+    {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ tags: LEAD_MAGNET_TAGS }),
+    },
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to apply lead magnet tags: ${response.status} - ${errorText}`);
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -148,6 +167,8 @@ serve(async (req) => {
           throw new Error(`Failed to update duplicate contact: ${updateResponse.status} - ${updateError}`);
         }
 
+        await applyLeadMagnetTags(dupId, ghlHeaders);
+
         console.log('✅ Lead magnet duplicate resolved:', { contactId: dupId, sessionId });
         return new Response(
           JSON.stringify({ success: true, contactId: dupId }),
@@ -160,6 +181,10 @@ serve(async (req) => {
 
     const ghlData = await ghlResponse.json();
     const finalContactId = ghlData.contact?.id || contactId;
+
+    if (finalContactId) {
+      await applyLeadMagnetTags(finalContactId, ghlHeaders);
+    }
 
     console.log('✅ Lead magnet submitted:', {
       contactId: finalContactId,
