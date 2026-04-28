@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const TIMER_MS = 25_000;
+const TIMER_MS = 12_000;
 
 export function useLeadMagnetTrigger() {
   const isMobile = useIsMobile();
