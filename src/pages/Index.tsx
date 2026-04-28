@@ -9,6 +9,7 @@ import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import CirculoPaymentCTA from "@/components/roadmap/CirculoPaymentCTA";
 import { roadmapDays, successCases, featuredInterview } from "@/data/roadmap";
 import { PainSection } from "@/components/roadmap/PainSection";
+import LeadMagnetPopup from "@/components/lead-magnet/LeadMagnetPopup";
 
 const Index = () => {
   return (
@@ -82,6 +83,8 @@ const Index = () => {
           <CirculoPaymentCTA variant="full" source="final_cta" />
         </div>
       </div>
+
+      <LeadMagnetPopup />
     </div>
   );
 };
