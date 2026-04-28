@@ -87,7 +87,9 @@ export const LeadMagnetPopupContent = ({
         <div className="rounded-xl border border-foreground/10 bg-foreground/5 p-4 text-sm">
           <p className="font-medium mb-1">Listo.</p>
           <p className="text-muted-foreground">
-            Revisa tu bandeja en los próximos minutos.
+            Revisa tu bandeja en los próximos minutos. A veces llega a spam:
+            si aparece ahí, márcalo como correo legítimo para que tu cliente de
+            correo no vuelva a esconderlo.
           </p>
         </div>
       ) : (
