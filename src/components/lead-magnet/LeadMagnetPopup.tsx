@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Loader2, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -12,8 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { quizAnalytics } from "@/lib/analytics";
 import { useLeadMagnetTrigger } from "@/hooks/useLeadMagnetTrigger";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { useLeadMagnetSubmit, type LeadMagnetStatus } from "@/hooks/useLeadMagnetSubmit";
 
 const BULLETS = [
   <>
@@ -40,11 +37,9 @@ const generateParticles = (count: number) =>
     size: 6 + Math.random() * 4,
   }));
 
-type Status = "idle" | "submitting" | "success" | "error";
-
 interface LeadMagnetPopupContentProps {
   email: string;
-  status: Status;
+  status: LeadMagnetStatus;
   errorMsg: string | null;
   onEmailChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
@@ -66,20 +61,14 @@ export const LeadMagnetPopupContent = ({
         <span>Regalo secreto desbloqueado</span>
       </div>
 
-      <DialogTitle asChild>
-        <h2 className="font-display text-2xl sm:text-3xl leading-tight mb-3">
-          <span className="glow">
-            La fórmula (no tan) secreta para añadir un cero a tus presupuestos
-          </span>
-          <span className="text-foreground/90">
-            {" "}— y que aun así piensen que es essstúpido decirte que no.
-          </span>
-        </h2>
-      </DialogTitle>
-
-      <DialogDescription className="sr-only">
-        Apúntate a una clase gratuita sobre cómo construir ofertas irresistibles.
-      </DialogDescription>
+      <h2 className="font-display text-2xl sm:text-3xl leading-tight mb-3">
+        <span className="glow">
+          La fórmula (no tan) secreta para añadir un cero a tus presupuestos
+        </span>
+        <span className="text-foreground/90">
+          {" "}— y que aun así piensen que es essstúpido decirte que no.
+        </span>
+      </h2>
 
       <p className="text-sm text-muted-foreground mb-5">
         Una clase gratuita en la que aprenderás:
@@ -176,19 +165,17 @@ export const LeadMagnetPopupContent = ({
 
 const LeadMagnetPopup = () => {
   const { shouldOpen, dismiss } = useLeadMagnetTrigger();
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<Status>("idle");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [viewed, setViewed] = useState(false);
+  const { email, status, errorMsg, onEmailChange, onSubmit } = useLeadMagnetSubmit();
+  const viewedRef = useRef(false);
 
   useEffect(() => {
-    if (shouldOpen && !viewed) {
-      setViewed(true);
+    if (shouldOpen && !viewedRef.current) {
+      viewedRef.current = true;
       quizAnalytics
         .trackEvent({ event_type: "lead_magnet_viewed" })
         .catch(() => {});
     }
-  }, [shouldOpen, viewed]);
+  }, [shouldOpen]);
 
   const handleOpenChange = (open: boolean) => {
     if (open) return;
@@ -200,81 +187,21 @@ const LeadMagnetPopup = () => {
     dismiss();
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (!EMAIL_REGEX.test(cleanEmail)) {
-      setErrorMsg("Pon un email que parezca un email.");
-      setStatus("error");
-      return;
-    }
-
-    setStatus("submitting");
-    setErrorMsg(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        "submit-lead-magnet",
-        {
-          body: {
-            email: cleanEmail,
-            fbclid: quizAnalytics.getFbclid() ?? undefined,
-            sessionId: quizAnalytics.getSessionId(),
-            utm: quizAnalytics.utmParams,
-            referrer: document.referrer || undefined,
-          },
-        },
-      );
-
-      if (error || !data?.success) {
-        const message =
-          (data && typeof data === "object" && "error" in data
-            ? (data as { error?: string }).error
-            : null) ||
-          error?.message ||
-          "Algo ha fallado. Inténtalo otra vez.";
-        setErrorMsg(message);
-        setStatus("error");
-        return;
-      }
-
-      quizAnalytics
-        .trackEvent({ event_type: "lead_magnet_submitted" })
-        .catch(() => {});
-      quizAnalytics
-        .trackMetaPixelEvent("Lead", {
-          content_name: "Lead Magnet - Clase Gratis",
-          content_category: "lead_magnet",
-          content_ids: ["lead_magnet_oferta"],
-          value: 50,
-          currency: "EUR",
-        })
-        .catch(() => {});
-
-      setStatus("success");
-    } catch (err) {
-      console.error("Lead magnet submit failed:", err);
-      setErrorMsg("Algo ha fallado. Inténtalo otra vez.");
-      setStatus("error");
-    }
-  };
-
   return (
     <Dialog open={shouldOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="glass-card-dark border-white/10 max-w-xl p-0 overflow-hidden">
+        <DialogTitle className="sr-only">
+          La fórmula para añadir un cero a tus presupuestos
+        </DialogTitle>
+        <DialogDescription className="sr-only">
+          Apúntate a una clase gratuita sobre cómo construir ofertas irresistibles.
+        </DialogDescription>
         <LeadMagnetPopupContent
           email={email}
           status={status}
           errorMsg={errorMsg}
-          onSubmit={handleSubmit}
-          onEmailChange={(value) => {
-            setEmail(value);
-            if (status === "error") {
-              setStatus("idle");
-              setErrorMsg(null);
-            }
-          }}
+          onSubmit={onSubmit}
+          onEmailChange={onEmailChange}
         />
       </DialogContent>
     </Dialog>

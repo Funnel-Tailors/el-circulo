@@ -25,6 +25,7 @@ const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
 const Showcase = lazy(() => import("./pages/admin/Showcase"));
 const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
+const ClaseGratis = lazy(() => import("./pages/ClaseGratis"));
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,11 @@ const App = () => (
           <Route path="/carta" element={
             <Suspense fallback={<div className="min-h-screen bg-[#1c1c1e]" />}>
               <Carta />
+            </Suspense>
+          } />
+          <Route path="/clase-gratis" element={
+            <Suspense fallback={<div className="min-h-screen bg-background" />}>
+              <ClaseGratis />
             </Suspense>
           } />
 
