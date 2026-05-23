@@ -9,11 +9,11 @@ export const PAIN_HEADLINES: Record<string, string> = {
 export const RESULT_MESSAGES = {
   qualified: {
     title: "Tu plaza está lista",
-    subtitle: "Agenda tu llamada estratégica",
+    subtitle: "Accede a La Senda",
     socialProof: "FLOC facturó €80K en 4 días. Proyectos de hasta €60K cerrados dentro.",
-    formCta: "📅 Reservar llamada estratégica →",
-    postSubmit: "✨ Tus datos ya están pre-cargados en el calendario",
-    trustSignal: "🔒 Solo usamos tu WhatsApp para confirmar la llamada",
+    formCta: "ACCEDE A LA SENDA →",
+    postSubmit: "✨ Te enviamos el enlace por WhatsApp",
+    trustSignal: "🔒 Te enviaremos el enlace de acceso por WhatsApp. Pon un número real o no entrarás.",
   },
   notQualified: {
     title: "La Senda no es para ti",

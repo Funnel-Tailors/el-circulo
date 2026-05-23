@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
 import { X } from "lucide-react";
-import CirculoPaymentCTA from "./CirculoPaymentCTA";
 interface CircleHeroProps {
   disableSticky?: boolean;
 }
@@ -192,8 +191,15 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       </div>
 
       {/* CTA Button - justo debajo del VSL */}
-      <div className="pt-4">
-        <CirculoPaymentCTA variant="compact" source="hero" />
+      <div className="pt-4 text-center">
+        <a
+          href="#taller"
+          data-cta-source="hero"
+          className="inline-block px-8 py-4 rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense transition-colors"
+        >
+          <span className="block text-lg">INSCRÍBETE AL TALLER</span>
+          <span className="block text-xs opacity-70 mt-0.5">4h de formación gratis · Hay filtro</span>
+        </a>
       </div>
     </div>;
 };

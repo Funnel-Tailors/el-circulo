@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
@@ -6,10 +7,27 @@ import StellarTimeline from "@/components/roadmap/StellarTimeline";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
 import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
-import CirculoPaymentCTA from "@/components/roadmap/CirculoPaymentCTA";
+import { HomeQuiz } from "@/components/roadmap/HomeQuiz";
 import { roadmapDays, successCases, featuredInterview } from "@/data/roadmap";
 import { PainSection } from "@/components/roadmap/PainSection";
-import LeadMagnetPopup from "@/components/lead-magnet/LeadMagnetPopup";
+
+const SendaCTA = ({ source }: { source: "post_roadmap" | "final_cta" }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    className="text-center"
+  >
+    <a
+      href="#taller"
+      data-cta-source={source}
+      className="inline-block px-8 py-4 rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense transition-colors"
+    >
+      <span className="block text-lg">INSCRÍBETE AL TALLER</span>
+      <span className="block text-xs opacity-70 mt-0.5">4h de formación gratis · Hay filtro</span>
+    </a>
+  </motion.div>
+);
 
 const Index = () => {
   return (
@@ -32,9 +50,9 @@ const Index = () => {
             <StellarTimeline days={roadmapDays} />
           </div>
 
-          {/* Mid CTA — direct payment */}
+          {/* Mid CTA — entry to the Senda */}
           <div className="my-12">
-            <CirculoPaymentCTA variant="compact" source="post_roadmap" />
+            <SendaCTA source="post_roadmap" />
           </div>
 
           {/* ASCENDIDOS */}
@@ -78,13 +96,14 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Final Payment CTA */}
-        <div id="payment-cta" className="container max-w-4xl mx-auto px-6 mt-16">
-          <CirculoPaymentCTA variant="full" source="final_cta" />
+        {/* Final CTA — scroll to embedded quiz */}
+        <div id="senda-cta" className="container max-w-4xl mx-auto px-6 mt-16">
+          <SendaCTA source="final_cta" />
         </div>
-      </div>
 
-      <LeadMagnetPopup />
+        {/* Embedded quiz — el taller gratuito en sí */}
+        <HomeQuiz />
+      </div>
     </div>
   );
 };

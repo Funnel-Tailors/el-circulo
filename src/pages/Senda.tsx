@@ -5,7 +5,6 @@ import { useSendaProgress } from "@/hooks/useSendaProgress";
 import { HeroSection } from "@/components/senda/HeroSection";
 import { PreparationCards } from "@/components/senda/PreparationCards";
 import { PersonalizedPainSection } from "@/components/senda/PersonalizedPainSection";
-import { ValueStackSection } from "@/components/senda/ValueStackSection";
 import { FilteredSuccessCases } from "@/components/senda/FilteredSuccessCases";
 import { SendaFooter } from "@/components/senda/SendaFooter";
 import VaultSection from "@/components/senda/VaultSection";
@@ -199,7 +198,6 @@ const Senda = () => {
           </div>
         )}
         
-        <ValueStackSection />
         <FilteredSuccessCases quizState={quizState || {} as QuizState} />
         
         {/* Vault Section - se revela gradualmente */}
@@ -236,7 +234,7 @@ const Senda = () => {
           </div>
         )}
         
-        <SendaFooter />
+        <SendaFooter showOffer={progress.module4Unlocked} />
       </div>
 
       {/* Portal Modal - with dynamic copy based on seal */}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GHLCalendarIframe } from "./GHLCalendarIframe";
 import { supabase } from "@/integrations/supabase/client";
 import { quizAnalytics } from "@/lib/analytics";
 import { toast } from "@/hooks/use-toast";
@@ -20,9 +20,8 @@ interface QualifiedResultProps {
 }
 
 export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) => {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [contactSubmitted, setContactSubmitted] = useState(false);
-  const [ghlContactId, setGhlContactId] = useState<string | null>(null);
   const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
 
   const form = useForm<ContactFormData>({
@@ -137,21 +136,29 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       quizAnalytics.enrichLeadEvent(leadValue, icpMatch, revenueRange, true);
       console.log('🎯 [TRACKING] Lead event fired — value €' + leadValue);
 
-      toast({ title: "✅ Perfecto", description: "Tus datos han sido guardados" });
-      setGhlContactId(responseData?.contactId || null);
-      setContactSubmitted(true);
+      const contactId = responseData?.contactId;
+      if (!contactId) {
+        toast({
+          title: "⚠️ Error",
+          description: "No pudimos crear tu acceso. Inténtalo otra vez.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({ title: "✅ Acceso concedido", description: "Entrando a La Senda..." });
+      navigate(`/senda?token=${encodeURIComponent(contactId)}`);
     } catch (error) {
       console.error('💥 [ERROR] Failed to submit lead:', error);
-      toast({ title: "⚠️ Error", description: "Hubo un problema, pero puedes continuar", variant: "destructive" });
-      setContactSubmitted(true);
+      toast({
+        title: "⚠️ Error",
+        description: "Hubo un problema. Inténtalo otra vez.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
-  }, [quizState, calculateScore]);
-
-  // Parse name for calendar
-  const [firstName = '', ...lastNameParts] = (contactSubmitted ? form.getValues('name') : '').split(' ');
-  const lastName = lastNameParts.join(' ');
+  }, [quizState, calculateScore, navigate]);
 
   return (
     <div className="space-y-6">
@@ -166,14 +173,13 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
         </p>
       </div>
 
-      {/* Contact Form or Calendar */}
-      {!contactSubmitted ? (
-        <div className="space-y-4">
-          <p className="text-sm text-foreground/70 text-center">
-            Deja tus datos y agenda una llamada estratégica
-          </p>
+      {/* Contact Form */}
+      <div className="space-y-4">
+        <p className="text-sm text-foreground/70 text-center">
+          Deja tus datos para entrar a La Senda
+        </p>
 
-          <Form {...form}>
+        <Form {...form}>
             <form 
               onSubmit={form.handleSubmit(handleContactSubmit)}
               onKeyDown={(e) => {
@@ -254,10 +260,10 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                 {RESULT_MESSAGES.qualified.trustSignal}
               </p>
 
-              <Button 
-                type="submit" 
-                disabled={isSubmitting} 
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-base py-4 font-bold shadow-lg hover:shadow-xl transition-all" 
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense text-lg py-6 font-bold transition-colors"
                 size="lg"
               >
                 {isSubmitting ? (
@@ -271,24 +277,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
               </Button>
             </form>
           </Form>
-        </div>
-      ) : (
-        /* Calendar after submit */
-        <div className="space-y-4">
-          <p className="text-sm text-center text-muted-foreground">
-            {RESULT_MESSAGES.qualified.postSubmit}
-          </p>
-          <GHLCalendarIframe
-            calendarId="8C2kck4NCnEihznxvL29"
-            firstName={firstName}
-            lastName={lastName}
-            email=""
-            phone={form.getValues('countryCode') + form.getValues('phone').replace(/[\s-]/g, '')}
-            quizScore={calculateScore(quizState)}
-            qualificationLevel={calculateScore(quizState) >= 90 ? 'premium_qualified' : calculateScore(quizState) >= 80 ? 'qualified' : 'marginal'}
-          />
-        </div>
-      )}
+      </div>
 
       {/* Back button */}
       <div className="text-center pt-4">

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import PortalVortex from "@/components/shared/PortalVortex";
 import Starfield from "@/components/quiz/Starfield";
-import { LeadMagnetPopupContent } from "@/components/lead-magnet/LeadMagnetPopup";
 import { colors } from "@/design-system/tokens/colors";
 import { radius, semanticRadius } from "@/design-system/tokens/radius";
 import { duration, ease, easeCss } from "@/design-system/tokens/motion";
@@ -263,22 +262,6 @@ function SignatureTab() {
         />
       </Section>
 
-      <Section title="Lead Magnet Popup" description="Exit-intent popup pattern with the signature CTA treatment">
-        <div className="max-w-xl overflow-hidden rounded-2xl border border-foreground/10 bg-background/80">
-          <LeadMagnetPopupContent
-            email=""
-            status="idle"
-            errorMsg={null}
-            onEmailChange={() => {}}
-            onSubmit={(e) => e.preventDefault()}
-          />
-        </div>
-        <CodePreview
-          code={`import LeadMagnetPopup from "@/components/lead-magnet/LeadMagnetPopup";
-
-<LeadMagnetPopup />`}
-        />
-      </Section>
     </div>
   );
 }
