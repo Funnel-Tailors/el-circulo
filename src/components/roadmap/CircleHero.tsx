@@ -197,8 +197,8 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
           data-cta-source="hero"
           className="inline-block px-8 py-4 rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense transition-colors"
         >
-          <span className="block text-lg">INSCRÍBETE AL TALLER</span>
-          <span className="block text-xs opacity-70 mt-0.5">4h de formación gratis · Hay filtro</span>
+          <span className="block text-lg">APLICAR AL CÍRCULO</span>
+          <span className="block text-xs opacity-70 mt-0.5">5 min de diagnóstico · No es para todos</span>
         </a>
       </div>
     </div>;

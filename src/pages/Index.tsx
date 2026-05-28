@@ -101,7 +101,7 @@ const Index = () => {
           <SendaCTA source="final_cta" />
         </div>
 
-        {/* Embedded quiz — el taller gratuito en sí */}
+        {/* Embedded quiz — LA BRECHA, filtro de cualificación pre-call */}
         <HomeQuiz />
       </div>
     </div>
