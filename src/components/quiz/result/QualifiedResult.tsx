@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -13,16 +12,29 @@ import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
 import { RESULT_MESSAGES, PAIN_HEADLINES } from "@/constants/resultMessages";
+import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
 
 interface QualifiedResultProps {
   quizState: QuizState;
   onReset: () => void;
 }
 
+// Mismo calendar que usa SendaFooter — Strategic Call del Círculo
+const STRATEGIC_CALL_CALENDAR_ID = "8C2kck4NCnEihznxvL29";
+
+interface BookingData {
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone: string;
+  quizScore: number;
+  qualificationLevel: "premium_qualified" | "qualified" | "marginal";
+}
+
 export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) => {
-  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
+  const [bookingData, setBookingData] = useState<BookingData | null>(null);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -129,9 +141,10 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       });
       console.log('💳 [TRACKING] InitiateCheckout fired — value €3,000');
 
-      // Fire Lead event — critical for Meta optimization (was missing!)
+      // Fire Lead event — critical for Meta optimization
       const revenueRange = quizState.q3 || 'unknown';
-      const icpMatch = revenueRange === '1.000€ - 2.500€';
+      const ICP_SWEET_SPOT = ['€3.000 - €5.000/mes', '€5.000 - €10.000/mes'];
+      const icpMatch = ICP_SWEET_SPOT.includes(revenueRange);
       const leadValue = icpMatch ? 3000 : 1500;
       quizAnalytics.enrichLeadEvent(leadValue, icpMatch, revenueRange, true);
       console.log('🎯 [TRACKING] Lead event fired — value €' + leadValue);
@@ -140,14 +153,31 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       if (!contactId) {
         toast({
           title: "⚠️ Error",
-          description: "No pudimos crear tu acceso. Inténtalo otra vez.",
+          description: "No pudimos registrar tu solicitud. Inténtalo otra vez.",
           variant: "destructive",
         });
         return;
       }
 
-      toast({ title: "✅ Acceso concedido", description: "Entrando a La Senda..." });
-      navigate(`/senda?token=${encodeURIComponent(contactId)}`);
+      // Split name for calendar prefill
+      const nameParts = data.name.trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+
+      // Qualification level for calendar tracking
+      const qualificationLevel: BookingData["qualificationLevel"] =
+        score >= 85 ? "premium_qualified" : score >= 70 ? "qualified" : "marginal";
+
+      toast({ title: "✅ Plaza confirmada", description: "Elige tu hueco." });
+
+      // Reveal calendar in-place — no more redirect to Senda
+      setBookingData({
+        firstName,
+        lastName,
+        phone: fullPhone,
+        quizScore: score,
+        qualificationLevel,
+      });
     } catch (error) {
       console.error('💥 [ERROR] Failed to submit lead:', error);
       toast({
@@ -158,7 +188,32 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     } finally {
       setIsSubmitting(false);
     }
-  }, [quizState, calculateScore, navigate]);
+  }, [quizState, calculateScore]);
+
+  // After successful submit — show calendar in-place
+  if (bookingData) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center space-y-3">
+          <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
+            {bookingData.firstName}, <span className="glow">aplicar al Círculo</span>
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Si crees que es para ti, lo hablamos en una llamada. Elige tu hueco abajo.
+          </p>
+        </div>
+
+        <GHLCalendarIframe
+          calendarId={STRATEGIC_CALL_CALENDAR_ID}
+          firstName={bookingData.firstName}
+          lastName={bookingData.lastName}
+          phone={bookingData.phone}
+          quizScore={bookingData.quizScore}
+          qualificationLevel={bookingData.qualificationLevel}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -167,7 +222,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
         <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
           {personalizedTitle} — <span className="glow">{RESULT_MESSAGES.qualified.subtitle}</span>
         </h2>
-        
+
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           {RESULT_MESSAGES.qualified.socialProof}
         </p>
@@ -176,7 +231,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       {/* Contact Form */}
       <div className="space-y-4">
         <p className="text-sm text-foreground/70 text-center">
-          Deja tus datos para entrar a La Senda
+          Deja tus datos para aplicar al Círculo
         </p>
 
         <Form {...form}>

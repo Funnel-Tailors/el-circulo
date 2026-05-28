@@ -469,14 +469,15 @@ class QuizAnalytics {
   }
 
   async trackICPMatch(projectValue: string): Promise<void> {
-    if (projectValue === "1.000€ - 2.500€") {
+    const ICP_SWEET_SPOT = ["€3.000 - €5.000/mes", "€5.000 - €10.000/mes"];
+    if (ICP_SWEET_SPOT.includes(projectValue)) {
       await this.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'ICP Sweet Spot Match',
         content_category: 'high_intent_lead',
         value: 800,
         currency: 'EUR',
-        content_ids: ['icp_1k_2.5k']
+        content_ids: ['icp_3k_10k']
       });
     }
   }

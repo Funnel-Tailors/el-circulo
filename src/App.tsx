@@ -5,16 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
-import Quiz from "./pages/Quiz";
 import Auth from "./pages/Auth";
 import Senda from "./pages/Senda";
-import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
 
-// Lazy load v2 landing and heavy pages
-const IndexV2 = lazy(() => import("./pages/IndexV2"));
-const Carta = lazy(() => import("./pages/Carta"));
-const LaBrecha = lazy(() => import("./pages/LaBrecha"));
+// Lazy load admin (legacy public landings killed — redirect to /)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const AdminQuizFunnel = lazy(() => import("./pages/admin/AdminQuizFunnel"));
@@ -42,21 +37,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/v2" element={
-            <Suspense fallback={<div className="min-h-screen bg-background" />}>
-              <IndexV2 />
-            </Suspense>
-          } />
-          <Route path="/quiz" element={<Quiz />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/senda" element={<Senda />} />
-          <Route path="/artefacto" element={<Artefacto />} />
-          <Route path="/la-brecha" element={
-            <Suspense fallback={<div className="min-h-screen bg-background" />}>
-              <LaBrecha />
-            </Suspense>
-          } />
-          
+
           {/* Admin routes */}
           <Route path="/admin" element={
             <Suspense fallback={<AdminFallback />}>
@@ -74,16 +57,16 @@ const App = () => (
             <Route path="testimonials" element={<Suspense fallback={<AdminFallback />}><AdminTestimonials /></Suspense>} />
           </Route>
           
-          <Route path="/carta" element={
-            <Suspense fallback={<div className="min-h-screen bg-[#1c1c1e]" />}>
-              <Carta />
-            </Suspense>
-          } />
-
           {/* Redirects */}
           <Route path="/analytics" element={<Navigate to="/admin" replace />} />
           <Route path="/test-vault" element={<Navigate to="/admin/dev" replace />} />
           <Route path="/roadmap" element={<Navigate to="/" replace />} />
+          {/* Legacy public landings — redirect to home */}
+          <Route path="/v2" element={<Navigate to="/" replace />} />
+          <Route path="/quiz" element={<Navigate to="/" replace />} />
+          <Route path="/carta" element={<Navigate to="/" replace />} />
+          <Route path="/la-brecha" element={<Navigate to="/" replace />} />
+          <Route path="/artefacto" element={<Navigate to="/" replace />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
