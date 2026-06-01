@@ -527,10 +527,16 @@ El Círculo
   }
 }
 
-function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number): string {
+function generateCloserPreCallNotification(
+  contact: ContactData,
+  answers: QuizAnswers,
+  score: number,
+  revenueValue: string,
+  budgetValue: string,
+): string {
   const firstName = contact.name.split(' ')[0]
-  const hasInvestment = answers.q5 !== 'Menos de €3.000'
-  const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
+  const hasInvestment = budgetValue !== 'menos_500' && budgetValue !== ''
+  const midRevenue = revenueValue === '5000_10000' || revenueValue === '10000_20000'
   const authSolo = answers.q7 === 'Solo yo'
   
   const scoreEmoji = score >= 85 ? '🔥 HOT' : score >= 75 ? '⭐ WARM' : '❄️ COLD'
@@ -538,7 +544,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   
   let closingStrategy = ''
   if (midRevenue && hasInvestment) {
-    closingStrategy = 'CLIENTE IDEAL - Sweet spot (€5-10K) + inversión = MÁXIMA PRIORIDAD.'
+    closingStrategy = 'CLIENTE IDEAL - Sweet spot (€5-20K facturando) + inversión = MÁXIMA PRIORIDAD.'
   } else if (score >= 85 && hasInvestment) {
     closingStrategy = 'ADMISIÓN DIRECTA - Candidato premium. Evalúa fit en primeros 15min.'
   } else if (score >= 75) {
