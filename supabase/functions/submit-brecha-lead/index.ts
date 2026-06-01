@@ -1023,7 +1023,11 @@ Deno.serve(async (req) => {
 
     // Extract from root level OR customData (GHL sends data in different places)
     const ghl_contact_id = body.contact_id || body.customData?.ghl_contact_id || body.ghl_contact_id
-    const first_name = body.first_name || body.customData?.first_name || ''
+    // Prefer quiz_name (real name set via quiz) over first_name (may contain @insta handle)
+    const rawQuizName = body.quiz_name || body.customData?.quiz_name || ''
+    const rawFirstName = body.first_name || body.customData?.first_name || ''
+    const isHandle = (s: string) => !s || s.trim().startsWith('@') || !/[a-zA-ZáéíóúñÁÉÍÓÚÑ]/.test(s)
+    const first_name = (!isHandle(rawQuizName) ? rawQuizName : (!isHandle(rawFirstName) ? rawFirstName : '')).trim()
 
     // Extract answers from customData (where GHL actually sends them) OR root brecha_qX fields
     const customData = body.customData || {}
