@@ -23,11 +23,11 @@ const PROFESSION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const REVENUE_MAP: Record<string, { value: string; score: number }> = {
-  '🌑': { value: 'menos_3000', score: 0 },
-  '🌓': { value: '3000_5000', score: 10 },
+  '🌑': { value: 'menos_2000', score: 0 },
+  '🌓': { value: '2000_5000', score: 8 },
   '🌔': { value: '5000_10000', score: 15 },
-  '🌕': { value: '10000_20000', score: 20 },
-  '⭐': { value: 'mas_20000', score: 25 },
+  '🌕': { value: '10000_20000', score: 22 },
+  '⭐': { value: 'mas_20000', score: 28 },
 }
 
 const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
@@ -39,10 +39,10 @@ const ACQUISITION_MAP: Record<string, { value: string; score: number }> = {
 }
 
 const BUDGET_MAP: Record<string, { value: string; score: number; hardstop: boolean }> = {
-  '💧': { value: 'menos_3000', score: 0, hardstop: true },
-  '💎': { value: '5000_8000', score: 15, hardstop: false },
-  '⚡': { value: '8000_12000', score: 20, hardstop: false },
-  '🔮': { value: 'mas_15000', score: 25, hardstop: false },
+  '💧': { value: 'menos_500', score: 0, hardstop: true },
+  '💎': { value: '500_1500', score: 10, hardstop: false },
+  '⚡': { value: '1500_3000', score: 18, hardstop: false },
+  '🔮': { value: 'mas_3000', score: 25, hardstop: false },
 }
 
 const URGENCY_MAP: Record<string, { value: string; score: number }> = {
@@ -73,11 +73,11 @@ const PROFESSION_LITERAL_MAP: Record<string, string> = {
 }
 
 const REVENUE_LITERAL_MAP: Record<string, string> = {
-  'menos_3000': 'Menos de €3.000/mes',
-  '3000_5000': '€3.000 - €5.000/mes',
-  '5000_10000': '€5.000 - €10.000/mes',
-  '10000_20000': '€10.000 - €20.000/mes',
-  'mas_20000': 'Más de €20.000/mes',
+  'menos_2000': 'Menos de €2.000 en mi mejor mes',
+  '2000_5000': '€2.000 - €5.000 en mi mejor mes',
+  '5000_10000': '€5.000 - €10.000 en mi mejor mes',
+  '10000_20000': '€10.000 - €20.000 en mi mejor mes',
+  'mas_20000': 'Más de €20.000 en mi mejor mes',
 }
 
 const ACQUISITION_LITERAL_MAP: Record<string, string> = {
@@ -89,10 +89,10 @@ const ACQUISITION_LITERAL_MAP: Record<string, string> = {
 }
 
 const BUDGET_LITERAL_MAP: Record<string, string> = {
-  'menos_3000': 'Menos de €3.000',
-  '5000_8000': '€5.000 - €8.000',
-  '8000_12000': '€8.000 - €12.000',
-  'mas_15000': 'Más de €15.000',
+  'menos_500': 'Menos de €500/mes',
+  '500_1500': '€500 - €1.500/mes',
+  '1500_3000': '€1.500 - €3.000/mes',
+  'mas_3000': 'Más de €3.000/mes',
 }
 
 const URGENCY_LITERAL_MAP: Record<string, string> = {
@@ -149,10 +149,10 @@ function parseMultipleEmojis(text: string, map: Record<string, { value: string; 
 }
 
 function determineTier(budgetValue: string, score: number): string {
-  if ((budgetValue === 'mas_15000') && score >= 90) {
+  if ((budgetValue === 'mas_3000') && score >= 90) {
     return 'premium'
   }
-  if ((budgetValue === '8000_12000' || budgetValue === 'mas_15000') && score >= 60) {
+  if ((budgetValue === '1500_3000' || budgetValue === 'mas_3000') && score >= 60) {
     return 'full_access'
   }
   return 'offer_only'
@@ -1059,19 +1059,14 @@ Deno.serve(async (req) => {
     
     if (budgetParsed?.hardstop) {
       hardstopReason = 'low_budget'
-      console.log('HARDSTOP: Budget menor a €3.000 detectado')
+      console.log('HARDSTOP: Budget menor a €500/mes detectado')
     }
     
-    if (!hardstopReason && revenueParsed?.value === 'menos_3000') {
+    if (!hardstopReason && revenueParsed?.value === 'menos_2000') {
       hardstopReason = 'low_revenue'
-      console.log('HARDSTOP: Revenue menor a €3.000/mes detectado')
+      console.log('HARDSTOP: Revenue (mejor mes) menor a €2.000 detectado')
     }
-
-    // Cross-validation: revenue alto + budget mínimo = mentiroso
-    if (!hardstopReason && revenueParsed?.value && revenueParsed.value !== 'menos_3000' && budgetParsed?.value === 'menos_3000') {
-      hardstopReason = 'inconsistent_revenue_budget'
-      console.log(`HARDSTOP: Inconsistencia detectada - Revenue: ${revenueParsed.value}, Budget: ${budgetParsed.value}`)
-    }
+    // Cross-validation eliminada: con financiación desde €500 ya no aplica.
 
     // Calculate qualification score
     const score = (painParsed?.score || 0) +
