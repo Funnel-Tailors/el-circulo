@@ -312,11 +312,19 @@ function getAgitationLevel(score: number): 'hot' | 'qualified' | 'marginal' {
   return 'marginal'
 }
 
-function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+function generateCloserNotification(
+  contact: ContactData,
+  answers: QuizAnswers,
+  score: number,
+  tags: string[],
+  revenueValue: string,
+  budgetValue: string,
+): string {
   const firstName = contact.name.split(' ')[0]
   const isHot = score >= 85
-  const hasInvestment = answers.q5 !== 'Menos de €3.000'
-  const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
+  // Comparar contra el value parseado, no contra el literal (los literales cambian con cada recalibración).
+  const hasInvestment = budgetValue !== 'menos_500' && budgetValue !== ''
+  const midRevenue = revenueValue === '5000_10000' || revenueValue === '10000_20000'
   const isIdealClient = midRevenue && hasInvestment
   const tempEmoji = score >= 85 ? '🔥' : score >= 75 ? '⭐' : '❄️'
   
@@ -333,14 +341,14 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
 ${tempEmoji} NUEVO LEAD BRECHA: ${firstName}
 
 ${contactWindow}
-${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Sweet spot (€5-10K) + tiene inversión = Alto potencial\n' : ''}
+${isIdealClient ? '\n🚨 ¡CLIENTE IDEAL! → Sweet spot (€5-20K facturando) + tiene inversión = Alto potencial\n' : ''}
 
 📊 SCORE: ${score}/110 ${scoreBar}
 
 💼 PERFIL:
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
-• Factura: ${answers.q3}${midRevenue ? ' (Sweet spot — tracción + dolor)' : ''}
+• Mejor mes: ${answers.q3}${midRevenue ? ' (Sweet spot — tracción + dolor)' : ''}
 • Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
 • Decide: ${answers.q7}
 
@@ -353,10 +361,17 @@ ${isHot ? '→ Evaluar fit + cerrar si hay alineación' : '→ Cualificar + agen
   `.trim()
 }
 
-function generateInternalNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
+function generateInternalNotification(
+  contact: ContactData,
+  answers: QuizAnswers,
+  score: number,
+  tags: string[],
+  revenueValue: string,
+  budgetValue: string,
+): string {
   const scoreBar = '█'.repeat(Math.floor(score / 11)) + '░'.repeat(10 - Math.floor(score / 11))
-  const hasInvestment = answers.q5 !== 'Menos de €3.000'
-  const midRevenue = answers.q3 === '€5.000 - €10.000/mes'
+  const hasInvestment = budgetValue !== 'menos_500' && budgetValue !== ''
+  const midRevenue = revenueValue === '5000_10000' || revenueValue === '10000_20000'
   const authSolo = answers.q7 === 'Solo yo'
   
   return `
@@ -369,7 +384,7 @@ VEREDICTO: ${score}/110 ${scoreBar}
 
 ⚡ RESUMEN:
 • Pain: ${answers.q1}
-• Profesión: ${answers.q2} | Factura: ${answers.q3}${midRevenue ? ' (Sweet spot)' : ''}
+• Profesión: ${answers.q2} | Mejor mes: ${answers.q3}${midRevenue ? ' (Sweet spot)' : ''}
 • Inversión: ${hasInvestment ? `✅ ${answers.q5}` : '❌ Insuficiente'}
 • Decide: ${authSolo ? '✅ Solo' : answers.q7}
 • Adquisición: ${Array.isArray(answers.q4) ? answers.q4.join(', ') : answers.q4}
