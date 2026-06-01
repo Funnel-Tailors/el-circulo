@@ -1196,8 +1196,8 @@ Deno.serve(async (req) => {
       contrastStatement,
       fearCall
     )
-    const closerNotification = generateCloserNotification(contactData, literalAnswers, score, tags.toApply)
-    const internalNotification = generateInternalNotification(contactData, literalAnswers, score, tags.toApply)
+    const closerNotification = generateCloserNotification(contactData, literalAnswers, score, tags.toApply, revenueParsed?.value || '', budgetParsed?.value || '')
+    const internalNotification = generateInternalNotification(contactData, literalAnswers, score, tags.toApply, revenueParsed?.value || '', budgetParsed?.value || '')
     const clientNotification = generateClientNotification(first_name || 'Lead', literalAnswers, score)
     const clientPostBookingNotification = generateClientPostBookingNotification(first_name || 'Lead', literalAnswers, score)
     const closerPreCallNotification = generateCloserPreCallNotification(contactData, literalAnswers, score)
