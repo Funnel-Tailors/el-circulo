@@ -7,6 +7,7 @@ import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Senda from "./pages/Senda";
+import LaBrecha from "./pages/LaBrecha";
 import NotFound from "./pages/NotFound";
 
 // Lazy load admin (legacy public landings killed — redirect to /)
@@ -39,6 +40,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/senda" element={<Senda />} />
+          <Route path="/la-brecha" element={<LaBrecha />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={
@@ -65,7 +67,7 @@ const App = () => (
           <Route path="/v2" element={<Navigate to="/" replace />} />
           <Route path="/quiz" element={<Navigate to="/" replace />} />
           <Route path="/carta" element={<Navigate to="/" replace />} />
-          <Route path="/la-brecha" element={<Navigate to="/" replace />} />
+          
           <Route path="/artefacto" element={<Navigate to="/" replace />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
