@@ -105,6 +105,10 @@ function calculateTags(progress: BrechaProgress): string[] {
   if (progress.skip_the_line_clicked) {
     tags.push(TAGS.OTO_CLICK);
   }
+
+  if (progress.calendar_shown) {
+    tags.push(TAGS.CALENDAR_SHOWN);
+  }
   
   return tags;
 }
