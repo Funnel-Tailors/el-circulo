@@ -38,6 +38,7 @@ interface BrechaProgress {
   frag2_drops_missed?: string[];
   frag3_drops_missed?: string[];
   frag4_drops_missed?: string[];
+  calendar_shown?: boolean;
 }
 
 function calculateTags(progress: BrechaProgress): string[] {
