@@ -117,6 +117,9 @@ const DEFAULT_PROGRESS: BrechaProgress = {
   skip_the_line_shown: false,
   skip_the_line_clicked: false,
   skip_the_line_clicked_at: null,
+
+  calendar_shown: false,
+  calendar_shown_at: null,
 };
 
 interface UseBrechaProgressReturn {
