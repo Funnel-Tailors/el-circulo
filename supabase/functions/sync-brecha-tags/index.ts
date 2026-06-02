@@ -20,6 +20,7 @@ const TAGS = {
   DROPS_MISSED: "❌ drops_perdidos",
   OTO_SHOWN: "👀 oto_vista",
   OTO_CLICK: "🔥 oto_click",
+  CALENDAR_SHOWN: "📅 calendario_visto",
 } as const;
 
 interface BrechaProgress {
