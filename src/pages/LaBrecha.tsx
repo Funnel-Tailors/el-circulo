@@ -166,6 +166,8 @@ const LaBrecha = () => {
             email={undefined}
             phone={undefined}
             eventDate={expiresAt || new Date(Date.now() + 48 * 60 * 60 * 1000)}
+            calendarShown={progress.calendar_shown}
+            onCalendarShown={() => updateProgress({ calendar_shown: true, calendar_shown_at: new Date().toISOString() })}
           />
         </div>
       </div>
