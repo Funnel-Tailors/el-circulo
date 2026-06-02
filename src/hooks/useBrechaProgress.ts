@@ -214,6 +214,7 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
       'journey_completed',
       'skip_the_line_shown',
       'skip_the_line_clicked',
+      'calendar_shown',
     ];
     return importantFields.some(field => field in updates);
   };
