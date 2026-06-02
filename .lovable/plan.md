@@ -1,22 +1,37 @@
-## Problema
+## Plan: Tracking `calendar_shown` en La Brecha
 
-Los leads que entran desde GHL al link `https://.../la-brecha?token=XXX` acaban en la home.
+Replicar el patrón de hitos existente (DB → hook → sync tag a GHL) para marcar cuándo un lead ve el calendario al final del journey.
 
-Causa: en `src/App.tsx` línea 68 la ruta `/la-brecha` está agrupada con las landings públicas legacy (`/v2`, `/quiz`, `/carta`, `/artefacto`) y redirige a `/`. Pero `/la-brecha` **no** es una landing pública — es la página token-gated del journey (la equivalente a `/senda`), y el edge function `submit-brecha-lead` (línea 1151) sigue enviando ese link a los leads.
+### 1. DB — migración `brecha_progress`
+Añadir 2 columnas:
+- `calendar_shown` (boolean, default false)
+- `calendar_shown_at` (timestamptz, nullable)
 
-`src/pages/LaBrecha.tsx` existe y está funcional, solo no está montado.
+### 2. Hook — `src/hooks/useBrechaProgress.ts`
+- Añadir `calendar_shown` y `calendar_shown_at` al interface `BrechaProgress` y a `DEFAULT_PROGRESS`.
+- Añadir `'calendar_shown'` a la lista `importantFields` dentro de `shouldSyncTags` para que dispare el sync automático a GHL.
 
-## Cambio
+### 3. Frontend — `src/components/brecha/BrechaFooter.tsx`
+- Aceptar `token`, `progress` y `updateProgress` (o un callback `onCalendarShown`) como props desde el componente padre (`LaBrecha.tsx`).
+- `useEffect` dentro del bloque `showCalendar && !isExpired`: si `progress.calendar_shown !== true`, llamar `updateProgress({ calendar_shown: true, calendar_shown_at: new Date().toISOString() })` una sola vez (guard con ref para evitar dobles disparos en re-render).
+- Cero cambios visuales.
 
-En `src/App.tsx`:
+### 4. Edge function — `supabase/functions/sync-brecha-tags/index.ts`
+- Añadir nuevo tag al objeto `TAGS`:
+  ```ts
+  CALENDAR_SHOWN: "📅 calendario_visto"
+  ```
+- En `calculateTags()`: si `progress.calendar_shown === true`, push `TAGS.CALENDAR_SHOWN`.
+- Añadir `calendar_shown?: boolean` al interface `BrechaProgress` local de la function.
 
-1. Importar `LaBrecha` (no lazy, igual que `Senda`, porque es ruta crítica de lead).
-2. Montar `<Route path="/la-brecha" element={<LaBrecha />} />` junto a `/senda`.
-3. Eliminar el `<Navigate to="/" replace />` legacy de la línea 68.
+### 5. Padre — `src/pages/LaBrecha.tsx` (ajuste mínimo)
+- Pasar `token`, `progress.calendar_shown` y `updateProgress` (los que ya usa) al `<BrechaFooter />`.
 
-No se toca nada más: ni edge functions, ni links de GHL, ni `LaBrecha.tsx`. El resto de redirects legacy (`/v2`, `/quiz`, `/carta`, `/artefacto`) se mantienen.
+### Resultado
+- Cuando el lead ve el bloque calendario por primera vez → DB marca `calendar_shown=true` + se dispara `sync-brecha-tags` → GHL recibe el tag **`📅 calendario_visto`** sumado a los hitos previos.
+- Tag disponible en GHL para automatizar workflows (ej. follow-up "agenda ya" condicionado a `📅 calendario_visto` AND NOT [tag de booking que tú gestiones]).
+- Sin cambios en email-capture ni en follow-ups por ahora (queda para una siguiente iteración cuando lo decidas).
 
-## Verificación
-
-- Abrir `/la-brecha?token=<token_real>` en preview → debe renderizar el journey.
-- Abrir `/la-brecha` sin token → debe mostrar el estado de error "Token inválido o expirado" que ya maneja `useBrechaAccess`, no la home.
+### Archivos tocados
+- **Migración SQL** (nueva)
+- **Edit**: `src/hooks/useBrechaProgress.ts`, `src/components/brecha/BrechaFooter.tsx`, `src/pages/LaBrecha.tsx`, `supabase/functions/sync-brecha-tags/index.ts`

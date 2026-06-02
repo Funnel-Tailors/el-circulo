@@ -20,6 +20,7 @@ const TAGS = {
   DROPS_MISSED: "❌ drops_perdidos",
   OTO_SHOWN: "👀 oto_vista",
   OTO_CLICK: "🔥 oto_click",
+  CALENDAR_SHOWN: "📅 calendario_visto",
 } as const;
 
 interface BrechaProgress {
@@ -37,6 +38,7 @@ interface BrechaProgress {
   frag2_drops_missed?: string[];
   frag3_drops_missed?: string[];
   frag4_drops_missed?: string[];
+  calendar_shown?: boolean;
 }
 
 function calculateTags(progress: BrechaProgress): string[] {
@@ -102,6 +104,10 @@ function calculateTags(progress: BrechaProgress): string[] {
   
   if (progress.skip_the_line_clicked) {
     tags.push(TAGS.OTO_CLICK);
+  }
+
+  if (progress.calendar_shown) {
+    tags.push(TAGS.CALENDAR_SHOWN);
   }
   
   return tags;

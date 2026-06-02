@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
 
@@ -9,6 +10,8 @@ interface BrechaFooterProps {
   email?: string;
   phone?: string;
   eventDate: Date;
+  calendarShown?: boolean;
+  onCalendarShown?: () => void;
 }
 
 export const BrechaFooter = ({ 
@@ -19,8 +22,18 @@ export const BrechaFooter = ({
   email,
   phone,
   eventDate,
+  calendarShown,
+  onCalendarShown,
 }: BrechaFooterProps) => {
   const isExpired = eventDate.getTime() < Date.now();
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    if (showCalendar && !isExpired && !calendarShown && !firedRef.current) {
+      firedRef.current = true;
+      onCalendarShown?.();
+    }
+  }, [showCalendar, isExpired, calendarShown, onCalendarShown]);
 
   const valueStackItems = [
     "Onboarding 1-1 conmigo",

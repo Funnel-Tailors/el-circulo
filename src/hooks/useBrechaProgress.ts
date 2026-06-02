@@ -59,6 +59,10 @@ interface BrechaProgress {
   skip_the_line_shown: boolean;
   skip_the_line_clicked: boolean;
   skip_the_line_clicked_at: string | null;
+
+  // Calendar
+  calendar_shown: boolean;
+  calendar_shown_at: string | null;
 }
 
 const DEFAULT_PROGRESS: BrechaProgress = {
@@ -113,6 +117,9 @@ const DEFAULT_PROGRESS: BrechaProgress = {
   skip_the_line_shown: false,
   skip_the_line_clicked: false,
   skip_the_line_clicked_at: null,
+
+  calendar_shown: false,
+  calendar_shown_at: null,
 };
 
 interface UseBrechaProgressReturn {
@@ -207,6 +214,7 @@ export const useBrechaProgress = (token: string | null): UseBrechaProgressReturn
       'journey_completed',
       'skip_the_line_shown',
       'skip_the_line_clicked',
+      'calendar_shown',
     ];
     return importantFields.some(field => field in updates);
   };
