@@ -59,6 +59,10 @@ interface BrechaProgress {
   skip_the_line_shown: boolean;
   skip_the_line_clicked: boolean;
   skip_the_line_clicked_at: string | null;
+
+  // Calendar
+  calendar_shown: boolean;
+  calendar_shown_at: string | null;
 }
 
 const DEFAULT_PROGRESS: BrechaProgress = {
