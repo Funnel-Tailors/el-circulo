@@ -160,6 +160,8 @@ export type Database = {
           access_expires_at: string | null
           access_extended_by_hours: number | null
           access_paused: boolean | null
+          calendar_shown: boolean | null
+          calendar_shown_at: string | null
           call_scheduled_at: string | null
           created_at: string | null
           first_visit_at: string | null
@@ -227,6 +229,8 @@ export type Database = {
           access_expires_at?: string | null
           access_extended_by_hours?: number | null
           access_paused?: boolean | null
+          calendar_shown?: boolean | null
+          calendar_shown_at?: string | null
           call_scheduled_at?: string | null
           created_at?: string | null
           first_visit_at?: string | null
@@ -294,6 +298,8 @@ export type Database = {
           access_expires_at?: string | null
           access_extended_by_hours?: number | null
           access_paused?: boolean | null
+          calendar_shown?: boolean | null
+          calendar_shown_at?: string | null
           call_scheduled_at?: string | null
           created_at?: string | null
           first_visit_at?: string | null
