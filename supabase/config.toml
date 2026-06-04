@@ -3,6 +3,12 @@ project_id = "yewfryggiinoebnobbuq"
 [functions.submit-lead-to-ghl]
 verify_jwt = false
 
+[functions.send-circulo-otp]
+verify_jwt = false
+
+[functions.verify-circulo-otp]
+verify_jwt = false
+
 [functions.submit-lead-magnet]
 verify_jwt = false
 
