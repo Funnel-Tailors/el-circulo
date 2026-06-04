@@ -161,11 +161,14 @@ const QuizSection = ({
       return;
     }
 
-    // Track Q1 - Pain Point
+    // PIXEL CONDITIONING (JH) — ViewContent por respuesta del quiz DESACTIVADO de Meta
+    // (valor € fabricado). El tracking real va por answerStep → quiz_analytics.
+    // No eliminar: reactivar descomentando cada bloque.
+    /* Track Q1 - Pain Point
     if (currentQuestion.id === 'q1') {
       const value = currentAnswer as string;
       quizAnalytics.trackPainPoint(value);
-      
+
       let painValue = 150;
       if (value === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") {
         painValue = 250;
@@ -174,7 +177,7 @@ const QuizSection = ({
       } else if (value === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") {
         painValue = 180;
       }
-      
+
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'Pain Point Identified',
@@ -187,7 +190,9 @@ const QuizSection = ({
         }
       });
     }
+    */
 
+    /* PIXEL CONDITIONING (JH) — Q2/Q3/Q4 ViewContent DESACTIVADOS de Meta (valor € fabricado).
     // Track Q2
     if (currentQuestion.id === 'q2') {
       quizAnalytics.trackQuizEngagement();
@@ -232,11 +237,15 @@ const QuizSection = ({
         }
       });
     }
+    */
 
+    /* PIXEL CONDITIONING (JH) — Q5 ViewContent + AddToCart graduado (€15K–50K)
+       DESACTIVADOS de Meta por completo (valores fabricados). La cualificación
+       de routing se recalcula abajo en `if (isLastStep)`. No eliminar.
     // Track Q5 (decision maker, stored as q7) + AddToCart
     if (currentQuestion.id === 'q5') {
       const value = currentAnswer as string;
-      
+
       quizAnalytics.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',
         content_name: 'Decision Maker Confirmed',
@@ -250,25 +259,25 @@ const QuizSection = ({
           ready_for_form: true
         }
       });
-      
+
       const tempAnswers = { ...answers, q7: value };
       const finalScore = calculateScore(tempAnswers);
       const isDisqualified = hasAutoDisqualify(tempAnswers, finalScore);
-      
+
       if (finalScore >= 70 && !isDisqualified) {
         const painPoint = tempAnswers.q1 as string;
         const profession = tempAnswers.q2 as string;
         const revenueBracket = tempAnswers.q3 as string;
         const urgency = tempAnswers.q6 as string;
         const decisionMaker = value;
-        
+
         const isHighRevenue = ['€5.000 - €10.000/mes', '€10.000 - €20.000/mes', 'Más de €20.000/mes'].includes(revenueBracket);
-        
+
         let cartValue = 0;
         let qualificationLevel = '';
         let predictedLTV = 0;
         let conversionProb = 0;
-        
+
         if (finalScore >= 90) {
           cartValue = 50000;
           qualificationLevel = 'premium_qualified';
@@ -285,9 +294,9 @@ const QuizSection = ({
           predictedLTV = 36000;
           conversionProb = 0.50;
         }
-        
+
         const quizCompletionTimeSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
-        
+
         quizAnalytics.trackMetaPixelEvent('AddToCart', {
           content_type: 'product',
           content_name: 'Círculo Membership',
@@ -316,8 +325,8 @@ const QuizSection = ({
             event_timestamp: new Date().toISOString(),
           }
         });
-        
-        console.log('✅ AddToCart disparado (Q5 - Score Completo):', {
+
+        console.log('AddToCart disparado (Q5 - Score Completo):', {
           score: finalScore,
           value: cartValue,
           level: qualificationLevel,
@@ -325,7 +334,7 @@ const QuizSection = ({
           allAnswersIncluded: 'Q1-Q3,Q6,Q7'
         });
       } else {
-        console.log('⚠️ AddToCart NO disparado - Usuario descalificado:', {
+        console.log('AddToCart NO disparado - Usuario descalificado:', {
           score: finalScore,
           threshold: 70,
           isDisqualified,
@@ -333,6 +342,7 @@ const QuizSection = ({
         });
       }
     }
+    */
 
     if (isLastStep) {
       const finalAnswers = { ...answers, [currentQuestion.stateKey]: currentAnswer };

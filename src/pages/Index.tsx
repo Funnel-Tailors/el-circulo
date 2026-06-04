@@ -2,14 +2,17 @@ import { motion } from "framer-motion";
 import Starfield from "@/components/quiz/Starfield";
 import ShootingStars from "@/components/roadmap/ShootingStars";
 import CircleHero from "@/components/roadmap/CircleHero";
-import RoadmapHero from "@/components/roadmap/RoadmapHero";
-import StellarTimeline from "@/components/roadmap/StellarTimeline";
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
 import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import { HomeQuiz } from "@/components/roadmap/HomeQuiz";
-import { roadmapDays, successCases, featuredInterview } from "@/data/roadmap";
-import { PainSection } from "@/components/roadmap/PainSection";
+import { successCases, featuredInterview } from "@/data/roadmap";
+// DESACTIVADO DEL RENDER (no eliminar — carta de ventas, el pitch ya está en el VSL):
+// import { PainSection } from "@/components/roadmap/PainSection";
+// --- DESACTIVADOS DEL RENDER (no eliminar — listos para reactivar) ---
+// import RoadmapHero from "@/components/roadmap/RoadmapHero";
+// import StellarTimeline from "@/components/roadmap/StellarTimeline";
+// import { roadmapDays } from "@/data/roadmap";
 
 const SendaCTA = ({ source }: { source: "post_roadmap" | "final_cta" }) => (
   <motion.div
@@ -39,21 +42,22 @@ const Index = () => {
         <div>
           <CircleHero />
 
-          {/* PAIN SECTION */}
-          <PainSection />
+          {/* PAIN SECTION (carta de ventas) — DESACTIVADA DEL RENDER (no eliminar).
+              El pitch completo ya vive en el VSL. Reactivar descomentando import + esto.
+          <PainSection /> */}
 
-          {/* ROADMAP */}
+          {/* ROADMAP — DESACTIVADO DEL RENDER (recorte JH: el mecanismo ya está en el VSL).
+              No eliminar: reactivar descomentando imports + este bloque.
           <RoadmapHero />
-
-          {/* Constellation Timeline */}
           <div className="mb-16">
             <StellarTimeline days={roadmapDays} />
           </div>
 
-          {/* Mid CTA — entry to the Senda */}
+          {/* Mid CTA — entry to the Senda
           <div className="my-12">
             <SendaCTA source="post_roadmap" />
           </div>
+          */}
 
           {/* ASCENDIDOS */}
           <div id="testimonials-section" className="mt-16 mb-8">

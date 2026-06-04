@@ -10,71 +10,75 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
 
-  // Track PageView + VSL view on component mount
+  // Track VSL view on component mount
   useEffect(() => {
-    // Disparar PageView primero
-    quizAnalytics.trackMetaPixelEvent('PageView', {
-      content_type: 'landing_page',
-      content_name: 'Círculo Landing Page',
-      content_category: 'funnel_entry',
-      value: 50,
-      currency: 'EUR',
-      custom_data: {
-        page_title: 'El Círculo',
-        page_path: window.location.pathname,
-        funnel_step: 'landing',
-        utm_source: quizAnalytics.utmParams.utm_source || 'direct',
-        utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
-        device_type: quizAnalytics.deviceType
-      }
-    });
+    // PIXEL CONDITIONING (JH) — PageView DESACTIVADO: era un duplicado del
+    // PageView que ya dispara initMetaPixel() (analytics.ts) y además llevaba
+    // value €50 fabricado. No eliminar: reactivar descomentando.
+    // quizAnalytics.trackMetaPixelEvent('PageView', {
+    //   content_type: 'landing_page',
+    //   content_name: 'Círculo Landing Page',
+    //   content_category: 'funnel_entry',
+    //   value: 50,
+    //   currency: 'EUR',
+    //   custom_data: {
+    //     page_title: 'El Círculo',
+    //     page_path: window.location.pathname,
+    //     funnel_step: 'landing',
+    //     utm_source: quizAnalytics.utmParams.utm_source || 'direct',
+    //     utm_medium: quizAnalytics.utmParams.utm_medium || 'none',
+    //     device_type: quizAnalytics.deviceType
+    //   }
+    // });
 
-    // Luego track VSL view
+    // Track VSL view (interno Supabase — se conserva)
     quizAnalytics.trackVSLView('roadmap_hero');
   }, []);
 
-  // Track scroll depth engagement
-  useEffect(() => {
-    const scrollMilestones = new Set<number>();
-    const pageLoadTime = Date.now();
-    const handleScroll = () => {
-      const scrollPercent = Math.round(window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100);
-
-      // 50% scroll
-      if (scrollPercent >= 50 && !scrollMilestones.has(50)) {
-        scrollMilestones.add(50);
-        quizAnalytics.trackMetaPixelEvent('ViewContent', {
-          content_type: 'landing_page',
-          content_name: 'Landing Scroll 50%',
-          content_category: 'scroll_engagement_50',
-          value: 75,
-          currency: 'EUR',
-          custom_data: {
-            scroll_percentage: 50,
-            time_on_page: Math.floor((Date.now() - pageLoadTime) / 1000)
-          }
-        });
-      }
-
-      // 75% scroll
-      if (scrollPercent >= 75 && !scrollMilestones.has(75)) {
-        scrollMilestones.add(75);
-        quizAnalytics.trackMetaPixelEvent('ViewContent', {
-          content_type: 'landing_page',
-          content_name: 'Landing Scroll 75%',
-          content_category: 'scroll_engagement_75',
-          value: 100,
-          currency: 'EUR',
-          custom_data: {
-            scroll_percentage: 75,
-            time_on_page: Math.floor((Date.now() - pageLoadTime) / 1000)
-          }
-        });
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  // PIXEL CONDITIONING (JH) — scroll depth ViewContent DESACTIVADO de Meta:
+  // disparaba ViewContent (€75/€100) con valor fabricado para todo visitante.
+  // No eliminar: reactivar descomentando el useEffect completo.
+  // useEffect(() => {
+  //   const scrollMilestones = new Set<number>();
+  //   const pageLoadTime = Date.now();
+  //   const handleScroll = () => {
+  //     const scrollPercent = Math.round(window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100);
+  //
+  //     // 50% scroll
+  //     if (scrollPercent >= 50 && !scrollMilestones.has(50)) {
+  //       scrollMilestones.add(50);
+  //       quizAnalytics.trackMetaPixelEvent('ViewContent', {
+  //         content_type: 'landing_page',
+  //         content_name: 'Landing Scroll 50%',
+  //         content_category: 'scroll_engagement_50',
+  //         value: 75,
+  //         currency: 'EUR',
+  //         custom_data: {
+  //           scroll_percentage: 50,
+  //           time_on_page: Math.floor((Date.now() - pageLoadTime) / 1000)
+  //         }
+  //       });
+  //     }
+  //
+  //     // 75% scroll
+  //     if (scrollPercent >= 75 && !scrollMilestones.has(75)) {
+  //       scrollMilestones.add(75);
+  //       quizAnalytics.trackMetaPixelEvent('ViewContent', {
+  //         content_type: 'landing_page',
+  //         content_name: 'Landing Scroll 75%',
+  //         content_category: 'scroll_engagement_75',
+  //         value: 100,
+  //         currency: 'EUR',
+  //         custom_data: {
+  //           scroll_percentage: 75,
+  //           time_on_page: Math.floor((Date.now() - pageLoadTime) / 1000)
+  //         }
+  //       });
+  //     }
+  //   };
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
   // Track VSL video progress with polling instead of timeupdate (~80% less CPU)
   useEffect(() => {
@@ -82,7 +86,7 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
     if (!video) return;
 
     const vslProgressMilestones = new Set<number>();
-    const metaPixelMilestones = new Set<number>();
+    // const metaPixelMilestones = new Set<number>(); // PIXEL CONDITIONING — desactivado con el bloque Meta de hitos VSL
 
     const interval = setInterval(() => {
       if (!video.duration || video.paused) return;
@@ -99,25 +103,28 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
         'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
       }
 
-      // Meta Pixel milestones
-      const metaMilestones = [
-        { threshold: 25, value: 500, category: 'vsl_25_percent' },
-        { threshold: 50, value: 1000, category: 'vsl_50_percent' },
-        { threshold: 75, value: 1500, category: 'vsl_75_percent' },
-        { threshold: 100, value: 2000, category: 'vsl_100_percent' },
-      ];
-      metaMilestones.forEach(({ threshold, value, category }) => {
-        if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
-          metaPixelMilestones.add(threshold);
-          const cb = () => {
-            quizAnalytics.trackMetaPixelEvent('ViewContent', {
-              content_type: 'video', content_name: 'Roadmap VSL',
-              content_category: category, value, currency: 'EUR'
-            });
-          };
-          'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
-        }
-      });
+      // PIXEL CONDITIONING (JH) — VSL ViewContent DESACTIVADO de Meta:
+      // disparaba ViewContent (€500–2000) con valor fabricado por % de vídeo.
+      // El progreso interno (trackVSLProgress → Supabase) se conserva arriba.
+      // No eliminar: reactivar descomentando.
+      // const metaMilestones = [
+      //   { threshold: 25, value: 500, category: 'vsl_25_percent' },
+      //   { threshold: 50, value: 1000, category: 'vsl_50_percent' },
+      //   { threshold: 75, value: 1500, category: 'vsl_75_percent' },
+      //   { threshold: 100, value: 2000, category: 'vsl_100_percent' },
+      // ];
+      // metaMilestones.forEach(({ threshold, value, category }) => {
+      //   if (percentage >= threshold && !metaPixelMilestones.has(threshold)) {
+      //     metaPixelMilestones.add(threshold);
+      //     const cb = () => {
+      //       quizAnalytics.trackMetaPixelEvent('ViewContent', {
+      //         content_type: 'video', content_name: 'Roadmap VSL',
+      //         content_category: category, value, currency: 'EUR'
+      //       });
+      //     };
+      //     'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 100);
+      //   }
+      // });
     }, 5000);
 
     return () => clearInterval(interval);

@@ -131,23 +131,27 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       try { await quizAnalytics.submitContactForm(); } catch (e) { /* non-blocking */ }
       quizAnalytics.completeQuiz();
 
-      // Fire InitiateCheckout — strong signal for Meta
-      quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
-        content_name: 'Strategic Call Booking',
+      // PIXEL CONDITIONING (JH) — InitiateCheckout DESACTIVADO: conversión
+      // prematura y duplicada (disparaba al enviar form, no al agendar la
+      // llamada). No eliminar: reactivar descomentando.
+      // quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
+      //   content_name: 'Strategic Call Booking',
+      //   content_category: 'qualified_lead',
+      //   value: 3000,
+      //   currency: 'EUR',
+      //   quiz_score: score,
+      // });
+
+      // Lead limpio — señal cualificada Tier-1 (form submit), SIN valor €
+      // fabricado. El valor REAL irá en Purchase (offline CAPI) al cerrar deal.
+      // La optimización de campaña va sobre Schedule (llamada agendada).
+      quizAnalytics.trackMetaPixelEvent('Lead', {
+        content_name: 'Círculo Membership',
         content_category: 'qualified_lead',
-        value: 3000,
-        currency: 'EUR',
+        content_ids: ['circulo_lead'],
         quiz_score: score,
       });
-      console.log('💳 [TRACKING] InitiateCheckout fired — value €3,000');
-
-      // Fire Lead event — critical for Meta optimization
-      const revenueRange = quizState.q3 || 'unknown';
-      const ICP_SWEET_SPOT = ['€3.000 - €5.000/mes', '€5.000 - €10.000/mes'];
-      const icpMatch = ICP_SWEET_SPOT.includes(revenueRange);
-      const leadValue = icpMatch ? 3000 : 1500;
-      quizAnalytics.enrichLeadEvent(leadValue, icpMatch, revenueRange, true);
-      console.log('🎯 [TRACKING] Lead event fired — value €' + leadValue);
+      console.log('🎯 [TRACKING] Lead fired (limpio, sin valor fabricado)');
 
       const contactId = responseData?.contactId;
       if (!contactId) {
