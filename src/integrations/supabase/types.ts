@@ -373,6 +373,42 @@ export type Database = {
           },
         ]
       }
+      circulo_otp_verifications: {
+        Row: {
+          attempts: number
+          code: string
+          contact_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          attempts?: number
+          code: string
+          contact_id?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          attempts?: number
+          code?: string
+          contact_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       journey_content: {
         Row: {
           assistant_description: string | null
