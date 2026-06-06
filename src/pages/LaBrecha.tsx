@@ -130,6 +130,65 @@ const LaBrecha = () => {
     );
   }
 
+  // Passive repeater blocked screen
+  if (repeaterBlocked) {
+    const firstName = lead?.first_name || "Viajero";
+    const isQualifiedRepeater = repeaterReason === "passive_repeater_qualified";
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+        <ShootingStars />
+        <Starfield />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative z-10 text-center max-w-xl glass-card-dark p-8 md:p-10 space-y-6"
+        >
+          <span className="text-5xl block">⟡</span>
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+            {firstName}, tuviste tu oportunidad.
+          </h1>
+          {isQualifiedRepeater ? (
+            <>
+              <p className="text-muted-foreground leading-relaxed">
+                Te abrí La Brecha la primera vez y ni viste el primer video. Info no es lo que te falta.
+                Si lo fuera, ya tendrías los clientes que dices que quieres.
+              </p>
+              <p className="text-foreground/80 leading-relaxed">
+                No te voy a abrir otra vez algo que no abriste antes. Te queda una puerta:
+                <span className="text-foreground font-semibold"> 30 minutos de Llamada Estratégica</span>.
+                Decides si entras al Círculo o no.
+              </p>
+              <a
+                href="https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 bg-foreground text-background font-semibold rounded-md hover:opacity-90 transition-opacity"
+              >
+                Agendar Llamada Estratégica →
+              </a>
+              <p className="text-xs text-muted-foreground/70 pt-2">
+                Si no agendas en 48h, no vuelvas a escribir.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-muted-foreground leading-relaxed">
+                Te abrí La Brecha y ni viste el primer video. Hoy vuelves a llenar el formulario y sigues
+                sin cumplir lo básico para entrar.
+              </p>
+              <p className="text-foreground/80 leading-relaxed">
+                No es un mensaje para insistir. Es para que dejemos de perder el tiempo los dos.
+              </p>
+              <p className="text-muted-foreground/80 text-sm">
+                Cuando puedas invertir en arreglar lo que dices que te jode, hablamos.
+              </p>
+            </>
+          )}
+        </motion.div>
+      </div>
+    );
+  }
+
   // Invalid token
   if (!isValid || !token) {
     return (
