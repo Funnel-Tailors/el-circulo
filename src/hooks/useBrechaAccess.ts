@@ -54,6 +54,10 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
   const [brechaMode, setBrechaMode] = useState<BrechaMode>("evergreen");
   const [notYetOpen, setNotYetOpen] = useState(false);
 
+  // Passive repeater state
+  const [repeaterBlocked, setRepeaterBlocked] = useState(false);
+  const [repeaterReason, setRepeaterReason] = useState<'passive_repeater_qualified' | 'passive_repeater_disqualified' | null>(null);
+
   useEffect(() => {
     const validateToken = async () => {
       if (!token) {
