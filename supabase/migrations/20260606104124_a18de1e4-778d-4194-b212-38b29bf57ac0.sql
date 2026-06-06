@@ -1,0 +1,1 @@
+ALTER TABLE public.brecha_blacklist ADD CONSTRAINT brecha_blacklist_token_unique UNIQUE (token);

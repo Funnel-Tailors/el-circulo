@@ -32,6 +32,9 @@ interface UseBrechaAccessReturn {
   expiresAt: Date | null;
   brechaMode: BrechaMode;
   notYetOpen: boolean;
+  // Passive repeater blacklist
+  repeaterBlocked: boolean;
+  repeaterReason: 'passive_repeater_qualified' | 'passive_repeater_disqualified' | null;
 }
 
 /**
@@ -51,6 +54,10 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
   const [brechaMode, setBrechaMode] = useState<BrechaMode>("evergreen");
   const [notYetOpen, setNotYetOpen] = useState(false);
 
+  // Passive repeater state
+  const [repeaterBlocked, setRepeaterBlocked] = useState(false);
+  const [repeaterReason, setRepeaterReason] = useState<'passive_repeater_qualified' | 'passive_repeater_disqualified' | null>(null);
+
   useEffect(() => {
     const validateToken = async () => {
       if (!token) {
@@ -60,8 +67,8 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
       }
 
       try {
-        // Fetch settings and lead data in parallel
-        const [settingsResult, leadResult, progressResult] = await Promise.all([
+        // Fetch settings, lead, progress and blacklist in parallel
+        const [settingsResult, leadResult, progressResult, blacklistResult] = await Promise.all([
           supabase
             .from('app_settings')
             .select('key, value')
@@ -75,7 +82,12 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
             .from('brecha_progress')
             .select('first_visit_at, access_expires_at, access_paused, timer_reset_at')
             .eq('token', token)
-            .single()
+            .single(),
+          supabase
+            .from('brecha_blacklist')
+            .select('reason')
+            .eq('token', token)
+            .maybeSingle()
         ]);
 
         // Handle lead validation
@@ -89,6 +101,15 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
         setIsValid(true);
         setLead(leadResult.data as BrechaLead);
         setError(null);
+
+        // Passive repeater blacklist short-circuit
+        const blReason = blacklistResult.data?.reason as string | undefined;
+        if (blReason === 'passive_repeater_qualified' || blReason === 'passive_repeater_disqualified') {
+          setRepeaterBlocked(true);
+          setRepeaterReason(blReason);
+          setIsLoading(false);
+          return;
+        }
 
         // Parse settings
         const settingsMap: Record<string, any> = {};
@@ -177,5 +198,5 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
     validateToken();
   }, [token]);
 
-  return { isValid, isLoading, lead, error, isExpired, expiresAt, brechaMode, notYetOpen };
+  return { isValid, isLoading, lead, error, isExpired, expiresAt, brechaMode, notYetOpen, repeaterBlocked, repeaterReason };
 };

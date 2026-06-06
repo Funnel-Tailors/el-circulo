@@ -980,6 +980,42 @@ Cuando factures de verdad lo que dices facturar, sabrás dónde encontrarme.`
   return ''
 }
 
+// ============= PASSIVE REPEATER NOTIFICATIONS =============
+
+const LLAMADA_ESTRATEGICA_URL = 'https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29'
+
+function generateBrechaPassiveRepeaterQualifiedNotification(firstName: string, daysAgo: number): string {
+  const dayLabel = daysAgo === 1 ? 'día' : 'días'
+  return `${firstName}.
+
+Hace ${daysAgo} ${dayLabel} te abrí La Brecha. Ni viste el primer video.
+
+Y aquí estás otra vez rellenando el formulario.
+
+Info no es lo que te falta. Si lo fuera, ya tendrías los clientes que dices que quieres.
+
+No te voy a abrir lo que no abriste la primera vez.
+
+Te queda una puerta: 30 minutos de Llamada Estratégica. Decides si entras al Círculo o no, y dejamos de perdernos el tiempo los dos.
+
+→ ${LLAMADA_ESTRATEGICA_URL}
+
+Si no agendas en 48h, no vuelvas a escribir.`
+}
+
+function generateBrechaPassiveRepeaterDisqualifiedNotification(firstName: string, daysAgo: number): string {
+  const dayLabel = daysAgo === 1 ? 'día' : 'días'
+  return `${firstName}.
+
+Hace ${daysAgo} ${dayLabel} te abrí La Brecha. Ni viste el primer video.
+
+Hoy vuelves a llenar el formulario y sigues sin cumplir lo básico para entrar.
+
+No es un mensaje para insistir. Es para que dejemos de perder el tiempo los dos.
+
+Cuando puedas invertir en arreglar lo que dices que te jode, hablamos. Mientras tanto, no hay nada que pueda hacer por ti.`
+}
+
 // ============= MAIN HANDLER =============
 
 Deno.serve(async (req) => {
@@ -1116,6 +1152,134 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
+
+    // ============= PASSIVE REPEATER DETECTION =============
+    // Check if this contact submitted before (>24h ago) and never engaged with Fragment 1.
+    // If so, blacklist them and send only the brutal notification (no journey, no follow-ups).
+    {
+      const { data: previousLead } = await supabase
+        .from('brecha_leads')
+        .select('created_at')
+        .eq('ghl_contact_id', ghl_contact_id)
+        .maybeSingle()
+
+      if (previousLead?.created_at) {
+        const previousCreatedAt = new Date(previousLead.created_at)
+        const hoursSincePrevious = (Date.now() - previousCreatedAt.getTime()) / (1000 * 60 * 60)
+
+        if (hoursSincePrevious >= 24) {
+          // Look at their progress on the existing token (token = ghl_contact_id)
+          const { data: previousProgress } = await supabase
+            .from('brecha_progress')
+            .select('frag1_video_progress, frag1_sequence_completed, portal_traversed')
+            .eq('token', ghl_contact_id)
+            .maybeSingle()
+
+          const noEngagement =
+            !previousProgress ||
+            ((previousProgress.frag1_video_progress ?? 0) < 25 &&
+              !previousProgress.frag1_sequence_completed &&
+              !previousProgress.portal_traversed)
+
+          if (noEngagement) {
+            const daysAgo = Math.max(1, Math.floor(hoursSincePrevious / 24))
+            const reason = isQualified ? 'passive_repeater_qualified' : 'passive_repeater_disqualified'
+            console.log(`PASSIVE REPEATER DETECTED: ${reason} (${daysAgo} days ago)`)
+
+            // Upsert blacklist by token (= ghl_contact_id)
+            const { error: blacklistError } = await supabase
+              .from('brecha_blacklist')
+              .upsert({
+                token: ghl_contact_id,
+                contact_name: first_name || 'Lead',
+                reason,
+                banned_by: 'submit-brecha-lead',
+                banned_at: new Date().toISOString(),
+              }, { onConflict: 'token' })
+            if (blacklistError) {
+              console.error('Error upserting blacklist:', blacklistError)
+            }
+
+            // Update lead row with current qualification (keep history clean) but DO NOT generate URL
+            await supabase
+              .from('brecha_leads')
+              .upsert({
+                ghl_contact_id,
+                first_name: first_name || null,
+                pain_answer: painParsed?.value || null,
+                profession_answer: professionParsed?.value || null,
+                revenue_answer: revenueParsed?.value || null,
+                acquisition_answer: acquisitionParsed.values.join(',') || null,
+                budget_answer: budgetParsed?.value || null,
+                urgency_answer: urgencyParsed?.value || null,
+                authority_answer: authorityParsed?.value || null,
+                qualification_score: score,
+                is_qualified: isQualified,
+                tier: 'blacklisted_repeater',
+                hardstop_reason: hardstopReason,
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'ghl_contact_id' })
+
+            const repeaterNotification = isQualified
+              ? generateBrechaPassiveRepeaterQualifiedNotification(first_name || 'Viajero', daysAgo)
+              : generateBrechaPassiveRepeaterDisqualifiedNotification(first_name || 'Viajero', daysAgo)
+
+            const internalNote = isQualified
+              ? `[REPETIDOR PASIVO – CUALIFICADO] Volvió tras ${daysAgo} días sin tocar Fragmento 1. Si agenda, viene caliente.`
+              : `[REPETIDOR PASIVO – DESCUALIFICADO ${hardstopReason || ''}] No abrir nueva conversación.`
+
+            // Build minimal GHL payload — blank all journey/follow-up fields
+            const repeaterPayload = {
+              tags: ['brecha:blacklist_passive_repeater'],
+              customFields: [
+                { key: 'brecha_notification', field_value: repeaterNotification },
+                { key: 'brecha_url', field_value: '' },
+                { key: 'brecha_tier', field_value: 'blacklisted_repeater' },
+                { key: 'brecha_score', field_value: score.toString() },
+                { key: 'brecha_qualified', field_value: isQualified ? 'Sí' : 'No' },
+                { key: 'brecha_hardstop', field_value: hardstopReason || '' },
+                { key: 'notification_closer', field_value: internalNote },
+                { key: 'notification_internal', field_value: internalNote },
+                { key: 'notification_client', field_value: '' },
+                { key: 'notification_client_post_booking', field_value: '' },
+                { key: 'notification_closer_pre_call', field_value: '' },
+                { key: 'notification_followup_1', field_value: '' },
+                { key: 'notification_followup_2', field_value: '' },
+                { key: 'notification_followup_3', field_value: '' },
+                { key: 'notification_followup_4', field_value: '' },
+                { key: 'notification_followup_5', field_value: '' },
+              ],
+            }
+
+            const repeaterUpdateUrl = `https://services.leadconnectorhq.com/contacts/${ghl_contact_id}`
+            const repeaterGhlResponse = await fetch(repeaterUpdateUrl, {
+              method: 'PUT',
+              headers: ghlHeaders,
+              body: JSON.stringify(repeaterPayload),
+            })
+            if (!repeaterGhlResponse.ok) {
+              const errorText = await repeaterGhlResponse.text()
+              console.error('GHL repeater update failed:', repeaterGhlResponse.status, errorText)
+            } else {
+              console.log('✅ GHL contact updated (passive repeater)')
+            }
+
+            return new Response(
+              JSON.stringify({
+                success: true,
+                status: 'blacklisted_repeater',
+                qualified: isQualified,
+                reason,
+                days_ago: daysAgo,
+                ghl_updated: repeaterGhlResponse.ok,
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
+        }
+      }
+    }
+
 
     // Upsert lead data
     const { data: leadData, error: upsertError } = await supabase
