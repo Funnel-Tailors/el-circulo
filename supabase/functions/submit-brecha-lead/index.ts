@@ -980,6 +980,42 @@ Cuando factures de verdad lo que dices facturar, sabrás dónde encontrarme.`
   return ''
 }
 
+// ============= PASSIVE REPEATER NOTIFICATIONS =============
+
+const LLAMADA_ESTRATEGICA_URL = 'https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29'
+
+function generateBrechaPassiveRepeaterQualifiedNotification(firstName: string, daysAgo: number): string {
+  const dayLabel = daysAgo === 1 ? 'día' : 'días'
+  return `${firstName}.
+
+Hace ${daysAgo} ${dayLabel} te abrí La Brecha. Ni viste el primer video.
+
+Y aquí estás otra vez rellenando el formulario.
+
+Info no es lo que te falta. Si lo fuera, ya tendrías los clientes que dices que quieres.
+
+No te voy a abrir lo que no abriste la primera vez.
+
+Te queda una puerta: 30 minutos de Llamada Estratégica. Decides si entras al Círculo o no, y dejamos de perdernos el tiempo los dos.
+
+→ ${LLAMADA_ESTRATEGICA_URL}
+
+Si no agendas en 48h, no vuelvas a escribir.`
+}
+
+function generateBrechaPassiveRepeaterDisqualifiedNotification(firstName: string, daysAgo: number): string {
+  const dayLabel = daysAgo === 1 ? 'día' : 'días'
+  return `${firstName}.
+
+Hace ${daysAgo} ${dayLabel} te abrí La Brecha. Ni viste el primer video.
+
+Hoy vuelves a llenar el formulario y sigues sin cumplir lo básico para entrar.
+
+No es un mensaje para insistir. Es para que dejemos de perder el tiempo los dos.
+
+Cuando puedas invertir en arreglar lo que dices que te jode, hablamos. Mientras tanto, no hay nada que pueda hacer por ti.`
+}
+
 // ============= MAIN HANDLER =============
 
 Deno.serve(async (req) => {
