@@ -198,5 +198,5 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
     validateToken();
   }, [token]);
 
-  return { isValid, isLoading, lead, error, isExpired, expiresAt, brechaMode, notYetOpen };
+  return { isValid, isLoading, lead, error, isExpired, expiresAt, brechaMode, notYetOpen, repeaterBlocked, repeaterReason };
 };
