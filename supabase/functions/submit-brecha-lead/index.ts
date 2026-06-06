@@ -1171,22 +1171,43 @@ Deno.serve(async (req) => {
     // Check if this contact submitted before (>24h ago) and never engaged with Fragment 1.
     // If so, blacklist them and send only the brutal notification (no journey, no follow-ups).
     {
-      const { data: previousLead } = await supabase
+      // 1º intento: por ghl_contact_id (mismo contacto en GHL)
+      let { data: previousLead } = await supabase
         .from('brecha_leads')
-        .select('created_at')
+        .select('ghl_contact_id, token, created_at, first_name')
         .eq('ghl_contact_id', ghl_contact_id)
         .maybeSingle()
+
+      let matchedBy: 'contact_id' | 'handle' = 'contact_id'
+      const handle = normalizeHandle(first_name)
+
+      // 2º intento: por @handle de Instagram normalizado (GHL pudo crear contacto nuevo)
+      if (!previousLead && handle) {
+        const { data: byHandle } = await supabase
+          .from('brecha_leads')
+          .select('ghl_contact_id, token, created_at, first_name')
+          .neq('ghl_contact_id', ghl_contact_id)
+          .ilike('first_name', handle)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+        if (byHandle) {
+          previousLead = byHandle as any
+          matchedBy = 'handle'
+        }
+      }
 
       if (previousLead?.created_at) {
         const previousCreatedAt = new Date(previousLead.created_at)
         const hoursSincePrevious = (Date.now() - previousCreatedAt.getTime()) / (1000 * 60 * 60)
 
         if (hoursSincePrevious >= 24) {
-          // Look at their progress on the existing token (token = ghl_contact_id)
+          // El token previo coincide con su ghl_contact_id antiguo
+          const previousToken = (previousLead as any).token || (previousLead as any).ghl_contact_id
           const { data: previousProgress } = await supabase
             .from('brecha_progress')
             .select('frag1_video_progress, frag1_sequence_completed, portal_traversed')
-            .eq('token', ghl_contact_id)
+            .eq('token', previousToken)
             .maybeSingle()
 
           const noEngagement =
@@ -1198,9 +1219,9 @@ Deno.serve(async (req) => {
           if (noEngagement) {
             const daysAgo = Math.max(1, Math.floor(hoursSincePrevious / 24))
             const reason = isQualified ? 'passive_repeater_qualified' : 'passive_repeater_disqualified'
-            console.log(`PASSIVE REPEATER DETECTED: ${reason} (${daysAgo} days ago)`)
+            console.log(`PASSIVE REPEATER DETECTED (matched by ${matchedBy}): ${reason} (${daysAgo} days ago)`)
 
-            // Upsert blacklist by token (= ghl_contact_id)
+            // Upsert blacklist por token actual (= ghl_contact_id nuevo)
             const { error: blacklistError } = await supabase
               .from('brecha_blacklist')
               .upsert({
@@ -1211,10 +1232,26 @@ Deno.serve(async (req) => {
                 banned_at: new Date().toISOString(),
               }, { onConflict: 'token' })
             if (blacklistError) {
-              console.error('Error upserting blacklist:', blacklistError)
+              console.error('Error upserting blacklist (id):', blacklistError)
             }
 
-            // Update lead row with current qualification (keep history clean) but DO NOT generate URL
+            // Blacklist también por handle:<handle> para bloquear futuros 3os contactos del mismo @
+            if (handle) {
+              const { error: handleBlacklistError } = await supabase
+                .from('brecha_blacklist')
+                .upsert({
+                  token: `handle:${handle}`,
+                  contact_name: first_name || 'Lead',
+                  reason,
+                  banned_by: 'submit-brecha-lead',
+                  banned_at: new Date().toISOString(),
+                }, { onConflict: 'token' })
+              if (handleBlacklistError) {
+                console.error('Error upserting blacklist (handle):', handleBlacklistError)
+              }
+            }
+
+            // Update lead row con qualification actual pero SIN URL ni journey
             await supabase
               .from('brecha_leads')
               .upsert({
@@ -1238,13 +1275,21 @@ Deno.serve(async (req) => {
               ? generateBrechaPassiveRepeaterQualifiedNotification(first_name || 'Viajero', daysAgo)
               : generateBrechaPassiveRepeaterDisqualifiedNotification(first_name || 'Viajero', daysAgo)
 
-            const internalNote = isQualified
+            const baseInternalNote = isQualified
               ? `[REPETIDOR PASIVO – CUALIFICADO] Volvió tras ${daysAgo} días sin tocar Fragmento 1. Si agenda, viene caliente.`
               : `[REPETIDOR PASIVO – DESCUALIFICADO ${hardstopReason || ''}] No abrir nueva conversación.`
 
+            const internalNote = matchedBy === 'handle'
+              ? `${baseInternalNote}\n[Match por @handle "${handle}" — contacto antiguo: ${(previousLead as any).ghl_contact_id}]`
+              : baseInternalNote
+
+            const tags = matchedBy === 'handle'
+              ? ['brecha:blacklist_passive_repeater', 'brecha:duplicate_by_handle']
+              : ['brecha:blacklist_passive_repeater']
+
             // Build minimal GHL payload — blank all journey/follow-up fields
             const repeaterPayload = {
-              tags: ['brecha:blacklist_passive_repeater'],
+              tags,
               customFields: [
                 { key: 'brecha_notification', field_value: repeaterNotification },
                 { key: 'brecha_url', field_value: '' },
@@ -1275,7 +1320,7 @@ Deno.serve(async (req) => {
               const errorText = await repeaterGhlResponse.text()
               console.error('GHL repeater update failed:', repeaterGhlResponse.status, errorText)
             } else {
-              console.log('✅ GHL contact updated (passive repeater)')
+              console.log(`✅ GHL contact updated (passive repeater, matched by ${matchedBy})`)
             }
 
             return new Response(
@@ -1284,6 +1329,8 @@ Deno.serve(async (req) => {
                 status: 'blacklisted_repeater',
                 qualified: isQualified,
                 reason,
+                matched_by: matchedBy,
+                previous_contact_id: (previousLead as any).ghl_contact_id,
                 days_ago: daysAgo,
                 ghl_updated: repeaterGhlResponse.ok,
               }),
@@ -1292,6 +1339,8 @@ Deno.serve(async (req) => {
           }
         }
       }
+    }
+
     }
 
 
