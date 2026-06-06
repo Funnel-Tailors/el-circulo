@@ -32,7 +32,9 @@ const LaBrecha = () => {
     error,
     isExpired,
     expiresAt,
-    notYetOpen 
+    notYetOpen,
+    repeaterBlocked,
+    repeaterReason
   } = useBrechaAccess(token);
   
   const { progress, isLoading: progressLoading, updateProgress } = useBrechaProgress(token);
