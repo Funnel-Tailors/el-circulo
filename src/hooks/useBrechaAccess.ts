@@ -32,6 +32,9 @@ interface UseBrechaAccessReturn {
   expiresAt: Date | null;
   brechaMode: BrechaMode;
   notYetOpen: boolean;
+  // Passive repeater blacklist
+  repeaterBlocked: boolean;
+  repeaterReason: 'passive_repeater_qualified' | 'passive_repeater_disqualified' | null;
 }
 
 /**
