@@ -102,14 +102,40 @@ export const useBrechaAccess = (token: string | null): UseBrechaAccessReturn => 
         setLead(leadResult.data as BrechaLead);
         setError(null);
 
-        // Passive repeater blacklist short-circuit
-        const blReason = blacklistResult.data?.reason as string | undefined;
+        // Normaliza @handle de Instagram igual que el edge function
+        const normalizeHandle = (name: string | null | undefined): string | null => {
+          if (!name) return null;
+          let s = name.trim().toLowerCase();
+          if (!s) return null;
+          s = s.replace(/^@+/, '').replace(/\s+/g, '');
+          if (!/[a-z0-9._]/.test(s)) return null;
+          if (s.length < 2) return null;
+          return s;
+        };
+
+        // Passive repeater blacklist short-circuit (token directo)
+        let blReason = blacklistResult.data?.reason as string | undefined;
+
+        // Fallback: blacklist por handle:<@instagram>
+        if (!blReason) {
+          const handle = normalizeHandle((leadResult.data as BrechaLead).first_name);
+          if (handle) {
+            const { data: handleBl } = await supabase
+              .from('brecha_blacklist')
+              .select('reason')
+              .eq('token', `handle:${handle}`)
+              .maybeSingle();
+            blReason = handleBl?.reason as string | undefined;
+          }
+        }
+
         if (blReason === 'passive_repeater_qualified' || blReason === 'passive_repeater_disqualified') {
           setRepeaterBlocked(true);
           setRepeaterReason(blReason);
           setIsLoading(false);
           return;
         }
+
 
         // Parse settings
         const settingsMap: Record<string, any> = {};
