@@ -125,6 +125,20 @@ interface ContactData {
 
 // ============= HELPER FUNCTIONS =============
 
+// Normaliza un @handle de Instagram para dedupe.
+// Devuelve null si no parece un handle válido.
+function normalizeHandle(name: string | null | undefined): string | null {
+  if (!name) return null
+  let s = name.trim().toLowerCase()
+  if (!s) return null
+  s = s.replace(/^@+/, '').replace(/\s+/g, '')
+  // Debe contener al menos un caracter alfanumérico latino
+  if (!/[a-z0-9._]/.test(s)) return null
+  if (s.length < 2) return null
+  return s
+}
+
+
 function parseEmoji(text: string, map: Record<string, any>): { value: string; score: number; hardstop?: boolean } | null {
   if (!text) return null
   for (const emoji of Object.keys(map)) {
