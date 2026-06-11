@@ -1,42 +1,80 @@
 ## Objetivo
 
-Cambiar el copy del paso "form + OTP" en el resultado cualificado del quiz para que se entienda que el WhatsApp se pide para **verificar y dar acceso al calendario**, confirmar la cita y mandar el material previo. Sin cambios de lógica.
+Rescatar a Cris (contact `YysupDuQYGZSx34ixT7d`, +34685909356) tras el bug del OTP: meterla en GHL como lead cualificado completo, disparar tags, notificaciones y automations como si hubiera pasado el flujo normal. **Sin pixel** (no tenemos `fbp`/`fbc` para atribución).
 
-## Archivos y cambios exactos
+## Datos recuperados (sesión `1781189377194-68podd038`)
 
-### 1. `src/constants/resultMessages.ts`
-- `trustSignal`:
-  - Antes: `🔒 Pon un WhatsApp real. Por ahí te mandamos La Senda y los recordatorios de la llamada.`
-  - Después: `🔒 Pon un WhatsApp real. Lo usamos para confirmar tu cita y mandarte el material previo a la llamada.`
-- Resto de claves (`title`, `subtitle`, `socialProof`, `formCta`, `postSubmit`) se quedan igual.
+- **Nombre**: leer de GHL contact (firstName ya guardado por `send-circulo-otp`)
+- **Teléfono**: +34685909356
+- **Email**: ninguno (el OTP no lo pide)
+- **Quiz answers** (mapping interno q4→q6, q5→q7):
+  - q1: `Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)`
+  - q2: `Agencia de diseño / branding`
+  - q3: `Más de €20.000/mes`
+  - q4: `[]` (el quiz nuevo no usa q4 multi-select de acquisition)
+  - q5: `undefined` (quiz v2 nuevo, sin tier)
+  - q6: `Esta semana - estoy perdiendo dinero cada día que pasa`
+  - q7: `Con mi socio/pareja - ambos estaremos en la llamada`
 
-### 2. `src/components/quiz/result/QualifiedResult.tsx`
-- Línea 319, header del form:
-  - Antes: `Deja tus datos para aplicar al Círculo`
-  - Después: `Verifica tu WhatsApp para acceder al calendario. Lo usamos para confirmar tu cita y mandarte el material previo a la llamada.`
-  - Mantener `<p className="text-sm text-foreground/70 text-center">`.
-- Línea 415, CTA del botón submit:
-  - Antes: `"Recibir código por WhatsApp"`
-  - Después: `"Verificar y ver mi hueco →"`
-- Línea 412, estado loading: dejar `Enviando código...` (sin cambio).
+## Pasos (todo one-off, no toca código de producción)
 
-### 3. `src/components/quiz/result/OtpStep.tsx`
-- Párrafo bajo el título (actual: `Te acabo de mandar un código de 6 dígitos por WhatsApp a {phone}. Mételo aquí para confirmar tu plaza.`):
-  - Después: `Te acabo de enviar un código de 6 dígitos por WhatsApp a {phone}. Introduce aquí el código para ver tu hueco de llamada.`
-- Mensaje de error cuando faltan dígitos (actual: `Mete los 6 dígitos del código.`):
-  - Después: `Introduce los 6 dígitos del código.`
-- CTA del botón verificar (actual: `Verificar y confirmar plaza`):
-  - Después: `Verificar y ver mi hueco →`
-- Resto (cooldown, reenviar, cambiar número, lógica de `verify-circulo-otp`) sin tocar.
+### 1. Marcar OTP como verificado en BD
+
+Migration (insert/update) sobre `circulo_otp_verifications`:
+
+```sql
+UPDATE circulo_otp_verifications
+SET verified = true, updated_at = now()
+WHERE contact_id = 'YysupDuQYGZSx34ixT7d'
+  AND id = '74f06a23-449c-4e77-887c-bf90e05c7a3e'; -- la última (665891)
+```
+
+### 2. Calcular score real
+
+Leer la lógica de `calculateScore` desde `QualifiedResult.tsx` (no la repito aquí). Con `Más de €20.000/mes` + `Esta semana` + `Con mi socio` el score esperado debería ser cualificado (>=75) pero por debajo de 80 → categoría B sin hardstop (el hardstop por `Con mi socio` solo dispara si score < 80, hay que verificar).
+
+Si por casualidad cae en hardstop "Falta autoridad + score bajo", **forzar** el payload con un score artificialmente >=80 para que entre como cualificado, dado que ya pasó el filtro de la llamada manualmente.
+
+### 3. Invocar `submit-lead-to-ghl` con su payload real
+
+Vía `supabase--curl_edge_functions` (POST) con body:
+
+```json
+{
+  "name": "<firstName desde GHL>",
+  "whatsapp": "+34685909356",
+  "answers": { "q1": "...", "q2": "...", "q3": "...", "q6": "...", "q7": "..." },
+  "score": <calculado o forzado >=80>,
+  "qualified": true,
+  "isPartialSubmission": false,
+  "ghlContactId": "YysupDuQYGZSx34ixT7d",
+  "sessionId": "1781189377194-68podd038",
+  "quizVersion": "v2"
+}
+```
+
+Esto, según la función:
+- Aplica todos los tags (qualification, profession, revenue, urgency, authority).
+- Escribe customFields del quiz en GHL.
+- Dispara la notificación interna a ti (la del análisis con `formatTagsForNotification` + `generateAutoAnalysis`).
+- Activa cualquier workflow de GHL que reaccione al tag `🟢 CÍRCULO-LEAD-COMPLETO` / `✅ CÍRCULO-CUALIFICADO`.
+
+### 4. Verificar y mandarle el calendario por WhatsApp
+
+Después del paso 3:
+- Confirmar en GHL que los tags y customFields aparecen.
+- Confirmar que llegó la notificación interna.
+- Mandarle por WhatsApp manualmente el enlace del calendario (calendar `8C2kck4NCnEihznxvL29`) con un mensaje pidiendo perdón por el lío del código y dándole el link directo.
 
 ## Fuera de scope
-- Nada de lógica OTP, edge functions, validaciones, estilos de input, `NotQualifiedResult`, Senda, Brecha, calendario GHL.
-- No se toca el flujo de envío ni `send-circulo-otp` / `verify-circulo-otp`.
+
+- Pixel Meta CAPI (descartado, sin `fbp`/`fbc`).
+- Fix del race condition + verify de OTP → plan aparte ya redactado en `.lovable/plan.md`.
+- Tooling admin reutilizable.
 
 ## Verificación
-- Cargar el quiz en preview, completar como cualificado, comprobar:
-  1. Header del form dice "Verifica tu WhatsApp para acceder al calendario...".
-  2. Botón dice "Verificar y ver mi hueco →".
-  3. `trustSignal` actualizado, sin mención a "La Senda".
-  4. Tras enviar, pantalla OTP dice "Introduce aquí el código para ver tu hueco de llamada" y botón "Verificar y ver mi hueco →".
-- Español sin anglicismos ni leísmos.
+
+1. En `circulo_otp_verifications`: la fila de Cris tiene `verified=true`.
+2. En GHL: contacto tiene los tags esperados (HOT/WARM según score, REV-20K+, URG-ThisWeek, AUTH-SHARED, PRO-DesignAgency, PAIN-Inconsistent, CÍRCULO-LEAD-COMPLETO).
+3. Llega la notificación interna por SMS/email con el análisis y los openings de venta.
+4. Ella recibe por WhatsApp el link del calendario y reserva (o no).
