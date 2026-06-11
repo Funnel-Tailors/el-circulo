@@ -35,7 +35,7 @@ export const OtpStep = ({ phone, contactId, onVerified, onBack, onResend }: OtpS
 
   const handleVerify = async () => {
     if (code.length !== 6) {
-      setError("Mete los 6 dígitos del código.");
+      setError("Introduce los 6 dígitos del código.");
       return;
     }
     setIsVerifying(true);
@@ -80,8 +80,8 @@ export const OtpStep = ({ phone, contactId, onVerified, onBack, onResend }: OtpS
           Verifica tu <span className="glow">WhatsApp</span>
         </h2>
         <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-          Te acabo de mandar un código de 6 dígitos por WhatsApp a{" "}
-          <span className="text-foreground font-semibold">{phone}</span>. Mételo aquí para confirmar tu plaza.
+          Te acabo de enviar un código de 6 dígitos por WhatsApp a{" "}
+          <span className="text-foreground font-semibold">{phone}</span>. Introduce aquí el código para ver tu hueco de llamada.
         </p>
       </div>
 
@@ -120,7 +120,7 @@ export const OtpStep = ({ phone, contactId, onVerified, onBack, onResend }: OtpS
               Verificando...
             </span>
           ) : (
-            "Verificar y confirmar plaza"
+            "Verificar y ver mi hueco →"
           )}
         </Button>
 
