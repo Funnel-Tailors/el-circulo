@@ -316,7 +316,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       {/* Contact Form */}
       <div className="space-y-4">
         <p className="text-sm text-foreground/70 text-center">
-          Deja tus datos para aplicar al Círculo
+          Verifica tu WhatsApp para acceder al calendario. Lo usamos para confirmar tu cita y mandarte el material previo a la llamada.
         </p>
 
         <Form {...form}>
@@ -412,7 +412,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                     Enviando código...
                   </span>
                 ) : (
-                  "Recibir código por WhatsApp"
+                  "Verificar y ver mi hueco →"
                 )}
               </Button>
             </form>

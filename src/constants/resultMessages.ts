@@ -13,7 +13,7 @@ export const RESULT_MESSAGES = {
     socialProof: "FLOC facturó €80K en 4 días. Proyectos de hasta €60K cerrados dentro.",
     formCta: "APLICAR AL CÍRCULO →",
     postSubmit: "Elige tu hueco. La Senda te llega por WhatsApp para que vengas a la llamada con la cabeza lista.",
-    trustSignal: "🔒 Pon un WhatsApp real. Por ahí te mandamos La Senda y los recordatorios de la llamada.",
+    trustSignal: "🔒 Pon un WhatsApp real. Lo usamos para confirmar tu cita y mandarte el material previo a la llamada.",
   },
   notQualified: {
     title: "La Senda no es para ti",
