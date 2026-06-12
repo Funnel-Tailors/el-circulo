@@ -18,10 +18,10 @@ export interface WebinardoCopy {
 }
 
 export const WEBINARDO_COPY: WebinardoCopy = {
-  eyebrow: "Clase gratuita · 1 hora · para dueños de estudio, agencia o productora",
-  h1: "Por qué tu mejor cliente te trae a tus peores clientes",
+  eyebrow: "Para dueños de estudio, agencia o productora",
+  h1: "Cómo cerrar tu primer proyecto de cuatro cifras en 7 días sin enseñar un solo portfolio",
   subhead:
-    "Y cómo dueños de estudios creativos están cerrando proyectos de cuatro cifras sin mandar propuestas ni bajar precios — montando el mismo sistema en una semana.",
+    "El sistema para vender servicios creativos a quien SÍ paga lo que vales, sin perseguir a nadie.",
   bullets: [
     "Por qué ahora mismo eres un puesto con carpa blanca en un mercadillo de parking — y cómo convertirte en una joyería: cobrar más y que te elijan a ti siempre",
     "Cómo dejar de perseguir al cliente como a un gato y atraerlo con whiskas: una oleada de gente deseando comprar lo-que-sea-que vendas",

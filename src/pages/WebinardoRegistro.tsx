@@ -153,7 +153,7 @@ const WebinardoRegistro = () => {
           <p className="font-mono text-xs md:text-sm uppercase tracking-[0.22em] text-muted-foreground">
             {copy.eyebrow}
           </p>
-          <h1 className="font-display font-black uppercase leading-[1em] tracking-[-0.025em] text-4xl md:text-6xl glow">
+          <h1 className="font-display font-black leading-[1.05em] tracking-[-0.025em] text-3xl md:text-5xl glow">
             {copy.h1}
           </h1>
           <p className="text-lg md:text-xl text-foreground/80 leading-snug max-w-2xl mx-auto">
