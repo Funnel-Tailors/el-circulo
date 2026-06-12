@@ -10,6 +10,7 @@ import {
   Palette,
   Sparkles,
   Image,
+  Video,
 } from "lucide-react";
 import {
   Sidebar,
@@ -59,6 +60,12 @@ const navItems = [
     url: "/admin/brecha",
     icon: Zap,
     description: "Journey + leads Brecha",
+  },
+  {
+    title: "Webinardo",
+    url: "/admin/webinar",
+    icon: Video,
+    description: "Config, registros y tracking",
   },
   {
     title: "Dev Tools",

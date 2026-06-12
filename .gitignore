@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+
+# Webinar source (privado — los slides se trabajan en freeformiro)
+webi/
