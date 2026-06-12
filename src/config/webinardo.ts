@@ -11,7 +11,6 @@ export interface WebinardoCopy {
   eyebrow: string;
   h1: string;
   subhead: string;
-  story: string[];
   bullets: string[];
   ctaButton: string;
   ctaSub: string;
@@ -23,11 +22,6 @@ export const WEBINARDO_COPY: WebinardoCopy = {
   h1: "Por qué tu mejor cliente te trae a tus peores clientes",
   subhead:
     "Y cómo dueños de estudios creativos están cerrando proyectos de cuatro cifras sin mandar propuestas ni bajar precios — montando el mismo sistema en una semana.",
-  story: [
-    "Viernes, 19:00. Mandas el presupuesto.",
-    "Lunes… martes… miércoles… nada.",
-    "Si te suena, esta hora es para ti.",
-  ],
   bullets: [
     "Por qué ahora mismo eres un puesto con carpa blanca en un mercadillo de parking — y cómo convertirte en una joyería: cobrar más y que te elijan a ti siempre",
     "Cómo dejar de perseguir al cliente como a un gato y atraerlo con whiskas: una oleada de gente deseando comprar lo-que-sea-que vendas",

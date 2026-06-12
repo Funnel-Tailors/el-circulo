@@ -6,6 +6,28 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { quizAnalytics } from "@/lib/analytics";
 import { useWebinarSettings } from "@/hooks/useWebinarSettings";
@@ -32,11 +54,12 @@ function useCountdown(target: Date | null) {
   }, [target]);
   if (!target) return null;
   const diff = Math.max(0, target.getTime() - now);
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  return { d, h, m, s };
+  return {
+    d: Math.floor(diff / 86400000),
+    h: Math.floor((diff % 86400000) / 3600000),
+    m: Math.floor((diff % 3600000) / 60000),
+    s: Math.floor((diff % 60000) / 1000),
+  };
 }
 
 const WebinardoRegistro = () => {
@@ -58,8 +81,7 @@ const WebinardoRegistro = () => {
   const onSubmit = async (data: ContactFormData) => {
     setSubmitting(true);
     try {
-      const digits = data.phone.replace(/[\s-]/g, "");
-      const fullPhone = `${data.countryCode}${digits}`;
+      const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, "")}`;
       const { data: res, error } = await supabase.functions.invoke("register-webinar", {
         body: {
           name: data.name,
@@ -104,21 +126,6 @@ const WebinardoRegistro = () => {
           <p className="text-lg md:text-xl text-foreground/80 leading-snug max-w-2xl mx-auto">
             {copy.subhead}
           </p>
-        </motion.div>
-
-        {/* ── Micro-historia ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="mt-10 text-center space-y-1.5 text-foreground/70 italic"
-        >
-          {copy.story.map((line, i) => (
-            <p key={i} className={i === copy.story.length - 1 ? "text-foreground/90 not-italic mt-3" : ""}>
-              {line}
-            </p>
-          ))}
         </motion.div>
 
         {/* ── Countdown (solo modo launch) ── */}
@@ -172,83 +179,131 @@ const WebinardoRegistro = () => {
 
         <Divider />
 
-        {/* ── Form ── */}
+        {/* ── Form (mismo patrón que el contacto del quiz) ── */}
         <div ref={formRef} className="max-w-md mx-auto glass-card-dark rounded-2xl p-6 md:p-8">
           <h2 className="font-display font-black uppercase text-2xl text-center mb-1">
             {copy.ctaButton}
           </h2>
           <p className="text-center text-sm text-muted-foreground mb-6">{copy.ctaSub}</p>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
-                Nombre y apellido
-              </label>
-              <Input placeholder="Tu nombre completo" {...form.register("name")} />
-              {form.formState.errors.name && (
-                <p className="text-destructive text-xs mt-1">{form.formState.errors.name.message}</p>
-              )}
-            </div>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              {/* Honeypot */}
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
+                    <FormLabel>Website</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="text" autoComplete="off" tabIndex={-1} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-            <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
-                WhatsApp
-              </label>
-              <div className="flex gap-2">
-                <select
-                  {...form.register("countryCode")}
-                  className="h-10 rounded-xl border border-input bg-background px-2 text-sm"
-                  aria-label="País"
-                >
-                  {TOP_COUNTRY_CODES.map((c) => (
-                    <option key={c.code} value={c.code}>
-                      {c.flag} {c.code}
-                    </option>
-                  ))}
-                </select>
-                <Input
-                  className="flex-1"
-                  inputMode="tel"
-                  placeholder="Tu número"
-                  {...form.register("phone")}
-                />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Nombre completo</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        placeholder="Juan Pérez"
+                        autoComplete="name"
+                        disabled={submitting}
+                        className="dark-button text-base"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">💬 Tu WhatsApp</Label>
+                <div className="grid gap-2 grid-cols-[140px_1fr]">
+                  <FormField
+                    control={form.control}
+                    name="countryCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={submitting}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="dark-button text-base" disabled={submitting}>
+                              <SelectValue placeholder="País" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-popover max-h-[300px]">
+                            {TOP_COUNTRY_CODES.map((country) => (
+                              <SelectItem key={country.code} value={country.code} className="cursor-pointer">
+                                {country.flag} {country.code}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="tel"
+                            placeholder="600 00 00 00"
+                            autoComplete="tel-national"
+                            inputMode="numeric"
+                            pattern="[0-9\s\-]*"
+                            disabled={submitting}
+                            className="dark-button text-base"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
-              {form.formState.errors.phone && (
-                <p className="text-destructive text-xs mt-1">{form.formState.errors.phone.message}</p>
-              )}
-            </div>
 
-            {/* Honeypot */}
-            <input
-              type="text"
-              tabIndex={-1}
-              autoComplete="off"
-              className="absolute -left-[9999px] h-0 w-0 opacity-0"
-              aria-hidden="true"
-              {...form.register("website")}
-            />
-
-            <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-              {submitting ? "Guardando…" : copy.ctaButton}
-            </Button>
-            <p className="text-center text-[11px] text-muted-foreground">{copy.ctaSub}</p>
-          </form>
+              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                {submitting ? "Guardando…" : copy.ctaButton}
+              </Button>
+              <p className="text-center text-[11px] text-muted-foreground">{copy.ctaSub}</p>
+            </form>
+          </Form>
         </div>
 
         <Divider />
 
-        {/* ── FAQ ── */}
-        <div className="max-w-2xl mx-auto space-y-3">
+        {/* ── FAQ (mismo patrón que MiniFAQSection) ── */}
+        <Accordion type="single" collapsible className="space-y-4 max-w-2xl mx-auto">
           {copy.faq.map((f, i) => (
-            <details key={i} className="group rounded-xl border border-border/60 px-5 py-4">
-              <summary className="cursor-pointer list-none font-medium flex items-center justify-between">
-                {f.q}
-                <span className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
-              </summary>
-              <p className="text-muted-foreground text-sm mt-3 leading-relaxed">{f.a}</p>
-            </details>
+            <AccordionItem
+              key={i}
+              value={`item-${i}`}
+              className="glass-card-dark rounded-xl px-6 py-2 border-border/50 transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 data-[state=open]:scale-[1.01]"
+            >
+              <AccordionTrigger className="text-left hover:no-underline py-4">
+                <span className="font-semibold text-foreground">{f.q}</span>
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground pb-4 pt-0">
+                {f.a}
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
+        </Accordion>
 
         <div className="mt-12 text-center">
           <Button size="lg" onClick={scrollToForm} className="px-8">
