@@ -13,9 +13,21 @@ interface OtpStepProps {
   onBack: () => void;
   /** Reenvía el código. Devuelve true si se envió. */
   onResend: () => Promise<boolean>;
+  /** Cláusula final del subtítulo (default: contexto de llamada). */
+  purposeText?: string;
+  /** Texto del botón de verificar (default: contexto de llamada). */
+  ctaLabel?: string;
 }
 
-export const OtpStep = ({ phone, contactId, onVerified, onBack, onResend }: OtpStepProps) => {
+export const OtpStep = ({
+  phone,
+  contactId,
+  onVerified,
+  onBack,
+  onResend,
+  purposeText = "para ver tu hueco de llamada",
+  ctaLabel = "Verificar y ver mi hueco →",
+}: OtpStepProps) => {
   const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +93,7 @@ export const OtpStep = ({ phone, contactId, onVerified, onBack, onResend }: OtpS
         </h2>
         <p className="text-sm text-muted-foreground max-w-sm mx-auto">
           Te acabo de enviar un código de 6 dígitos por WhatsApp a{" "}
-          <span className="text-foreground font-semibold">{phone}</span>. Introduce aquí el código para ver tu hueco de llamada.
+          <span className="text-foreground font-semibold">{phone}</span>. Introduce aquí el código {purposeText}.
         </p>
       </div>
 
@@ -120,7 +132,7 @@ export const OtpStep = ({ phone, contactId, onVerified, onBack, onResend }: OtpS
               Verificando...
             </span>
           ) : (
-            "Verificar y ver mi hueco →"
+            ctaLabel
           )}
         </Button>
 

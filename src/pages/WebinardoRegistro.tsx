@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -31,6 +31,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { quizAnalytics } from "@/lib/analytics";
 import { useWebinarSettings } from "@/hooks/useWebinarSettings";
+import { OtpStep } from "@/components/quiz/result/OtpStep";
 import {
   contactFormSchema,
   type ContactFormData,
@@ -67,6 +68,10 @@ const WebinardoRegistro = () => {
   const { settings } = useWebinarSettings();
   const copy = settings.copy;
   const [submitting, setSubmitting] = useState(false);
+  const [step, setStep] = useState<"form" | "otp">("form");
+  const [otpContactId, setOtpContactId] = useState("");
+  const [otpPhone, setOtpPhone] = useState("");
+  const pendingRef = useRef<ContactFormData | null>(null);
   const countdown = useCountdown(settings.mode === "launch" ? settings.date : null);
 
   const form = useForm<ContactFormData>({
@@ -74,32 +79,64 @@ const WebinardoRegistro = () => {
     defaultValues: { name: "", countryCode: "+34", phone: "", website: "" },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const fullPhoneOf = (d: ContactFormData) =>
+    `${d.countryCode}${d.phone.replace(/[\s-]/g, "")}`;
+
+  // Paso 1: enviar el código OTP por WhatsApp (reusa send-circulo-otp).
+  const handleSendOtp = async (data: ContactFormData) => {
+    if (data.website) return; // honeypot
     setSubmitting(true);
     try {
-      const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, "")}`;
+      const { data: res, error } = await supabase.functions.invoke("send-circulo-otp", {
+        body: { phone: fullPhoneOf(data), name: data.name },
+      });
+      if (error || !res?.success) throw error || new Error("otp");
+      pendingRef.current = data;
+      setOtpContactId(res.contactId);
+      setOtpPhone(fullPhoneOf(data));
+      setStep("otp");
+    } catch (err) {
+      console.error("send-otp error:", err);
+      toast.error("No pudimos enviarte el código. Revisa el número e inténtalo otra vez.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const resendOtp = async (): Promise<boolean> => {
+    const data = pendingRef.current;
+    if (!data) return false;
+    const { data: res, error } = await supabase.functions.invoke("send-circulo-otp", {
+      body: { phone: fullPhoneOf(data), name: data.name },
+    });
+    return !error && !!res?.success;
+  };
+
+  // Paso 2 (tras verificar el OTP): crea el registro + token y navega a gracias.
+  const handleRegister = async (): Promise<boolean> => {
+    const data = pendingRef.current;
+    if (!data) return false;
+    try {
       const { data: res, error } = await supabase.functions.invoke("register-webinar", {
         body: {
           name: data.name,
-          whatsapp: fullPhone,
+          whatsapp: fullPhoneOf(data),
           countryCode: data.countryCode,
           source: "webinardo_registro",
-          website: data.website || "",
         },
       });
       if (error || !res?.success) throw error || new Error("registro");
-
       quizAnalytics.trackMetaPixelEvent("CompleteRegistration", {
         content_name: "Webinardo Creativos",
         content_category: "webinar_registration",
       });
-
       if (res.token) sessionStorage.setItem("webinardo_token", res.token);
       navigate("/webinardo/gracias");
+      return true;
     } catch (err) {
       console.error("register error:", err);
-      toast.error("No pudimos guardar tu plaza. Inténtalo de nuevo en un momento.");
-      setSubmitting(false);
+      toast.error("No pudimos guardar tu plaza. Inténtalo otra vez.");
+      return false;
     }
   };
 
@@ -147,8 +184,19 @@ const WebinardoRegistro = () => {
 
         {/* ── Form directo (above-the-fold, sin paso intermedio) ── */}
         <div className="mt-10 max-w-md mx-auto glass-card-dark rounded-2xl p-6 md:p-8">
+          {step === "otp" ? (
+            <OtpStep
+              phone={otpPhone}
+              contactId={otpContactId}
+              onVerified={handleRegister}
+              onBack={() => setStep("form")}
+              onResend={resendOtp}
+              purposeText="para guardar tu plaza"
+              ctaLabel="Verificar y guardar mi plaza →"
+            />
+          ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSendOtp)} className="space-y-4">
               {/* Honeypot */}
               <FormField
                 control={form.control}
@@ -239,11 +287,12 @@ const WebinardoRegistro = () => {
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting ? "Guardando…" : copy.ctaButton}
+                {submitting ? "Enviando código…" : copy.ctaButton}
               </Button>
               <p className="text-center text-[11px] text-muted-foreground">{copy.ctaSub}</p>
             </form>
           </Form>
+          )}
         </div>
 
         <Divider />
