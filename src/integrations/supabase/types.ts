@@ -92,6 +92,92 @@ export type Database = {
         }
         Relationships: []
       }
+      webinar_registrations: {
+        Row: {
+          country_code: string | null
+          created_at: string
+          first_name: string | null
+          ghl_contact_id: string | null
+          id: string
+          is_active: boolean
+          source: string | null
+          token: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          country_code?: string | null
+          created_at?: string
+          first_name?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          is_active?: boolean
+          source?: string | null
+          token?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          country_code?: string | null
+          created_at?: string
+          first_name?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          is_active?: boolean
+          source?: string | null
+          token?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      webinar_progress: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          cta_clicks: Json
+          first_visit_at: string | null
+          id: string
+          last_activity_at: string | null
+          token: string
+          updated_at: string | null
+          watched_pct: number | null
+          watched_seconds: number | null
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          cta_clicks?: Json
+          first_visit_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          token: string
+          updated_at?: string | null
+          watched_pct?: number | null
+          watched_seconds?: number | null
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          cta_clicks?: Json
+          first_visit_at?: string | null
+          id?: string
+          last_activity_at?: string | null
+          token?: string
+          updated_at?: string | null
+          watched_pct?: number | null
+          watched_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webinar_progress_token_fkey"
+            columns: ["token"]
+            isOneToOne: true
+            referencedRelation: "webinar_registrations"
+            referencedColumns: ["token"]
+          }
+        ]
+      }
       brecha_leads: {
         Row: {
           access_override: string | null
