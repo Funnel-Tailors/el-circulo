@@ -3,6 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { WEBINARDO_COPY, type WebinardoCopy } from "@/config/webinardo";
 
 export type WebinarMode = "evergreen" | "launch";
+export type ReplayMode = "rolling" | "fixed";
+
+export interface WebinarReplay {
+  enabled: boolean;
+  mode: ReplayMode; // "rolling" = N horas desde 1ª visita · "fixed" = fecha global
+  hours: number;
+  closesAt: Date | null;
+}
 
 export interface WebinarSettings {
   enabled: boolean;
@@ -10,6 +18,7 @@ export interface WebinarSettings {
   date: Date | null;
   videoUrl: string;
   copy: WebinardoCopy;
+  replay: WebinarReplay;
 }
 
 const WEBINAR_KEYS = [
@@ -18,6 +27,10 @@ const WEBINAR_KEYS = [
   "webinar_date",
   "webinar_video_url",
   "webinar_copy",
+  "webinar_replay_enabled",
+  "webinar_replay_mode",
+  "webinar_replay_hours",
+  "webinar_replay_closes_at",
 ];
 
 export const useWebinarSettings = () => {
@@ -27,6 +40,7 @@ export const useWebinarSettings = () => {
     date: null,
     videoUrl: "",
     copy: WEBINARDO_COPY,
+    replay: { enabled: false, mode: "rolling", hours: 48, closesAt: null },
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +70,14 @@ export const useWebinarSettings = () => {
         date: m.webinar_date ? new Date(m.webinar_date as string) : null,
         videoUrl: typeof m.webinar_video_url === "string" ? m.webinar_video_url : "",
         copy: { ...WEBINARDO_COPY, ...copyOverride },
+        replay: {
+          enabled: m.webinar_replay_enabled === true,
+          mode: m.webinar_replay_mode === "fixed" ? "fixed" : "rolling",
+          hours: typeof m.webinar_replay_hours === "number" ? m.webinar_replay_hours : 48,
+          closesAt: m.webinar_replay_closes_at
+            ? new Date(m.webinar_replay_closes_at as string)
+            : null,
+        },
       });
     } catch (err) {
       console.error("Error loading webinar settings:", err);

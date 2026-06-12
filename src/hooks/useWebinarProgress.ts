@@ -9,6 +9,7 @@ interface CtaClick {
 interface UseWebinarProgress {
   valid: boolean | null; // null = validando, false = token inválido
   firstName: string;
+  firstVisitAt: string | null; // 1ª visita (para ventana de replay rolling)
   ghlContactId: string | null;
   reportProgress: (pct: number, seconds: number) => void;
   reportCtaClick: (ctaId: string) => void;
@@ -19,6 +20,7 @@ interface UseWebinarProgress {
 export const useWebinarProgress = (token: string): UseWebinarProgress => {
   const [valid, setValid] = useState<boolean | null>(null);
   const [firstName, setFirstName] = useState("");
+  const [firstVisitAt, setFirstVisitAt] = useState<string | null>(null);
   const ghlRef = useRef<string | null>(null);
   const ctaRef = useRef<CtaClick[]>([]);
   const lastPctRef = useRef(0);
@@ -50,15 +52,16 @@ export const useWebinarProgress = (token: string): UseWebinarProgress => {
         .from("webinar_progress")
         .upsert({ token }, { onConflict: "token", ignoreDuplicates: true });
 
-      // Cargar cta_clicks previos para no pisarlos.
+      // Cargar cta_clicks/first_visit previos para no pisarlos.
       const { data: prog } = await supabase
         .from("webinar_progress")
-        .select("cta_clicks, watched_pct")
+        .select("cta_clicks, watched_pct, first_visit_at")
         .eq("token", token)
         .maybeSingle();
       if (prog) {
         ctaRef.current = Array.isArray(prog.cta_clicks) ? (prog.cta_clicks as unknown as CtaClick[]) : [];
         lastPctRef.current = prog.watched_pct ?? 0;
+        setFirstVisitAt(prog.first_visit_at ?? null);
       }
     })();
     return () => {
@@ -97,5 +100,5 @@ export const useWebinarProgress = (token: string): UseWebinarProgress => {
     [token]
   );
 
-  return { valid, firstName, ghlContactId: ghlRef.current, reportProgress, reportCtaClick };
+  return { valid, firstName, firstVisitAt, ghlContactId: ghlRef.current, reportProgress, reportCtaClick };
 };

@@ -22,6 +22,10 @@ export default function AdminWebinar() {
   const [videoUrl, setVideoUrl] = useState("");
   const [h1, setH1] = useState("");
   const [subhead, setSubhead] = useState("");
+  const [replayEnabled, setReplayEnabled] = useState(false);
+  const [replayMode, setReplayMode] = useState<"rolling" | "fixed">("rolling");
+  const [replayHours, setReplayHours] = useState(48);
+  const [replayClosesAt, setReplayClosesAt] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -32,6 +36,10 @@ export default function AdminWebinar() {
     setVideoUrl(settings.videoUrl);
     setH1(settings.copy.h1);
     setSubhead(settings.copy.subhead);
+    setReplayEnabled(settings.replay.enabled);
+    setReplayMode(settings.replay.mode);
+    setReplayHours(settings.replay.hours);
+    setReplayClosesAt(toLocalInput(settings.replay.closesAt));
   }, [isLoading, settings]);
 
   const save = async () => {
@@ -42,6 +50,13 @@ export default function AdminWebinar() {
       setKey("webinar_date", mode === "launch" && date ? new Date(date).toISOString() : null),
       setKey("webinar_video_url", videoUrl),
       setKey("webinar_copy", { h1, subhead }),
+      setKey("webinar_replay_enabled", replayEnabled),
+      setKey("webinar_replay_mode", replayMode),
+      setKey("webinar_replay_hours", Number(replayHours) || 48),
+      setKey(
+        "webinar_replay_closes_at",
+        replayMode === "fixed" && replayClosesAt ? new Date(replayClosesAt).toISOString() : null
+      ),
     ]);
     setSaving(false);
     if (ok.every(Boolean)) toast.success("Configuración guardada");
@@ -94,6 +109,55 @@ export default function AdminWebinar() {
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
               />
+            </div>
+
+            {/* ── Replay con caducidad (watch page) ── */}
+            <div className="space-y-3 rounded-md border border-border p-4">
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={replayEnabled}
+                  onChange={(e) => setReplayEnabled(e.target.checked)}
+                />
+                <span className="text-sm font-medium">Replay con caducidad</span>
+              </label>
+
+              {replayEnabled && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label>Modo de escasez</Label>
+                    <select
+                      value={replayMode}
+                      onChange={(e) => setReplayMode(e.target.value as "rolling" | "fixed")}
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      <option value="rolling">Ventana por persona (horas desde la 1ª visita)</option>
+                      <option value="fixed">Fecha global de cierre</option>
+                    </select>
+                  </div>
+
+                  {replayMode === "rolling" ? (
+                    <div className="space-y-1.5">
+                      <Label>Horas de acceso desde la primera visita</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={replayHours}
+                        onChange={(e) => setReplayHours(Number(e.target.value))}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <Label>El replay se cierra el</Label>
+                      <Input
+                        type="datetime-local"
+                        value={replayClosesAt}
+                        onChange={(e) => setReplayClosesAt(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="space-y-1.5">
