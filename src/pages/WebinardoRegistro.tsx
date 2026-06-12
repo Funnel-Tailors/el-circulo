@@ -142,6 +142,20 @@ const WebinardoRegistro = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* ── Countdown sticky arriba (solo modo launch) ── */}
+      {countdown && (
+        <div className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur">
+          <div className="container max-w-3xl mx-auto px-5 py-2.5 flex items-center justify-center gap-3">
+            <span className="font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              El directo empieza en
+            </span>
+            <span className="font-display font-black text-base md:text-lg glow tabular-nums">
+              {String(countdown.d).padStart(2, "0")}d : {String(countdown.h).padStart(2, "0")}h :{" "}
+              {String(countdown.m).padStart(2, "0")}m : {String(countdown.s).padStart(2, "0")}s
+            </span>
+          </div>
+        </div>
+      )}
       <div className="container max-w-3xl mx-auto px-5 py-14 md:py-20">
         {/* ── Hero ── */}
         <motion.div
@@ -160,27 +174,6 @@ const WebinardoRegistro = () => {
             {copy.subhead}
           </p>
         </motion.div>
-
-        {/* ── Countdown (solo modo launch) ── */}
-        {countdown && (
-          <div className="mt-10 flex items-center justify-center gap-4 md:gap-6">
-            {[
-              { v: countdown.d, l: "días" },
-              { v: countdown.h, l: "horas" },
-              { v: countdown.m, l: "min" },
-              { v: countdown.s, l: "seg" },
-            ].map((b) => (
-              <div key={b.l} className="text-center">
-                <div className="font-display font-black text-3xl md:text-4xl glow tabular-nums">
-                  {String(b.v).padStart(2, "0")}
-                </div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {b.l}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* ── Form directo (above-the-fold, sin paso intermedio) ── */}
         <div className="mt-10 max-w-md mx-auto glass-card-dark rounded-2xl p-6 md:p-8">
