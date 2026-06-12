@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -67,16 +67,12 @@ const WebinardoRegistro = () => {
   const { settings } = useWebinarSettings();
   const copy = settings.copy;
   const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLDivElement>(null);
   const countdown = useCountdown(settings.mode === "launch" ? settings.date : null);
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: { name: "", countryCode: "+34", phone: "", website: "" },
   });
-
-  const scrollToForm = () =>
-    formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
   const onSubmit = async (data: ContactFormData) => {
     setSubmitting(true);
@@ -149,43 +145,8 @@ const WebinardoRegistro = () => {
           </div>
         )}
 
-        <div className="mt-10 text-center">
-          <Button size="lg" onClick={scrollToForm} className="px-8">
-            {copy.ctaButton}
-          </Button>
-        </div>
-
-        <Divider />
-
-        {/* ── Qué vas a llevarte ── */}
-        <div className="space-y-5 max-w-2xl mx-auto">
-          <h2 className="font-display font-black uppercase text-2xl md:text-3xl text-center mb-6">
-            En una hora vas a entender…
-          </h2>
-          {copy.bullets.map((b, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 14 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: i * 0.08 }}
-              className="flex gap-3 items-baseline"
-            >
-              <span className="text-foreground/80 glow">›</span>
-              <span className="text-foreground/90 leading-relaxed">{b}</span>
-            </motion.div>
-          ))}
-        </div>
-
-        <Divider />
-
-        {/* ── Form (mismo patrón que el contacto del quiz) ── */}
-        <div ref={formRef} className="max-w-md mx-auto glass-card-dark rounded-2xl p-6 md:p-8">
-          <h2 className="font-display font-black uppercase text-2xl text-center mb-1">
-            {copy.ctaButton}
-          </h2>
-          <p className="text-center text-sm text-muted-foreground mb-6">{copy.ctaSub}</p>
-
+        {/* ── Form directo (above-the-fold, sin paso intermedio) ── */}
+        <div className="mt-10 max-w-md mx-auto glass-card-dark rounded-2xl p-6 md:p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               {/* Honeypot */}
@@ -287,6 +248,28 @@ const WebinardoRegistro = () => {
 
         <Divider />
 
+        {/* ── Qué vas a llevarte ── */}
+        <div className="space-y-5 max-w-2xl mx-auto">
+          <h2 className="font-display font-black uppercase text-2xl md:text-3xl text-center mb-6">
+            En una hora vas a entender…
+          </h2>
+          {copy.bullets.map((b, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: i * 0.08 }}
+              className="flex gap-3 items-baseline"
+            >
+              <span className="text-foreground/80 glow">›</span>
+              <span className="text-foreground/90 leading-relaxed">{b}</span>
+            </motion.div>
+          ))}
+        </div>
+
+        <Divider />
+
         {/* ── FAQ (mismo patrón que MiniFAQSection) ── */}
         <Accordion type="single" collapsible className="space-y-4 max-w-2xl mx-auto">
           {copy.faq.map((f, i) => (
@@ -304,12 +287,6 @@ const WebinardoRegistro = () => {
             </AccordionItem>
           ))}
         </Accordion>
-
-        <div className="mt-12 text-center">
-          <Button size="lg" onClick={scrollToForm} className="px-8">
-            {copy.ctaButton}
-          </Button>
-        </div>
 
         <p className="mt-12 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">
           El Círculo
