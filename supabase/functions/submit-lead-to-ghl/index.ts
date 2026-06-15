@@ -11,7 +11,13 @@ const DISPOSABLE_EMAIL_DOMAINS = [
   'temp-mail.org', '10minutemail.com', 'guerrillamail.com',
   'mailinator.com', 'throwaway.email', 'yopmail.com',
   'tempmail.com', 'fakeinbox.com', 'trashmail.com',
-  'getnada.com', 'mohmal.com', 'throwawaymail.com'
+  'getnada.com', 'mohmal.com', 'throwawaymail.com',
+  'tempmailo.com', 'dispostable.com', 'maildrop.cc',
+  'sharklasers.com', 'mailnesia.com', 'mailcatch.com',
+  'mintemail.com', 'spambox.us', 'tempmailaddress.com',
+  'dropmail.me', 'mail.tm', '1secmail.com',
+  'emailondeck.com', 'tempr.email', 'inboxbear.com',
+  'temp-mail.io', 'getairmail.com', 'mvrht.net', 'byom.de'
 ];
 
 const SPAM_PATTERNS = {
@@ -67,6 +73,7 @@ interface LeadSubmission {
   name: string;
   email?: string;
   whatsapp?: string;
+  emailTier?: 'free' | 'corporate';
   answers: QuizAnswers;
   score: number;
   qualified: boolean;
@@ -1279,7 +1286,7 @@ serve(async (req) => {
   }
 
   try {
-    const { name, email, whatsapp, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId, isSkeptic, quizVersion }: LeadSubmission = await req.json();
+    const { name, email, whatsapp, emailTier, answers, score, qualified, fbclid, isPartialSubmission, ghlContactId, sessionId, isSkeptic, quizVersion }: LeadSubmission = await req.json();
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -1344,6 +1351,8 @@ serve(async (req) => {
     };
     
     const tags = generateTags(answers, score, qualified, isPartialSubmission || false, isSkeptic || false, quizVersion || 'v2');
+    if (emailTier === 'free') tags.push('📧 CÍRCULO-EMAIL-FREE');
+    else if (emailTier === 'corporate') tags.push('🏢 CÍRCULO-EMAIL-CORPORATE');
     console.log('Generated tags:', tags);
     
     let contactId: string | null = ghlContactId || null;
@@ -1395,7 +1404,8 @@ serve(async (req) => {
         { key: 'circulo_fbclid', field_value: fbclid || 'organic' },
         { key: 'vsl_watched', field_value: vslWatched },
         { key: 'vsl_percentage', field_value: vslPercentage },
-        { key: 'vsl_duration', field_value: vslDuration }
+        { key: 'vsl_duration', field_value: vslDuration },
+        { key: 'email_tier', field_value: emailTier || 'unknown' }
       ]
     };
     

@@ -33,8 +33,8 @@ import { quizAnalytics } from "@/lib/analytics";
 import { useWebinarSettings } from "@/hooks/useWebinarSettings";
 import { OtpStep } from "@/components/quiz/result/OtpStep";
 import {
-  contactFormSchema,
-  type ContactFormData,
+  webinarRegistrationSchema,
+  type WebinarRegistrationData,
   TOP_COUNTRY_CODES,
 } from "@/lib/validations/contact";
 
@@ -71,19 +71,19 @@ const WebinardoRegistro = () => {
   const [step, setStep] = useState<"form" | "otp">("form");
   const [otpContactId, setOtpContactId] = useState("");
   const [otpPhone, setOtpPhone] = useState("");
-  const pendingRef = useRef<ContactFormData | null>(null);
+  const pendingRef = useRef<WebinarRegistrationData | null>(null);
   const countdown = useCountdown(settings.mode === "launch" ? settings.date : null);
 
-  const form = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
+  const form = useForm<WebinarRegistrationData>({
+    resolver: zodResolver(webinarRegistrationSchema),
     defaultValues: { name: "", countryCode: "+34", phone: "", website: "" },
   });
 
-  const fullPhoneOf = (d: ContactFormData) =>
+  const fullPhoneOf = (d: WebinarRegistrationData) =>
     `${d.countryCode}${d.phone.replace(/[\s-]/g, "")}`;
 
   // Paso 1: enviar el código OTP por WhatsApp (reusa send-circulo-otp).
-  const handleSendOtp = async (data: ContactFormData) => {
+  const handleSendOtp = async (data: WebinarRegistrationData) => {
     if (data.website) return; // honeypot
     setSubmitting(true);
     try {
