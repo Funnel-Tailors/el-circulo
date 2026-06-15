@@ -141,3 +141,29 @@ export const contactFormSchema = z.object({
 );
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
+
+// ============================================================
+// WebinarRegistrationSchema — usado por WebinardoRegistro
+// Mantiene el formato anterior (nombre + país + teléfono + honeypot)
+// para registros de webinar (no high-ticket call).
+// ============================================================
+const PHONE_SPAM_PATTERN = /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/;
+
+export const webinarRegistrationSchema = z.object({
+  name: nameValidator,
+  countryCode: z.string().min(1, "Selecciona tu país"),
+  phone: z
+    .string()
+    .min(1, "El WhatsApp es obligatorio")
+    .refine(
+      (value) => /^\d{6,15}$/.test(value.replace(/[\s-]/g, '')),
+      { message: "Ingresa un número de WhatsApp válido (6-15 dígitos)" }
+    )
+    .refine(
+      (value) => !PHONE_SPAM_PATTERN.test(value.replace(/[\s-]/g, '')),
+      { message: "Por favor ingresa un número de WhatsApp válido" }
+    ),
+  website: z.string().max(0, "Campo inválido").optional(),
+});
+
+export type WebinarRegistrationData = z.infer<typeof webinarRegistrationSchema>;
