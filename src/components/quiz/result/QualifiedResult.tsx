@@ -3,17 +3,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { quizAnalytics } from "@/lib/analytics";
 import { toast } from "@/hooks/use-toast";
-import { contactFormSchema, type ContactFormData, TOP_COUNTRY_CODES } from "@/lib/validations/contact";
+import { contactFormSchema, getEmailTier, type ContactFormData } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
 import { RESULT_MESSAGES, PAIN_HEADLINES } from "@/constants/resultMessages";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
-import { OtpStep } from "@/components/quiz/result/OtpStep";
 
 interface QualifiedResultProps {
   quizState: QuizState;
@@ -26,30 +23,20 @@ const STRATEGIC_CALL_CALENDAR_ID = "8C2kck4NCnEihznxvL29";
 interface BookingData {
   firstName: string;
   lastName: string;
-  email?: string;
-  phone: string;
+  email: string;
   quizScore: number;
   qualificationLevel: "premium_qualified" | "qualified" | "marginal";
 }
 
 export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
-  const [selectedCountryCode, setSelectedCountryCode] = useState("+34");
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
-
-  // OTP gate (anti-troll): form → otp → (verificado) → submit real → calendario
-  const [step, setStep] = useState<"form" | "otp">("form");
-  const [otpContactId, setOtpContactId] = useState<string | null>(null);
-  const [pendingData, setPendingData] = useState<ContactFormData | null>(null);
-  const [pendingPhone, setPendingPhone] = useState<string>("");
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
       name: "",
-      countryCode: "+34",
-      phone: "",
+      email: "",
       website: ""
     }
   });
@@ -65,38 +52,9 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
 
   const personalizedTitle = PAIN_HEADLINES[quizState.q1 || ''] || RESULT_MESSAGES.qualified.title;
 
-  // Auto-detect country
-  useEffect(() => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const timezoneMap: Record<string, string> = {
-      'Europe/Madrid': '+34', 'America/Mexico_City': '+52', 'America/Argentina/Buenos_Aires': '+54',
-      'America/Bogota': '+57', 'America/Santiago': '+56', 'America/Lima': '+51',
-      'America/New_York': '+1', 'America/Los_Angeles': '+1', 'America/Sao_Paulo': '+55',
-    };
-    const detected = timezoneMap[timezone] || '+34';
-    form.setValue('countryCode', detected);
-    setSelectedCountryCode(detected);
-  }, [form]);
-
-  const getPhonePlaceholder = (code: string): string => {
-    const placeholders: Record<string, string> = {
-      '+34': '612 34 56 78', '+52': '55 1234 5678', '+54': '11 1234 5678',
-      '+57': '300 123 4567', '+1': '202 555 0123', '+55': '11 98765 4321',
-    };
-    return placeholders[code] || '600 000 000';
-  };
-
-  const calculateScore = useCallback((state: QuizState): number => {
+  // Score calculation (mismo cálculo que el quiz)
+  const calculateScore = useCallback((state: QuizState) => {
     let score = 0;
-    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 15;
-    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 15;
-    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 15;
-    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 15;
-    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 13;
-    if (state.q2 === "Agencia de diseño / branding") score += 15;
-    else if (state.q2 === "Productora / Estudio audiovisual") score += 15;
-    else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
-    else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
     if (state.q3 === "€5.000 - €10.000/mes") score += 45;
     else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
     else if (state.q3 === "Más de €20.000/mes") score += 38;
@@ -108,27 +66,25 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     return Math.min(score, 100);
   }, []);
 
-  const handleContactSubmit = useCallback(async (data: ContactFormData, verifiedContactId?: string) => {
+  const handleContactSubmit = useCallback(async (data: ContactFormData) => {
     if (data.website && data.website.length > 0) {
       toast({ title: "Error", description: "Hubo un problema.", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
-    const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
-
     const score = calculateScore(quizState);
+    const emailTier = getEmailTier(data.email);
 
     try {
       const { data: responseData, error } = await supabase.functions.invoke('submit-lead-to-ghl', {
         body: {
           name: data.name,
-          whatsapp: fullPhone,
+          email: data.email,
+          emailTier,
           answers: quizState,
           score,
           qualified: true,
-          // Contacto ya creado y VERIFICADO en el paso OTP → actualiza ese mismo
-          ghlContactId: verifiedContactId,
           fbclid: quizAnalytics.getFbclid(),
           isPartialSubmission: false,
           sessionId: quizAnalytics.getSessionId(),
@@ -141,27 +97,17 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       try { await quizAnalytics.submitContactForm(); } catch (e) { /* non-blocking */ }
       quizAnalytics.completeQuiz();
 
-      // PIXEL CONDITIONING (JH) — InitiateCheckout DESACTIVADO: conversión
-      // prematura y duplicada (disparaba al enviar form, no al agendar la
-      // llamada). No eliminar: reactivar descomentando.
-      // quizAnalytics.trackMetaPixelEvent('InitiateCheckout', {
-      //   content_name: 'Strategic Call Booking',
-      //   content_category: 'qualified_lead',
-      //   value: 3000,
-      //   currency: 'EUR',
-      //   quiz_score: score,
-      // });
-
       // Lead limpio — señal cualificada Tier-1 (form submit), SIN valor €
       // fabricado. El valor REAL irá en Purchase (offline CAPI) al cerrar deal.
-      // La optimización de campaña va sobre Schedule (llamada agendada).
+      // La optimización de campaña va sobre Lead (booking confirmado) vía GHL → CAPI.
       quizAnalytics.trackMetaPixelEvent('Lead', {
         content_name: 'Círculo Membership',
         content_category: 'qualified_lead',
         content_ids: ['circulo_lead'],
         quiz_score: score,
+        email_tier: emailTier,
       });
-      console.log('🎯 [TRACKING] Lead fired (limpio, sin valor fabricado)');
+      console.log('🎯 [TRACKING] Lead fired (email-only, sin OTP)');
 
       const contactId = responseData?.contactId;
       if (!contactId) {
@@ -173,22 +119,19 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
         return false;
       }
 
-      // Split name for calendar prefill
       const nameParts = data.name.trim().split(/\s+/);
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
 
-      // Qualification level for calendar tracking
       const qualificationLevel: BookingData["qualificationLevel"] =
         score >= 85 ? "premium_qualified" : score >= 70 ? "qualified" : "marginal";
 
       toast({ title: "✅ Plaza confirmada", description: "Elige tu hueco." });
 
-      // Reveal calendar in-place — no more redirect to Senda
       setBookingData({
         firstName,
         lastName,
-        phone: fullPhone,
+        email: data.email,
         quizScore: score,
         qualificationLevel,
       });
@@ -205,62 +148,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       setIsSubmitting(false);
     }
   }, [quizState, calculateScore]);
-
-  // Step 1: enviar código OTP por WhatsApp (no crea el lead todavía)
-  const handleSendOtp = useCallback(async (data: ContactFormData) => {
-    if (data.website && data.website.length > 0) {
-      toast({ title: "Error", description: "Hubo un problema.", variant: "destructive" });
-      return;
-    }
-
-    setIsSendingOtp(true);
-    const fullPhone = `${data.countryCode}${data.phone.replace(/[\s-]/g, '')}`;
-
-    try {
-      const { data: res, error } = await supabase.functions.invoke('send-circulo-otp', {
-        body: { phone: fullPhone, name: data.name }
-      });
-      if (error) throw error;
-
-      if (!res?.success || !res?.contactId) {
-        toast({
-          title: "⚠️ No pudimos enviar el código",
-          description: res?.error || "Revisa que el número de WhatsApp sea correcto.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setPendingData(data);
-      setPendingPhone(fullPhone);
-      setOtpContactId(res.contactId);
-      setStep("otp");
-    } catch (e) {
-      console.error('💥 [ERROR] send-circulo-otp:', e);
-      toast({
-        title: "⚠️ Error",
-        description: "No pudimos enviar el código. Inténtalo otra vez.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSendingOtp(false);
-    }
-  }, []);
-
-  // Reenviar el código (lo usa OtpStep)
-  const resendOtp = useCallback(async (): Promise<boolean> => {
-    if (!pendingData) return false;
-    try {
-      const { data: res, error } = await supabase.functions.invoke('send-circulo-otp', {
-        body: { phone: pendingPhone, name: pendingData.name }
-      });
-      if (error) throw error;
-      return !!res?.success;
-    } catch (e) {
-      console.error('💥 [ERROR] resend send-circulo-otp:', e);
-      return false;
-    }
-  }, [pendingData, pendingPhone]);
 
   // After successful submit — show calendar in-place
   if (bookingData) {
@@ -279,24 +166,11 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           calendarId={STRATEGIC_CALL_CALENDAR_ID}
           firstName={bookingData.firstName}
           lastName={bookingData.lastName}
-          phone={bookingData.phone}
+          email={bookingData.email}
           quizScore={bookingData.quizScore}
           qualificationLevel={bookingData.qualificationLevel}
         />
       </div>
-    );
-  }
-
-  // Step OTP — verificación WhatsApp antes de crear el lead (anti-troll)
-  if (step === "otp" && otpContactId && pendingData) {
-    return (
-      <OtpStep
-        phone={pendingPhone}
-        contactId={otpContactId}
-        onVerified={() => handleContactSubmit(pendingData, otpContactId)}
-        onBack={() => setStep("form")}
-        onResend={resendOtp}
-      />
     );
   }
 
@@ -316,16 +190,16 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       {/* Contact Form */}
       <div className="space-y-4">
         <p className="text-sm text-foreground/70 text-center">
-          Verifica tu WhatsApp para acceder al calendario. Lo usamos para confirmar tu cita y mandarte el material previo a la llamada.
+          Déjame tu email y te abro el calendario. La cita la confirmamos por email.
         </p>
 
         <Form {...form}>
             <form 
-              onSubmit={form.handleSubmit(handleSendOtp)}
+              onSubmit={form.handleSubmit(handleContactSubmit)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  form.handleSubmit(handleSendOtp)();
+                  form.handleSubmit(handleContactSubmit)();
                 }
               }}
               className="space-y-4"
@@ -341,60 +215,36 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                 <FormItem>
                   <FormLabel className="text-sm">Nombre completo</FormLabel>
                   <FormControl>
-                    <Input {...field} ref={(e) => { field.ref(e); (nameInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e; }} placeholder="Juan Pérez" autoComplete="name" disabled={isSendingOtp} className="dark-button text-base" />
+                    <Input
+                      {...field}
+                      ref={(e) => { field.ref(e); (nameInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e; }}
+                      placeholder="Juan Pérez"
+                      autoComplete="name"
+                      disabled={isSubmitting}
+                      className="dark-button text-base"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               } />
 
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">
-                  💬 Tu WhatsApp
-                </Label>
-                <div className="grid gap-2 grid-cols-[140px_1fr]">
-                  <FormField control={form.control} name="countryCode" render={({ field }) => 
-                    <FormItem>
-                      <Select 
-                        onValueChange={(value) => { field.onChange(value); setSelectedCountryCode(value); }} 
-                        value={field.value}
-                        disabled={isSendingOtp}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="dark-button text-base" disabled={isSendingOtp}>
-                            <SelectValue placeholder="País" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-popover max-h-[300px]">
-                          {TOP_COUNTRY_CODES.map(country => 
-                            <SelectItem key={country.code} value={country.code} className="cursor-pointer">
-                              {country.flag} {country.code}
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  } />
-
-                  <FormField control={form.control} name="phone" render={({ field }) => 
-                    <FormItem>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          type="tel" 
-                          placeholder={getPhonePlaceholder(selectedCountryCode)} 
-                          autoComplete="tel-national"
-                          inputMode="numeric"
-                          pattern="[0-9\s\-]*"
-                          disabled={isSendingOtp}
-                          className="dark-button text-base" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  } />
-                </div>
-              </div>
+              <FormField control={form.control} name="email" render={({ field }) => 
+                <FormItem>
+                  <FormLabel className="text-sm">✉️ Tu email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      inputMode="email"
+                      placeholder="tu@email.com"
+                      autoComplete="email"
+                      disabled={isSubmitting}
+                      className="dark-button text-base"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              } />
 
               <p className="text-xs text-muted-foreground text-center">
                 {RESULT_MESSAGES.qualified.trustSignal}
@@ -402,17 +252,17 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
 
               <Button
                 type="submit"
-                disabled={isSendingOtp}
+                disabled={isSubmitting}
                 className="w-full bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense text-lg py-6 font-bold transition-colors"
                 size="lg"
               >
-                {isSendingOtp ? (
+                {isSubmitting ? (
                   <span className="flex items-center gap-2">
                     <span className="animate-spin">⏳</span>
-                    Enviando código...
+                    Abriendo calendario...
                   </span>
                 ) : (
-                  "Verificar y ver mi hueco →"
+                  "Ver mi hueco →"
                 )}
               </Button>
             </form>

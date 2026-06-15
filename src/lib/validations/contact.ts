@@ -1,21 +1,42 @@
 import { z } from "zod";
 
-// Lista de dominios de email desechables conocidos
+// Lista ampliada de dominios de email desechables conocidos
 const DISPOSABLE_EMAIL_DOMAINS = [
   'temp-mail.org', '10minutemail.com', 'guerrillamail.com',
   'mailinator.com', 'throwaway.email', 'yopmail.com',
   'tempmail.com', 'fakeinbox.com', 'trashmail.com',
-  'getnada.com', 'mohmal.com', 'throwawaymail.com'
+  'getnada.com', 'mohmal.com', 'throwawaymail.com',
+  'tempmailo.com', 'dispostable.com', 'maildrop.cc',
+  'sharklasers.com', 'mailnesia.com', 'mailcatch.com',
+  'mintemail.com', 'spambox.us', 'tempmailaddress.com',
+  'dropmail.me', 'mail.tm', '1secmail.com',
+  'emailondeck.com', 'tempr.email', 'inboxbear.com',
+  'temp-mail.io', 'getairmail.com', 'mvrht.net', 'byom.de'
 ];
+
+// Free email providers — permitidos pero taggeados como 'free' en GHL
+export const FREE_EMAIL_PROVIDERS = [
+  'gmail.com', 'googlemail.com',
+  'hotmail.com', 'hotmail.es', 'hotmail.co.uk',
+  'outlook.com', 'outlook.es', 'live.com', 'live.es',
+  'yahoo.com', 'yahoo.es', 'yahoo.com.mx', 'yahoo.com.ar',
+  'icloud.com', 'me.com', 'mac.com',
+  'aol.com', 'proton.me', 'protonmail.com',
+  'gmx.com', 'gmx.es', 'zoho.com', 'msn.com'
+];
+
+export function getEmailTier(email: string): 'free' | 'corporate' {
+  const domain = email.toLowerCase().split('@')[1] || '';
+  return FREE_EMAIL_PROVIDERS.includes(domain) ? 'free' : 'corporate';
+}
 
 // Patrones spam comunes
 const SPAM_PATTERNS = {
-  name: /^(test|asdf|qwerty|fake|spam|aaa|zzz|xxx|admin|user)\d*$/i,
+  name: /^(test|asdf|qwerty|fake|spam|aaa|zzz|xxx|admin|user|prueba|hola)\d*$/i,
   email: /^(test|admin|fake|spam|no|none)@(test|admin|fake|spam|example)\./i,
-  phone: /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/
 };
 
-// Lista de países TOP (ordenados por audiencia esperada)
+// Lista de países TOP (mantenida por compatibilidad con otros formularios)
 export const TOP_COUNTRY_CODES = [
   { code: "+34", country: "España", flag: "🇪🇸" },
   { code: "+52", country: "México", flag: "🇲🇽" },
@@ -29,7 +50,6 @@ export const TOP_COUNTRY_CODES = [
   { code: "+506", country: "Costa Rica", flag: "🇨🇷" },
 ];
 
-// Lista completa de países con códigos telefónicos
 export const COUNTRY_CODES = [
   { code: "+34", country: "España", flag: "🇪🇸" },
   { code: "+1", country: "Estados Unidos", flag: "🇺🇸" },
@@ -53,129 +73,71 @@ export const COUNTRY_CODES = [
   { code: "+351", country: "Portugal", flag: "🇵🇹" },
 ];
 
-// Schema parcial para validación de nombre y email solamente
+// Validador de nombre completo (anti-troll)
+const nameValidator = z
+  .string()
+  .min(1, "El nombre es obligatorio")
+  .max(100, "El nombre es demasiado largo")
+  .refine(
+    (value) => {
+      const words = value.trim().split(/\s+/);
+      return words.length >= 2 && words.every(word => word.length >= 2);
+    },
+    { message: "Ingresa tu nombre completo (nombre y apellido)" }
+  )
+  .refine(
+    (value) => !SPAM_PATTERNS.name.test(value.trim()),
+    { message: "Por favor ingresa tu nombre real" }
+  )
+  .refine(
+    (value) => {
+      const words = value.trim().toLowerCase().split(/\s+/);
+      return words.length === new Set(words).size;
+    },
+    { message: "Ingresa tu nombre completo (nombre y apellido)" }
+  );
+
+// Validador de email (anti-troll + bloqueo desechables)
+const emailValidator = z
+  .string()
+  .min(1, "El email es obligatorio")
+  .max(255, "El email es demasiado largo")
+  .email("Ingresa un email válido")
+  .refine(
+    (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
+    { message: "Ingresa un email válido (ejemplo: tu@email.com)" }
+  )
+  .refine(
+    (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
+    { message: "Por favor ingresa un email válido" }
+  )
+  .refine(
+    (value) => {
+      const domain = value.split('@')[1]?.toLowerCase();
+      return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
+    },
+    { message: "No se permiten emails temporales" }
+  );
+
+// Schema parcial (mantenido por compatibilidad)
 export const partialContactSchema = z.object({
-  name: z
-    .string()
-    .min(1, "El nombre es obligatorio")
-    .max(100, "El nombre es demasiado largo")
-    .refine(
-      (value) => {
-        const words = value.trim().split(/\s+/);
-        return words.length >= 2 && words.every(word => word.length >= 2);
-      },
-      {
-        message: "Ingresa tu nombre completo (nombre y apellido)",
-      }
-    )
-    .refine(
-      (value) => !SPAM_PATTERNS.name.test(value.trim()),
-      {
-        message: "Por favor ingresa tu nombre real",
-      }
-    )
-    .refine(
-      (value) => {
-        const words = value.trim().toLowerCase().split(/\s+/);
-        return words.length === new Set(words).size;
-      },
-      {
-        message: "Ingresa tu nombre completo (nombre y apellido)",
-      }
-    ),
-  
-  email: z
-    .string()
-    .min(1, "El email es obligatorio")
-    .max(255, "El email es demasiado largo")
-    .email("Ingresa un email válido")
-    .refine(
-      (value) => {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(value);
-      },
-      {
-        message: "Ingresa un email válido (ejemplo: tu@email.com)",
-      }
-    )
-    .refine(
-      (value) => !SPAM_PATTERNS.email.test(value.toLowerCase()),
-      {
-        message: "Por favor ingresa un email válido",
-      }
-    )
-    .refine(
-      (value) => {
-        const domain = value.split('@')[1]?.toLowerCase();
-        return !DISPOSABLE_EMAIL_DOMAINS.includes(domain);
-      },
-      {
-        message: "No se permiten emails temporales",
-      }
-    ),
+  name: nameValidator,
+  email: emailValidator,
 });
 
-// Schema para formulario de contacto - SOLO nombre + WhatsApp (email se captura en calendario)
+// Schema principal del formulario cualificado — SOLO nombre + email + honeypot.
+// Filtro anti-troll adicional: name == email local-part (patrón típico de bots).
 export const contactFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, "El nombre es obligatorio")
-    .max(100, "El nombre es demasiado largo")
-    .refine(
-      (value) => {
-        const words = value.trim().split(/\s+/);
-        return words.length >= 2 && words.every(word => word.length >= 2);
-      },
-      {
-        message: "Ingresa tu nombre completo (nombre y apellido)",
-      }
-    )
-    .refine(
-      (value) => !SPAM_PATTERNS.name.test(value.trim()),
-      {
-        message: "Por favor ingresa tu nombre real",
-      }
-    )
-    .refine(
-      (value) => {
-        // Detectar nombres con palabras repetidas (ej: "Juan Juan")
-        const words = value.trim().toLowerCase().split(/\s+/);
-        return words.length === new Set(words).size;
-      },
-      {
-        message: "Ingresa tu nombre completo (nombre y apellido)",
-      }
-    ),
-  
-  countryCode: z
-    .string()
-    .min(1, "Selecciona tu país"),
-  
-  phone: z
-    .string()
-    .min(1, "El WhatsApp es obligatorio")
-    .refine(
-      (value) => {
-        // Solo números, espacios y guiones permitidos
-        const cleaned = value.replace(/[\s-]/g, '');
-        return /^\d{6,15}$/.test(cleaned);
-      },
-      {
-        message: "Ingresa un número de WhatsApp válido (6-15 dígitos)",
-      }
-    )
-    .refine(
-      (value) => {
-        const cleaned = value.replace(/[\s-]/g, '');
-        return !SPAM_PATTERNS.phone.test(cleaned);
-      },
-      {
-        message: "Por favor ingresa un número de WhatsApp válido",
-      }
-    ),
-  
-  // Campo honeypot (debe estar vacío)
+  name: nameValidator,
+  email: emailValidator,
   website: z.string().max(0, "Campo inválido").optional(),
-});
+}).refine(
+  (data) => {
+    const localPart = data.email.split('@')[0]?.toLowerCase() || '';
+    const nameCompact = data.name.toLowerCase().replace(/\s+/g, '');
+    return nameCompact !== localPart;
+  },
+  { message: "Ingresa tu nombre real, no tu usuario de email", path: ['name'] }
+);
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
