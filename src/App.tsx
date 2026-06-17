@@ -11,6 +11,7 @@ import LaBrecha from "./pages/LaBrecha";
 import WebinardoRegistro from "./pages/WebinardoRegistro";
 import WebinardoGracias from "./pages/WebinardoGracias";
 import WebinardoVer from "./pages/WebinardoVer";
+import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
 
 // Lazy load admin (legacy public landings killed — redirect to /)
@@ -78,7 +79,7 @@ const App = () => (
           <Route path="/quiz" element={<Navigate to="/" replace />} />
           <Route path="/carta" element={<Navigate to="/" replace />} />
           
-          <Route path="/artefacto" element={<Navigate to="/" replace />} />
+          <Route path="/artefacto" element={<Artefacto />} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
