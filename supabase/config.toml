@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.get-my-invoice]
 verify_jwt = true
+
+[functions.get-my-project]
+verify_jwt = true
+
+[functions.sync-consulting-tags]
+verify_jwt = false

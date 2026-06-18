@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { AdminProjectBoard } from "@/components/consultoria/AdminProjectBoard";
 
 const fmtMoney = (cents: number, currency: string) =>
   `${(cents / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} ${currency}`;
@@ -230,9 +231,11 @@ export default function AdminConsultoria() {
       <Tabs defaultValue="clientes" className="space-y-6">
         <TabsList>
           <TabsTrigger value="clientes">👥 Clientes</TabsTrigger>
+          <TabsTrigger value="proyecto">🏁 Proyecto</TabsTrigger>
           <TabsTrigger value="config">⚙️ Configuración</TabsTrigger>
         </TabsList>
         <TabsContent value="clientes"><ClientsTab /></TabsContent>
+        <TabsContent value="proyecto"><AdminProjectBoard /></TabsContent>
         <TabsContent value="config"><ConfigTab /></TabsContent>
       </Tabs>
     </div>

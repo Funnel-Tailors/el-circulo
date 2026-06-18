@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Download, LogOut, FileText } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
+import { ProjectRoadmap, type Milestone } from "@/components/portal/ProjectRoadmap";
 
 interface MyInvoice {
   invoice_number: string;
@@ -66,12 +67,17 @@ const PortalLogin = ({ onAuthed }: { onAuthed: () => void }) => {
 
 const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () => void }) => {
   const [invoice, setInvoice] = useState<MyInvoice | null>(null);
+  const [milestones, setMilestones] = useState<Milestone[] | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase.functions.invoke("get-my-invoice");
-      if (!error) setInvoice((data as any)?.invoice ?? null);
+      const [inv, proj] = await Promise.all([
+        supabase.functions.invoke("get-my-invoice"),
+        supabase.functions.invoke("get-my-project"),
+      ]);
+      if (!inv.error) setInvoice((inv.data as any)?.invoice ?? null);
+      if (!proj.error) setMilestones((proj.data as any)?.milestones ?? []);
       setLoading(false);
     })();
   }, []);
@@ -93,12 +99,18 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
           <p className="text-muted-foreground text-sm">{session.user.email}</p>
         </div>
 
-        {/* Roadmap del proyecto — llega en M3 */}
+        {/* Roadmap del proyecto */}
         <Card className="p-6 bg-background/60 border-border">
-          <h2 className="font-semibold mb-1">Tu proyecto</h2>
-          <p className="text-sm text-muted-foreground">
-            El estado de tu proyecto y los entregables aparecerán aquí muy pronto.
-          </p>
+          <h2 className="font-semibold mb-4">Tu proyecto</h2>
+          {loading ? (
+            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : milestones && milestones.length > 0 ? (
+            <ProjectRoadmap milestones={milestones} />
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Tu proyecto arrancará en la llamada de onboarding. Aquí verás cada paso y los entregables.
+            </p>
+          )}
         </Card>
 
         {/* Factura */}

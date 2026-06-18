@@ -5,6 +5,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1'
 import { renderInvoicePdf } from './pdf.ts'
+import { MILESTONE_TEMPLATE } from './roadmap.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -172,6 +173,31 @@ serve(async (req) => {
     } catch (authErr) {
       console.error('portal user creation failed (non-blocking):', authErr)
       portalPassword = null
+    }
+
+    // ── 2c. Proyecto + hitos (instanciados desde la plantilla) ──
+    try {
+      const { data: project } = await supabase
+        .from('consulting_projects')
+        .insert({ onboarding_id: onboardingId, current_phase: 'kickoff', status: 'active' })
+        .select('id')
+        .single()
+      if (project?.id) {
+        const startMs = now.getTime()
+        const milestones = MILESTONE_TEMPLATE.map((m) => ({
+          project_id: project.id,
+          key: m.key,
+          phase: m.phase,
+          phase_label: m.phase_label,
+          title: m.title,
+          sort_order: m.sort_order,
+          optional: m.optional,
+          target_date: m.weeks == null ? null : isoDate(new Date(startMs + m.weeks * 7 * 86400000)),
+        }))
+        await supabase.from('consulting_milestones').insert(milestones)
+      }
+    } catch (projErr) {
+      console.error('project instantiation failed (non-blocking):', projErr)
     }
 
     // ── 3. Nº de factura atómico + PDF + Storage ──
