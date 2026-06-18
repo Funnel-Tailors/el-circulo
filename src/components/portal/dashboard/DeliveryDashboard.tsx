@@ -151,10 +151,18 @@ const CachedBadge: React.FC = () => (
 // ─── Connected dashboard ──────────────────────────────────────────────────────
 interface ConnectedDashboardProps {
   data: DashboardData;
+  roadmapSlot?: React.ReactNode;
 }
 
-const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data }) => {
+const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, roadmapSlot }) => {
   const metrics = data.metrics!;
+
+  // Fila inferior adaptable: [Roadmap] · [Actividad] · [Citas]
+  const bottomTiles: React.ReactNode[] = [];
+  if (roadmapSlot) bottomTiles.push(<div key="roadmap">{roadmapSlot}</div>);
+  bottomTiles.push(<div key="activity"><ActivityFeed activity={metrics.activity} /></div>);
+  if (metrics.appointments !== null) bottomTiles.push(<div key="appts"><AppointmentsCard appointments={metrics.appointments} /></div>);
+  const bottomCols = bottomTiles.length >= 3 ? "lg:grid-cols-3" : bottomTiles.length === 2 ? "sm:grid-cols-2" : "";
 
   return (
     <motion.div
@@ -204,22 +212,9 @@ const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data }) => {
         </div>
       </div>
 
-      {/* ── Row 3: Appointments + Activity feed ───────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Appointments — show only if not null */}
-        {metrics.appointments !== null && (
-          <div className="md:col-span-1">
-            <AppointmentsCard appointments={metrics.appointments} />
-          </div>
-        )}
-        {/* Activity feed — spans remaining columns */}
-        <div
-          className={
-            metrics.appointments !== null ? "md:col-span-2" : "md:col-span-3"
-          }
-        >
-          <ActivityFeed activity={metrics.activity} />
-        </div>
+      {/* ── Row 3: Roadmap · Actividad · Citas (command center) ───────────── */}
+      <div className={`grid grid-cols-1 ${bottomCols} gap-4`}>
+        {bottomTiles}
       </div>
     </motion.div>
   );
@@ -236,12 +231,15 @@ export interface DeliveryDashboardProps {
   loading?: boolean;
   /** Optional retry callback shown in empty state */
   onRetry?: () => void;
+  /** Tile opcional para la fila inferior (p. ej. resumen del roadmap). */
+  roadmapSlot?: React.ReactNode;
 }
 
 export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
   data,
   loading = false,
   onRetry,
+  roadmapSlot,
 }) => {
   const isLoading = loading && !data;
   const isDisconnected = !loading && (!data || data.connected === false || !data.metrics);
@@ -258,7 +256,7 @@ export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
           <NotConnected key="not-connected" onRetry={onRetry} />
         )}
         {isConnected && (
-          <ConnectedDashboard key="connected" data={data!} />
+          <ConnectedDashboard key="connected" data={data!} roadmapSlot={roadmapSlot} />
         )}
       </AnimatePresence>
     </div>

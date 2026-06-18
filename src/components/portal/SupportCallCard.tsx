@@ -22,11 +22,19 @@ export const SupportCallCard = ({ email, name }: { email?: string; name?: string
   return (
     <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
       <EnergyCardHeader>
-        <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90 flex items-center gap-2">
-          <CalendarClock className="h-4 w-4 text-foreground/50" />
-          Agenda una llamada conmigo
-        </h2>
-        <p className="text-xs text-foreground/60 mt-1">¿Una duda o un cuello de botella? Reserva un hueco cuando quieras.</p>
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg border border-white/10 bg-white/[0.05] p-2">
+            <CalendarClock className="h-4 w-4 text-foreground/60" />
+          </div>
+          <div>
+            <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">
+              Agenda una <span className="glow">llamada</span> conmigo
+            </h2>
+            <p className="text-xs text-foreground/50 mt-0.5">
+              ¿Una duda o un cuello de botella? Reserva un hueco cuando quieras.
+            </p>
+          </div>
+        </div>
       </EnergyCardHeader>
       <EnergyCardContent>
         <GHLCalendarIframe

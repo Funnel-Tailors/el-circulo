@@ -122,7 +122,7 @@ const DocumentsSection = ({ invoice, invoiceFull, agreement, billTo, loading }: 
         <EnergyCardContent>
           {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
             : (invoice || agreement) ? (
-              <div className="space-y-3 pb-1">
+              <div className="grid sm:grid-cols-2 gap-3 pb-1">
                 {invoiceFull && invoice && <DocRow title={`Factura ${invoice.invoice_number}`} subtitle={`${formatMoney(invoice.total_amount_cents, invoice.currency)}${invoice.due_date ? ` · vence ${invoice.due_date}` : ""}`} onOpen={() => setView("factura")} />}
                 {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>
@@ -183,13 +183,13 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
       {/* Header */}
       <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-20" style={{ background: "hsl(0 0% 5% / 0.85)" }}>
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-4 py-4 flex items-center justify-between">
           <span className="font-display font-black uppercase tracking-[-0.025em] text-lg glow">El Círculo</span>
           <MagneticButton variant="ghost" size="sm" onClick={onSignOut} enableMagnetic={false} className="gap-2 text-foreground/70 hover:text-foreground"><LogOut className="h-4 w-4" /> Salir</MagneticButton>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-6 md:flex md:gap-8">
+      <div className="max-w-[1440px] mx-auto px-4 py-6 md:flex md:gap-8">
         {/* Nav (sidebar en md+, tabs horizontales en móvil) */}
         <nav className="md:w-52 md:shrink-0 mb-6 md:mb-0">
           <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible md:sticky md:top-24 pb-1">
@@ -219,8 +219,12 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl md:text-3xl">Bienvenido al <span className="glow">Círculo</span></h1>
                     <p className="text-sm text-foreground/60">{session.user.email}</p>
                   </div>
-                  {milestones.length > 0 && <RoadmapSummary milestones={milestones} onSeeAll={() => setSection("ascenso")} />}
-                  <DeliveryDashboard data={dashboard} loading={dashLoading} onRetry={loadDashboard} />
+                  <DeliveryDashboard
+                    data={dashboard}
+                    loading={dashLoading}
+                    onRetry={loadDashboard}
+                    roadmapSlot={milestones.length > 0 ? <RoadmapSummary milestones={milestones} onSeeAll={() => setSection("ascenso")} /> : undefined}
+                  />
                 </>
               )}
 
