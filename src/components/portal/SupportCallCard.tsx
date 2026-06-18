@@ -30,6 +30,7 @@ export const SupportCallCard = ({ email, name }: { email?: string; name?: string
       </EnergyCardHeader>
       <EnergyCardContent>
         <GHLCalendarIframe
+          embedded
           calendarId={calendarId}
           firstName={(name || "").split(" ")[0]}
           lastName={(name || "").split(" ").slice(1).join(" ")}

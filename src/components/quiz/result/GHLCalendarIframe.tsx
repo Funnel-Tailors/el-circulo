@@ -12,16 +12,19 @@ interface GHLCalendarIframeProps {
   phone?: string;
   quizScore?: number;
   qualificationLevel?: string;
+  /** Modo on-brand para el portal/consultoría (sin banner azul, contenedor oscuro). */
+  embedded?: boolean;
 }
 
-export const GHLCalendarIframe = ({ 
-  calendarId, 
-  firstName = '', 
-  lastName = '', 
-  email = '', 
+export const GHLCalendarIframe = ({
+  calendarId,
+  firstName = '',
+  lastName = '',
+  email = '',
   phone = '',
   quizScore,
-  qualificationLevel
+  qualificationLevel,
+  embedded = false,
 }: GHLCalendarIframeProps) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -79,13 +82,15 @@ export const GHLCalendarIframe = ({
 
   return (
     <div className="space-y-3">
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center">
-        <p className="text-xs text-blue-200/90">
-          {RESULT_MESSAGES.qualified.postSubmit}
-        </p>
-      </div>
+      {!embedded && (
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-center">
+          <p className="text-xs text-blue-200/90">
+            {RESULT_MESSAGES.qualified.postSubmit}
+          </p>
+        </div>
+      )}
 
-      <Card className="bg-card/50 border-border p-0 relative overflow-hidden">
+      <Card className={`p-0 relative overflow-hidden ${embedded ? "bg-black/40 border-white/10" : "bg-card/50 border-border"}`}>
         {isLoading && (
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10">
             <div className="text-center">

@@ -248,6 +248,7 @@ const ConsultoriaOnboarding = () => {
                     </p>
                   </div>
                   <GHLCalendarIframe
+                    embedded
                     calendarId={ONBOARDING_CALENDAR_ID}
                     firstName={(v.signer_name || v.legal_name).split(" ")[0]}
                     lastName={(v.signer_name || v.legal_name).split(" ").slice(1).join(" ")}
