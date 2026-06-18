@@ -176,7 +176,7 @@ export async function renderInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
     text(money(data.tax_amount_cents, data.currency), totValX, y, 10, { align: 'right' })
     y -= 16
   }
-  y -= 4
+  y -= 16
   page.drawRectangle({ x: totLabelX - 12, y: y - 8, width: width - M - (totLabelX - 12), height: 30, color: BLACK })
   text('TOTAL', totLabelX, y, 11, { font: bold, color: WHITE })
   text(money(data.total_amount_cents, data.currency), totValX, y, 13, { font: bold, color: WHITE, align: 'right' })

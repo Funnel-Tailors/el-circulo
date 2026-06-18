@@ -97,7 +97,12 @@ CREATE POLICY "Clients view own visible deliverables" ON public.consulting_deliv
     )
   );
 
--- ───────────── 4. Bucket privado de entregables ─────────────
+-- ───────────── 4. Buckets privados ─────────────
+-- 'invoices': las migraciones base de Lovable crean SUS POLICIES pero no el bucket.
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('invoices', 'invoices', false)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('deliverables', 'deliverables', false)
 ON CONFLICT (id) DO NOTHING;
