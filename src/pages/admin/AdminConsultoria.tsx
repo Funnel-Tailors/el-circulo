@@ -26,19 +26,20 @@ function ClientsTab() {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("consulting_onboardings")
-        .select("id, legal_name, email, status, payment_claimed_at, total_amount_cents, currency, created_at, invoices(invoice_number, storage_path, status, due_date)")
+        .select("id, legal_name, email, status, payment_claimed_at, payment_proof_path, total_amount_cents, currency, created_at, invoices(invoice_number, storage_path, status, due_date)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
 
-  const download = async (path?: string | null) => {
-    if (!path) return toast.error("Sin PDF disponible");
-    const { data, error } = await supabase.storage.from("invoices").createSignedUrl(path, 300);
+  const downloadFrom = async (bucket: string, path?: string | null) => {
+    if (!path) return toast.error("Sin archivo disponible");
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
     if (error || !data?.signedUrl) return toast.error("No se pudo generar el enlace");
     window.open(data.signedUrl, "_blank");
   };
+  const download = (path?: string | null) => downloadFrom("invoices", path);
 
   if (isLoading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   if (!data?.length) return <p className="text-muted-foreground text-sm">Aún no hay clientes onboarded.</p>;
@@ -55,6 +56,7 @@ function ClientsTab() {
             <th className="py-2 pr-4">Pago</th>
             <th className="py-2 pr-4">Estado</th>
             <th className="py-2 pr-4">PDF</th>
+            <th className="py-2 pr-4">Comprob.</th>
           </tr>
         </thead>
         <tbody>
@@ -79,6 +81,11 @@ function ClientsTab() {
                   <Button size="sm" variant="ghost" onClick={() => download(inv?.storage_path)} disabled={!inv?.storage_path}>
                     <Download className="h-4 w-4" />
                   </Button>
+                </td>
+                <td className="py-2 pr-4">
+                  {c.payment_proof_path
+                    ? <Button size="sm" variant="ghost" onClick={() => downloadFrom("payment-proofs", c.payment_proof_path)}><Download className="h-4 w-4" /></Button>
+                    : <span className="text-xs text-muted-foreground">—</span>}
                 </td>
               </tr>
             );
@@ -109,6 +116,7 @@ function ConfigTab() {
   // Links de pago
   const [fastpay, setFastpay] = useState("");
   const [stripe, setStripe] = useState("");
+  const [wise, setWise] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -128,6 +136,7 @@ function ConfigTab() {
       setCurrency(cfg.consulting_price?.currency ?? "EUR");
       setFastpay(cfg.consulting_payment_links?.fastpay_url ?? "");
       setStripe(cfg.consulting_payment_links?.stripe_url ?? "");
+      setWise(cfg.consulting_payment_links?.wise_url ?? "");
       setLoading(false);
     })();
   }, []);
@@ -151,7 +160,7 @@ function ConfigTab() {
       setKey("consulting_issuer", issuer),
       setKey("consulting_invoice_series", { prefix, padding: Number(padding), start_number: 2, due_days: Number(dueDays) }),
       setKey("consulting_price", { base_amount_cents: Math.round(Number(baseAmount) * 100), currency }),
-      setKey("consulting_payment_links", { fastpay_url: fastpay, stripe_url: stripe }),
+      setKey("consulting_payment_links", { fastpay_url: fastpay, stripe_url: stripe, wise_url: wise }),
     ]);
     setSaving(false);
     if (ok.every(Boolean)) toast.success("Configuración guardada");
@@ -220,6 +229,7 @@ function ConfigTab() {
         <h3 className="font-semibold text-sm text-foreground">Enlaces de pago</h3>
         <div className="space-y-1.5"><Label className="text-foreground/80">FastPayDirect URL</Label><GlowInput value={fastpay} onChange={(e) => setFastpay(e.target.value)} placeholder="https://link.fastpaydirect.com/…" /></div>
         <div className="space-y-1.5"><Label className="text-foreground/80">Stripe URL</Label><GlowInput value={stripe} onChange={(e) => setStripe(e.target.value)} placeholder="https://buy.stripe.com/…" /></div>
+        <div className="space-y-1.5"><Label className="text-foreground/80">Wise URL (enlace de pago)</Label><GlowInput value={wise} onChange={(e) => setWise(e.target.value)} placeholder="https://wise.com/pay/…" /></div>
       </div>
 
       <Button variant="premium" onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar configuración"}</Button>

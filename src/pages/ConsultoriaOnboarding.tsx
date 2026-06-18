@@ -33,7 +33,7 @@ interface ConsultingConfig {
   taxRate: number;
   taxCents: number;
   totalCents: number;
-  paymentLinks: { fastpay_url?: string; stripe_url?: string };
+  paymentLinks: { fastpay_url?: string; stripe_url?: string; wise_url?: string };
   issuer: { iban?: string; wise_details?: string };
 }
 
@@ -77,6 +77,7 @@ const ConsultoriaOnboarding = () => {
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [result, setResult] = useState<OnboardingResult | null>(null);
 
   const methods = useForm<ConsultoriaOnboardingData>({
@@ -143,6 +144,32 @@ const ConsultoriaOnboarding = () => {
     }
   };
 
+  // Comprobante obligatorio (Wise/transferencia): subir archivo → desbloquea calendario.
+  const handleProof = async (file: File) => {
+    if (!result) return;
+    setUploading(true);
+    try {
+      const file_base64: string = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data, error } = await supabase.functions.invoke("submit-payment-proof", {
+        body: { token: result.token, file_base64, content_type: file.type },
+      });
+      if (error || !data?.ok) {
+        toast.error(data?.error || "No se pudo subir el comprobante. Inténtalo de nuevo.");
+        return;
+      }
+      setStep(6);
+    } catch {
+      toast.error("No se pudo subir el comprobante.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const v = methods.getValues();
 
   // Transición cinematográfica entre pasos: slide + fade con ease-out-expo.
@@ -202,8 +229,12 @@ const ConsultoriaOnboarding = () => {
                   invoiceFailed={result?.invoice_failed}
                   paymentInstructions={paymentInstructions}
                   totalLabel={cfg ? formatMoney(cfg.totalCents, cfg.currency) : undefined}
+                  paymentModality={methods.getValues("payment_modality")}
+                  wiseUrl={cfg?.paymentLinks?.wise_url}
                   onPaid={handlePaid}
                   claiming={claiming}
+                  onProofSubmit={handleProof}
+                  uploading={uploading}
                 />
               )}
               {step === 6 && (

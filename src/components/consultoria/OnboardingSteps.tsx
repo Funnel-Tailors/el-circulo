@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Download, CreditCard, Building2, CheckCircle2 } from "lucide-react";
+import { Loader2, Download, CreditCard, Building2, CheckCircle2, Upload } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlowInput } from "@/components/premium/GlowInput";
 import { MagneticButton } from "@/components/premium/MagneticButton";
@@ -279,54 +279,92 @@ interface InvoicePayProps {
   paymentModality?: string;
   paymentInstructions?: string;
   totalLabel?: string;
+  wiseUrl?: string;
   onPaid: () => void;
   claiming: boolean;
+  onProofSubmit?: (file: File) => void;
+  uploading?: boolean;
 }
 export const StepInvoiceAndPay = ({
-  invoiceNumber, invoiceUrl, invoiceFailed, paymentInstructions, totalLabel, onPaid, claiming,
-}: InvoicePayProps) => (
-  <div className="space-y-5">
-    <EnergyCard variant="elevated" enableTilt={false}>
-      <EnergyCardContent className="p-5 pt-5 text-center">
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
-        >
-          <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
-        </motion.div>
-        <h3 className="font-display font-black uppercase tracking-[-0.025em]">Tu factura está lista</h3>
-        {invoiceNumber && <p className="text-sm text-muted-foreground">Número {invoiceNumber}{totalLabel ? ` · ${totalLabel}` : ""}</p>}
-        {invoiceFailed ? (
-          <p className="text-xs text-amber-400 mt-2">Hubo un problema generando el PDF; te lo enviaremos en breve. Puedes continuar.</p>
-        ) : invoiceUrl ? (
-          <a href={invoiceUrl} target="_blank" rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 mt-3 text-sm underline underline-offset-4 text-foreground/80 hover:text-foreground transition-colors">
-            <Download className="h-4 w-4" /> Descargar factura (PDF)
-          </a>
-        ) : null}
-      </EnergyCardContent>
-    </EnergyCard>
+  invoiceNumber, invoiceUrl, invoiceFailed, paymentInstructions, totalLabel,
+  paymentModality, wiseUrl, onPaid, claiming, onProofSubmit, uploading,
+}: InvoicePayProps) => {
+  const isWise = paymentModality === "wise";
+  return (
+    <div className="space-y-5">
+      <EnergyCard variant="elevated" enableTilt={false}>
+        <EnergyCardContent className="p-5 pt-5 text-center">
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 18, delay: 0.1 }}
+          >
+            <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
+          </motion.div>
+          <h3 className="font-display font-black uppercase tracking-[-0.025em]">Tu factura está lista</h3>
+          {invoiceNumber && <p className="text-sm text-muted-foreground">Número {invoiceNumber}{totalLabel ? ` · ${totalLabel}` : ""}</p>}
+          {invoiceFailed ? (
+            <p className="text-xs text-amber-400 mt-2">Hubo un problema generando el PDF; te lo enviaremos en breve. Puedes continuar.</p>
+          ) : invoiceUrl ? (
+            <a href={invoiceUrl} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 mt-3 text-sm underline underline-offset-4 text-foreground/80 hover:text-foreground transition-colors">
+              <Download className="h-4 w-4" /> Descargar factura (PDF)
+            </a>
+          ) : null}
+        </EnergyCardContent>
+      </EnergyCard>
 
-    {paymentInstructions && (
-      <div className="glass-card-dark p-4 rounded-xl">
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Instrucciones de pago</div>
-        <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90">{paymentInstructions}</pre>
-      </div>
-    )}
+      {/* Enlace de pago Wise (editable desde admin) */}
+      {isWise && wiseUrl && (
+        <a href={wiseUrl} target="_blank" rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm font-medium hover:border-white/30 transition-colors">
+          <Building2 className="h-4 w-4" /> Pagar con Wise →
+        </a>
+      )}
 
-    <MagneticButton
-      variant="default"
-      size="xl"
-      onClick={onPaid}
-      disabled={claiming}
-      className="w-full animate-glow-pulse-intense"
-    >
-      {claiming ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-      Ya he pagado → agendar onboarding
-    </MagneticButton>
-    <p className="text-center text-xs text-muted-foreground">
-      Al confirmar el pago se abre el calendario para tu llamada de onboarding.
-    </p>
-  </div>
-);
+      {paymentInstructions && (
+        <div className="glass-card-dark p-4 rounded-xl">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Instrucciones de pago</div>
+          <pre className="whitespace-pre-wrap font-sans text-sm text-foreground/90">{paymentInstructions}</pre>
+        </div>
+      )}
+
+      {isWise ? (
+        // Comprobante OBLIGATORIO para transferencia/Wise → desbloquea el calendario.
+        <div className="space-y-2">
+          <label className={`flex flex-col items-center justify-center gap-2 w-full rounded-xl border-2 border-dashed border-white/20 bg-black/30 px-4 py-6 cursor-pointer hover:border-white/40 transition-colors ${uploading ? "opacity-60 pointer-events-none" : ""}`}>
+            {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5 text-foreground/70" />}
+            <span className="text-sm font-medium">{uploading ? "Subiendo…" : "Sube el comprobante de pago"}</span>
+            <span className="text-xs text-muted-foreground">Imagen o PDF · obligatorio para agendar</span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,application/pdf"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => e.target.files?.[0] && onProofSubmit?.(e.target.files[0])}
+            />
+          </label>
+          <p className="text-center text-xs text-muted-foreground">
+            En cuanto subas el comprobante se abre el calendario de tu llamada de onboarding.
+          </p>
+        </div>
+      ) : (
+        <>
+          <MagneticButton
+            variant="default"
+            size="xl"
+            onClick={onPaid}
+            disabled={claiming}
+            className="w-full animate-glow-pulse-intense"
+          >
+            {claiming ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            Ya he pagado → agendar onboarding
+          </MagneticButton>
+          <p className="text-center text-xs text-muted-foreground">
+            Al confirmar el pago se abre el calendario para tu llamada de onboarding.
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
