@@ -409,6 +409,229 @@ export type Database = {
         }
         Relationships: []
       }
+      consulting_agreements: {
+        Row: {
+          accepted: boolean
+          agreement_hash: string | null
+          agreement_version: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          onboarding_id: string
+          signed_at: string
+          signer_email: string
+          signer_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          accepted?: boolean
+          agreement_hash?: string | null
+          agreement_version?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          onboarding_id: string
+          signed_at?: string
+          signer_email: string
+          signer_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          accepted?: boolean
+          agreement_hash?: string | null
+          agreement_version?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          onboarding_id?: string
+          signed_at?: string
+          signer_email?: string
+          signer_name?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_agreements_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "consulting_onboardings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consulting_onboardings: {
+        Row: {
+          base_amount_cents: number
+          city: string | null
+          client_user_id: string | null
+          country_code: string | null
+          created_at: string
+          currency: string
+          email: string
+          fiscal_address: string | null
+          ghl_contact_id: string | null
+          id: string
+          legal_name: string
+          payment_claimed_at: string | null
+          payment_modality: string | null
+          phone: string | null
+          postal_code: string | null
+          status: string
+          tax_amount_cents: number
+          tax_id: string | null
+          tax_rate: number
+          token: string
+          total_amount_cents: number
+          updated_at: string
+        }
+        Insert: {
+          base_amount_cents?: number
+          city?: string | null
+          client_user_id?: string | null
+          country_code?: string | null
+          created_at?: string
+          currency?: string
+          email: string
+          fiscal_address?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          legal_name: string
+          payment_claimed_at?: string | null
+          payment_modality?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          status?: string
+          tax_amount_cents?: number
+          tax_id?: string | null
+          tax_rate?: number
+          token?: string
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          base_amount_cents?: number
+          city?: string | null
+          client_user_id?: string | null
+          country_code?: string | null
+          created_at?: string
+          currency?: string
+          email?: string
+          fiscal_address?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          legal_name?: string
+          payment_claimed_at?: string | null
+          payment_modality?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          status?: string
+          tax_amount_cents?: number
+          tax_id?: string | null
+          tax_rate?: number
+          token?: string
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoice_sequences: {
+        Row: {
+          last_number: number
+          series: string
+          updated_at: string
+        }
+        Insert: {
+          last_number?: number
+          series: string
+          updated_at?: string
+        }
+        Update: {
+          last_number?: number
+          series?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          base_amount_cents: number
+          created_at: string
+          currency: string
+          due_date: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          issued_at: string
+          issuer: Json | null
+          legal_name: string
+          onboarding_id: string
+          sequence: number
+          series: string
+          status: string
+          storage_path: string | null
+          tax_amount_cents: number
+          tax_id: string | null
+          tax_rate: number
+          total_amount_cents: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          base_amount_cents?: number
+          created_at?: string
+          currency?: string
+          due_date: string
+          id?: string
+          invoice_date: string
+          invoice_number: string
+          issued_at?: string
+          issuer?: Json | null
+          legal_name: string
+          onboarding_id: string
+          sequence: number
+          series?: string
+          status?: string
+          storage_path?: string | null
+          tax_amount_cents?: number
+          tax_id?: string | null
+          tax_rate?: number
+          total_amount_cents?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          base_amount_cents?: number
+          created_at?: string
+          currency?: string
+          due_date?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          issued_at?: string
+          issuer?: Json | null
+          legal_name?: string
+          onboarding_id?: string
+          sequence?: number
+          series?: string
+          status?: string
+          storage_path?: string | null
+          tax_amount_cents?: number
+          tax_id?: string | null
+          tax_rate?: number
+          total_amount_cents?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: false
+            referencedRelation: "consulting_onboardings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journey_content: {
         Row: {
           assistant_description: string | null
@@ -1414,6 +1637,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      next_invoice_number: { Args: { _series: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"
