@@ -16,7 +16,7 @@ import {
   type DropsSettings 
 } from '@/config/journey-defaults';
 
-export type JourneyType = 'senda' | 'brecha';
+export type JourneyType = 'senda' | 'brecha' | 'consulting-sops';
 export type ContentType = 'video' | 'assistant';
 
 export interface JourneyContentRow {

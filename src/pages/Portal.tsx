@@ -18,6 +18,9 @@ import { ChangePassword } from "@/components/portal/ChangePassword";
 import { SupportCallCard } from "@/components/portal/SupportCallCard";
 import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsLibrary";
 import { PortalReveal } from "@/components/portal/PortalReveal";
+import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
+import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/portal/documents/InvoiceDocument";
+import { DocumentViewer } from "@/components/portal/documents/DocumentViewer";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent, GlowInput, MagneticButton } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
 
@@ -96,31 +99,49 @@ const RoadmapSummary = ({ milestones, onSeeAll }: { milestones: Milestone[]; onS
 };
 
 // ───────────── Documentos ─────────────
-const DocumentsSection = ({ invoice, loading }: { invoice: MyInvoice | null; loading: boolean }) => (
-  <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
-    <EnergyCardHeader>
-      <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90 flex items-center gap-2"><FileText className="h-4 w-4 text-foreground/50" /> Documentos</h2>
-    </EnergyCardHeader>
-    <EnergyCardContent>
-      {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
-        : invoice ? (
-          <div className="space-y-4 pb-2">
-            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
-              <div><span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Factura</span><span className="font-mono text-foreground/90">{invoice.invoice_number}</span></div>
-              <div><span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Total</span><span className="font-semibold text-foreground">{formatMoney(invoice.total_amount_cents, invoice.currency)}</span></div>
-              {invoice.due_date && <div><span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Vence</span><span className="text-foreground/90">{invoice.due_date}</span></div>}
-            </div>
-            {invoice.url && <a href={invoice.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-foreground/70 underline underline-offset-4 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Descargar factura (PDF)</a>}
-          </div>
-        ) : <p className="text-sm text-foreground/60 pb-2">No hay documentos todavía.</p>}
-    </EnergyCardContent>
-  </EnergyCard>
+const DocRow = ({ title, subtitle, onOpen }: { title: string; subtitle: string; onOpen: () => void }) => (
+  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+    <div className="min-w-0">
+      <div className="text-sm font-medium text-foreground truncate">{title}</div>
+      <div className="text-xs text-foreground/55 truncate">{subtitle}</div>
+    </div>
+    <button onClick={onOpen} className="inline-flex shrink-0 items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Ver / PDF</button>
+  </div>
 );
+
+const DocumentsSection = ({ invoice, invoiceFull, agreement, billTo, loading }: {
+  invoice: MyInvoice | null; invoiceFull: InvoiceDoc | null; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean;
+}) => {
+  const [view, setView] = useState<null | "acuerdo" | "factura">(null);
+  return (
+    <>
+      <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
+        <EnergyCardHeader>
+          <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90 flex items-center gap-2"><FileText className="h-4 w-4 text-foreground/50" /> Documentos</h2>
+        </EnergyCardHeader>
+        <EnergyCardContent>
+          {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
+            : (invoice || agreement) ? (
+              <div className="space-y-3 pb-1">
+                {invoiceFull && invoice && <DocRow title={`Factura ${invoice.invoice_number}`} subtitle={`${formatMoney(invoice.total_amount_cents, invoice.currency)}${invoice.due_date ? ` · vence ${invoice.due_date}` : ""}`} onOpen={() => setView("factura")} />}
+                {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
+              </div>
+            ) : <p className="text-sm text-foreground/60 pb-2">No hay documentos todavía.</p>}
+        </EnergyCardContent>
+      </EnergyCard>
+      {view === "factura" && invoiceFull && <DocumentViewer onClose={() => setView(null)}><InvoiceDocument inv={invoiceFull} billTo={billTo} /></DocumentViewer>}
+      {view === "acuerdo" && agreement && <DocumentViewer onClose={() => setView(null)}><AgreementDocument agreement={agreement} /></DocumentViewer>}
+    </>
+  );
+};
 
 // ───────────── PortalHome (layout dashboard por secciones) ─────────────
 const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () => void }) => {
   const [section, setSection] = useState<SectionId>("resumen");
   const [invoice, setInvoice] = useState<MyInvoice | null>(null);
+  const [invoiceFull, setInvoiceFull] = useState<InvoiceDoc | null>(null);
+  const [agreement, setAgreement] = useState<SignedAgreement | null>(null);
+  const [billTo, setBillTo] = useState<BillTo>({});
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,7 +161,13 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
         supabase.functions.invoke("get-my-invoice"),
         supabase.functions.invoke("get-my-project"),
       ]);
-      if (!inv.error) setInvoice((inv.data as any)?.invoice ?? null);
+      if (!inv.error) {
+        const d = inv.data as any;
+        setInvoice(d?.invoice ?? null);
+        setInvoiceFull(d?.invoiceFull ?? null);
+        setAgreement(d?.agreement ?? null);
+        setBillTo(d?.billTo ?? {});
+      }
       if (!proj.error) setMilestones((proj.data as any)?.milestones ?? []);
       setLoading(false);
     })();
@@ -210,7 +237,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
               {section === "kickoff" && <KickoffPrep />}
               {section === "formacion" && <ConsultingLessonsLibrary />}
-              {section === "documentos" && <DocumentsSection invoice={invoice} loading={loading} />}
+              {section === "documentos" && <DocumentsSection invoice={invoice} invoiceFull={invoiceFull} agreement={agreement} billTo={billTo} loading={loading} />}
               {section === "agenda" && (
                 <>
                   <SupportCallCard email={session.user.email ?? undefined} name={name} />

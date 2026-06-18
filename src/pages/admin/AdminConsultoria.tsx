@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AdminProjectBoard } from "@/components/consultoria/AdminProjectBoard";
+import { JourneyContentManager } from "@/components/admin/JourneyContentManager";
 import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 
 const fmtMoney = (cents: number, currency: string) =>
@@ -257,10 +258,15 @@ export default function AdminConsultoria() {
         <TabsList>
           <TabsTrigger value="clientes">👥 Clientes</TabsTrigger>
           <TabsTrigger value="proyecto">🏁 Proyecto</TabsTrigger>
+          <TabsTrigger value="formacion">🎓 Formación</TabsTrigger>
           <TabsTrigger value="config">⚙️ Configuración</TabsTrigger>
         </TabsList>
         <TabsContent value="clientes"><ClientsTab /></TabsContent>
         <TabsContent value="proyecto"><AdminProjectBoard /></TabsContent>
+        <TabsContent value="formacion">
+          <p className="text-sm text-muted-foreground mb-4">SOPs / clases que verá el cliente en el portal (sección Formación). Edita módulos y añade vídeos/recursos.</p>
+          <JourneyContentManager journeyType="consulting-sops" />
+        </TabsContent>
         <TabsContent value="config"><ConfigTab /></TabsContent>
       </Tabs>
     </div>

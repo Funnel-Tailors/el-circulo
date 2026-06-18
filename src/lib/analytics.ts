@@ -62,6 +62,7 @@ class QuizAnalytics {
   private stepStartTimes: Map<string, number>;
   private vslMilestones: Set<number>;
   private quizVersion: string = 'v2'; // Nueva versión del quiz con Q1 de pain point
+  private noTrack: boolean = false; // Modo test: ?notrack=1 desactiva TODOS los eventos Meta Pixel
 
   constructor() {
     this.sessionId = this.getOrCreateSessionId();
@@ -73,9 +74,29 @@ class QuizAnalytics {
     this.startTime = Date.now();
     this.stepStartTimes = new Map();
     this.vslMilestones = new Set();
-    
+    this.noTrack = this.computeNoTrack();
+
     // Inicializar Meta Pixel con advanced matching
     this.initMetaPixel();
+  }
+
+  /**
+   * Modo test sin pixel: ?notrack=1 en la URL desactiva todos los eventos Meta.
+   * Se persiste en localStorage para que aguante toda la sesión. ?notrack=0 lo limpia.
+   */
+  private computeNoTrack(): boolean {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.has('notrack')) {
+        const on = params.get('notrack') !== '0';
+        localStorage.setItem('quiz_notrack', on ? '1' : '0');
+        if (on) console.warn('🚫 [NOTRACK] Modo test activo — Meta Pixel DESACTIVADO');
+        return on;
+      }
+      return localStorage.getItem('quiz_notrack') === '1';
+    } catch (_e) {
+      return false;
+    }
   }
 
   private getOrCreateSessionId(): string {
@@ -142,6 +163,10 @@ class QuizAnalytics {
    * - fbp: Facebook Browser Pixel cookie
    */
   private initMetaPixel(): void {
+    if (this.noTrack) {
+      console.warn('🚫 [NOTRACK] Meta Pixel NO inicializado (modo test ?notrack=1)');
+      return;
+    }
     if (typeof window === 'undefined' || !(window as any).fbq) {
       console.warn('⚠️ Meta Pixel no disponible en init');
       return;
@@ -363,6 +388,12 @@ class QuizAnalytics {
 
   // Meta Pixel Tracking Methods
   async trackMetaPixelEvent(eventName: string, params: any): Promise<void> {
+    // Modo test: no disparar nada a Meta ni a la tabla espejo
+    if (this.noTrack) {
+      console.warn('🚫 [NOTRACK] Evento Meta omitido:', eventName);
+      return;
+    }
+
     // Generar event_id único para deduplicación
     const eventId = `${this.sessionId}_${eventName}_${Date.now()}`;
     

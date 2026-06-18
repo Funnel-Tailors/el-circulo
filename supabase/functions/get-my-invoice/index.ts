@@ -33,25 +33,35 @@ serve(async (req) => {
     const userId = userData?.user?.id
     if (userErr || !userId) return json({ error: 'Sesión no válida' }, 401)
 
-    // Onboardings del cliente
+    // Onboardings del cliente (con datos de facturación para el documento)
     const { data: onboardings } = await supabase
       .from('consulting_onboardings')
-      .select('id')
+      .select('id, fiscal_address, city, postal_code, country_code, email')
       .eq('client_user_id', userId)
     const ids = (onboardings ?? []).map((o: any) => o.id)
     if (!ids.length) return json({ invoice: null })
 
-    // Última factura emitida
+    // Última factura emitida (campos completos para la factura on-brand)
     const { data: invoices } = await supabase
       .from('invoices')
-      .select('invoice_number, storage_path, invoice_date, due_date, total_amount_cents, currency, status')
+      .select('onboarding_id, invoice_number, storage_path, invoice_date, due_date, issuer, legal_name, tax_id, base_amount_cents, tax_rate, tax_amount_cents, total_amount_cents, currency, status')
       .in('onboarding_id', ids)
       .eq('status', 'issued')
       .order('issued_at', { ascending: false })
       .limit(1)
 
     const inv = (invoices ?? [])[0]
-    if (!inv) return json({ invoice: null })
+
+    // Acuerdo firmado del cliente
+    const { data: agreements } = await supabase
+      .from('consulting_agreements')
+      .select('signer_name, signer_email, signed_at, ip_address, agreement_hash, agreement_version')
+      .in('onboarding_id', ids)
+      .order('created_at', { ascending: false })
+      .limit(1)
+    const agreement = (agreements ?? [])[0] ?? null
+
+    if (!inv) return json({ invoice: null, invoiceFull: null, agreement, billTo: (onboardings ?? [])[0] ?? {} })
 
     let url: string | null = null
     if (inv.storage_path) {
@@ -60,6 +70,8 @@ serve(async (req) => {
         .createSignedUrl(inv.storage_path, 300)
       url = signed?.signedUrl ?? null
     }
+
+    const billTo = (onboardings ?? []).find((o: any) => o.id === inv.onboarding_id) ?? (onboardings ?? [])[0] ?? {}
 
     return json({
       invoice: {
@@ -70,6 +82,21 @@ serve(async (req) => {
         currency: inv.currency,
         url,
       },
+      invoiceFull: {
+        invoice_number: inv.invoice_number,
+        invoice_date: inv.invoice_date,
+        due_date: inv.due_date,
+        issuer: inv.issuer,
+        legal_name: inv.legal_name,
+        tax_id: inv.tax_id,
+        base_amount_cents: inv.base_amount_cents,
+        tax_rate: inv.tax_rate,
+        tax_amount_cents: inv.tax_amount_cents,
+        total_amount_cents: inv.total_amount_cents,
+        currency: inv.currency,
+      },
+      agreement,
+      billTo,
     })
   } catch (e) {
     console.error('get-my-invoice error:', e)

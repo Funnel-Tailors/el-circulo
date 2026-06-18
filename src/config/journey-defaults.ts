@@ -51,6 +51,8 @@ export interface ModuleContent {
 export interface JourneyDefaults {
   senda: Record<string, ModuleContent>;
   brecha: Record<string, ModuleContent>;
+  // journeys sin defaults (p.ej. consulting-sops) se indexan a undefined.
+  'consulting-sops'?: Record<string, ModuleContent>;
 }
 
 // =====================================================
