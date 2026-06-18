@@ -155,6 +155,7 @@ const ConsultoriaOnboarding = () => {
         </div>
 
         <Card variant="elevated" className="p-6 sm:p-8">
+          <FormProvider {...methods}>
           {step === 0 && <StepBilling />}
           {step === 1 && <StepPayment />}
           {step === 2 && <StepAgreement />}
@@ -214,6 +215,7 @@ const ConsultoriaOnboarding = () => {
               )}
             </div>
           )}
+          </FormProvider>
         </Card>
       </div>
     </div>
