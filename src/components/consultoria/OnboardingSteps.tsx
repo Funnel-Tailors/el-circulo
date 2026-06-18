@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -5,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Download, CreditCard, Building2, CheckCircle2, Upload } from "lucide-react";
+import { Loader2, Download, CreditCard, Building2, CheckCircle2, Upload, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { GlowInput } from "@/components/premium/GlowInput";
 import { MagneticButton } from "@/components/premium/MagneticButton";
@@ -157,25 +158,47 @@ export const StepPayment = () => {
 export const StepAgreement = () => {
   const { register, setValue, watch, formState: { errors } } = useFormContext<ConsultoriaOnboardingData>();
   const accepted = watch("accepted");
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [readToEnd, setReadToEnd] = useState(false);
+
+  const onScroll = () => {
+    const el = scrollRef.current;
+    if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 16) setReadToEnd(true);
+  };
+
   return (
     <div className="space-y-4">
-      <div className="glass-card-dark max-h-64 overflow-y-auto p-4 rounded-xl">
-        <pre className="whitespace-pre-wrap font-sans text-xs text-foreground/70 leading-relaxed">
-          {AGREEMENT_TEXT}
-        </pre>
+      <div className="relative">
+        <div ref={scrollRef} onScroll={onScroll} className="glass-card-dark max-h-64 overflow-y-auto p-4 rounded-xl">
+          <pre className="whitespace-pre-wrap font-sans text-xs text-foreground/70 leading-relaxed">
+            {AGREEMENT_TEXT}
+          </pre>
+        </div>
+        {!readToEnd && (
+          <>
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-14 rounded-b-xl bg-gradient-to-t from-black/85 to-transparent" />
+            <div className="pointer-events-none absolute bottom-2 left-0 right-0 flex items-center justify-center gap-1 text-[10px] uppercase tracking-wide text-foreground/50">
+              <ChevronDown className="h-3 w-3 animate-bounce" /> Desplázate para leer
+            </div>
+          </>
+        )}
       </div>
-      <Label className="flex items-start gap-3 cursor-pointer">
+      <Label className={`flex items-start gap-3 ${readToEnd ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}>
         <Checkbox
           checked={!!accepted}
+          disabled={!readToEnd}
           onCheckedChange={(c) => setValue("accepted", (c === true) as any, { shouldValidate: true })}
           className="mt-0.5"
         />
-        <span className="text-sm text-foreground/90">He leído y acepto el acuerdo de prestación de servicios.</span>
+        <span className="text-sm text-foreground/90">
+          He leído y acepto el acuerdo de prestación de servicios.
+          {!readToEnd && <span className="text-foreground/40"> (lee hasta el final)</span>}
+        </span>
       </Label>
       <FieldError msg={errors.accepted?.message as string | undefined} />
       <div>
         <Label htmlFor="signer_name">Firma — escribe tu nombre completo *</Label>
-        <GlowInput id="signer_name" placeholder="Nombre y apellidos" {...register("signer_name")} />
+        <GlowInput id="signer_name" placeholder="Tu nombre completo" {...register("signer_name")} />
         <FieldError msg={errors.signer_name?.message} />
       </div>
     </div>
