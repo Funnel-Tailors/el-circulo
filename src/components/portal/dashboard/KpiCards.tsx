@@ -124,7 +124,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
   deltaLabel,
   index,
 }) => {
-  const animatedValue = useCountUp(value, 900 + index * 100);
+  const animatedValue = useCountUp(value, (value > 1000 ? 1500 : 900) + index * 100);
 
   return (
     <motion.div
@@ -159,7 +159,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
             {displayValue ? (
               // Money — no count-up on formatted string, show static but with glow
               <span
-                className="glow font-display font-black text-3xl text-white tracking-tight leading-none"
+                className="glow font-display font-black text-4xl text-white tracking-tight leading-none"
                 style={{ fontWeight: 900 }}
               >
                 {displayValue}
@@ -231,7 +231,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
         "grid gap-4",
         cards.length === 4
           ? "grid-cols-2 lg:grid-cols-4"
-          : "grid-cols-1 sm:grid-cols-3"
+          : "grid-cols-2 sm:grid-cols-3"
       )}
     >
       {cards.map((card, i) => (

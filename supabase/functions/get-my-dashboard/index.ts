@@ -87,9 +87,9 @@ serve(async (req) => {
       activity: [] as { name: string; when: string }[],
     }
 
-    // ── Leads / contactos ──
+    // ── Leads / contactos ── (orden por recientes para que tendencia/actividad/delta sean reales)
     try {
-      const data = await ghl(`/contacts/?locationId=${loc}&limit=100`, key)
+      const data = await ghl(`/contacts/?locationId=${loc}&limit=100&sortBy=date_added&sortOrder=desc`, key)
       const contacts: any[] = data.contacts || []
       metrics.leads.total = data.meta?.total ?? contacts.length
       // Bucket por día (últimos 30) + last7/prev7 + actividad
@@ -126,9 +126,18 @@ serve(async (req) => {
         for (const p of pl.pipelines || []) for (const s of p.stages || []) stageNames[s.id] = s.name
       } catch (_) { /* sin nombres de etapa */ }
 
-      const od = await ghl(`/opportunities/search?location_id=${loc}&limit=100`, key)
-      const opps: any[] = od.opportunities || []
-      metrics.opportunities.count = od.meta?.total ?? opps.length
+      // Paginar (hasta 5 páginas / 500 opps) para que el valor de pipeline y las
+      // etapas sean reales, no un recorte de 100.
+      let opps: any[] = []
+      let total = 0
+      for (let page = 1; page <= 5; page++) {
+        const od = await ghl(`/opportunities/search?location_id=${loc}&limit=100&page=${page}`, key)
+        const batch: any[] = od.opportunities || []
+        opps = opps.concat(batch)
+        total = od.meta?.total ?? opps.length
+        if (batch.length < 100 || opps.length >= total) break
+      }
+      metrics.opportunities.count = total
       const byStage: Record<string, { count: number; value: number }> = {}
       for (const o of opps) {
         const val = Number(o.monetaryValue) || 0

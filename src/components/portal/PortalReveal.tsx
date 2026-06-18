@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
  */
 export const PortalReveal = ({ onDone }: { onDone: () => void }) => {
   useEffect(() => {
-    const t = setTimeout(onDone, 3400);
+    const t = setTimeout(onDone, 4600);
     return () => clearTimeout(t);
   }, [onDone]);
 

@@ -162,9 +162,9 @@ export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, cur
                 tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                width={110}
+                width={124}
                 tickFormatter={(v: string) =>
-                  v.length > 14 ? v.slice(0, 13) + "…" : v
+                  v.length > 18 ? v.slice(0, 17) + "…" : v
                 }
               />
               <Tooltip
