@@ -117,13 +117,14 @@ function ConfigTab() {
   const [fastpay, setFastpay] = useState("");
   const [stripe, setStripe] = useState("");
   const [wise, setWise] = useState("");
+  const [supportCal, setSupportCal] = useState("");
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["consulting_enabled", "consulting_sync_enabled", "consulting_issuer", "consulting_invoice_series", "consulting_price", "consulting_payment_links"]);
+        .in("key", ["consulting_enabled", "consulting_sync_enabled", "consulting_issuer", "consulting_invoice_series", "consulting_price", "consulting_payment_links", "consulting_support_calendar_id"]);
       const cfg: Record<string, any> = {};
       for (const r of data ?? []) cfg[r.key] = r.value;
       setEnabled(cfg.consulting_enabled === true || cfg.consulting_enabled === "true");
@@ -137,6 +138,7 @@ function ConfigTab() {
       setFastpay(cfg.consulting_payment_links?.fastpay_url ?? "");
       setStripe(cfg.consulting_payment_links?.stripe_url ?? "");
       setWise(cfg.consulting_payment_links?.wise_url ?? "");
+      setSupportCal(typeof cfg.consulting_support_calendar_id === "string" ? cfg.consulting_support_calendar_id : "");
       setLoading(false);
     })();
   }, []);
@@ -161,6 +163,7 @@ function ConfigTab() {
       setKey("consulting_invoice_series", { prefix, padding: Number(padding), start_number: 2, due_days: Number(dueDays) }),
       setKey("consulting_price", { base_amount_cents: Math.round(Number(baseAmount) * 100), currency }),
       setKey("consulting_payment_links", { fastpay_url: fastpay, stripe_url: stripe, wise_url: wise }),
+      setKey("consulting_support_calendar_id", supportCal),
     ]);
     setSaving(false);
     if (ok.every(Boolean)) toast.success("Configuración guardada");
@@ -230,6 +233,12 @@ function ConfigTab() {
         <div className="space-y-1.5"><Label className="text-foreground/80">FastPayDirect URL</Label><GlowInput value={fastpay} onChange={(e) => setFastpay(e.target.value)} placeholder="https://link.fastpaydirect.com/…" /></div>
         <div className="space-y-1.5"><Label className="text-foreground/80">Stripe URL</Label><GlowInput value={stripe} onChange={(e) => setStripe(e.target.value)} placeholder="https://buy.stripe.com/…" /></div>
         <div className="space-y-1.5"><Label className="text-foreground/80">Wise URL (enlace de pago)</Label><GlowInput value={wise} onChange={(e) => setWise(e.target.value)} placeholder="https://wise.com/pay/…" /></div>
+      </div>
+
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <h3 className="font-semibold text-sm text-foreground">Calendario de soporte (portal)</h3>
+        <div className="space-y-1.5"><Label className="text-foreground/80">ID del calendario GHL para llamadas de soporte</Label><GlowInput value={supportCal} onChange={(e) => setSupportCal(e.target.value)} placeholder="Calendar ID de GHL" /></div>
+        <p className="text-xs text-muted-foreground">Si lo dejas vacío, la sección "Agenda una llamada" del portal se oculta.</p>
       </div>
 
       <Button variant="premium" onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar configuración"}</Button>
