@@ -23,7 +23,7 @@ function ClientsTab() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["consulting-clients"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("consulting_onboardings")
         .select("id, legal_name, email, status, payment_claimed_at, total_amount_cents, currency, created_at, invoices(invoice_number, storage_path, status, due_date)")
         .order("created_at", { ascending: false });
