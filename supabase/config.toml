@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.claim-payment]
 verify_jwt = false
+
+[functions.get-my-invoice]
+verify_jwt = true

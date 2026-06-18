@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 // Consultoría DFY (público, lazy para no engordar el bundle principal)
 const Consultoria = lazy(() => import("./pages/Consultoria"));
 const ConsultoriaOnboarding = lazy(() => import("./pages/ConsultoriaOnboarding"));
+const Portal = lazy(() => import("./pages/Portal"));
 
 // Lazy load admin (legacy public landings killed — redirect to /)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
@@ -55,6 +56,7 @@ const App = () => (
           {/* Consultoría DFY */}
           <Route path="/consultoria" element={<Suspense fallback={<AdminFallback />}><Consultoria /></Suspense>} />
           <Route path="/consultoria/onboarding" element={<Suspense fallback={<AdminFallback />}><ConsultoriaOnboarding /></Suspense>} />
+          <Route path="/portal" element={<Suspense fallback={<AdminFallback />}><Portal /></Suspense>} />
 
           {/* Webinardo Creativos */}
           <Route path="/webinardo" element={<WebinardoRegistro />} />

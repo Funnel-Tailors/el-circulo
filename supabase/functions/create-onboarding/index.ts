@@ -40,6 +40,14 @@ function isoDate(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
 
+// Contraseña legible para el portal (sin caracteres ambiguos).
+function generatePassword(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (b) => chars[b % chars.length]).join('')
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   if (req.method !== 'POST') return json({ success: false, error: 'Method not allowed' }, 405)
@@ -134,6 +142,37 @@ serve(async (req) => {
       agreement_hash: agreement_hash || '', agreement_version: agreement_version || 'v1',
       ip_address: ip, user_agent: userAgent,
     })
+
+    // ── 2b. Usuario del portal (Supabase Auth) + credenciales para GHL ──
+    let portalPassword: string | null = generatePassword()
+    try {
+      const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+        email,
+        password: portalPassword,
+        email_confirm: true,
+        user_metadata: { source: 'consulting_onboarding', legal_name },
+      })
+      let userId: string | null = created?.user?.id ?? null
+      if (createErr) {
+        // Email ya tiene usuario → localizar y resetear contraseña.
+        const { data: list } = await supabase.auth.admin.listUsers()
+        const existing = list?.users?.find(
+          (u: any) => (u.email || '').toLowerCase() === String(email).toLowerCase(),
+        )
+        if (existing) {
+          userId = existing.id
+          await supabase.auth.admin.updateUserById(existing.id, { password: portalPassword })
+        }
+      }
+      if (userId) {
+        await supabase.from('consulting_onboardings').update({ client_user_id: userId }).eq('id', onboardingId)
+      } else {
+        portalPassword = null
+      }
+    } catch (authErr) {
+      console.error('portal user creation failed (non-blocking):', authErr)
+      portalPassword = null
+    }
 
     // ── 3. Nº de factura atómico + PDF + Storage ──
     const prefix = series.prefix || 'INV_'
@@ -236,6 +275,7 @@ serve(async (req) => {
         await syncToGHL(supabase, {
           onboardingId, legal_name, signer_name, email, phone,
           invoiceNumber, totalCents, currency, tax_id,
+          portalUser: email, portalPassword,
         })
       } catch (ghlErr) {
         console.error('GHL sync failed (non-blocking):', ghlErr)
@@ -262,6 +302,7 @@ async function syncToGHL(
     onboardingId: string; legal_name: string; signer_name: string;
     email: string; phone?: string; invoiceNumber: string;
     totalCents: number; currency: string; tax_id?: string;
+    portalUser?: string; portalPassword?: string | null;
   },
 ) {
   const token = Deno.env.get('GHL_API_TOKEN')
@@ -288,6 +329,12 @@ async function syncToGHL(
       { key: 'consulting_total', field_value: `${total} ${d.currency}` },
       { key: 'consulting_legal_name', field_value: d.legal_name },
       { key: 'consulting_tax_id', field_value: d.tax_id || '' },
+      ...(d.portalPassword
+        ? [
+            { key: 'circulo_portal_user', field_value: d.portalUser || d.email },
+            { key: 'circulo_portal_password', field_value: d.portalPassword },
+          ]
+        : []),
     ],
   }
 
