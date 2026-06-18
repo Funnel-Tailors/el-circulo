@@ -2,13 +2,19 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Download, LogOut, FileText } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
 import { ProjectRoadmap, type Milestone } from "@/components/portal/ProjectRoadmap";
+import {
+  EnergyCard,
+  EnergyCardHeader,
+  EnergyCardContent,
+  GlowInput,
+  MagneticButton,
+} from "@/components/premium";
+import "@/components/premium/premium-effects.css";
 
 interface MyInvoice {
   invoice_number: string;
@@ -18,6 +24,10 @@ interface MyInvoice {
   currency: string;
   url: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// PortalLogin
+// ---------------------------------------------------------------------------
 
 const PortalLogin = ({ onAuthed }: { onAuthed: () => void }) => {
   const [email, setEmail] = useState("");
@@ -37,33 +47,75 @@ const PortalLogin = ({ onAuthed }: { onAuthed: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4">
-      <Card variant="elevated" className="w-full max-w-sm p-8">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-black uppercase glow">El Círculo</h1>
-          <p className="text-sm text-muted-foreground mt-1">Portal de cliente</p>
-        </div>
-        <form onSubmit={signIn} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="portal-email">Email</Label>
-            <Input id="portal-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+    <div
+      className="min-h-screen flex items-center justify-center px-4 animate-fade-in"
+      style={{ background: "hsl(0 0% 5%)" }}
+    >
+      <EnergyCard
+        variant="elevated"
+        className="w-full max-w-sm"
+        beamSpeed={4}
+        beamIntensity={0.5}
+      >
+        <EnergyCardHeader>
+          <div className="text-center space-y-1">
+            <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl text-foreground glow">
+              El Círculo
+            </h1>
+            <p className="text-sm text-foreground/70">Portal de cliente</p>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="portal-password">Contraseña</Label>
-            <Input id="portal-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-          </div>
-          <Button type="submit" variant="premium" className="w-full" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Entrar
-          </Button>
-        </form>
-        <p className="text-xs text-muted-foreground text-center mt-4">
-          Recibiste tus credenciales por email tras contratar.
-        </p>
-      </Card>
+        </EnergyCardHeader>
+
+        <EnergyCardContent>
+          <form onSubmit={signIn} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="portal-email" className="text-foreground/80 text-xs uppercase tracking-wider">
+                Email
+              </Label>
+              <GlowInput
+                id="portal-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="tu@email.com"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="portal-password" className="text-foreground/80 text-xs uppercase tracking-wider">
+                Contraseña
+              </Label>
+              <GlowInput
+                id="portal-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="••••••••"
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="premium"
+              className="w-full mt-2"
+              disabled={loading}
+            >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Entrar
+            </Button>
+          </form>
+          <p className="text-xs text-foreground/40 text-center mt-5">
+            Recibiste tus credenciales por email tras contratar.
+          </p>
+        </EnergyCardContent>
+      </EnergyCard>
     </div>
   );
 };
+
+// ---------------------------------------------------------------------------
+// PortalHome
+// ---------------------------------------------------------------------------
 
 const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () => void }) => {
   const [invoice, setInvoice] = useState<MyInvoice | null>(null);
@@ -83,66 +135,120 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border">
+    <div className="min-h-screen text-foreground" style={{ background: "hsl(0 0% 5%)" }}>
+      {/* Header */}
+      <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-10"
+        style={{ background: "hsl(0 0% 5% / 0.85)" }}>
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <span className="font-black uppercase glow">El Círculo</span>
-          <Button variant="ghost" size="sm" onClick={onSignOut}>
-            <LogOut className="h-4 w-4" /> Salir
-          </Button>
+          <span className="font-display font-black uppercase tracking-[-0.025em] text-lg glow">
+            El Círculo
+          </span>
+          <MagneticButton
+            variant="ghost"
+            size="sm"
+            onClick={onSignOut}
+            enableMagnetic={false}
+            className="gap-2 text-foreground/70 hover:text-foreground"
+          >
+            <LogOut className="h-4 w-4" />
+            Salir
+          </MagneticButton>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-10 space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold">Hola 👋</h1>
-          <p className="text-muted-foreground text-sm">{session.user.email}</p>
+      <main className="max-w-3xl mx-auto px-4 py-10 space-y-8 animate-fade-in">
+        {/* Greeting */}
+        <div className="space-y-1">
+          <h1 className="font-display font-black uppercase tracking-[-0.025em] text-3xl md:text-4xl text-foreground">
+            Bienvenido de <span className="glow">vuelta.</span>
+          </h1>
+          <p className="text-sm text-foreground/70">{session.user.email}</p>
         </div>
 
         {/* Roadmap del proyecto */}
-        <Card className="p-6 bg-background/60 border-border">
-          <h2 className="font-semibold mb-4">Tu proyecto</h2>
-          {loading ? (
-            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
-          ) : milestones && milestones.length > 0 ? (
-            <ProjectRoadmap milestones={milestones} />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              Tu proyecto arrancará en la llamada de onboarding. Aquí verás cada paso y los entregables.
-            </p>
-          )}
-        </Card>
+        <EnergyCard variant="default" beamSpeed={5} beamIntensity={0.4} enableTilt={false}>
+          <EnergyCardHeader>
+            <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">
+              Tu proyecto
+            </h2>
+          </EnergyCardHeader>
+          <EnergyCardContent>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-foreground/40" />
+              </div>
+            ) : milestones && milestones.length > 0 ? (
+              <ProjectRoadmap milestones={milestones} />
+            ) : (
+              <p className="text-sm text-foreground/60 pb-2">
+                Tu proyecto arrancará en la llamada de onboarding. Aquí verás cada paso y los entregables.
+              </p>
+            )}
+          </EnergyCardContent>
+        </EnergyCard>
 
         {/* Factura */}
-        <Card className="p-6 bg-background/60 border-border">
-          <h2 className="font-semibold mb-3 flex items-center gap-2">
-            <FileText className="h-4 w-4" /> Tu factura
-          </h2>
-          {loading ? (
-            <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin" /></div>
-          ) : invoice ? (
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm">
-                <div><span className="text-muted-foreground">Número: </span><span className="font-mono">{invoice.invoice_number}</span></div>
-                <div><span className="text-muted-foreground">Fecha: </span>{invoice.invoice_date}</div>
-                {invoice.due_date && <div><span className="text-muted-foreground">Vence: </span>{invoice.due_date}</div>}
-                <div><span className="text-muted-foreground">Total: </span><span className="font-semibold">{formatMoney(invoice.total_amount_cents, invoice.currency)}</span></div>
+        <EnergyCard variant="default" beamSpeed={5} beamIntensity={0.4} enableTilt={false}>
+          <EnergyCardHeader>
+            <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-foreground/50" />
+              Tu factura
+            </h2>
+          </EnergyCardHeader>
+          <EnergyCardContent>
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-foreground/40" />
               </div>
-              {invoice.url && (
-                <a href={invoice.url} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm underline underline-offset-4 hover:text-foreground">
-                  <Download className="h-4 w-4" /> Descargar factura (PDF)
-                </a>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">No hay facturas todavía.</p>
-          )}
-        </Card>
+            ) : invoice ? (
+              <div className="space-y-4 pb-2">
+                <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
+                  <div>
+                    <span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Número</span>
+                    <span className="font-mono text-foreground/90">{invoice.invoice_number}</span>
+                  </div>
+                  <div>
+                    <span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Fecha</span>
+                    <span className="text-foreground/90">{invoice.invoice_date}</span>
+                  </div>
+                  {invoice.due_date && (
+                    <div>
+                      <span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Vence</span>
+                      <span className="text-foreground/90">{invoice.due_date}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-foreground/50 text-xs uppercase tracking-wider block mb-0.5">Total</span>
+                    <span className="font-semibold text-foreground">
+                      {formatMoney(invoice.total_amount_cents, invoice.currency)}
+                    </span>
+                  </div>
+                </div>
+                {invoice.url && (
+                  <a
+                    href={invoice.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-foreground/70 underline underline-offset-4 hover:text-foreground transition-colors"
+                  >
+                    <Download className="h-4 w-4" />
+                    Descargar factura (PDF)
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-foreground/60 pb-2">No hay facturas todavía.</p>
+            )}
+          </EnergyCardContent>
+        </EnergyCard>
       </main>
     </div>
   );
 };
+
+// ---------------------------------------------------------------------------
+// Portal (root)
+// ---------------------------------------------------------------------------
 
 const Portal = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -164,8 +270,8 @@ const Portal = () => {
 
   if (!ready) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-foreground" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(0 0% 5%)" }}>
+        <Loader2 className="h-6 w-6 animate-spin text-foreground/40" />
       </div>
     );
   }

@@ -4,11 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
+import "@/components/premium/premium-effects.css";
 import { WizardProgress } from "@/components/consultoria/WizardProgress";
 import {
   StepBilling, StepPayment, StepAgreement, StepTimeline, StepReview,
@@ -71,6 +72,7 @@ interface OnboardingResult {
 
 const ConsultoriaOnboarding = () => {
   const navigate = useNavigate();
+  const reduce = useReducedMotion();
   const { data: cfg } = useConsultingConfig();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -143,57 +145,88 @@ const ConsultoriaOnboarding = () => {
 
   const v = methods.getValues();
 
+  // Transición cinematográfica entre pasos: slide + fade con ease-out-expo.
+  const stepVariants = reduce
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      }
+    : {
+        initial: { opacity: 0, x: 24, filter: "blur(4px)" },
+        animate: { opacity: 1, x: 0, filter: "blur(0px)" },
+        exit: { opacity: 0, x: -24, filter: "blur(4px)" },
+      };
+
   return (
     <div className="min-h-screen bg-background text-foreground py-10 px-4">
       <div className="max-w-xl mx-auto">
-        <button onClick={() => navigate("/consultoria")} className="text-xs text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/consultoria")}
+          className="text-xs text-muted-foreground hover:text-foreground mb-6 -ml-2 h-auto py-1"
+        >
           <ArrowLeft className="h-3 w-3" /> Volver
-        </button>
+        </Button>
 
         <div className="mb-8">
           <WizardProgress steps={STEP_LABELS} current={step} />
         </div>
 
-        <Card variant="elevated" className="p-6 sm:p-8">
+        <div className="glass-card-dark rounded-2xl p-6 sm:p-8 animate-fade-in">
           <FormProvider {...methods}>
-          {step === 0 && <StepBilling />}
-          {step === 1 && <StepPayment />}
-          {step === 2 && <StepAgreement />}
-          {step === 3 && <StepTimeline />}
-          {step === 4 && cfg && (
-            <StepReview
-              baseCents={cfg.baseCents} taxEnabled={cfg.taxEnabled} taxRate={cfg.taxRate}
-              taxCents={cfg.taxCents} totalCents={cfg.totalCents} currency={cfg.currency}
-            />
-          )}
-          {step === 5 && (
-            <StepInvoiceAndPay
-              invoiceNumber={result?.invoice_number}
-              invoiceUrl={result?.invoice_one_time_url}
-              invoiceFailed={result?.invoice_failed}
-              paymentInstructions={paymentInstructions}
-              totalLabel={cfg ? formatMoney(cfg.totalCents, cfg.currency) : undefined}
-              onPaid={handlePaid}
-              claiming={claiming}
-            />
-          )}
-          {step === 6 && (
-            <div className="space-y-4">
-              <div className="text-center">
-                <h3 className="text-lg font-bold glow">Agenda tu llamada de onboarding</h3>
-                <p className="text-sm text-muted-foreground">
-                  Elige hueco. Te hemos enviado por email tus credenciales del portal donde verás tu proyecto.
-                </p>
-              </div>
-              <GHLCalendarIframe
-                calendarId={ONBOARDING_CALENDAR_ID}
-                firstName={(v.signer_name || v.legal_name).split(" ")[0]}
-                lastName={(v.signer_name || v.legal_name).split(" ").slice(1).join(" ")}
-                email={v.email}
-                phone={v.phone}
-              />
-            </div>
-          )}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={step}
+              variants={stepVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {step === 0 && <StepBilling />}
+              {step === 1 && <StepPayment />}
+              {step === 2 && <StepAgreement />}
+              {step === 3 && <StepTimeline />}
+              {step === 4 && cfg && (
+                <StepReview
+                  baseCents={cfg.baseCents} taxEnabled={cfg.taxEnabled} taxRate={cfg.taxRate}
+                  taxCents={cfg.taxCents} totalCents={cfg.totalCents} currency={cfg.currency}
+                />
+              )}
+              {step === 5 && (
+                <StepInvoiceAndPay
+                  invoiceNumber={result?.invoice_number}
+                  invoiceUrl={result?.invoice_one_time_url}
+                  invoiceFailed={result?.invoice_failed}
+                  paymentInstructions={paymentInstructions}
+                  totalLabel={cfg ? formatMoney(cfg.totalCents, cfg.currency) : undefined}
+                  onPaid={handlePaid}
+                  claiming={claiming}
+                />
+              )}
+              {step === 6 && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h3 className="font-display font-black uppercase tracking-[-0.025em] text-xl">
+                      <span className="glow">Agenda</span> tu llamada de onboarding
+                    </h3>
+                    <p className="text-sm text-foreground/70">
+                      Elige hueco. Te hemos enviado por email tus credenciales del portal donde verás tu proyecto.
+                    </p>
+                  </div>
+                  <GHLCalendarIframe
+                    calendarId={ONBOARDING_CALENDAR_ID}
+                    firstName={(v.signer_name || v.legal_name).split(" ")[0]}
+                    lastName={(v.signer_name || v.legal_name).split(" ").slice(1).join(" ")}
+                    email={v.email}
+                    phone={v.phone}
+                  />
+                </div>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Navegación (solo pasos de captura/review) */}
           {step <= 4 && (
@@ -216,7 +249,7 @@ const ConsultoriaOnboarding = () => {
             </div>
           )}
           </FormProvider>
-        </Card>
+        </div>
       </div>
     </div>
   );

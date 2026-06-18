@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { GlowInput } from "@/components/premium/GlowInput";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -89,26 +92,44 @@ const DeliverableManager = ({ milestoneId, projectId }: { milestoneId: string; p
   };
 
   return (
-    <div className="mt-2 pl-3 border-l border-border space-y-2">
+    <div className="mt-2 pl-3 border-l border-white/10 space-y-2">
       {(data ?? []).map((d: any) => (
         <div key={d.id} className="flex items-center gap-2 text-xs">
-          <span className="px-1.5 py-0.5 rounded bg-secondary text-[10px] uppercase">{d.type}</span>
-          <span className="flex-1 truncate">{d.title}</span>
-          <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <input type="checkbox" checked={d.visible_to_client} onChange={(e) => toggleVisible(d.id, e.target.checked)} />
+          <span className="px-1.5 py-0.5 rounded bg-secondary text-foreground/80 text-[10px] uppercase">{d.type}</span>
+          <span className="flex-1 truncate text-foreground">{d.title}</span>
+          <label className="flex items-center gap-1 text-[10px] text-muted-foreground cursor-pointer">
+            <Checkbox
+              checked={d.visible_to_client}
+              onCheckedChange={(checked) => toggleVisible(d.id, checked === true)}
+              className="h-3 w-3"
+            />
             visible
           </label>
-          <button onClick={() => remove(d.id)} className="text-destructive"><Trash2 className="h-3.5 w-3.5" /></button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+            onClick={() => remove(d.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
         </div>
       ))}
       <div className="flex flex-wrap items-center gap-2">
-        <select value={type} onChange={(e) => setType(e.target.value as any)} className="h-8 rounded-md border border-input bg-background px-2 text-xs">
-          {DTYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-        </select>
+        <Select value={type} onValueChange={(v) => setType(v as any)}>
+          <SelectTrigger className="h-8 w-24 text-xs bg-black/40 border-white/20 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-black/90 border-white/20 rounded-xl">
+            {DTYPES.map((t) => (
+              <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input className="h-8 w-32 text-xs" placeholder="Título" value={title} onChange={(e) => setTitle(e.target.value)} />
         {type !== "file" && <Input className="h-8 w-48 text-xs" placeholder="URL" value={url} onChange={(e) => setUrl(e.target.value)} />}
         {type === "file" ? (
-          <label className="inline-flex items-center gap-1 text-xs cursor-pointer border border-input rounded-md h-8 px-2">
+          <label className="inline-flex items-center gap-1 text-xs cursor-pointer border border-white/20 rounded-xl h-8 px-2 text-foreground/80 hover:bg-white/5 transition-colors">
             <Upload className="h-3.5 w-3.5" /> Subir
             <input type="file" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
           </label>
@@ -145,15 +166,24 @@ const MilestoneRow = ({ m, client, onChanged }: { m: any; client: ClientRow; onC
   };
 
   return (
-    <div className="rounded-md border border-border p-3 bg-card">
+    <div className="rounded-xl border border-white/10 p-3 glass-card-dark glass-card-dark-static">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground w-24 shrink-0">{m.phase_label}</span>
-        <span className="font-medium text-sm flex-1 min-w-[140px]">{m.title}{m.optional ? " (opcional)" : ""}</span>
-        <select value={m.status} onChange={(e) => onStatus(e.target.value)} className="h-8 rounded-md border border-input bg-background px-2 text-xs">
-          {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-        </select>
-        <Input
-          type="date" className="h-8 w-36 text-xs" defaultValue={m.target_date ?? ""}
+        <span className="font-medium text-sm flex-1 min-w-[140px] text-foreground">{m.title}{m.optional ? " (opcional)" : ""}</span>
+        <Select value={m.status} onValueChange={(v) => onStatus(v)}>
+          <SelectTrigger className="h-8 w-32 text-xs bg-black/40 border-white/20 rounded-xl">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-black/90 border-white/20 rounded-xl">
+            {STATUSES.map((s) => (
+              <SelectItem key={s} value={s} className="text-xs">{STATUS_LABEL[s]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <GlowInput
+          type="date"
+          className="h-8 w-36 text-xs"
+          defaultValue={m.target_date ?? ""}
           onBlur={(e) => e.target.value !== (m.target_date ?? "") && update({ target_date: e.target.value || null })}
         />
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
@@ -192,11 +222,17 @@ export const AdminProjectBoard = () => {
   return (
     <div className="space-y-5">
       <div className="max-w-md space-y-1.5">
-        <Label>Cliente / proyecto</Label>
-        <select value={selected} onChange={(e) => setSelected(e.target.value)} className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
-          <option value="">Selecciona un cliente…</option>
-          {clients.map((c) => <option key={c.id} value={c.id}>{c.legal_name} — {c.email}</option>)}
-        </select>
+        <Label className="text-foreground/80">Cliente / proyecto</Label>
+        <Select value={selected} onValueChange={(v) => setSelected(v)}>
+          <SelectTrigger className="h-10 w-full bg-black/40 border-white/20 rounded-xl text-sm">
+            <SelectValue placeholder="Selecciona un cliente…" />
+          </SelectTrigger>
+          <SelectContent className="bg-black/90 border-white/20 rounded-xl">
+            {clients.map((c) => (
+              <SelectItem key={c.id} value={c.id} className="text-sm">{c.legal_name} — {c.email}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {client && (

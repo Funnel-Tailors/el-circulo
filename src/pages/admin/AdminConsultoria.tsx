@@ -5,10 +5,10 @@ import { Download, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AdminProjectBoard } from "@/components/consultoria/AdminProjectBoard";
+import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 
 const fmtMoney = (cents: number, currency: string) =>
   `${(cents / 100).toLocaleString("es-ES", { minimumFractionDigits: 2 })} ${currency}`;
@@ -44,10 +44,10 @@ function ClientsTab() {
   if (!data?.length) return <p className="text-muted-foreground text-sm">Aún no hay clientes onboarded.</p>;
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto glass-card-dark glass-card-dark-static p-4 rounded-xl">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-border">
+          <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground border-b border-white/10">
             <th className="py-2 pr-4">Cliente</th>
             <th className="py-2 pr-4">Factura</th>
             <th className="py-2 pr-4">Importe</th>
@@ -61,20 +61,20 @@ function ClientsTab() {
           {data.map((c: any) => {
             const inv = (c.invoices ?? [])[0];
             return (
-              <tr key={c.id} className="border-b border-border/50">
+              <tr key={c.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
                 <td className="py-2 pr-4">
-                  <div className="font-medium">{c.legal_name}</div>
+                  <div className="font-medium text-foreground">{c.legal_name}</div>
                   <div className="text-xs text-muted-foreground">{c.email}</div>
                 </td>
-                <td className="py-2 pr-4 font-mono text-xs">{inv?.invoice_number ?? "—"}</td>
-                <td className="py-2 pr-4">{fmtMoney(c.total_amount_cents, c.currency)}</td>
-                <td className="py-2 pr-4 text-xs">{inv?.due_date ?? "—"}</td>
+                <td className="py-2 pr-4 font-mono text-xs text-foreground">{inv?.invoice_number ?? "—"}</td>
+                <td className="py-2 pr-4 text-foreground">{fmtMoney(c.total_amount_cents, c.currency)}</td>
+                <td className="py-2 pr-4 text-xs text-foreground">{inv?.due_date ?? "—"}</td>
                 <td className="py-2 pr-4">
                   {c.payment_claimed_at
                     ? <span className="text-emerald-400 text-xs">Reclamado</span>
                     : <span className="text-muted-foreground text-xs">Pendiente</span>}
                 </td>
-                <td className="py-2 pr-4 text-xs">{c.status}</td>
+                <td className="py-2 pr-4 text-xs text-foreground">{c.status}</td>
                 <td className="py-2 pr-4">
                   <Button size="sm" variant="ghost" onClick={() => download(inv?.storage_path)} disabled={!inv?.storage_path}>
                     <Download className="h-4 w-4" />
@@ -134,11 +134,11 @@ function ConfigTab() {
 
   const issuerField = (key: string, label: string, textarea = false) => (
     <div className="space-y-1.5">
-      <Label>{label}</Label>
+      <Label className="text-foreground/80">{label}</Label>
       {textarea ? (
-        <Textarea value={issuer[key] ?? ""} onChange={(e) => setIssuer({ ...issuer, [key]: e.target.value })} />
+        <GlowTextarea value={issuer[key] ?? ""} onChange={(e) => setIssuer({ ...issuer, [key]: e.target.value })} />
       ) : (
-        <Input value={issuer[key] ?? ""} onChange={(e) => setIssuer({ ...issuer, [key]: e.target.value })} />
+        <GlowInput value={issuer[key] ?? ""} onChange={(e) => setIssuer({ ...issuer, [key]: e.target.value })} />
       )}
     </div>
   );
@@ -162,19 +162,25 @@ function ConfigTab() {
 
   return (
     <div className="max-w-xl space-y-6">
-      <div className="space-y-3 bg-card p-5 rounded-lg border">
-        <label className="flex items-center gap-3">
-          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />
-          <span className="text-sm">Consultoría activa (página /consultoria publicada)</span>
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <Checkbox
+            checked={enabled}
+            onCheckedChange={(checked) => setEnabled(checked === true)}
+          />
+          <span className="text-sm text-foreground/80">Consultoría activa (página /consultoria publicada)</span>
         </label>
-        <label className="flex items-center gap-3">
-          <input type="checkbox" checked={syncEnabled} onChange={(e) => setSyncEnabled(e.target.checked)} />
-          <span className="text-sm">Sincronizar contactos/tags con GHL</span>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <Checkbox
+            checked={syncEnabled}
+            onCheckedChange={(checked) => setSyncEnabled(checked === true)}
+          />
+          <span className="text-sm text-foreground/80">Sincronizar contactos/tags con GHL</span>
         </label>
       </div>
 
-      <div className="space-y-3 bg-card p-5 rounded-lg border">
-        <h3 className="font-semibold text-sm">Datos del emisor (en la factura)</h3>
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <h3 className="font-semibold text-sm text-foreground">Datos del emisor (en la factura)</h3>
         {issuerField("legal_name", "Razón social")}
         <div className="grid sm:grid-cols-2 gap-3">
           {issuerField("tax_id_label", "Etiqueta ID fiscal (p.ej. EIN)")}
@@ -192,31 +198,31 @@ function ConfigTab() {
         {issuerField("wise_details", "Datos de Wise / transferencia", true)}
       </div>
 
-      <div className="space-y-3 bg-card p-5 rounded-lg border">
-        <h3 className="font-semibold text-sm">Numeración y vencimiento</h3>
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <h3 className="font-semibold text-sm text-foreground">Numeración y vencimiento</h3>
         <div className="grid sm:grid-cols-3 gap-3">
-          <div className="space-y-1.5"><Label>Prefijo</Label><Input value={prefix} onChange={(e) => setPrefix(e.target.value)} /></div>
-          <div className="space-y-1.5"><Label>Dígitos</Label><Input type="number" value={padding} onChange={(e) => setPadding(Number(e.target.value))} /></div>
-          <div className="space-y-1.5"><Label>Días vencimiento</Label><Input type="number" value={dueDays} onChange={(e) => setDueDays(Number(e.target.value))} /></div>
+          <div className="space-y-1.5"><Label className="text-foreground/80">Prefijo</Label><GlowInput value={prefix} onChange={(e) => setPrefix(e.target.value)} /></div>
+          <div className="space-y-1.5"><Label className="text-foreground/80">Dígitos</Label><GlowInput type="number" value={padding} onChange={(e) => setPadding(Number(e.target.value))} /></div>
+          <div className="space-y-1.5"><Label className="text-foreground/80">Días vencimiento</Label><GlowInput type="number" value={dueDays} onChange={(e) => setDueDays(Number(e.target.value))} /></div>
         </div>
         <p className="text-xs text-muted-foreground">El número se asigna automáticamente y correlativo. La próxima factura sigue la serie actual.</p>
       </div>
 
-      <div className="space-y-3 bg-card p-5 rounded-lg border">
-        <h3 className="font-semibold text-sm">Precio</h3>
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <h3 className="font-semibold text-sm text-foreground">Precio</h3>
         <div className="grid sm:grid-cols-2 gap-3">
-          <div className="space-y-1.5"><Label>Importe (sin impuesto)</Label><Input type="number" value={baseAmount} onChange={(e) => setBaseAmount(Number(e.target.value))} /></div>
-          <div className="space-y-1.5"><Label>Moneda</Label><Input value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} /></div>
+          <div className="space-y-1.5"><Label className="text-foreground/80">Importe (sin impuesto)</Label><GlowInput type="number" value={baseAmount} onChange={(e) => setBaseAmount(Number(e.target.value))} /></div>
+          <div className="space-y-1.5"><Label className="text-foreground/80">Moneda</Label><GlowInput value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} /></div>
         </div>
       </div>
 
-      <div className="space-y-3 bg-card p-5 rounded-lg border">
-        <h3 className="font-semibold text-sm">Enlaces de pago</h3>
-        <div className="space-y-1.5"><Label>FastPayDirect URL</Label><Input value={fastpay} onChange={(e) => setFastpay(e.target.value)} placeholder="https://link.fastpaydirect.com/…" /></div>
-        <div className="space-y-1.5"><Label>Stripe URL</Label><Input value={stripe} onChange={(e) => setStripe(e.target.value)} placeholder="https://buy.stripe.com/…" /></div>
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <h3 className="font-semibold text-sm text-foreground">Enlaces de pago</h3>
+        <div className="space-y-1.5"><Label className="text-foreground/80">FastPayDirect URL</Label><GlowInput value={fastpay} onChange={(e) => setFastpay(e.target.value)} placeholder="https://link.fastpaydirect.com/…" /></div>
+        <div className="space-y-1.5"><Label className="text-foreground/80">Stripe URL</Label><GlowInput value={stripe} onChange={(e) => setStripe(e.target.value)} placeholder="https://buy.stripe.com/…" /></div>
       </div>
 
-      <Button onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar configuración"}</Button>
+      <Button variant="premium" onClick={save} disabled={saving}>{saving ? "Guardando…" : "Guardar configuración"}</Button>
     </div>
   );
 }
@@ -225,7 +231,7 @@ export default function AdminConsultoria() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Consultoría</h1>
+        <h1 className="text-3xl font-display font-black uppercase tracking-[-0.025em]">Consultoría</h1>
         <p className="text-muted-foreground">Clientes, facturas y configuración</p>
       </div>
       <Tabs defaultValue="clientes" className="space-y-6">
