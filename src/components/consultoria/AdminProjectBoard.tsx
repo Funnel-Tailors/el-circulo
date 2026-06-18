@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2, Plus, Trash2, Upload } from "lucide-react";
@@ -197,6 +197,67 @@ const MilestoneRow = ({ m, client, onChanged }: { m: any; client: ClientRow; onC
   );
 };
 
+// Conexión GHL del cliente (para el dashboard de entrega). Solo admin.
+const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
+  const [locationId, setLocationId] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    (async () => {
+      const { data } = await supabase
+        .from("consulting_ghl_connections")
+        .select("location_id, api_key")
+        .eq("onboarding_id", onboardingId)
+        .maybeSingle();
+      setLocationId(data?.location_id ?? "");
+      setApiKey(data?.api_key ?? "");
+      setLoaded(true);
+    })();
+  }, [onboardingId]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("consulting_ghl_connections")
+      .upsert({ onboarding_id: onboardingId, location_id: locationId.trim(), api_key: apiKey.trim() }, { onConflict: "onboarding_id" });
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
+    toast.success("Conexión GHL guardada");
+  };
+
+  const test = async () => {
+    if (!locationId || !apiKey) return toast.error("Pon Location ID y API Key");
+    setTesting(true);
+    const { data } = await supabase.functions.invoke("test-ghl-connection", {
+      body: { location_id: locationId.trim(), api_key: apiKey.trim() },
+    });
+    setTesting(false);
+    if (data?.ok) toast.success(`Conexión OK · ${data.total_contacts ?? 0} contactos`);
+    else toast.error(data?.error || "No conecta");
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">Conexión GHL del cliente (dashboard)</h3>
+      <p className="text-xs text-muted-foreground">
+        Location ID + Private Integration Token (scopes contacts/opportunities/calendars readonly) de la sub-cuenta GHL del cliente. Se guarda server-side; el cliente nunca la ve.
+      </p>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Location ID</Label><GlowInput value={locationId} onChange={(e) => setLocationId(e.target.value)} placeholder="abc123…" /></div>
+        <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">API Key (PIT)</Label><GlowInput type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="pit-…" /></div>
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar"}</Button>
+        <Button size="sm" variant="outline" onClick={test} disabled={testing}>{testing ? "Probando…" : "Probar conexión"}</Button>
+      </div>
+    </div>
+  );
+};
+
 export const AdminProjectBoard = () => {
   const { data: clients, isLoading } = useClients();
   const [selected, setSelected] = useState<string>("");
@@ -236,10 +297,13 @@ export const AdminProjectBoard = () => {
       </div>
 
       {client && (
-        <div className="space-y-2">
-          {(milestones ?? []).map((m: any) => (
-            <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetch()} />
-          ))}
+        <div className="space-y-4">
+          <GhlConnectionPanel onboardingId={client.id} />
+          <div className="space-y-2">
+            {(milestones ?? []).map((m: any) => (
+              <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetch()} />
+            ))}
+          </div>
         </div>
       )}
     </div>
