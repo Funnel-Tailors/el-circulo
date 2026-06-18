@@ -14,6 +14,10 @@ import WebinardoVer from "./pages/WebinardoVer";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
 
+// Consultoría DFY (público, lazy para no engordar el bundle principal)
+const Consultoria = lazy(() => import("./pages/Consultoria"));
+const ConsultoriaOnboarding = lazy(() => import("./pages/ConsultoriaOnboarding"));
+
 // Lazy load admin (legacy public landings killed — redirect to /)
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
@@ -26,6 +30,7 @@ const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
 const Showcase = lazy(() => import("./pages/admin/Showcase"));
 const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
+const AdminConsultoria = lazy(() => import("./pages/admin/AdminConsultoria"));
 
 const queryClient = new QueryClient();
 
@@ -46,6 +51,10 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/senda" element={<Senda />} />
           <Route path="/la-brecha" element={<LaBrecha />} />
+
+          {/* Consultoría DFY */}
+          <Route path="/consultoria" element={<Suspense fallback={<AdminFallback />}><Consultoria /></Suspense>} />
+          <Route path="/consultoria/onboarding" element={<Suspense fallback={<AdminFallback />}><ConsultoriaOnboarding /></Suspense>} />
 
           {/* Webinardo Creativos */}
           <Route path="/webinardo" element={<WebinardoRegistro />} />
@@ -68,6 +77,7 @@ const App = () => (
             <Route path="showcase" element={<Suspense fallback={<AdminFallback />}><Showcase /></Suspense>} />
             <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
             <Route path="testimonials" element={<Suspense fallback={<AdminFallback />}><AdminTestimonials /></Suspense>} />
+            <Route path="consultoria" element={<Suspense fallback={<AdminFallback />}><AdminConsultoria /></Suspense>} />
           </Route>
           
           {/* Redirects */}

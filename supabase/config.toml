@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.sync-senda-tags-bulk]
 verify_jwt = false
+
+[functions.create-onboarding]
+verify_jwt = false
+
+[functions.claim-payment]
+verify_jwt = false

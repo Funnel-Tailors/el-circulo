@@ -11,6 +11,7 @@ import {
   Sparkles,
   Image,
   Video,
+  Briefcase,
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,6 +67,12 @@ const navItems = [
     url: "/admin/webinar",
     icon: Video,
     description: "Config, registros y tracking",
+  },
+  {
+    title: "Consultoría",
+    url: "/admin/consultoria",
+    icon: Briefcase,
+    description: "Clientes, facturas y config",
   },
   {
     title: "Dev Tools",
