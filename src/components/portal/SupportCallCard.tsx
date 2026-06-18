@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent } from "@/components/premium";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, Loader2 } from "lucide-react";
 
 export const SupportCallCard = ({ email, name }: { email?: string; name?: string }) => {
   const [calendarId, setCalendarId] = useState<string | null>(null);
@@ -16,8 +16,6 @@ export const SupportCallCard = ({ email, name }: { email?: string; name?: string
       setReady(true);
     })();
   }, []);
-
-  if (!ready || !calendarId) return null; // sin calendario configurado → no se muestra
 
   return (
     <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
@@ -37,13 +35,22 @@ export const SupportCallCard = ({ email, name }: { email?: string; name?: string
         </div>
       </EnergyCardHeader>
       <EnergyCardContent>
-        <GHLCalendarIframe
-          embedded
-          calendarId={calendarId}
-          firstName={(name || "").split(" ")[0]}
-          lastName={(name || "").split(" ").slice(1).join(" ")}
-          email={email}
-        />
+        {!ready ? (
+          <div className="flex justify-center py-10"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
+        ) : calendarId ? (
+          <GHLCalendarIframe
+            embedded
+            calendarId={calendarId}
+            firstName={(name || "").split(" ")[0]}
+            lastName={(name || "").split(" ").slice(1).join(" ")}
+            email={email}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center gap-3 py-12 rounded-xl border border-white/[0.07] bg-white/[0.02]">
+            <CalendarClock className="h-7 w-7 text-foreground/20" />
+            <p className="text-sm text-foreground/55 max-w-xs">Tu calendario de soporte se activará en breve. Pronto podrás reservar llamadas conmigo desde aquí.</p>
+          </div>
+        )}
       </EnergyCardContent>
     </EnergyCard>
   );

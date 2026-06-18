@@ -191,7 +191,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
       <div className="max-w-[1440px] mx-auto px-4 py-6 md:flex md:gap-8">
         {/* Nav (sidebar en md+, tabs horizontales en móvil) */}
-        <nav className="md:w-52 md:shrink-0 mb-6 md:mb-0">
+        <nav className="md:w-52 md:shrink-0 mb-6 md:mb-0 relative">
           <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible md:sticky md:top-24 pb-1">
             {NAV.map((n) => {
               const active = section === n.id;
@@ -206,6 +206,8 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               );
             })}
           </div>
+          {/* Fade derecho en móvil para indicar que hay más pestañas */}
+          <div className="md:hidden pointer-events-none absolute right-0 top-0 bottom-1 w-10" style={{ background: "linear-gradient(to left, hsl(0 0% 5%), transparent)" }} />
         </nav>
 
         {/* Contenido */}

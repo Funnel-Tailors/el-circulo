@@ -240,29 +240,19 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
       delta: null,
       accentColor: "rgba(255,255,255,0.08)",
     },
-    ...(appointments !== null
-      ? [
-          {
-            icon: CalendarCheck,
-            label: "Citas agendadas",
-            value: appointments.upcoming,
-            delta: null,
-            deltaLabel: undefined,
-            accentColor: "rgba(255,255,255,0.08)",
-          },
-        ]
-      : []),
+    {
+      icon: CalendarCheck,
+      label: "Citas agendadas",
+      value: appointments?.upcoming ?? 0,
+      displayValue: appointments === null ? "—" : undefined,
+      delta: null,
+      deltaLabel: undefined,
+      accentColor: "rgba(255,255,255,0.08)",
+    },
   ];
 
   return (
-    <div
-      className={cn(
-        "grid gap-3",
-        cards.length === 4
-          ? "grid-cols-2 lg:grid-cols-4"
-          : "grid-cols-2 sm:grid-cols-3"
-      )}
-    >
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
       {cards.map((card, i) => (
         <KpiCard key={card.label} {...card} index={i} />
       ))}

@@ -161,7 +161,7 @@ const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, roadmapSl
   const bottomTiles: React.ReactNode[] = [];
   if (roadmapSlot) bottomTiles.push(<div key="roadmap">{roadmapSlot}</div>);
   bottomTiles.push(<div key="activity"><ActivityFeed activity={metrics.activity} /></div>);
-  if (metrics.appointments !== null) bottomTiles.push(<div key="appts"><AppointmentsCard appointments={metrics.appointments} /></div>);
+  bottomTiles.push(<div key="appts"><AppointmentsCard appointments={metrics.appointments} /></div>);
   const bottomCols = bottomTiles.length >= 3 ? "lg:grid-cols-3" : bottomTiles.length === 2 ? "sm:grid-cols-2" : "";
 
   return (

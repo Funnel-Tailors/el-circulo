@@ -13,10 +13,41 @@ const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
 // ─── AppointmentsCard ─────────────────────────────────────────────────────────
 interface AppointmentsCardProps {
-  appointments: NonNullable<DashboardMetrics["appointments"]>;
+  appointments: DashboardMetrics["appointments"];
 }
 
 export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments }) => {
+  // Sin datos de calendario (el token GHL no expone citas) → estado elegante.
+  if (!appointments) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, delay: 0.36, ease: EASE_OUT_EXPO }}
+        className="h-full"
+      >
+        <EnergyCard beamSpeed={5} beamIntensity={0.3} enableTilt={false} className="h-full flex flex-col" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <EnergyCardContent className="p-5 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-1">Calendario</p>
+                <h3 className="font-display font-black text-base text-white uppercase tracking-tight leading-none">Citas</h3>
+              </div>
+              <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                <CalendarCheck className="w-3.5 h-3.5 text-white/50" />
+              </div>
+            </div>
+            <div className="w-full h-px bg-white/[0.05] mb-4" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-2.5 py-4">
+              <Calendar className="w-6 h-6 text-white/15" />
+              <p className="text-xs text-white/40 leading-relaxed max-w-[180px]">Cuando se conecte tu calendario, verás aquí tus citas agendadas.</p>
+            </div>
+          </EnergyCardContent>
+        </EnergyCard>
+      </motion.div>
+    );
+  }
+
   const { upcoming, total } = appointments;
 
   // Conversion rate: upcoming out of total (capped at 100%)
