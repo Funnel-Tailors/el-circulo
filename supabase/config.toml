@@ -1,5 +1,26 @@
 project_id = "embzslnxlpyzlimlhpaj"
 
+[auth]
+# Dominio de producción → los emails de confirmación / reset apuntan aquí (no localhost).
+site_url = "https://vendenautomatico.com"
+additional_redirect_urls = [
+  "https://vendenautomatico.com",
+  "https://vendenautomatico.com/**",
+  "https://www.vendenautomatico.com/**",
+  "http://localhost:8080/**"
+]
+
+# Replicamos los valores actuales del proyecto para que config push SOLO cambie la Site URL
+# (y no desactive confirmaciones de email / MFA ni cambie el OTP).
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
 [functions.submit-lead-to-ghl]
 verify_jwt = false
 
