@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useConsultingConfig } from "@/hooks/useConsultingConfig";
 import { Button } from "@/components/ui/button";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
 import "@/components/premium/premium-effects.css";
@@ -25,42 +25,6 @@ import { AGREEMENT_VERSION, getAgreementHash } from "@/data/consultoriaAgreement
 const ONBOARDING_CALENDAR_ID = "8C2kck4NCnEihznxvL29";
 
 const STEP_LABELS = ["Datos", "Pago", "Acuerdo", "Plan", "Revisar", "Factura", "Kickoff", "Agenda"];
-
-interface ConsultingConfig {
-  baseCents: number;
-  currency: string;
-  taxEnabled: boolean;
-  taxRate: number;
-  taxCents: number;
-  totalCents: number;
-  paymentLinks: { fastpay_url?: string; stripe_url?: string; wise_url?: string };
-  issuer: { iban?: string; wise_details?: string };
-}
-
-function useConsultingConfig() {
-  return useQuery<ConsultingConfig>({
-    queryKey: ["consulting-config"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("app_settings")
-        .select("key, value")
-        .in("key", ["consulting_price", "consulting_tax", "consulting_payment_links", "consulting_issuer"]);
-      const cfg: Record<string, any> = {};
-      for (const row of data ?? []) cfg[row.key] = row.value;
-      const baseCents = Number(cfg.consulting_price?.base_amount_cents) || 0;
-      const currency = cfg.consulting_price?.currency || "EUR";
-      const taxEnabled = !!cfg.consulting_tax?.enabled;
-      const taxRate = taxEnabled ? Number(cfg.consulting_tax?.rate) || 0 : 0;
-      const taxCents = taxEnabled ? Math.round((baseCents * taxRate) / 100) : 0;
-      return {
-        baseCents, currency, taxEnabled, taxRate, taxCents,
-        totalCents: baseCents + taxCents,
-        paymentLinks: cfg.consulting_payment_links ?? {},
-        issuer: cfg.consulting_issuer ?? {},
-      };
-    },
-  });
-}
 
 interface OnboardingResult {
   onboarding_id: string;
