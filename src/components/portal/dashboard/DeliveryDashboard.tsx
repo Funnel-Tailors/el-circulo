@@ -201,37 +201,21 @@ const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, milestone
       {/* ── Row 1: KPI cards ───────────────────────────────────────────────── */}
       <KpiCards metrics={metrics} />
 
-      {/* ── Row 2: Trend chart (2/3) + Pipeline funnel (1/3) ─────────────── */}
-      {/* Fixed height row so chart sizes are deterministic for above-the-fold */}
-      <div className="hidden lg:grid lg:grid-cols-3 gap-3" style={{ height: 218 }}>
-        <div className="lg:col-span-2 h-full">
+      {/* ── Row 2: Trend chart (2/3) + Pipeline funnel (1/3) — altura auto ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
+        <div className="lg:col-span-2">
           <LeadsTrendChart trend={metrics.leads.trend} />
         </div>
-        <div className="h-full">
+        <div>
           <PipelineChart
             opportunities={metrics.opportunities}
             currency={metrics.currency}
           />
         </div>
       </div>
-      {/* Mobile: stacked, auto height */}
-      <div className="grid grid-cols-1 gap-3 lg:hidden">
-        <LeadsTrendChart trend={metrics.leads.trend} />
-        <PipelineChart
-          opportunities={metrics.opportunities}
-          currency={metrics.currency}
-        />
-      </div>
 
-      {/* ── Row 3: Activity Feed + Appointments — side by side ────────────── */}
-      {/* Altura automática (igualada por stretch) para que el contenido no se
-          desborde ni se solapen las cards. */}
-      <div className="hidden lg:grid lg:grid-cols-2 gap-3 items-stretch">
-        <ActivityFeed activity={metrics.activity} />
-        <AppointmentsCard appointments={metrics.appointments} />
-      </div>
-      {/* Mobile: stacked */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:hidden">
+      {/* ── Row 3: Activity Feed + Appointments — altura auto, mismo gap ──── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
         <ActivityFeed activity={metrics.activity} />
         <AppointmentsCard appointments={metrics.appointments} />
       </div>

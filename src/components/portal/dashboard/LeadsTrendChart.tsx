@@ -163,7 +163,7 @@ export const LeadsTrendChart: React.FC<LeadsTrendChartProps> = ({ trend }) => {
         </div>
 
         {/* Chart — flex-1 to fill remaining card height, with a minimum */}
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-[150px]">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
