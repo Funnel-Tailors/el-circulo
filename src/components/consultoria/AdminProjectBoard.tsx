@@ -201,6 +201,7 @@ const MilestoneRow = ({ m, client, onChanged }: { m: any; client: ClientRow; onC
 const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
   const [locationId, setLocationId] = useState("");
   const [apiKey, setApiKey] = useState("");
+  const [calendarId, setCalendarId] = useState("");
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -210,11 +211,12 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
     (async () => {
       const { data } = await supabase
         .from("consulting_ghl_connections")
-        .select("location_id, api_key")
+        .select("location_id, api_key, ghl_calendar_id")
         .eq("onboarding_id", onboardingId)
         .maybeSingle();
       setLocationId(data?.location_id ?? "");
       setApiKey(data?.api_key ?? "");
+      setCalendarId((data as any)?.ghl_calendar_id ?? "");
       setLoaded(true);
     })();
   }, [onboardingId]);
@@ -223,7 +225,7 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
     setSaving(true);
     const { error } = await supabase
       .from("consulting_ghl_connections")
-      .upsert({ onboarding_id: onboardingId, location_id: locationId.trim(), api_key: apiKey.trim() }, { onConflict: "onboarding_id" });
+      .upsert({ onboarding_id: onboardingId, location_id: locationId.trim(), api_key: apiKey.trim(), ghl_calendar_id: calendarId.trim() || null }, { onConflict: "onboarding_id" });
     setSaving(false);
     if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
     toast.success("Conexión GHL guardada");
@@ -250,6 +252,7 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
         <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Location ID</Label><GlowInput value={locationId} onChange={(e) => setLocationId(e.target.value)} placeholder="abc123…" /></div>
         <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">API Key (PIT)</Label><GlowInput type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="pit-…" /></div>
       </div>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Calendar ID (para las citas del dashboard)</Label><GlowInput value={calendarId} onChange={(e) => setCalendarId(e.target.value)} placeholder="ID del calendario GHL (opcional)" /></div>
       <div className="flex gap-2">
         <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar"}</Button>
         <Button size="sm" variant="outline" onClick={test} disabled={testing}>{testing ? "Probando…" : "Probar conexión"}</Button>

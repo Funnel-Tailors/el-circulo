@@ -24,7 +24,14 @@ function dayKey(d: Date): string {
 
 async function ghl(path: string, apiKey: string) {
   const res = await fetch(`${GHL_BASE}${path}`, {
-    headers: { Authorization: `Bearer ${apiKey}`, Version: '2021-07-28', Accept: 'application/json' },
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      Version: '2021-07-28',
+      Accept: 'application/json',
+      // Cloudflare bloquea el User-Agent por defecto de Deno en algunos endpoints
+      // (p.ej. /calendars/). Con un UA de navegador pasa.
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+    },
   })
   if (!res.ok) throw new Error(`GHL ${path} → ${res.status}`)
   return res.json()
@@ -59,7 +66,7 @@ serve(async (req) => {
     // Conexión GHL del cliente
     const { data: conn } = await supabase
       .from('consulting_ghl_connections')
-      .select('location_id, api_key')
+      .select('location_id, api_key, ghl_calendar_id')
       .eq('onboarding_id', onboardingId)
       .maybeSingle()
     if (!conn?.location_id || !conn?.api_key) {
@@ -78,6 +85,7 @@ serve(async (req) => {
 
     const loc = conn.location_id
     const key = conn.api_key
+    const calendarId = conn.ghl_calendar_id || ''
     const now = new Date()
     const metrics: any = {
       currency: 'EUR',
@@ -89,8 +97,11 @@ serve(async (req) => {
 
     // ── Leads / contactos ── (orden por recientes para que tendencia/actividad/delta sean reales)
     try {
-      const data = await ghl(`/contacts/?locationId=${loc}&limit=100&sortBy=date_added&sortOrder=desc`, key)
+      const data = await ghl(`/contacts/?locationId=${loc}&limit=100`, key)
       const contacts: any[] = data.contacts || []
+      // La API GET /contacts no admite sortOrder → ordenamos en JS (recientes primero)
+      contacts.sort((a, b) =>
+        new Date(b.dateAdded || b.createdAt || 0).getTime() - new Date(a.dateAdded || a.createdAt || 0).getTime())
       metrics.leads.total = data.meta?.total ?? contacts.length
       // Bucket por día (últimos 30) + last7/prev7 + actividad
       const buckets: Record<string, number> = {}
@@ -154,17 +165,19 @@ serve(async (req) => {
       console.error('opportunities fetch:', e)
     }
 
-    // ── Citas (best-effort; la API de calendars es quisquillosa) ──
-    try {
-      const startT = now.getTime() - 30 * 86400000
-      const endT = now.getTime() + 60 * 86400000
-      const ev = await ghl(`/calendars/events?locationId=${loc}&startTime=${startT}&endTime=${endT}`, key)
-      const events: any[] = ev.events || []
-      const upcoming = events.filter((e) => new Date(e.startTime).getTime() >= now.getTime()).length
-      metrics.appointments = { total: events.length, upcoming }
-    } catch (e) {
-      console.error('appointments fetch (non-blocking):', e)
-      metrics.appointments = null
+    // ── Citas: del calendario GHL configurado en admin (calendarId) ──
+    if (calendarId) {
+      try {
+        const startT = now.getTime() - 30 * 86400000
+        const endT = now.getTime() + 90 * 86400000
+        const ev = await ghl(`/calendars/events?locationId=${loc}&calendarId=${calendarId}&startTime=${startT}&endTime=${endT}`, key)
+        const events: any[] = ev.events || []
+        const upcoming = events.filter((e) => e.startTime && new Date(e.startTime).getTime() >= now.getTime()).length
+        metrics.appointments = { total: events.length, upcoming }
+      } catch (e) {
+        console.error('appointments fetch (non-blocking):', e)
+        metrics.appointments = null
+      }
     }
 
     // Guardar snapshot
