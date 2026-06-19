@@ -33,11 +33,27 @@ serve(async (req) => {
     const userId = userData?.user?.id
     if (userErr || !userId) return json({ error: 'Sesión no válida' }, 401)
 
-    // Onboardings del cliente (con datos de facturación para el documento)
-    const { data: onboardings } = await supabase
-      .from('consulting_onboardings')
-      .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at')
-      .eq('client_user_id', userId)
+    // Admin puede ver la factura de un cliente concreto (onboarding_id en el body)
+    const body = await req.json().catch(() => ({}))
+    let onboardings: any[] | null = null
+    if (body?.onboarding_id) {
+      const { data: roles } = await supabase
+        .from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').limit(1)
+      if (roles?.length) {
+        const { data } = await supabase
+          .from('consulting_onboardings')
+          .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at')
+          .eq('id', body.onboarding_id)
+        onboardings = data
+      }
+    }
+    if (!onboardings) {
+      const { data } = await supabase
+        .from('consulting_onboardings')
+        .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at')
+        .eq('client_user_id', userId)
+      onboardings = data
+    }
     const ids = (onboardings ?? []).map((o: any) => o.id)
     if (!ids.length) return json({ invoice: null })
 

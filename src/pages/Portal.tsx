@@ -150,6 +150,9 @@ const DocumentsSection = ({ invoice, invoiceFull, agreement, billTo, loading }: 
 
 // ───────────── PortalHome (layout dashboard por secciones) ─────────────
 const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () => void }) => {
+  // Admin "ver como cliente": ?preview=<onboarding_id>
+  const previewId = new URLSearchParams(window.location.search).get("preview") || undefined;
+  const invokeBody = previewId ? { body: { onboarding_id: previewId } } : undefined;
   const [section, setSection] = useState<SectionId>("resumen");
   const [invoice, setInvoice] = useState<MyInvoice | null>(null);
   const [invoiceFull, setInvoiceFull] = useState<InvoiceDoc | null>(null);
@@ -160,11 +163,11 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dashLoading, setDashLoading] = useState(true);
-  const [revealed, setRevealed] = useState(() => localStorage.getItem("circulo_portal_revealed") === "1");
+  const [revealed, setRevealed] = useState(() => !!previewId || localStorage.getItem("circulo_portal_revealed") === "1");
 
   const loadDashboard = async () => {
     setDashLoading(true);
-    const { data, error } = await supabase.functions.invoke("get-my-dashboard");
+    const { data, error } = await supabase.functions.invoke("get-my-dashboard", invokeBody);
     if (!error) setDashboard(data as DashboardData);
     setDashLoading(false);
   };
@@ -172,8 +175,8 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   useEffect(() => {
     (async () => {
       const [inv, proj] = await Promise.all([
-        supabase.functions.invoke("get-my-invoice"),
-        supabase.functions.invoke("get-my-project"),
+        supabase.functions.invoke("get-my-invoice", invokeBody),
+        supabase.functions.invoke("get-my-project", invokeBody),
       ]);
       if (!inv.error) {
         const d = inv.data as any;
@@ -197,6 +200,13 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   return (
     <div className="min-h-screen text-foreground" style={{ background: "hsl(0 0% 5%)" }}>
       <AnimatePresence>{!revealed && <PortalReveal onDone={dismissReveal} />}</AnimatePresence>
+
+      {previewId && (
+        <div className="flex items-center justify-center gap-3 bg-amber-400/15 border-b border-amber-400/30 px-4 py-2 text-xs text-amber-200">
+          <span className="font-semibold uppercase tracking-wide">👁 Modo admin · vista del portal del cliente</span>
+          <button onClick={() => window.close()} className="underline underline-offset-2 hover:text-amber-100">Cerrar</button>
+        </div>
+      )}
 
       {/* Header */}
       <header className="border-b border-white/10 backdrop-blur-sm sticky top-0 z-20" style={{ background: "hsl(0 0% 5% / 0.85)" }}>
@@ -236,7 +246,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                 <>
                   <div>
                     <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl md:text-3xl">Bienvenido al <span className="glow">Círculo</span></h1>
-                    <p className="text-sm text-foreground/60">{session.user.email}</p>
+                    <p className="text-sm text-foreground/60">{previewId ? (billTo.email || "Cliente") : session.user.email}</p>
                   </div>
                   <DeliveryDashboard
                     data={dashboard}

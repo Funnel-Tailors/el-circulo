@@ -31,11 +31,21 @@ serve(async (req) => {
     const userId = userData?.user?.id
     if (userErr || !userId) return json({ error: 'Sesión no válida' }, 401)
 
-    const { data: onboardings } = await supabase
-      .from('consulting_onboardings')
-      .select('id')
-      .eq('client_user_id', userId)
-    const obIds = (onboardings ?? []).map((o: any) => o.id)
+    // Admin puede ver el proyecto de un cliente concreto (onboarding_id en el body)
+    const body = await req.json().catch(() => ({}))
+    let obIds: string[] = []
+    if (body?.onboarding_id) {
+      const { data: roles } = await supabase
+        .from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').limit(1)
+      if (roles?.length) obIds = [body.onboarding_id]
+    }
+    if (!obIds.length) {
+      const { data: onboardings } = await supabase
+        .from('consulting_onboardings')
+        .select('id')
+        .eq('client_user_id', userId)
+      obIds = (onboardings ?? []).map((o: any) => o.id)
+    }
     if (!obIds.length) return json({ project: null, milestones: [] })
 
     const { data: project } = await supabase

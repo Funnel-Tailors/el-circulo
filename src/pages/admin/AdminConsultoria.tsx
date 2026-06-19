@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -65,6 +65,7 @@ function ClientsTab() {
             <th className="py-2 pr-4">Estado</th>
             <th className="py-2 pr-4">PDF</th>
             <th className="py-2 pr-4">Comprob.</th>
+            <th className="py-2 pr-4">Portal</th>
           </tr>
         </thead>
         <tbody>
@@ -101,6 +102,9 @@ function ClientsTab() {
                   {c.payment_proof_path
                     ? <Button size="sm" variant="ghost" onClick={() => downloadFrom("payment-proofs", c.payment_proof_path)}><Download className="h-4 w-4" /></Button>
                     : <span className="text-xs text-muted-foreground">—</span>}
+                </td>
+                <td className="py-2 pr-4">
+                  <Button size="sm" variant="ghost" title="Ver portal del cliente" onClick={() => window.open(`/portal?preview=${c.id}`, "_blank")}><Eye className="h-4 w-4" /></Button>
                 </td>
               </tr>
             );

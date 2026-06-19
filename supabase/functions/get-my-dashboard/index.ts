@@ -52,16 +52,25 @@ serve(async (req) => {
     const userId = userData?.user?.id
     if (userErr || !userId) return json({ error: 'Sesión no válida' }, 401)
 
-    // Onboarding del cliente
-    const { data: ob } = await supabase
-      .from('consulting_onboardings')
-      .select('id')
-      .eq('client_user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    if (!ob) return json({ connected: false, metrics: null })
-    const onboardingId = ob.id as string
+    // Admin puede ver el portal de un cliente concreto (onboarding_id en el body)
+    const body = await req.json().catch(() => ({}))
+    let onboardingId: string | null = null
+    if (body?.onboarding_id) {
+      const { data: roles } = await supabase
+        .from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').limit(1)
+      if (roles?.length) onboardingId = body.onboarding_id
+    }
+    if (!onboardingId) {
+      const { data: ob } = await supabase
+        .from('consulting_onboardings')
+        .select('id')
+        .eq('client_user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (!ob) return json({ connected: false, metrics: null })
+      onboardingId = ob.id as string
+    }
 
     // Conexión GHL del cliente
     const { data: conn } = await supabase
