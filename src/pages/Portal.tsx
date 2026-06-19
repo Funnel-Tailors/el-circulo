@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Loader2, Download, LogOut, FileText, LayoutDashboard, Compass,
-  GraduationCap, CalendarClock, KeyRound, Rocket,
+  GraduationCap, CalendarClock, KeyRound, Rocket, ScrollText,
 } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
 import { ProjectRoadmap, type Milestone } from "@/components/portal/ProjectRoadmap";
@@ -17,7 +17,7 @@ import { KickoffPrep } from "@/components/portal/KickoffPrep";
 import { ChangePassword } from "@/components/portal/ChangePassword";
 import { SupportCallCard } from "@/components/portal/SupportCallCard";
 import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsLibrary";
-import { VslCard } from "@/components/portal/VslCard";
+import { VslSection } from "@/components/portal/VslSection";
 import { PortalReveal } from "@/components/portal/PortalReveal";
 import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
 import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/portal/documents/InvoiceDocument";
@@ -30,10 +30,11 @@ interface MyInvoice {
   total_amount_cents: number; currency: string; url: string | null;
 }
 
-type SectionId = "resumen" | "ascenso" | "kickoff" | "formacion" | "documentos" | "agenda" | "cuenta";
+type SectionId = "resumen" | "ascenso" | "vsl" | "kickoff" | "formacion" | "documentos" | "agenda" | "cuenta";
 const NAV: { id: SectionId; label: string; icon: any }[] = [
   { id: "resumen", label: "Resumen", icon: LayoutDashboard },
   { id: "ascenso", label: "El Ascenso", icon: Compass },
+  { id: "vsl", label: "VSL", icon: ScrollText },
   { id: "kickoff", label: "Tu Kickoff", icon: Rocket },
   { id: "formacion", label: "Formación", icon: GraduationCap },
   { id: "documentos", label: "Documentos", icon: FileText },
@@ -144,6 +145,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const [agreement, setAgreement] = useState<SignedAgreement | null>(null);
   const [billTo, setBillTo] = useState<BillTo>({});
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [project, setProject] = useState<any>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dashLoading, setDashLoading] = useState(true);
@@ -169,7 +171,10 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
         setAgreement(d?.agreement ?? null);
         setBillTo(d?.billTo ?? {});
       }
-      if (!proj.error) setMilestones((proj.data as any)?.milestones ?? []);
+      if (!proj.error) {
+        setMilestones((proj.data as any)?.milestones ?? []);
+        setProject((proj.data as any)?.project ?? null);
+      }
       setLoading(false);
     })();
     loadDashboard();
@@ -177,7 +182,6 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
   const dismissReveal = () => { localStorage.setItem("circulo_portal_revealed", "1"); setRevealed(true); };
   const name = (session.user.user_metadata as any)?.legal_name || session.user.email || "";
-  const vsl = milestones.flatMap((m) => m.deliverables || []).find((d) => d.type === "vsl");
 
   return (
     <div className="min-h-screen text-foreground" style={{ background: "hsl(0 0% 5%)" }}>
@@ -229,23 +233,21 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     onRetry={loadDashboard}
                     roadmapSlot={milestones.length > 0 ? <RoadmapSummary milestones={milestones} onSeeAll={() => setSection("ascenso")} /> : undefined}
                   />
-                  {vsl && <VslCard url={vsl.url} title={vsl.title} />}
                 </>
               )}
 
               {section === "ascenso" && (
-                <div className="space-y-6">
-                  {vsl && <VslCard url={vsl.url} title={vsl.title} />}
-                  <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
-                    <EnergyCardHeader><h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">El Ascenso · tu proyecto</h2></EnergyCardHeader>
-                    <EnergyCardContent>
-                      {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
-                        : milestones.length > 0 ? <ProjectRoadmap milestones={milestones} />
-                        : <p className="text-sm text-foreground/60 pb-2">Tu proyecto arrancará en la llamada de onboarding.</p>}
-                    </EnergyCardContent>
-                  </EnergyCard>
-                </div>
+                <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
+                  <EnergyCardHeader><h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">El Ascenso · tu proyecto</h2></EnergyCardHeader>
+                  <EnergyCardContent>
+                    {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
+                      : milestones.length > 0 ? <ProjectRoadmap milestones={milestones} />
+                      : <p className="text-sm text-foreground/60 pb-2">Tu proyecto arrancará en la llamada de onboarding.</p>}
+                  </EnergyCardContent>
+                </EnergyCard>
               )}
+
+              {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
 
               {section === "kickoff" && <KickoffPrep />}
               {section === "formacion" && <ConsultingLessonsLibrary />}

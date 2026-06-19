@@ -40,7 +40,7 @@ serve(async (req) => {
 
     const { data: project } = await supabase
       .from('consulting_projects')
-      .select('id, current_phase, status, start_date, completion_pct')
+      .select('id, current_phase, status, start_date, completion_pct, vsl_title, vsl_copy')
       .in('onboarding_id', obIds)
       .order('created_at', { ascending: false })
       .limit(1)

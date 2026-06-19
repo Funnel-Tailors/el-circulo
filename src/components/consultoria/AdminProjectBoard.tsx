@@ -8,13 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { GlowInput } from "@/components/premium/GlowInput";
+import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendiente", in_progress: "En curso", done: "Hecho", blocked: "Bloqueado",
 };
-const DTYPES = ["vsl", "link", "video", "embed", "file"] as const;
+const DTYPES = ["link", "video", "embed", "file"] as const;
 
 interface ClientRow {
   id: string; legal_name: string; email: string; ghl_contact_id: string | null;
@@ -258,6 +258,51 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
   );
 };
 
+// VSL del cliente: copy/guión en markdown (a nivel de proyecto). Solo admin.
+const VslPanel = ({ projectId }: { projectId: string }) => {
+  const [copy, setCopy] = useState("");
+  const [title, setTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    (async () => {
+      const { data } = await supabase
+        .from("consulting_projects")
+        .select("vsl_title, vsl_copy")
+        .eq("id", projectId)
+        .maybeSingle();
+      setTitle((data as any)?.vsl_title ?? "");
+      setCopy((data as any)?.vsl_copy ?? "");
+      setLoaded(true);
+    })();
+  }, [projectId]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("consulting_projects")
+      .update({ vsl_title: title || null, vsl_copy: copy || null })
+      .eq("id", projectId);
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
+    toast.success("VSL guardado");
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">VSL del cliente (copy)</h3>
+      <p className="text-xs text-muted-foreground">
+        El guión del VSL en <span className="text-foreground/80">markdown</span> (encabezados <code>#</code>, <code>**negritas**</code>, listas). El cliente lo ve en su pestaña "VSL".
+      </p>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Título (opcional)</Label><GlowInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="p.ej. VSL Memorable Studio" /></div>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Copy (markdown)</Label><GlowTextarea value={copy} onChange={(e) => setCopy(e.target.value)} className="min-h-[220px] font-mono text-xs" placeholder={"# Titular del VSL\n\nTu guión..."} /></div>
+      <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar VSL"}</Button>
+    </div>
+  );
+};
+
 export const AdminProjectBoard = () => {
   const { data: clients, isLoading } = useClients();
   const [selected, setSelected] = useState<string>("");
@@ -299,6 +344,7 @@ export const AdminProjectBoard = () => {
       {client && (
         <div className="space-y-4">
           <GhlConnectionPanel onboardingId={client.id} />
+          <VslPanel projectId={client.project_id} />
           <div className="space-y-2">
             {(milestones ?? []).map((m: any) => (
               <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetch()} />
