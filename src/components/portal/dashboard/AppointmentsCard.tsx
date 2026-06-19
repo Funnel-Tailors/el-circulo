@@ -1,6 +1,6 @@
 // ============================================================================
 // APPOINTMENTS CARD — El Círculo Service Delivery Dashboard
-// Compact 1/3-width tile: upcoming + total citas, premium cockpit feel
+// Compact tile: upcoming + total citas · above-the-fold density
 // ============================================================================
 
 import React from "react";
@@ -11,13 +11,12 @@ import type { DashboardMetrics } from "./types";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
-// ─── AppointmentsCard ─────────────────────────────────────────────────────────
 interface AppointmentsCardProps {
   appointments: DashboardMetrics["appointments"];
 }
 
 export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments }) => {
-  // Sin datos de calendario (el token GHL no expone citas) → estado elegante.
+  // No calendar data — elegant empty state
   if (!appointments) {
     return (
       <motion.div
@@ -26,21 +25,29 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
         transition={{ duration: 0.45, delay: 0.36, ease: EASE_OUT_EXPO }}
         className="h-full"
       >
-        <EnergyCard beamSpeed={5} beamIntensity={0.3} enableTilt={false} className="h-full flex flex-col" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <EnergyCardContent className="p-5 flex flex-col h-full">
-            <div className="flex items-center justify-between mb-3">
+        <EnergyCard
+          beamSpeed={5}
+          beamIntensity={0.3}
+          enableTilt={false}
+          className="h-full flex flex-col"
+          style={{ background: "rgba(0,0,0,0.5)" }}
+        >
+          <EnergyCardContent className="p-4 flex flex-col h-full">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-1">Calendario</p>
-                <h3 className="font-display font-black text-base text-white uppercase tracking-tight leading-none">Citas</h3>
+                <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-0.5">Calendario</p>
+                <h3 className="font-display font-black text-sm text-white uppercase tracking-tight leading-none">Citas</h3>
               </div>
-              <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <CalendarCheck className="w-3.5 h-3.5 text-white/50" />
+              <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                <CalendarCheck className="w-3 h-3 text-white/50" />
               </div>
             </div>
-            <div className="w-full h-px bg-white/[0.05] mb-4" />
-            <div className="flex-1 flex flex-col items-center justify-center text-center gap-2.5 py-4">
-              <Calendar className="w-6 h-6 text-white/15" />
-              <p className="text-xs text-white/40 leading-relaxed max-w-[180px]">Cuando se conecte tu calendario, verás aquí tus citas agendadas.</p>
+            <div className="w-full h-px bg-white/[0.05] mb-3" />
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 py-2">
+              <Calendar className="w-5 h-5 text-white/15" />
+              <p className="text-[10px] text-white/38 leading-relaxed max-w-[160px]">
+                Cuando se conecte tu calendario, verás aquí tus citas agendadas.
+              </p>
             </div>
           </EnergyCardContent>
         </EnergyCard>
@@ -49,8 +56,6 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
   }
 
   const { upcoming, total } = appointments;
-
-  // Conversion rate: upcoming out of total (capped at 100%)
   const convRate = total > 0 ? Math.min(Math.round((upcoming / total) * 100), 100) : 0;
 
   return (
@@ -67,76 +72,76 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
         className="h-full flex flex-col"
         style={{ background: "rgba(0,0,0,0.5)" }}
       >
-        <EnergyCardContent className="p-5 flex flex-col gap-0 h-full">
+        <EnergyCardContent className="p-4 flex flex-col gap-0 h-full">
           {/* Header */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-1">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-0.5">
                 Calendario
               </p>
-              <h3 className="font-display font-black text-base text-white uppercase tracking-tight leading-none">
+              <h3 className="font-display font-black text-sm text-white uppercase tracking-tight leading-none">
                 Citas
               </h3>
             </div>
-            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <CalendarCheck className="w-3.5 h-3.5 text-white/50" />
+            <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <CalendarCheck className="w-3 h-3 text-white/50" />
             </div>
           </div>
 
           {/* Divider */}
-          <div className="w-full h-px bg-white/[0.05] mb-4" />
+          <div className="w-full h-px bg-white/[0.05] mb-3" />
 
           {/* Primary metric: Upcoming */}
-          <div className="mb-4">
+          <div className="mb-3">
             <div className="flex items-baseline gap-2">
               <p
                 className="glow font-display font-black text-white tracking-tight leading-none"
-                style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)", fontWeight: 900 }}
+                style={{ fontSize: "clamp(2rem, 3.5vw, 2.75rem)", fontWeight: 900 }}
               >
                 {upcoming}
               </p>
-              <div className="flex items-center gap-1 pb-1">
-                <Clock className="w-3 h-3 text-white/30" />
-                <p className="text-[10px] text-white/30 uppercase tracking-widest">próximas</p>
+              <div className="flex items-center gap-1 pb-0.5">
+                <Clock className="w-2.5 h-2.5 text-white/30" />
+                <p className="text-[9px] text-white/30 uppercase tracking-widest">próximas</p>
               </div>
             </div>
           </div>
 
           {/* Separator */}
-          <div className="w-full h-px bg-white/[0.05] mb-4" />
+          <div className="w-full h-px bg-white/[0.05] mb-3" />
 
           {/* Secondary stats row */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <p className="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Históricas</p>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="w-3 h-3 text-white/30" />
-                <p className="text-sm font-semibold text-white/65">{total}</p>
+              <p className="text-[9px] text-white/28 uppercase tracking-widest mb-0.5">Históricas</p>
+              <div className="flex items-center gap-1">
+                <Calendar className="w-2.5 h-2.5 text-white/28" />
+                <p className="text-xs font-semibold text-white/60">{total}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Activas</p>
-              <p className="text-sm font-semibold text-white/65">{convRate}%</p>
+              <p className="text-[9px] text-white/28 uppercase tracking-widest mb-0.5">Activas</p>
+              <p className="text-xs font-semibold text-white/60">{convRate}%</p>
             </div>
           </div>
 
-          {/* Progress bar: upcoming / total */}
+          {/* Progress bar */}
           {total > 0 && (
             <div className="mt-auto">
-              <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[10px] text-white/25 uppercase tracking-widest">Ratio activas</p>
-                <p className="text-[10px] text-white/35">{upcoming} / {total}</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-[9px] text-white/22 uppercase tracking-widest">Ratio activas</p>
+                <p className="text-[9px] text-white/32">{upcoming} / {total}</p>
               </div>
               <div
-                className="w-full h-1 rounded-full overflow-hidden"
+                className="w-full h-0.5 rounded-full overflow-hidden"
                 style={{ background: "rgba(255,255,255,0.07)" }}
               >
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: "rgba(255,255,255,0.55)" }}
+                  style={{ background: "rgba(255,255,255,0.5)" }}
                   initial={{ width: 0 }}
                   animate={{ width: `${convRate}%` }}
-                  transition={{ duration: 1, delay: 0.6, ease: EASE_OUT_EXPO }}
+                  transition={{ duration: 0.9, delay: 0.6, ease: EASE_OUT_EXPO }}
                 />
               </div>
             </div>

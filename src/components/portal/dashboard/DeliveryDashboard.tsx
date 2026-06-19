@@ -1,6 +1,7 @@
 // ============================================================================
 // DELIVERY DASHBOARD — El Círculo Service Delivery Portal
 // Main orchestrator: handles loading / disconnected / live states
+// Above-the-fold at 1440×900 · compact gaps · premium carbon
 // Pure presentational — parent fetches and passes DashboardData as props.
 // ============================================================================
 
@@ -17,6 +18,8 @@ import { PipelineChart } from "./PipelineChart";
 import { AppointmentsCard } from "./AppointmentsCard";
 import { ActivityFeed } from "./ActivityFeed";
 import type { DashboardData } from "./types";
+import type { Milestone } from "@/components/portal/ProjectRoadmap";
+import { ProjectTimeline } from "./ProjectTimeline";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
@@ -35,23 +38,25 @@ const DashboardSkeleton: React.FC = () => (
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: 0.3 }}
-    className="space-y-4"
+    className="space-y-3"
   >
+    {/* Timeline */}
+    <SkeletonBlock className="h-16" />
     {/* KPI row */}
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {[...Array(4)].map((_, i) => (
-        <SkeletonBlock key={i} className="h-32" />
+        <SkeletonBlock key={i} className="h-24" />
       ))}
     </div>
     {/* Charts row */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <SkeletonBlock className="h-72 lg:col-span-2" />
-      <SkeletonBlock className="h-72" />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <SkeletonBlock className="h-52 lg:col-span-2" />
+      <SkeletonBlock className="h-52" />
     </div>
     {/* Bottom row */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <SkeletonBlock className="h-52" />
-      <SkeletonBlock className="h-52 md:col-span-2" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <SkeletonBlock className="h-44" />
+      <SkeletonBlock className="h-44" />
     </div>
   </motion.div>
 );
@@ -151,18 +156,11 @@ const CachedBadge: React.FC = () => (
 // ─── Connected dashboard ──────────────────────────────────────────────────────
 interface ConnectedDashboardProps {
   data: DashboardData;
-  roadmapSlot?: React.ReactNode;
+  milestones?: Milestone[];
 }
 
-const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, roadmapSlot }) => {
+const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, milestones }) => {
   const metrics = data.metrics!;
-
-  // Fila inferior adaptable: [Roadmap] · [Actividad] · [Citas]
-  const bottomTiles: React.ReactNode[] = [];
-  if (roadmapSlot) bottomTiles.push(<div key="roadmap">{roadmapSlot}</div>);
-  bottomTiles.push(<div key="activity"><ActivityFeed activity={metrics.activity} /></div>);
-  bottomTiles.push(<div key="appts"><AppointmentsCard appointments={metrics.appointments} /></div>);
-  const bottomCols = bottomTiles.length >= 3 ? "lg:grid-cols-3" : bottomTiles.length === 2 ? "sm:grid-cols-2" : "";
 
   return (
     <motion.div
@@ -170,51 +168,71 @@ const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, roadmapSl
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-4"
+      // gap-3 instead of gap-4 to save ~4px per gap; 4 gaps = ~16px total savings
+      className="space-y-3"
     >
-      {/* Dashboard header */}
+      {/* Dashboard header — compact, single line */}
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: EASE_OUT_EXPO }}
+        transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
         className="flex items-center justify-between"
       >
-        <div>
+        <div className="flex items-baseline gap-3">
           <h2
-            className="font-display font-black text-xl text-white uppercase tracking-tight"
+            className="font-display font-black text-base text-white uppercase tracking-tight"
             style={{ letterSpacing: "-0.025em" }}
           >
             Panel de{" "}
             <span className="glow">Seguimiento</span>
           </h2>
-          <p className="text-xs text-white/35 mt-0.5">
+          <p className="text-[10px] text-white/28">
             Datos conectados · GHL integrado
           </p>
         </div>
         {data.cached && <CachedBadge />}
       </motion.div>
 
+      {/* ── Timeline horizontal del proyecto (El Ascenso) ──────────────────── */}
+      {milestones && milestones.length > 0 && (
+        <ProjectTimeline milestones={milestones} />
+      )}
+
       {/* ── Row 1: KPI cards ───────────────────────────────────────────────── */}
       <KpiCards metrics={metrics} />
 
-      {/* ── Row 2: Trend chart + Pipeline ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Trend takes 2/3 */}
-        <div className="lg:col-span-2">
+      {/* ── Row 2: Trend chart (2/3) + Pipeline funnel (1/3) ─────────────── */}
+      {/* Fixed height row so chart sizes are deterministic for above-the-fold */}
+      <div className="hidden lg:grid lg:grid-cols-3 gap-3" style={{ height: 218 }}>
+        <div className="lg:col-span-2 h-full">
           <LeadsTrendChart trend={metrics.leads.trend} />
         </div>
-        {/* Pipeline takes 1/3 */}
-        <div>
+        <div className="h-full">
           <PipelineChart
             opportunities={metrics.opportunities}
             currency={metrics.currency}
           />
         </div>
       </div>
+      {/* Mobile: stacked, auto height */}
+      <div className="grid grid-cols-1 gap-3 lg:hidden">
+        <LeadsTrendChart trend={metrics.leads.trend} />
+        <PipelineChart
+          opportunities={metrics.opportunities}
+          currency={metrics.currency}
+        />
+      </div>
 
-      {/* ── Row 3: Roadmap · Actividad · Citas (command center) ───────────── */}
-      <div className={`grid grid-cols-1 ${bottomCols} gap-4`}>
-        {bottomTiles}
+      {/* ── Row 3: Activity Feed + Appointments — side by side ────────────── */}
+      {/* Fixed height on desktop to keep above-the-fold; auto on mobile */}
+      <div className="hidden lg:grid lg:grid-cols-2 gap-3" style={{ height: 188 }}>
+        <ActivityFeed activity={metrics.activity} />
+        <AppointmentsCard appointments={metrics.appointments} />
+      </div>
+      {/* Mobile: stacked */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:hidden">
+        <ActivityFeed activity={metrics.activity} />
+        <AppointmentsCard appointments={metrics.appointments} />
       </div>
     </motion.div>
   );
@@ -231,15 +249,15 @@ export interface DeliveryDashboardProps {
   loading?: boolean;
   /** Optional retry callback shown in empty state */
   onRetry?: () => void;
-  /** Tile opcional para la fila inferior (p. ej. resumen del roadmap). */
-  roadmapSlot?: React.ReactNode;
+  /** Hitos del proyecto para el timeline horizontal. */
+  milestones?: Milestone[];
 }
 
 export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
   data,
   loading = false,
   onRetry,
-  roadmapSlot,
+  milestones,
 }) => {
   const isLoading = loading && !data;
   const isDisconnected = !loading && (!data || data.connected === false || !data.metrics);
@@ -256,7 +274,7 @@ export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
           <NotConnected key="not-connected" onRetry={onRetry} />
         )}
         {isConnected && (
-          <ConnectedDashboard key="connected" data={data!} roadmapSlot={roadmapSlot} />
+          <ConnectedDashboard key="connected" data={data!} milestones={milestones} />
         )}
       </AnimatePresence>
     </div>

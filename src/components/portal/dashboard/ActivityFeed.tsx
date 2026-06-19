@@ -37,42 +37,42 @@ const FeedItem: React.FC<FeedItemProps> = ({ name, when, index }) => {
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{
-        duration: 0.32,
-        delay: 0.4 + index * 0.045,
+        duration: 0.28,
+        delay: 0.35 + index * 0.04,
         ease: EASE_OUT_EXPO,
       }}
       className={cn(
-        "flex items-center gap-2.5 py-2",
+        "flex items-center gap-2 py-1.5",
         "border-b border-white/[0.04] last:border-none"
       )}
     >
-      {/* Avatar with initials */}
+      {/* Avatar with initials — compact */}
       <div className="relative flex-shrink-0">
         <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white/60 leading-none"
+          className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white/55 leading-none"
           style={{
-            background: "rgba(255,255,255,0.07)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.09)",
           }}
         >
           {initials}
         </div>
         {isRecent && (
-          <span className="absolute -top-px -right-px w-2 h-2 rounded-full bg-emerald-400 border border-black animate-pulse" />
+          <span className="absolute -top-px -right-px w-1.5 h-1.5 rounded-full bg-emerald-400 border border-black animate-pulse" />
         )}
       </div>
 
       {/* Name + time */}
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-white/80 truncate leading-snug">{name}</p>
-        <p className="text-[10px] text-white/30 mt-px leading-none">{timeLabel}</p>
+        <p className="text-[11px] font-medium text-white/80 truncate leading-snug">{name}</p>
+        <p className="text-[9px] text-white/28 mt-px leading-none">{timeLabel}</p>
       </div>
 
       {/* Live dot */}
       <div
         className={cn(
           "w-1.5 h-1.5 rounded-full flex-shrink-0",
-          isRecent ? "bg-emerald-400" : "bg-white/15"
+          isRecent ? "bg-emerald-400" : "bg-white/12"
         )}
       />
     </motion.div>
@@ -101,8 +101,8 @@ interface ActivityFeedProps {
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activity }) => {
   const hasItems = activity && activity.length > 0;
-  // Show max 9 items in the compact tile
-  const visibleItems = hasItems ? activity.slice(0, 9) : [];
+  // Show max 6 items in the compact above-the-fold tile
+  const visibleItems = hasItems ? activity.slice(0, 6) : [];
 
   return (
     <motion.div
@@ -114,38 +114,29 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activity }) => {
       <SpotlightCard
         spotlightOnHover
         padded={false}
-        className="p-5 h-full flex flex-col"
+        className="p-4 h-full flex flex-col"
         style={{ background: "rgba(0,0,0,0.5)" }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        {/* Header — compact */}
+        <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-1">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-0.5">
               Actividad
             </p>
-            <h3 className="font-display font-black text-base text-white tracking-tight uppercase leading-none">
+            <h3 className="font-display font-black text-sm text-white tracking-tight uppercase leading-none">
               Leads Recientes
             </h3>
           </div>
           {hasItems && (
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-400/8 border border-emerald-400/20 px-2 py-1">
+            <div className="flex items-center gap-1 rounded-full bg-emerald-400/8 border border-emerald-400/20 px-2 py-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wide">Live</span>
+              <span className="text-[9px] text-emerald-400 font-semibold uppercase tracking-wide">Live</span>
             </div>
           )}
         </div>
 
         {/* Divider */}
         <div className="w-full h-px bg-white/[0.05] mb-1 flex-shrink-0" />
-
-        {/* Count badge */}
-        {hasItems && (
-          <div className="flex items-center justify-between mb-2 flex-shrink-0">
-            <p className="text-[10px] text-white/25 uppercase tracking-widest">
-              Mostrando {visibleItems.length} de {activity.length}
-            </p>
-          </div>
-        )}
 
         {/* Feed — scrollable */}
         <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">

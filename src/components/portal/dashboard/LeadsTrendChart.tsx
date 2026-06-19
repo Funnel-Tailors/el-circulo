@@ -74,7 +74,7 @@ const PremiumTooltip: React.FC<TooltipProps<number, string>> = ({ active, payloa
 
 // ─── Empty state ─────────────────────────────────────────────────────────────
 const EmptyChart: React.FC = () => (
-  <div className="flex items-center justify-center h-[200px]">
+  <div className="flex items-center justify-center" style={{ height: 130 }}>
     <p className="text-sm text-white/30 tracking-wide">Sin datos de tendencia todavía</p>
   </div>
 );
@@ -121,53 +121,50 @@ export const LeadsTrendChart: React.FC<LeadsTrendChartProps> = ({ trend }) => {
       <SpotlightCard
         spotlightOnHover
         padded={false}
-        className="p-5 h-full"
+        className="p-4 h-full flex flex-col overflow-hidden"
         style={{ background: "rgba(0,0,0,0.5)" }}
       >
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        {/* Header — compact for above-the-fold */}
+        <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-0.5">
               Tendencia · 30 días
             </p>
-            <h3 className="font-display font-black text-base text-white tracking-tight uppercase leading-none">
+            <h3 className="font-display font-black text-sm text-white tracking-tight uppercase leading-none">
               Leads Captados
             </h3>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <TrendingUp className="w-3.5 h-3.5 text-white/45" />
-          </div>
+          {hasData && (
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="text-[9px] uppercase tracking-widest text-white/28 mb-0.5">Total</p>
+                <p className="font-display font-black text-sm text-white tracking-tight leading-none">
+                  {total.toLocaleString("es-ES")}
+                </p>
+              </div>
+              <div className="w-px h-5 bg-white/[0.07]" />
+              <div className="text-right">
+                <p className="text-[9px] uppercase tracking-widest text-white/28 mb-0.5">Pico</p>
+                <p className="font-display font-black text-sm text-white tracking-tight leading-none">
+                  {peak.toLocaleString("es-ES")}
+                </p>
+              </div>
+              <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center ml-1">
+                <TrendingUp className="w-3 h-3 text-white/45" />
+              </div>
+            </div>
+          )}
+          {!hasData && (
+            <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <TrendingUp className="w-3 h-3 text-white/45" />
+            </div>
+          )}
         </div>
 
-        {/* Stat callout row */}
-        {hasData && (
-          <div className="flex items-center gap-5 mb-4 pb-4 border-b border-white/6">
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/30 mb-0.5">Total período</p>
-              <p className="font-display font-black text-xl text-white tracking-tight leading-none">
-                {total.toLocaleString("es-ES")}
-              </p>
-            </div>
-            <div className="w-px h-7 bg-white/8" />
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/30 mb-0.5">Pico diario</p>
-              <p className="font-display font-black text-xl text-white tracking-tight leading-none">
-                {peak.toLocaleString("es-ES")}
-              </p>
-            </div>
-            <div className="w-px h-7 bg-white/8" />
-            <div>
-              <p className="text-[10px] uppercase tracking-widest text-white/30 mb-0.5">Días con datos</p>
-              <p className="font-display font-black text-xl text-white tracking-tight leading-none">
-                {trend.length}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Chart */}
+        {/* Chart — flex-1 to fill remaining card height, with a minimum */}
+        <div className="flex-1 min-h-0">
         {hasData ? (
-          <ResponsiveContainer width="100%" height={196}>
+          <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={trend}
               margin={{ top: 4, right: 2, left: -24, bottom: 0 }}
@@ -224,6 +221,7 @@ export const LeadsTrendChart: React.FC<LeadsTrendChartProps> = ({ trend }) => {
         ) : (
           <EmptyChart />
         )}
+        </div>
       </SpotlightCard>
     </motion.div>
   );

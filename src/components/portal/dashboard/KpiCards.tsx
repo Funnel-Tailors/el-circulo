@@ -1,6 +1,6 @@
 // ============================================================================
 // KPI CARDS — El Círculo Service Delivery Dashboard
-// 4-across cockpit row: big glowing numbers, tight cards, clear delta badges
+// 4-across cockpit row · compact for above-the-fold · premium carbon
 // ============================================================================
 
 import React, { useEffect, useRef, useState } from "react";
@@ -19,7 +19,6 @@ import { cn } from "@/lib/utils";
 import type { DashboardMetrics } from "./types";
 import { formatMajorMoney, percentDelta } from "./utils";
 
-// ─── Easing ─────────────────────────────────────────────────────────────────
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
 // ─── Count-up hook ───────────────────────────────────────────────────────────
@@ -80,7 +79,7 @@ const DeltaBadge: React.FC<DeltaBadgeProps> = ({ delta, label = "vs sem. ant." }
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
         isFlat
           ? "bg-white/5 text-white/35"
           : isUp
@@ -89,11 +88,11 @@ const DeltaBadge: React.FC<DeltaBadgeProps> = ({ delta, label = "vs sem. ant." }
       )}
     >
       {isFlat ? (
-        <Minus className="w-2.5 h-2.5" />
+        <Minus className="w-2 h-2" />
       ) : isUp ? (
-        <TrendingUp className="w-2.5 h-2.5" />
+        <TrendingUp className="w-2 h-2" />
       ) : (
-        <TrendingDown className="w-2.5 h-2.5" />
+        <TrendingDown className="w-2 h-2" />
       )}
       <span>
         {isUp ? "+" : ""}
@@ -123,52 +122,53 @@ const KpiCard: React.FC<KpiCardProps> = ({
   delta,
   deltaLabel,
   index,
-  accentColor = "rgba(255,255,255,0.15)",
+  accentColor = "rgba(255,255,255,0.08)",
 }) => {
-  const animatedValue = useCountUp(value, (value > 1000 ? 1400 : 800) + index * 80);
+  const animatedValue = useCountUp(value, (value > 1000 ? 1200 : 700) + index * 60);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 0.5,
-        delay: index * 0.07,
+        duration: 0.45,
+        delay: index * 0.06,
         ease: EASE_OUT_EXPO,
       }}
       className="h-full"
     >
       <EnergyCard
         beamSpeed={4}
-        beamIntensity={0.45}
+        beamIntensity={0.4}
         enableTilt={false}
         className="h-full"
         style={{ background: "rgba(0,0,0,0.5)" }}
       >
-        <EnergyCardContent className="p-4 flex flex-col gap-3">
+        {/* Compact p-3 for above-the-fold density */}
+        <EnergyCardContent className="p-3 flex flex-col gap-2">
           {/* Top row: label + icon */}
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 leading-none">
+            <p className="text-[9px] font-semibold uppercase tracking-[0.12em] text-white/35 leading-none">
               {label}
             </p>
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              className="w-6 h-6 rounded-lg flex items-center justify-center"
               style={{
                 background: accentColor,
-                border: "1px solid rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.07)",
               }}
             >
-              <Icon className="w-3.5 h-3.5 text-white/70" />
+              <Icon className="w-3 h-3 text-white/65" />
             </div>
           </div>
 
-          {/* Number — hero element */}
+          {/* Number — hero element, slightly smaller for density */}
           <div className="leading-none">
             {displayValue ? (
               <span
                 className="glow font-display font-black text-white tracking-tight"
                 style={{
-                  fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)",
+                  fontSize: "clamp(1.35rem, 2vw, 1.75rem)",
                   fontWeight: 900,
                   lineHeight: 1,
                 }}
@@ -179,7 +179,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
               <span
                 className="glow font-display font-black text-white tracking-tight"
                 style={{
-                  fontSize: "clamp(1.6rem, 2.5vw, 2.25rem)",
+                  fontSize: "clamp(1.35rem, 2vw, 1.75rem)",
                   fontWeight: 900,
                   lineHeight: 1,
                 }}
@@ -191,15 +191,13 @@ const KpiCard: React.FC<KpiCardProps> = ({
 
           {/* Accent line */}
           <div
-            className="w-8 h-px rounded-full"
-            style={{ background: accentColor, opacity: 0.6 }}
+            className="w-6 h-px rounded-full"
+            style={{ background: accentColor, opacity: 0.55 }}
           />
 
-          {/* Delta badge or empty spacer */}
-          {delta !== undefined && delta !== null ? (
+          {/* Delta badge */}
+          {delta !== undefined && delta !== null && (
             <DeltaBadge delta={delta} label={deltaLabel} />
-          ) : (
-            <div className="h-5" />
           )}
         </EnergyCardContent>
       </EnergyCard>
@@ -223,14 +221,14 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
       value: leads.total,
       delta,
       deltaLabel: "vs sem. ant.",
-      accentColor: "rgba(255,255,255,0.08)",
+      accentColor: "rgba(255,255,255,0.07)",
     },
     {
       icon: Briefcase,
       label: "Oportunidades",
       value: opportunities.open,
       delta: null,
-      accentColor: "rgba(255,255,255,0.08)",
+      accentColor: "rgba(255,255,255,0.07)",
     },
     {
       icon: CircleDollarSign,
@@ -238,7 +236,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
       value: opportunities.pipeline_value,
       displayValue: formatMajorMoney(opportunities.pipeline_value, currency),
       delta: null,
-      accentColor: "rgba(255,255,255,0.08)",
+      accentColor: "rgba(255,255,255,0.07)",
     },
     {
       icon: CalendarCheck,
@@ -247,7 +245,7 @@ export const KpiCards: React.FC<KpiCardsProps> = ({ metrics }) => {
       displayValue: appointments === null ? "—" : undefined,
       delta: null,
       deltaLabel: undefined,
-      accentColor: "rgba(255,255,255,0.08)",
+      accentColor: "rgba(255,255,255,0.07)",
     },
   ];
 

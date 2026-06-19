@@ -1,21 +1,11 @@
 // ============================================================================
 // PIPELINE CHART — El Círculo Service Delivery Dashboard
-// Recharts horizontal BarChart · by_stage · premium carbon theme
+// Custom SVG funnel · descending stage segments · carbon/white/opacity cascade
+// NO default chart colors · glow total value callout
 // ============================================================================
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  TooltipProps,
-} from "recharts";
 import { Layers } from "lucide-react";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import type { DashboardMetrics } from "./types";
@@ -23,74 +13,205 @@ import { formatMajorMoney } from "./utils";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
-// White opacity scale for bars — first bar brightest, cascades down
-const BAR_OPACITIES = [0.88, 0.68, 0.52, 0.40, 0.30, 0.22, 0.16];
-
-// ─── Custom Tooltip ───────────────────────────────────────────────────────────
-interface PipelinePayload {
-  stage: string;
-  count: number;
-  value: number;
-}
-
-const PipelineTooltip: React.FC<TooltipProps<number, string> & { currency: string }> = ({
-  active,
-  payload,
-  currency,
-}) => {
-  if (!active || !payload?.length) return null;
-  const d = payload[0]?.payload as PipelinePayload;
-
-  return (
-    <div
-      style={{
-        background: "rgba(0,0,0,0.94)",
-        border: "1px solid rgba(255,255,255,0.12)",
-        borderRadius: "10px",
-        padding: "10px 14px",
-        backdropFilter: "blur(16px)",
-        minWidth: "148px",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
-      }}
-    >
-      <p
-        style={{
-          color: "rgba(255,255,255,0.42)",
-          fontSize: "10px",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          marginBottom: "6px",
-        }}
-      >
-        {d?.stage}
-      </p>
-      <p
-        style={{
-          color: "rgba(255,255,255,0.95)",
-          fontSize: "20px",
-          fontWeight: 900,
-          marginBottom: "3px",
-          letterSpacing: "-0.02em",
-        }}
-      >
-        {d?.count}
-        <span style={{ fontSize: "11px", fontWeight: 400, color: "rgba(255,255,255,0.38)", marginLeft: "4px" }}>
-          ops
-        </span>
-      </p>
-      <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "12px" }}>
-        {formatMajorMoney(d?.value ?? 0, currency)}
-      </p>
-    </div>
-  );
-};
+// White opacity cascade — brightest at top, fades as funnel narrows
+const STAGE_OPACITIES = [0.88, 0.72, 0.58, 0.45, 0.35, 0.26, 0.18, 0.13, 0.09];
 
 // ─── Empty state ─────────────────────────────────────────────────────────────
 const EmptyPipeline: React.FC = () => (
-  <div className="flex items-center justify-center h-40">
-    <p className="text-sm text-white/30 tracking-wide">Pipeline sin etapas configuradas</p>
+  <div className="flex items-center justify-center" style={{ height: 90 }}>
+    <p className="text-[11px] text-white/30 tracking-wide">Pipeline sin etapas configuradas</p>
   </div>
 );
+
+// ─── Tooltip ─────────────────────────────────────────────────────────────────
+interface TooltipData {
+  stage: string;
+  count: number;
+  value: number;
+  x: number;
+  y: number;
+}
+
+const FunnelTooltip: React.FC<{ data: TooltipData; currency: string }> = ({ data, currency }) => (
+  <div
+    style={{
+      position: "absolute",
+      left: data.x,
+      top: data.y,
+      transform: "translate(-50%, -110%)",
+      background: "rgba(0,0,0,0.96)",
+      border: "1px solid rgba(255,255,255,0.12)",
+      borderRadius: 10,
+      padding: "8px 12px",
+      backdropFilter: "blur(16px)",
+      minWidth: 140,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+      pointerEvents: "none",
+      zIndex: 50,
+    }}
+  >
+    <p
+      style={{
+        color: "rgba(255,255,255,0.38)",
+        fontSize: 9,
+        textTransform: "uppercase",
+        letterSpacing: "0.1em",
+        marginBottom: 5,
+      }}
+    >
+      {data.stage}
+    </p>
+    <p
+      style={{
+        color: "rgba(255,255,255,0.95)",
+        fontSize: 18,
+        fontWeight: 900,
+        lineHeight: 1,
+        letterSpacing: "-0.02em",
+        marginBottom: 3,
+      }}
+    >
+      {data.count}
+      <span
+        style={{ fontSize: 10, fontWeight: 400, color: "rgba(255,255,255,0.38)", marginLeft: 4 }}
+      >
+        ops
+      </span>
+    </p>
+    <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 11 }}>
+      {formatMajorMoney(data.value, currency)}
+    </p>
+  </div>
+);
+
+// Strip leading emoji + whitespace from stage names for clean label display
+// Uses a broad unicode range to catch emoji, symbols, etc.
+function cleanStageLabel(s: string): string {
+  // Remove leading emoji (covers common ranges) and whitespace
+  return s
+    .replace(/^[\u{1F000}-\u{1FFFF}\u{2600}-\u{27FF}\u{FE00}-\u{FEFF}\s]+/gu, "")
+    .trim();
+}
+
+// ─── SVG Funnel ──────────────────────────────────────────────────────────────
+interface FunnelProps {
+  stages: { stage: string; count: number; value: number }[];
+  currency: string;
+  height: number;
+}
+
+const SvgFunnel: React.FC<FunnelProps> = ({ stages, currency, height }) => {
+  const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+
+  if (!stages.length) return <EmptyPipeline />;
+
+  const maxCount = stages[0]?.count || 1;
+  const rowH = Math.floor(height / stages.length);
+  const svgH = rowH * stages.length;
+  // Minimum width for the narrowest bar so it's always visible/clickable
+  const MIN_W_PCT = 0.08;
+
+  return (
+    <div className="relative w-full select-none" style={{ height }}>
+      {tooltip && <FunnelTooltip data={tooltip} currency={currency} />}
+      <svg
+        width="100%"
+        height={svgH}
+        viewBox={`0 0 200 ${svgH}`}
+        preserveAspectRatio="none"
+        style={{ display: "block" }}
+      >
+        <defs>
+          {stages.map((s, i) => (
+            <linearGradient key={`grad-${i}`} id={`fgrad-${i}`} x1="0" y1="0" x2="1" y2="0">
+              <stop
+                offset="0%"
+                stopColor="rgba(255,255,255,1)"
+                stopOpacity={STAGE_OPACITIES[Math.min(i, STAGE_OPACITIES.length - 1)] * 0.65}
+              />
+              <stop
+                offset="100%"
+                stopColor="rgba(255,255,255,1)"
+                stopOpacity={STAGE_OPACITIES[Math.min(i, STAGE_OPACITIES.length - 1)]}
+              />
+            </linearGradient>
+          ))}
+        </defs>
+
+        {stages.map((s, i) => {
+          const ratio = Math.max(s.count / maxCount, MIN_W_PCT);
+          const barW = ratio * 190; // max 190 of 200 viewbox units
+          const y = i * rowH + rowH * 0.18;
+          const bh = rowH * 0.64;
+          const opacity = STAGE_OPACITIES[Math.min(i, STAGE_OPACITIES.length - 1)];
+
+          return (
+            <motion.rect
+              key={s.stage}
+              x={0}
+              y={y}
+              height={bh}
+              rx={2.5}
+              ry={2.5}
+              fill={`url(#fgrad-${i})`}
+              initial={{ width: 0 }}
+              animate={{ width: barW }}
+              transition={{
+                duration: 0.7,
+                delay: 0.15 + i * 0.055,
+                ease: EASE_OUT_EXPO,
+              }}
+              style={{ cursor: "pointer" }}
+              onMouseEnter={(e) => {
+                const svgEl = (e.currentTarget as SVGElement).closest("svg");
+                const svgRect = svgEl?.getBoundingClientRect();
+                if (!svgRect) return;
+                const svgScaleX = (svgRect.width || 1) / 200;
+                const svgScaleY = (svgRect.height || 1) / svgH;
+                setTooltip({
+                  stage: cleanStageLabel(s.stage),
+                  count: s.count,
+                  value: s.value,
+                  x: barW * 0.5 * svgScaleX,
+                  y: (y + bh / 2) * svgScaleY,
+                });
+              }}
+              onMouseLeave={() => setTooltip(null)}
+            />
+          );
+        })}
+      </svg>
+
+      {/* Stage labels — right-aligned, overlaid on the funnel */}
+      <div
+        className="absolute inset-0 pointer-events-none flex flex-col"
+        style={{ top: 0 }}
+      >
+        {stages.map((s, i) => {
+          const opacity = STAGE_OPACITIES[Math.min(i, STAGE_OPACITIES.length - 1)];
+          return (
+            <div
+              key={`label-${s.stage}-${i}`}
+              className="flex items-center"
+              style={{ height: rowH, paddingLeft: 6 }}
+            >
+              <span
+                className="text-[9px] font-medium uppercase tracking-[0.08em] truncate"
+                style={{
+                  color: `rgba(255,255,255,${Math.max(opacity * 1.1, 0.3)})`,
+                  maxWidth: "90%",
+                  textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+                }}
+              >
+                {(() => { const c = cleanStageLabel(s.stage); return c.length > 18 ? c.slice(0, 17) + "…" : c; })()}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 // ─── PipelineChart ────────────────────────────────────────────────────────────
 interface PipelineChartProps {
@@ -102,9 +223,13 @@ export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, cur
   const { by_stage, pipeline_value } = opportunities;
   const hasData = by_stage && by_stage.length > 0;
 
-  // Cap visible stages at 7 so the chart doesn't balloon; clip rest
-  const visibleStages = hasData ? by_stage.slice(0, 7) : [];
-  const chartHeight = Math.max(160, visibleStages.length * 38);
+  // Sort descending by count to make it a true funnel, cap at 9
+  const sorted = hasData
+    ? [...by_stage].sort((a, b) => b.count - a.count).slice(0, 9)
+    : [];
+
+  // Funnel height: compact for above-the-fold
+  const FUNNEL_H = 130;
 
   return (
     <motion.div
@@ -116,82 +241,40 @@ export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, cur
       <SpotlightCard
         spotlightOnHover
         padded={false}
-        className="p-5 h-full"
+        className="p-4 h-full flex flex-col overflow-hidden"
         style={{ background: "rgba(0,0,0,0.5)" }}
       >
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-0.5">
               Pipeline
             </p>
-            <h3 className="font-display font-black text-base text-white tracking-tight uppercase leading-none">
+            <h3 className="font-display font-black text-sm text-white tracking-tight uppercase leading-none">
               Por Etapa
             </h3>
           </div>
-          <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <Layers className="w-3.5 h-3.5 text-white/45" />
+          <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+            <Layers className="w-3 h-3 text-white/45" />
           </div>
         </div>
 
-        {/* Total value callout */}
-        <div className="mb-4 pb-4 border-b border-white/6">
-          <p className="text-[10px] uppercase tracking-widest text-white/30 mb-1">Valor total</p>
-          <p className="glow font-display font-black text-2xl text-white tracking-tight leading-none">
+        {/* Total value callout — inline to save vertical space */}
+        <div className="mb-2 pb-2 border-b border-white/[0.06] flex items-baseline gap-3">
+          <p className="text-[9px] uppercase tracking-widest text-white/28">Valor total</p>
+          <p className="glow font-display font-black text-lg text-white tracking-tight leading-none">
             {formatMajorMoney(pipeline_value, currency)}
           </p>
         </div>
 
-        {/* Chart */}
-        {hasData ? (
-          <ResponsiveContainer width="100%" height={chartHeight}>
-            <BarChart
-              layout="vertical"
-              data={visibleStages}
-              margin={{ top: 0, right: 6, left: 2, bottom: 0 }}
-              barSize={8}
-            >
-              <CartesianGrid
-                strokeDasharray="2 4"
-                stroke="rgba(255,255,255,0.05)"
-                horizontal={false}
-              />
-              <XAxis
-                type="number"
-                dataKey="count"
-                tick={{ fill: "rgba(255,255,255,0.32)", fontSize: 9 }}
-                axisLine={false}
-                tickLine={false}
-                allowDecimals={false}
-              />
-              <YAxis
-                type="category"
-                dataKey="stage"
-                tick={{ fill: "rgba(255,255,255,0.48)", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                width={110}
-                tickFormatter={(v: string) =>
-                  v.length > 16 ? v.slice(0, 15) + "…" : v
-                }
-              />
-              <Tooltip
-                content={<PipelineTooltip currency={currency} />}
-                cursor={{ fill: "rgba(255,255,255,0.025)" }}
-              />
-              <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                {visibleStages.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={`rgba(255,255,255,${BAR_OPACITIES[index % BAR_OPACITIES.length]})`}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        ) : (
-          <EmptyPipeline />
-        )}
+        {/* Funnel — flex-1 to fill remaining card height */}
+        <div className="flex-1 min-h-0 relative">
+          {hasData ? (
+            <SvgFunnel stages={sorted} currency={currency} height={FUNNEL_H} />
+          ) : (
+            <EmptyPipeline />
+          )}
+        </div>
       </SpotlightCard>
     </motion.div>
   );

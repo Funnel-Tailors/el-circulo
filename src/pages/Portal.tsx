@@ -231,7 +231,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     data={dashboard}
                     loading={dashLoading}
                     onRetry={loadDashboard}
-                    roadmapSlot={milestones.length > 0 ? <RoadmapSummary milestones={milestones} onSeeAll={() => setSection("ascenso")} /> : undefined}
+                    milestones={milestones}
                   />
                 </>
               )}
