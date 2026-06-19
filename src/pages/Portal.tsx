@@ -244,7 +244,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               {section === "resumen" && (
                 <>
                   <div>
-                    <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl md:text-3xl">Bienvenido al <span className="glow">Círculo</span></h1>
+                    <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl md:text-3xl">Portal de <span className="glow">cliente</span></h1>
                     <p className="text-sm text-foreground/60">{previewId ? (billTo.email || "Cliente") : session.user.email}</p>
                   </div>
                   <DeliveryDashboard
