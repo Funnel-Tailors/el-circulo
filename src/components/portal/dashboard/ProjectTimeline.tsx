@@ -174,11 +174,12 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
   const done = milestones.filter((m) => m.status === "done").length;
   const computedPct = total ? Math.round((done / total) * 100) : 0;
   const pct = pctOverride ?? computedPct;
-  const currentIdx = milestones.findIndex((m) => m.status === "in_progress");
-  const current =
-    currentIdx >= 0
-      ? milestones[currentIdx]
-      : milestones.find((m) => m.status !== "done");
+  // Nodo "actual" (pulsante): el hito en curso si lo hay; si no, el nodo que cae en
+  // el % de progreso (así el pulso acompaña al beam aunque no se hayan marcado hitos).
+  const inProgIdx = milestones.findIndex((m) => m.status === "in_progress");
+  const progressIdx = total > 1 ? Math.min(Math.round((pct / 100) * (total - 1)), total - 1) : 0;
+  const currentIdx = inProgIdx >= 0 ? inProgIdx : progressIdx;
+  const current = milestones[currentIdx];
 
   const phaseGroups = getPhaseGroups(milestones);
 
@@ -263,9 +264,7 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
           {/* Milestone nodes */}
           <div className="absolute inset-0 flex items-center">
             {milestones.map((m, i) => {
-              const isCurrent =
-                i === currentIdx ||
-                (currentIdx < 0 && m === current);
+              const isCurrent = i === currentIdx;
               const isDone = m.status === "done";
               const isBlocked = m.status === "blocked";
               const isPast = isDone && i < currentIdx;
