@@ -36,7 +36,7 @@ serve(async (req) => {
     // Onboardings del cliente (con datos de facturación para el documento)
     const { data: onboardings } = await supabase
       .from('consulting_onboardings')
-      .select('id, fiscal_address, city, postal_code, country_code, email')
+      .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at')
       .eq('client_user_id', userId)
     const ids = (onboardings ?? []).map((o: any) => o.id)
     if (!ids.length) return json({ invoice: null })
@@ -46,7 +46,7 @@ serve(async (req) => {
       .from('invoices')
       .select('onboarding_id, invoice_number, storage_path, invoice_date, due_date, issuer, legal_name, tax_id, base_amount_cents, tax_rate, tax_amount_cents, total_amount_cents, currency, status')
       .in('onboarding_id', ids)
-      .eq('status', 'issued')
+      .in('status', ['issued', 'paid'])
       .order('issued_at', { ascending: false })
       .limit(1)
 
@@ -96,6 +96,10 @@ serve(async (req) => {
       return lines.join('\n')
     })()
 
+    const paymentStatus = inv.status === 'paid'
+      ? 'paid'
+      : (billTo as any)?.payment_claimed_at ? 'review' : 'pending'
+
     return json({
       invoice: {
         invoice_number: inv.invoice_number,
@@ -104,6 +108,8 @@ serve(async (req) => {
         total_amount_cents: inv.total_amount_cents,
         currency: inv.currency,
         url,
+        status: inv.status,
+        payment_status: paymentStatus,
       },
       invoiceFull: {
         invoice_number: inv.invoice_number,

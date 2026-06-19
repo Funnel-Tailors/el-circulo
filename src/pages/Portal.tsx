@@ -28,7 +28,18 @@ import "@/components/premium/premium-effects.css";
 interface MyInvoice {
   invoice_number: string; invoice_date: string; due_date: string | null;
   total_amount_cents: number; currency: string; url: string | null;
+  payment_status?: "pending" | "review" | "paid";
 }
+
+const PaymentBadge = ({ status }: { status?: string }) => {
+  const map: Record<string, { l: string; c: string }> = {
+    paid: { l: "Pagada", c: "border-emerald-400/30 bg-emerald-400/10 text-emerald-400" },
+    review: { l: "En revisión", c: "border-amber-400/30 bg-amber-400/10 text-amber-400" },
+    pending: { l: "Pendiente", c: "border-white/15 bg-white/5 text-foreground/50" },
+  };
+  const m = map[status ?? "pending"] ?? map.pending;
+  return <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.c}`}>{m.l}</span>;
+};
 
 type SectionId = "resumen" | "ascenso" | "vsl" | "kickoff" | "formacion" | "documentos" | "agenda" | "cuenta";
 const NAV: { id: SectionId; label: string; icon: any }[] = [
@@ -101,10 +112,10 @@ const RoadmapSummary = ({ milestones, onSeeAll }: { milestones: Milestone[]; onS
 };
 
 // ───────────── Documentos ─────────────
-const DocRow = ({ title, subtitle, onOpen }: { title: string; subtitle: string; onOpen: () => void }) => (
+const DocRow = ({ title, subtitle, onOpen, badge }: { title: string; subtitle: string; onOpen: () => void; badge?: React.ReactNode }) => (
   <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
     <div className="min-w-0">
-      <div className="text-sm font-medium text-foreground truncate">{title}</div>
+      <div className="flex items-center gap-2"><span className="text-sm font-medium text-foreground truncate">{title}</span>{badge}</div>
       <div className="text-xs text-foreground/55 truncate">{subtitle}</div>
     </div>
     <button onClick={onOpen} className="inline-flex shrink-0 items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Ver / PDF</button>
@@ -125,7 +136,7 @@ const DocumentsSection = ({ invoice, invoiceFull, agreement, billTo, loading }: 
           {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
             : (invoice || agreement) ? (
               <div className="grid sm:grid-cols-2 gap-3 pb-1">
-                {invoiceFull && invoice && <DocRow title={`Factura ${invoice.invoice_number}`} subtitle={`${formatMoney(invoice.total_amount_cents, invoice.currency)}${invoice.due_date ? ` · vence ${invoice.due_date}` : ""}`} onOpen={() => setView("factura")} />}
+                {invoiceFull && invoice && <DocRow title={`Factura ${invoice.invoice_number}`} badge={<PaymentBadge status={invoice.payment_status} />} subtitle={`${formatMoney(invoice.total_amount_cents, invoice.currency)}${invoice.due_date ? ` · vence ${invoice.due_date}` : ""}`} onOpen={() => setView("factura")} />}
                 {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>
             ) : <p className="text-sm text-foreground/60 pb-2">No hay documentos todavía.</p>}

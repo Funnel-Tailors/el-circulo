@@ -42,6 +42,13 @@ function ClientsTab() {
   };
   const download = (path?: string | null) => downloadFrom("invoices", path);
 
+  const confirmPayment = async (onboardingId: string, paid: boolean) => {
+    const { data, error } = await supabase.functions.invoke("confirm-payment", { body: { onboarding_id: onboardingId, paid } });
+    if (error || !(data as any)?.ok) return toast.error((data as any)?.error || "No se pudo");
+    toast.success(paid ? "Pago confirmado" : "Pago revertido");
+    refetch();
+  };
+
   if (isLoading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>;
   if (!data?.length) return <p className="text-muted-foreground text-sm">Aún no hay clientes onboarded.</p>;
 
@@ -73,9 +80,16 @@ function ClientsTab() {
                 <td className="py-2 pr-4 text-foreground">{fmtMoney(c.total_amount_cents, c.currency)}</td>
                 <td className="py-2 pr-4 text-xs text-foreground">{inv?.due_date ?? "—"}</td>
                 <td className="py-2 pr-4">
-                  {c.payment_claimed_at
-                    ? <span className="text-emerald-400 text-xs">Reclamado</span>
-                    : <span className="text-muted-foreground text-xs">Pendiente</span>}
+                  <div className="flex items-center gap-2">
+                    {inv?.status === "paid"
+                      ? <span className="text-emerald-400 text-xs font-medium">Pagado</span>
+                      : c.payment_claimed_at
+                      ? <span className="text-amber-400 text-xs">En revisión</span>
+                      : <span className="text-muted-foreground text-xs">Pendiente</span>}
+                    {inv?.status === "paid"
+                      ? <button className="text-[10px] text-muted-foreground underline" onClick={() => confirmPayment(c.id, false)}>revertir</button>
+                      : <Button size="sm" variant="outline" className="h-6 text-[11px] px-2" onClick={() => confirmPayment(c.id, true)}>Confirmar</Button>}
+                  </div>
                 </td>
                 <td className="py-2 pr-4 text-xs text-foreground">{c.status}</td>
                 <td className="py-2 pr-4">
