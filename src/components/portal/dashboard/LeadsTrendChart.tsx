@@ -17,6 +17,7 @@ import {
 } from "recharts";
 import { TrendingUp } from "lucide-react";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
+import { BorderBeam } from "./BorderBeam";
 import type { DashboardMetrics } from "./types";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -116,7 +117,7 @@ export const LeadsTrendChart: React.FC<LeadsTrendChartProps> = ({ trend }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.18, ease: EASE_OUT_EXPO }}
-      className="h-full"
+      className="group relative h-full"
     >
       <SpotlightCard
         spotlightOnHover
@@ -223,6 +224,7 @@ export const LeadsTrendChart: React.FC<LeadsTrendChartProps> = ({ trend }) => {
         )}
         </div>
       </SpotlightCard>
+      <BorderBeam duration={3.6} />
     </motion.div>
   );
 };

@@ -8,6 +8,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Milestone } from "@/components/portal/ProjectRoadmap";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
+import { BorderBeam } from "./BorderBeam";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
@@ -193,6 +194,7 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones }) 
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: EASE_OUT_EXPO }}
+      className="group relative"
     >
       <SpotlightCard
         padded={false}
@@ -397,6 +399,7 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones }) 
           })}
         </div>
       </SpotlightCard>
+      <BorderBeam duration={4} />
     </motion.div>
   );
 };

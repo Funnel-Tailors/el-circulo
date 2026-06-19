@@ -7,6 +7,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { CalendarCheck, Calendar, Clock } from "lucide-react";
 import { EnergyCard, EnergyCardContent } from "@/components/premium/EnergyCard";
+import { BorderBeam } from "./BorderBeam";
 import type { DashboardMetrics } from "./types";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
@@ -23,7 +24,7 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, delay: 0.36, ease: EASE_OUT_EXPO }}
-        className="h-full"
+        className="group relative h-full"
       >
         <EnergyCard
           beamSpeed={5}
@@ -51,6 +52,7 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
             </div>
           </EnergyCardContent>
         </EnergyCard>
+        <BorderBeam duration={4.2} />
       </motion.div>
     );
   }
@@ -63,7 +65,7 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.36, ease: EASE_OUT_EXPO }}
-      className="h-full"
+      className="group relative h-full"
     >
       <EnergyCard
         beamSpeed={5}
@@ -148,6 +150,7 @@ export const AppointmentsCard: React.FC<AppointmentsCardProps> = ({ appointments
           )}
         </EnergyCardContent>
       </EnergyCard>
+      <BorderBeam duration={4.2} />
     </motion.div>
   );
 };

@@ -1,0 +1,42 @@
+/* ============================================================================
+   BORDER BEAM — scoped styles for the dashboard hover micro-interaction.
+   Kept LOCAL to the dashboard (imported from BorderBeam.tsx) so the shared
+   premium-effects.css / EnergyCard / SpotlightCard are untouched globally.
+   ============================================================================ */
+
+/* The beam segment travels around the perimeter by animating stroke-dashoffset
+   from 100 → 0 (one full lap). The ease-in-out timing function gives the
+   acceleration at the start of each lap and deceleration at the end — the
+   "breathing" motion the founder asked for (NOT constant linear speed). */
+@keyframes border-beam-travel {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.border-beam-rect {
+  /* Paused until the parent .group is hovered. Named timing function provides
+     the per-lap accel/decel. Duration is set inline per-instance. */
+  animation-name: border-beam-travel;
+  animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); /* ease-in-out */
+  animation-iteration-count: infinite;
+  animation-play-state: paused;
+  will-change: stroke-dashoffset;
+}
+
+/* Run the beam only while the panel is hovered. */
+.group:hover .border-beam-rect {
+  animation-play-state: running;
+}
+
+/* Accessibility: no beam motion when the user prefers reduced motion.
+   (BorderBeam.tsx already skips rendering the animated <svg> in that case;
+   this is a defensive belt-and-suspenders fallback.) */
+@media (prefers-reduced-motion: reduce) {
+  .border-beam-rect {
+    animation: none !important;
+  }
+}

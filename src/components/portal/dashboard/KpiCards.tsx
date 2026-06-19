@@ -15,6 +15,7 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { EnergyCard, EnergyCardContent } from "@/components/premium/EnergyCard";
+import { BorderBeam } from "./BorderBeam";
 import { cn } from "@/lib/utils";
 import type { DashboardMetrics } from "./types";
 import { formatMajorMoney, percentDelta } from "./utils";
@@ -135,7 +136,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
         delay: index * 0.06,
         ease: EASE_OUT_EXPO,
       }}
-      className="h-full"
+      className="group relative h-full"
     >
       <EnergyCard
         beamSpeed={4}
@@ -201,6 +202,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
           )}
         </EnergyCardContent>
       </EnergyCard>
+      <BorderBeam duration={3.4} />
     </motion.div>
   );
 };

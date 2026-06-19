@@ -7,6 +7,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Zap } from "lucide-react";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
+import { BorderBeam } from "./BorderBeam";
 import { cn } from "@/lib/utils";
 import type { DashboardMetrics } from "./types";
 import { relativeTime } from "./utils";
@@ -109,7 +110,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activity }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, delay: 0.32, ease: EASE_OUT_EXPO }}
-      className="h-full"
+      className="group relative h-full"
     >
       <SpotlightCard
         spotlightOnHover
@@ -158,6 +159,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activity }) => {
           </AnimatePresence>
         </div>
       </SpotlightCard>
+      <BorderBeam duration={3.6} />
     </motion.div>
   );
 };

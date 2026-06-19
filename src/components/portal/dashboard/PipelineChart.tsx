@@ -8,6 +8,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Layers } from "lucide-react";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
+import { BorderBeam } from "./BorderBeam";
 import type { DashboardMetrics } from "./types";
 import { formatMajorMoney } from "./utils";
 
@@ -236,7 +237,7 @@ export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, cur
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.28, ease: EASE_OUT_EXPO }}
-      className="h-full"
+      className="group relative h-full"
     >
       <SpotlightCard
         spotlightOnHover
@@ -276,6 +277,7 @@ export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, cur
           )}
         </div>
       </SpotlightCard>
+      <BorderBeam duration={3.8} />
     </motion.div>
   );
 };
