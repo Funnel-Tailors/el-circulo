@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
-  Loader2, Download, LogOut, FileText, LayoutDashboard, Compass,
+  Loader2, Download, LogOut, FileText, LayoutDashboard,
   GraduationCap, CalendarClock, KeyRound, Rocket, ScrollText,
 } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
-import { ProjectRoadmap, type Milestone } from "@/components/portal/ProjectRoadmap";
+import { type Milestone } from "@/components/portal/ProjectRoadmap";
 import { DeliveryDashboard, type DashboardData } from "@/components/portal/dashboard";
 import { KickoffPrep } from "@/components/portal/KickoffPrep";
 import { ChangePassword } from "@/components/portal/ChangePassword";
@@ -41,10 +41,9 @@ const PaymentBadge = ({ status }: { status?: string }) => {
   return <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.c}`}>{m.l}</span>;
 };
 
-type SectionId = "resumen" | "ascenso" | "vsl" | "kickoff" | "formacion" | "documentos" | "agenda" | "cuenta";
+type SectionId = "resumen" | "vsl" | "kickoff" | "formacion" | "documentos" | "agenda" | "cuenta";
 const NAV: { id: SectionId; label: string; icon: any }[] = [
   { id: "resumen", label: "Resumen", icon: LayoutDashboard },
-  { id: "ascenso", label: "El Ascenso", icon: Compass },
   { id: "vsl", label: "VSL", icon: ScrollText },
   { id: "kickoff", label: "Tu Kickoff", icon: Rocket },
   { id: "formacion", label: "Formación", icon: GraduationCap },
@@ -256,17 +255,6 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
                   />
                 </>
-              )}
-
-              {section === "ascenso" && (
-                <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
-                  <EnergyCardHeader><h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">El Ascenso · tu proyecto</h2></EnergyCardHeader>
-                  <EnergyCardContent>
-                    {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
-                      : milestones.length > 0 ? <ProjectRoadmap milestones={milestones} />
-                      : <p className="text-sm text-foreground/60 pb-2">Tu proyecto arrancará en la llamada de onboarding.</p>}
-                  </EnergyCardContent>
-                </EnergyCard>
               )}
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}

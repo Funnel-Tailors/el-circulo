@@ -434,10 +434,16 @@ export const AdminProjectBoard = () => {
           <ProjectStatusPanel projectId={client.project_id} />
           <GhlConnectionPanel onboardingId={client.id} />
           <VslPanel projectId={client.project_id} />
-          <div className="space-y-2">
-            {(milestones ?? []).map((m: any) => (
-              <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetch()} />
-            ))}
+          <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+            <div>
+              <h3 className="font-semibold text-sm text-foreground">Ruta de ascensión · hitos del proyecto</h3>
+              <p className="text-xs text-muted-foreground">Marca cada hito (Pendiente / En curso / Hecho). Esto mueve el timeline que ve el cliente en su dashboard: el hito "En curso" pulsa y los "Hechos" rellenan la línea. Aquí también añades entregables por hito.</p>
+            </div>
+            <div className="space-y-2">
+              {(milestones ?? []).map((m: any) => (
+                <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetch()} />
+              ))}
+            </div>
           </div>
         </div>
       )}
