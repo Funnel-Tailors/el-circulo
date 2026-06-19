@@ -17,6 +17,7 @@ import { KickoffPrep } from "@/components/portal/KickoffPrep";
 import { ChangePassword } from "@/components/portal/ChangePassword";
 import { SupportCallCard } from "@/components/portal/SupportCallCard";
 import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsLibrary";
+import { VslCard } from "@/components/portal/VslCard";
 import { PortalReveal } from "@/components/portal/PortalReveal";
 import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
 import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/portal/documents/InvoiceDocument";
@@ -176,6 +177,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
   const dismissReveal = () => { localStorage.setItem("circulo_portal_revealed", "1"); setRevealed(true); };
   const name = (session.user.user_metadata as any)?.legal_name || session.user.email || "";
+  const vsl = milestones.flatMap((m) => m.deliverables || []).find((d) => d.type === "vsl");
 
   return (
     <div className="min-h-screen text-foreground" style={{ background: "hsl(0 0% 5%)" }}>
@@ -227,18 +229,22 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     onRetry={loadDashboard}
                     roadmapSlot={milestones.length > 0 ? <RoadmapSummary milestones={milestones} onSeeAll={() => setSection("ascenso")} /> : undefined}
                   />
+                  {vsl && <VslCard url={vsl.url} title={vsl.title} />}
                 </>
               )}
 
               {section === "ascenso" && (
-                <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
-                  <EnergyCardHeader><h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">El Ascenso · tu proyecto</h2></EnergyCardHeader>
-                  <EnergyCardContent>
-                    {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
-                      : milestones.length > 0 ? <ProjectRoadmap milestones={milestones} />
-                      : <p className="text-sm text-foreground/60 pb-2">Tu proyecto arrancará en la llamada de onboarding.</p>}
-                  </EnergyCardContent>
-                </EnergyCard>
+                <div className="space-y-6">
+                  {vsl && <VslCard url={vsl.url} title={vsl.title} />}
+                  <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
+                    <EnergyCardHeader><h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">El Ascenso · tu proyecto</h2></EnergyCardHeader>
+                    <EnergyCardContent>
+                      {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
+                        : milestones.length > 0 ? <ProjectRoadmap milestones={milestones} />
+                        : <p className="text-sm text-foreground/60 pb-2">Tu proyecto arrancará en la llamada de onboarding.</p>}
+                    </EnergyCardContent>
+                  </EnergyCard>
+                </div>
               )}
 
               {section === "kickoff" && <KickoffPrep />}

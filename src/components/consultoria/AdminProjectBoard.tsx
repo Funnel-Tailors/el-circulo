@@ -14,7 +14,7 @@ const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
   pending: "Pendiente", in_progress: "En curso", done: "Hecho", blocked: "Bloqueado",
 };
-const DTYPES = ["link", "video", "embed", "file"] as const;
+const DTYPES = ["vsl", "link", "video", "embed", "file"] as const;
 
 interface ClientRow {
   id: string; legal_name: string; email: string; ghl_contact_id: string | null;

@@ -9,7 +9,7 @@ import "@/components/premium/premium-effects.css";
 
 export interface Deliverable {
   id: string;
-  type: "link" | "file" | "video" | "embed";
+  type: "link" | "file" | "video" | "embed" | "vsl";
   title: string;
   url: string | null;
   note?: string | null;
@@ -315,11 +315,13 @@ export const ProjectRoadmap = ({ milestones }: { milestones: Milestone[] }) => {
                         <p className="text-xs text-foreground/50 mt-1">{m.note}</p>
                       )}
 
-                      {m.deliverables.length > 0 && (
+                      {m.deliverables.filter((d) => d.type !== "vsl").length > 0 && (
                         <div className="mt-2 space-y-1">
-                          {m.deliverables.map((d) => (
-                            <DeliverableRow key={d.id} d={d} />
-                          ))}
+                          {m.deliverables
+                            .filter((d) => d.type !== "vsl")
+                            .map((d) => (
+                              <DeliverableRow key={d.id} d={d} />
+                            ))}
                         </div>
                       )}
                     </div>
