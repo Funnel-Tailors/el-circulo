@@ -85,7 +85,8 @@ const MilestoneNode: React.FC<MilestoneNodeProps> = ({
             height: 20,
             top: "50%",
             left: "50%",
-            transform: "translate(-50%, -50%)",
+            marginTop: -10,
+            marginLeft: -10,
             border: "1.5px solid rgba(255,255,255,0.5)",
           }}
           animate={{
@@ -109,7 +110,8 @@ const MilestoneNode: React.FC<MilestoneNodeProps> = ({
             height: 26,
             top: "50%",
             left: "50%",
-            transform: "translate(-50%, -50%)",
+            marginTop: -13,
+            marginLeft: -13,
             border: "1px solid rgba(255,255,255,0.2)",
           }}
           animate={{
