@@ -87,6 +87,7 @@ serve(async (req) => {
       .in('key', [
         'consulting_issuer', 'consulting_invoice_series', 'consulting_tax',
         'consulting_price', 'consulting_payment_links', 'consulting_sync_enabled',
+        'consulting_payment_plan',
       ])
     const cfg: Record<string, any> = {}
     for (const row of settingsRows ?? []) cfg[row.key] = row.value
@@ -111,6 +112,26 @@ serve(async (req) => {
     const invoiceDate = isoDate(now)
     const dueDays = Number(series.due_days) || 7
     const dueDate = isoDate(addDays(now, dueDays))
+
+    // ── Plan de pago (nota informativa de plazos en la factura) ──
+    const paymentPlan = cfg.consulting_payment_plan ?? null
+    const installmentNote = (() => {
+      if (!paymentPlan?.enabled) return null
+      const n = Number(paymentPlan.installments) || 2
+      const eachCents = Number(paymentPlan.installment_amount_cents) || Math.round(totalCents / n)
+      const daysBetween = Number(paymentPlan.days_between) || 30
+      const fmt = (c: number) => {
+        const sym = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : ''
+        const [int, dec] = (Math.round(c) / 100).toFixed(2).split('.')
+        const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        return sym ? `${sym}${grouped}.${dec}` : `${grouped}.${dec} ${currency}`
+      }
+      const lines = [`Disponible en ${n} plazos de ${fmt(eachCents)}.`]
+      for (let i = 0; i < n; i++) {
+        lines.push(`Plazo ${i + 1} (${fmt(eachCents)}): ${isoDate(addDays(now, i * daysBetween))}`)
+      }
+      return lines.join('\n')
+    })()
 
     // ── Metadatos de firma (server-side) ──
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null
@@ -251,6 +272,7 @@ serve(async (req) => {
         currency,
         payment_modality,
         payment_note: paymentNote,
+        installment_note: installmentNote,
       })
 
       storagePath = `${onboardingId}/${invoiceNumber}.pdf`

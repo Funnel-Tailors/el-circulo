@@ -73,6 +73,29 @@ serve(async (req) => {
 
     const billTo = (onboardings ?? []).find((o: any) => o.id === inv.onboarding_id) ?? (onboardings ?? [])[0] ?? {}
 
+    // Nota de plan de pago (plazos), calculada desde la fecha de la factura
+    const { data: planRow } = await supabase
+      .from('app_settings').select('value').eq('key', 'consulting_payment_plan').maybeSingle()
+    const plan: any = planRow?.value
+    const installmentNote = (() => {
+      if (!plan?.enabled || !inv.invoice_date) return null
+      const n = Number(plan.installments) || 2
+      const eachCents = Number(plan.installment_amount_cents) || Math.round((inv.total_amount_cents || 0) / n)
+      const daysBetween = Number(plan.days_between) || 30
+      const fmt = (c: number) => {
+        const sym = inv.currency === 'EUR' ? '€' : inv.currency === 'USD' ? '$' : ''
+        const [int, dec] = (Math.round(c) / 100).toFixed(2).split('.')
+        const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+        return sym ? `${sym}${grouped}.${dec}` : `${grouped}.${dec} ${inv.currency}`
+      }
+      const addDaysIso = (iso: string, days: number) => {
+        const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10)
+      }
+      const lines = [`Disponible en ${n} plazos de ${fmt(eachCents)}.`]
+      for (let i = 0; i < n; i++) lines.push(`Plazo ${i + 1} (${fmt(eachCents)}): ${addDaysIso(inv.invoice_date, i * daysBetween)}`)
+      return lines.join('\n')
+    })()
+
     return json({
       invoice: {
         invoice_number: inv.invoice_number,
@@ -94,6 +117,7 @@ serve(async (req) => {
         tax_amount_cents: inv.tax_amount_cents,
         total_amount_cents: inv.total_amount_cents,
         currency: inv.currency,
+        installment_note: installmentNote,
       },
       agreement,
       billTo,

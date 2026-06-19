@@ -119,13 +119,17 @@ function ConfigTab() {
   const [stripe, setStripe] = useState("");
   const [wise, setWise] = useState("");
   const [supportCal, setSupportCal] = useState("");
+  // Plan de pago (plazos)
+  const [planEnabled, setPlanEnabled] = useState(false);
+  const [planAmount, setPlanAmount] = useState(5000); // por plazo, en unidades
+  const [planDays, setPlanDays] = useState(30);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase
         .from("app_settings")
         .select("key, value")
-        .in("key", ["consulting_enabled", "consulting_sync_enabled", "consulting_issuer", "consulting_invoice_series", "consulting_price", "consulting_payment_links", "consulting_support_calendar_id"]);
+        .in("key", ["consulting_enabled", "consulting_sync_enabled", "consulting_issuer", "consulting_invoice_series", "consulting_price", "consulting_payment_links", "consulting_support_calendar_id", "consulting_payment_plan"]);
       const cfg: Record<string, any> = {};
       for (const r of data ?? []) cfg[r.key] = r.value;
       setEnabled(cfg.consulting_enabled === true || cfg.consulting_enabled === "true");
@@ -140,6 +144,9 @@ function ConfigTab() {
       setStripe(cfg.consulting_payment_links?.stripe_url ?? "");
       setWise(cfg.consulting_payment_links?.wise_url ?? "");
       setSupportCal(typeof cfg.consulting_support_calendar_id === "string" ? cfg.consulting_support_calendar_id : "");
+      setPlanEnabled(cfg.consulting_payment_plan?.enabled ?? false);
+      setPlanAmount((Number(cfg.consulting_payment_plan?.installment_amount_cents) || 500000) / 100);
+      setPlanDays(Number(cfg.consulting_payment_plan?.days_between) || 30);
       setLoading(false);
     })();
   }, []);
@@ -165,6 +172,7 @@ function ConfigTab() {
       setKey("consulting_price", { base_amount_cents: Math.round(Number(baseAmount) * 100), currency }),
       setKey("consulting_payment_links", { fastpay_url: fastpay, stripe_url: stripe, wise_url: wise }),
       setKey("consulting_support_calendar_id", supportCal),
+      setKey("consulting_payment_plan", { enabled: planEnabled, installments: 2, installment_amount_cents: Math.round(Number(planAmount) * 100), days_between: Number(planDays) }),
     ]);
     setSaving(false);
     if (ok.every(Boolean)) toast.success("Configuración guardada");
@@ -227,6 +235,21 @@ function ConfigTab() {
           <div className="space-y-1.5"><Label className="text-foreground/80">Importe (sin impuesto)</Label><GlowInput type="number" value={baseAmount} onChange={(e) => setBaseAmount(Number(e.target.value))} /></div>
           <div className="space-y-1.5"><Label className="text-foreground/80">Moneda</Label><GlowInput value={currency} onChange={(e) => setCurrency(e.target.value.toUpperCase())} /></div>
         </div>
+      </div>
+
+      <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
+        <h3 className="font-semibold text-sm text-foreground">Plan de pago (plazos)</h3>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <Checkbox checked={planEnabled} onCheckedChange={(c) => setPlanEnabled(c === true)} />
+          <span className="text-sm text-foreground/80">Mostrar opción de pago a plazos en la factura</span>
+        </label>
+        {planEnabled && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5"><Label className="text-foreground/80">Importe por plazo</Label><GlowInput type="number" value={planAmount} onChange={(e) => setPlanAmount(Number(e.target.value))} /></div>
+            <div className="space-y-1.5"><Label className="text-foreground/80">Días entre plazos</Label><GlowInput type="number" value={planDays} onChange={(e) => setPlanDays(Number(e.target.value))} /></div>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground">2 plazos. La factura sigue siendo una sola, mostrando la nota de plazos con fechas.</p>
       </div>
 
       <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">

@@ -10,6 +10,7 @@ export interface InvoiceDoc {
   tax_amount_cents: number;
   total_amount_cents: number;
   currency: string;
+  installment_note?: string | null;
 }
 export interface BillTo {
   fiscal_address?: string | null;
@@ -137,6 +138,18 @@ export const InvoiceDocument = ({ inv, billTo }: { inv: InvoiceDoc; billTo: Bill
             <span className="font-display font-black text-xl">{money(inv.total_amount_cents, inv.currency)}</span>
           </div>
         </div>
+
+        {/* Plan de pago (plazos) */}
+        {inv.installment_note && (
+          <div className="mt-7 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
+            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-2">Plan de pago</div>
+            <div className="space-y-0.5">
+              {inv.installment_note.split("\n").map((line, i) => (
+                <div key={i} className={i === 0 ? "text-[12px] font-medium text-neutral-700" : "text-[12px] text-neutral-500"}>{line}</div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-10 pt-5 border-t border-neutral-200 flex items-center justify-between">

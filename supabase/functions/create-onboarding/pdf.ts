@@ -41,6 +41,7 @@ export interface InvoiceData {
   currency: string
   payment_modality?: string | null
   payment_note?: string | null
+  installment_note?: string | null
 }
 
 const BLACK = rgb(0.05, 0.05, 0.05)
@@ -181,6 +182,17 @@ export async function renderInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
   text('TOTAL', totLabelX, y, 11, { font: bold, color: WHITE })
   text(money(data.total_amount_cents, data.currency), totValX, y, 13, { font: bold, color: WHITE, align: 'right' })
   y -= 44
+
+  // ── Plan de pago (plazos) ──
+  if (data.installment_note) {
+    text('PLAN DE PAGO', M, y, 8, { font: bold, color: GREY })
+    y -= 14
+    for (const line of String(data.installment_note).split('\n')) {
+      text(line, M, y, 9, { color: rgb(0.3, 0.3, 0.3) })
+      y -= 12
+    }
+    y -= 12
+  }
 
   // ── Instrucciones de pago ──
   if (data.payment_note) {
