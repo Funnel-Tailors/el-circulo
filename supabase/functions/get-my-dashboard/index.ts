@@ -95,14 +95,31 @@ serve(async (req) => {
       activity: [] as { name: string; when: string }[],
     }
 
-    // ── Leads / contactos ── (orden por recientes para que tendencia/actividad/delta sean reales)
+    // ── Leads / contactos ── (paginamos para cubrir los 30 días reales de la tendencia)
     try {
-      const data = await ghl(`/contacts/?locationId=${loc}&limit=100`, key)
-      const contacts: any[] = data.contacts || []
-      // La API GET /contacts no admite sortOrder → ordenamos en JS (recientes primero)
+      let contacts: any[] = []
+      let total = 0
+      let sa = '', saId = ''
+      const cutoff = now.getTime() - 30 * 86400000
+      for (let page = 0; page < 5; page++) {
+        let url = `/contacts/?locationId=${loc}&limit=100`
+        if (sa && saId) url += `&startAfter=${sa}&startAfterId=${saId}`
+        const data = await ghl(url, key)
+        const batch: any[] = data.contacts || []
+        if (page === 0) total = data.meta?.total ?? batch.length
+        if (!batch.length) break
+        contacts = contacts.concat(batch)
+        const last = batch[batch.length - 1]
+        const lastT = new Date(last?.dateAdded || last?.createdAt || 0).getTime()
+        sa = String(lastT); saId = last?.id || ''
+        if (batch.length < 100 || !saId || lastT < cutoff) break
+      }
+      // dedupe + orden recientes primero (la API GET no admite sortOrder)
+      const seenC = new Set<string>()
+      contacts = contacts.filter((c) => { const id = c.id || ''; if (id && seenC.has(id)) return false; if (id) seenC.add(id); return true })
       contacts.sort((a, b) =>
         new Date(b.dateAdded || b.createdAt || 0).getTime() - new Date(a.dateAdded || a.createdAt || 0).getTime())
-      metrics.leads.total = data.meta?.total ?? contacts.length
+      metrics.leads.total = total
       // Bucket por día (últimos 30) + last7/prev7 + actividad
       const buckets: Record<string, number> = {}
       const start = new Date(now.getTime() - 29 * 86400000)
