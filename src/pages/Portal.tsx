@@ -8,12 +8,11 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Loader2, Download, LogOut, FileText, LayoutDashboard,
-  GraduationCap, CalendarClock, KeyRound, Rocket, ScrollText,
+  GraduationCap, CalendarClock, KeyRound, ScrollText,
 } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
 import { type Milestone } from "@/components/portal/ProjectRoadmap";
 import { DeliveryDashboard, type DashboardData } from "@/components/portal/dashboard";
-import { KickoffPrep } from "@/components/portal/KickoffPrep";
 import { ChangePassword } from "@/components/portal/ChangePassword";
 import { SupportCallCard } from "@/components/portal/SupportCallCard";
 import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsLibrary";
@@ -41,11 +40,10 @@ const PaymentBadge = ({ status }: { status?: string }) => {
   return <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.c}`}>{m.l}</span>;
 };
 
-type SectionId = "resumen" | "vsl" | "kickoff" | "formacion" | "documentos" | "agenda" | "cuenta";
+type SectionId = "resumen" | "vsl" | "formacion" | "documentos" | "agenda" | "cuenta";
 const NAV: { id: SectionId; label: string; icon: any }[] = [
   { id: "resumen", label: "Resumen", icon: LayoutDashboard },
   { id: "vsl", label: "VSL", icon: ScrollText },
-  { id: "kickoff", label: "Tu Kickoff", icon: Rocket },
   { id: "formacion", label: "Formación", icon: GraduationCap },
   { id: "documentos", label: "Documentos", icon: FileText },
   { id: "agenda", label: "Agenda", icon: CalendarClock },
@@ -259,7 +257,6 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
 
-              {section === "kickoff" && <KickoffPrep />}
               {section === "formacion" && <ConsultingLessonsLibrary />}
               {section === "documentos" && <DocumentsSection invoice={invoice} invoiceFull={invoiceFull} agreement={agreement} billTo={billTo} loading={loading} />}
               {section === "agenda" && (

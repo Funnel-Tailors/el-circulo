@@ -511,6 +511,49 @@ const InvoiceEdit = ({ client, onSaved, onClose }: { client: any; onSaved: () =>
   );
 };
 
+// ── Brief de kickoff (read-only; el cliente lo rellena en el onboarding) ──
+const KICKOFF_LABELS: Record<string, string> = { meta_ads: "Meta Ads", domain: "Dominio/proveedor" };
+const KickoffView = ({ onboardingId }: { onboardingId: string }) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["kickoff", onboardingId],
+    queryFn: async () => {
+      const { data } = await supabase.from("consulting_kickoff_prep")
+        .select("offer_oneliner, monthly_revenue, sells, links, goal_90d, checklist, submitted_at")
+        .eq("onboarding_id", onboardingId).maybeSingle();
+      return data as any;
+    },
+  });
+  if (isLoading) return null;
+  const row = (label: string, val: any) => val ? (
+    <div><span className="text-foreground/50 text-[10px] uppercase tracking-wider block">{label}</span><span className="text-sm text-foreground/85 whitespace-pre-wrap">{val}</span></div>
+  ) : null;
+  const checked = Object.entries((data?.checklist as Record<string, boolean>) || {}).filter(([, v]) => v).map(([k]) => KICKOFF_LABELS[k] || k);
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">Brief de kickoff</h3>
+      {!data ? (
+        <p className="text-xs text-muted-foreground">El cliente aún no lo ha rellenado (lo hace en el onboarding, antes de agendar).</p>
+      ) : (
+        <>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {row("Oferta", data.offer_oneliner)}
+            {row("Facturación/mes", data.monthly_revenue)}
+            {row("Web / IG", data.links)}
+            {row("Objetivo 90d", data.goal_90d)}
+          </div>
+          {row("Qué vende", data.sells)}
+          {checked.length > 0 && (
+            <div>
+              <span className="text-foreground/50 text-[10px] uppercase tracking-wider block mb-1">Trae a la llamada</span>
+              <div className="flex flex-wrap gap-1.5">{checked.map((c) => <span key={c} className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[11px] text-emerald-400">{c}</span>)}</div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+};
+
 // ── Detalle del cliente (todo en un sitio) ──
 const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => void }) => {
   const inv = client.invoice;
@@ -561,6 +604,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
       {client.project_id ? (
         <>
           <ProjectStatusPanel projectId={client.project_id} />
+          <KickoffView onboardingId={client.id} />
           <GhlConnectionPanel onboardingId={client.id} />
           <VslPanel projectId={client.project_id} />
           <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">

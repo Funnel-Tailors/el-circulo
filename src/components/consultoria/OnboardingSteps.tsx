@@ -8,8 +8,10 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Download, CreditCard, Building2, CheckCircle2, Upload, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
-import { GlowInput } from "@/components/premium/GlowInput";
+import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 import { MagneticButton } from "@/components/premium/MagneticButton";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   EnergyCard, EnergyCardContent,
 } from "@/components/premium/EnergyCard";
@@ -388,6 +390,60 @@ export const StepInvoiceAndPay = ({
           </p>
         </>
       )}
+    </div>
+  );
+};
+
+// ───────────── Paso: Prepara tu kickoff (brief, antes de agendar) ─────────────
+const KICKOFF_CHECKLIST = [
+  { key: "meta_ads", label: "Tu cuenta de Meta Ads / Business Manager activa (en la llamada te añado como socio con mi ID)" },
+  { key: "domain", label: "Tu dominio y proveedor de hosting, para vincular la landing (opcional)" },
+];
+
+export const StepKickoffOnboarding = ({ token, onDone }: { token: string; onDone: () => void }) => {
+  const [prep, setPrep] = useState({ offer_oneliner: "", monthly_revenue: "", sells: "", links: "", goal_90d: "", checklist: {} as Record<string, boolean> });
+  const [saving, setSaving] = useState(false);
+  const set = (k: string, v: string) => setPrep((p) => ({ ...p, [k]: v }));
+  const toggle = (k: string) => setPrep((p) => ({ ...p, checklist: { ...p.checklist, [k]: !p.checklist[k] } }));
+
+  const submit = async () => {
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("submit-kickoff-prep", { body: { token, ...prep } });
+    setSaving(false);
+    if (error || !(data as any)?.ok) return toast.error("No se pudo guardar. Inténtalo de nuevo.");
+    onDone();
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="text-center">
+        <h3 className="font-display font-black uppercase tracking-[-0.025em] text-xl">Prepara tu <span className="glow">kickoff</span></h3>
+        <p className="text-sm text-foreground/70">Rellena esto antes de agendar y tu primera llamada irá a degüello.</p>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Tu oferta en 1 línea</Label><GlowInput value={prep.offer_oneliner} onChange={(e) => set("offer_oneliner", e.target.value)} placeholder="Qué vendes y a quién" /></div>
+        <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Facturación media/mes</Label><GlowInput value={prep.monthly_revenue} onChange={(e) => set("monthly_revenue", e.target.value)} placeholder="€…" /></div>
+        <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Web / Instagram</Label><GlowInput value={prep.links} onChange={(e) => set("links", e.target.value)} placeholder="links" /></div>
+        <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Tu objetivo a 90 días</Label><GlowInput value={prep.goal_90d} onChange={(e) => set("goal_90d", e.target.value)} placeholder="+€10k/mes, etc." /></div>
+      </div>
+      <div className="space-y-1.5"><Label className="text-xs text-foreground/80">¿Qué vendes exactamente? (servicios, precios)</Label><GlowTextarea value={prep.sells} onChange={(e) => set("sells", e.target.value)} placeholder="Cuéntame en 2 líneas" /></div>
+      <div>
+        <div className="text-[10px] uppercase tracking-[0.2em] text-foreground/40 mb-2">Lo único que necesitas tener</div>
+        <div className="space-y-2">
+          {KICKOFF_CHECKLIST.map((c) => (
+            <label key={c.key} className="flex items-center gap-3 cursor-pointer text-sm text-foreground/85">
+              <Checkbox checked={!!prep.checklist[c.key]} onCheckedChange={() => toggle(c.key)} /> {c.label}
+            </label>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-start gap-2 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] p-3 text-xs text-foreground/70">
+        <CheckCircle2 className="h-4 w-4 text-emerald-400/80 shrink-0 mt-0.5" />
+        <span>El CRM y la web <span className="text-foreground">los monto yo</span> — no necesitas traer nada más. En la llamada te añado como socio en tu Meta Ads con mi identificador y conectamos todo juntos. <span className="text-foreground">No pegues contraseñas aquí.</span></span>
+      </div>
+      <MagneticButton variant="premium" onClick={submit} disabled={saving} enableMagnetic={false} className="w-full">
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Continuar a agendar la llamada
+      </MagneticButton>
     </div>
   );
 };

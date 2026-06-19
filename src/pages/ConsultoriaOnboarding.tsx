@@ -13,7 +13,7 @@ import "@/components/premium/premium-effects.css";
 import { WizardProgress } from "@/components/consultoria/WizardProgress";
 import {
   StepBilling, StepPayment, StepAgreement, StepTimeline, StepReview,
-  StepInvoiceAndPay, formatMoney,
+  StepInvoiceAndPay, StepKickoffOnboarding, formatMoney,
 } from "@/components/consultoria/OnboardingSteps";
 import {
   consultoriaOnboardingSchema, STEP_FIELDS, type ConsultoriaOnboardingData,
@@ -24,7 +24,7 @@ import { AGREEMENT_VERSION, getAgreementHash } from "@/data/consultoriaAgreement
 // TODO: mover a app_settings cuando haya un calendario específico de onboarding.
 const ONBOARDING_CALENDAR_ID = "8C2kck4NCnEihznxvL29";
 
-const STEP_LABELS = ["Datos", "Pago", "Acuerdo", "Plan", "Revisar", "Factura", "Agenda"];
+const STEP_LABELS = ["Datos", "Pago", "Acuerdo", "Plan", "Revisar", "Factura", "Kickoff", "Agenda"];
 
 interface ConsultingConfig {
   baseCents: number;
@@ -238,6 +238,9 @@ const ConsultoriaOnboarding = () => {
                 />
               )}
               {step === 6 && (
+                <StepKickoffOnboarding token={result?.token ?? ""} onDone={() => setStep(7)} />
+              )}
+              {step === 7 && (
                 <div className="space-y-4">
                   <div className="text-center">
                     <h3 className="font-display font-black uppercase tracking-[-0.025em] text-xl">
