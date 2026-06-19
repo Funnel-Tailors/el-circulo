@@ -259,6 +259,91 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
 };
 
 // VSL del cliente: copy/guión en markdown (a nivel de proyecto). Solo admin.
+const PROJECT_STATUSES = [
+  { v: "active", l: "Activo" },
+  { v: "paused", l: "Pausado" },
+  { v: "completed", l: "Completado" },
+];
+
+// Estado del proyecto (fase / % / estado) a nivel de proyecto. Solo admin.
+const ProjectStatusPanel = ({ projectId }: { projectId: string }) => {
+  const [phase, setPhase] = useState("");
+  const [status, setStatus] = useState("active");
+  const [pct, setPct] = useState(0);
+  const [phases, setPhases] = useState<{ key: string; label: string }[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    (async () => {
+      const { data: p } = await supabase
+        .from("consulting_projects")
+        .select("current_phase, status, completion_pct")
+        .eq("id", projectId)
+        .maybeSingle();
+      setPhase((p as any)?.current_phase ?? "");
+      setStatus((p as any)?.status ?? "active");
+      setPct(Number((p as any)?.completion_pct) || 0);
+      const { data: ms } = await supabase
+        .from("consulting_milestones")
+        .select("phase, phase_label")
+        .eq("project_id", projectId)
+        .order("sort_order", { ascending: true });
+      const seen = new Set<string>();
+      const ph: { key: string; label: string }[] = [];
+      for (const m of (ms ?? []) as any[]) {
+        if (!seen.has(m.phase)) { seen.add(m.phase); ph.push({ key: m.phase, label: m.phase_label || m.phase }); }
+      }
+      setPhases(ph);
+      setLoaded(true);
+    })();
+  }, [projectId]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("consulting_projects")
+      .update({ current_phase: phase || null, status, completion_pct: Math.max(0, Math.min(100, Number(pct) || 0)) })
+      .eq("id", projectId);
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
+    toast.success("Estado del proyecto guardado");
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">Estado del proyecto</h3>
+      <p className="text-xs text-muted-foreground">Fase actual, % de avance y estado. El % manda en el progreso que ve el cliente en su dashboard.</p>
+      <div className="grid sm:grid-cols-3 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-foreground/80 text-xs">Fase actual</Label>
+          <Select value={phase} onValueChange={setPhase}>
+            <SelectTrigger className="h-10 bg-black/40 border-white/20 rounded-xl text-sm"><SelectValue placeholder="—" /></SelectTrigger>
+            <SelectContent className="bg-black/90 border-white/20 rounded-xl">
+              {phases.map((p) => <SelectItem key={p.key} value={p.key} className="text-sm">{p.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-foreground/80 text-xs">Estado</Label>
+          <Select value={status} onValueChange={setStatus}>
+            <SelectTrigger className="h-10 bg-black/40 border-white/20 rounded-xl text-sm"><SelectValue /></SelectTrigger>
+            <SelectContent className="bg-black/90 border-white/20 rounded-xl">
+              {PROJECT_STATUSES.map((s) => <SelectItem key={s.v} value={s.v} className="text-sm">{s.l}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-foreground/80 text-xs">% avance</Label>
+          <GlowInput type="number" value={pct} onChange={(e) => setPct(Number(e.target.value))} />
+        </div>
+      </div>
+      <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar estado"}</Button>
+    </div>
+  );
+};
+
 const VslPanel = ({ projectId }: { projectId: string }) => {
   const [copy, setCopy] = useState("");
   const [title, setTitle] = useState("");
@@ -343,6 +428,7 @@ export const AdminProjectBoard = () => {
 
       {client && (
         <div className="space-y-4">
+          <ProjectStatusPanel projectId={client.project_id} />
           <GhlConnectionPanel onboardingId={client.id} />
           <VslPanel projectId={client.project_id} />
           <div className="space-y-2">

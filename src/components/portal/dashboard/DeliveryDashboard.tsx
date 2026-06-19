@@ -157,9 +157,10 @@ const CachedBadge: React.FC = () => (
 interface ConnectedDashboardProps {
   data: DashboardData;
   milestones?: Milestone[];
+  completionPct?: number;
 }
 
-const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, milestones }) => {
+const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, milestones, completionPct }) => {
   const metrics = data.metrics!;
 
   return (
@@ -195,7 +196,7 @@ const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, milestone
 
       {/* ── Timeline horizontal del proyecto (El Ascenso) ──────────────────── */}
       {milestones && milestones.length > 0 && (
-        <ProjectTimeline milestones={milestones} />
+        <ProjectTimeline milestones={milestones} pctOverride={completionPct} />
       )}
 
       {/* ── Row 1: KPI cards ───────────────────────────────────────────────── */}
@@ -236,6 +237,8 @@ export interface DeliveryDashboardProps {
   onRetry?: () => void;
   /** Hitos del proyecto para el timeline horizontal. */
   milestones?: Milestone[];
+  /** % de avance fijado desde admin (override del calculado por hitos). */
+  completionPct?: number;
 }
 
 export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
@@ -243,6 +246,7 @@ export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
   loading = false,
   onRetry,
   milestones,
+  completionPct,
 }) => {
   const isLoading = loading && !data;
   const isDisconnected = !loading && (!data || data.connected === false || !data.metrics);
@@ -259,7 +263,7 @@ export const DeliveryDashboard: React.FC<DeliveryDashboardProps> = ({
           <NotConnected key="not-connected" onRetry={onRetry} />
         )}
         {isConnected && (
-          <ConnectedDashboard key="connected" data={data!} milestones={milestones} />
+          <ConnectedDashboard key="connected" data={data!} milestones={milestones} completionPct={completionPct} />
         )}
       </AnimatePresence>
     </div>

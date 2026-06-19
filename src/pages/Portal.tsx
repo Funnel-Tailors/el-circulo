@@ -232,6 +232,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     loading={dashLoading}
                     onRetry={loadDashboard}
                     milestones={milestones}
+                    completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
                   />
                 </>
               )}

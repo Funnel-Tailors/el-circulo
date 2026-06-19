@@ -163,15 +163,18 @@ const MilestoneNode: React.FC<MilestoneNodeProps> = ({
 // ─── ProjectTimeline ─────────────────────────────────────────────────────────
 interface ProjectTimelineProps {
   milestones: Milestone[];
+  /** % de avance fijado desde admin; si viene, manda sobre el calculado por hitos. */
+  pctOverride?: number;
 }
 
-export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones }) => {
+export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pctOverride }) => {
   const prefersReduced = useReducedMotion();
   const beamRef = useRef<HTMLDivElement>(null);
 
   const total = milestones.length;
   const done = milestones.filter((m) => m.status === "done").length;
-  const pct = total ? Math.round((done / total) * 100) : 0;
+  const computedPct = total ? Math.round((done / total) * 100) : 0;
+  const pct = pctOverride ?? computedPct;
   const currentIdx = milestones.findIndex((m) => m.status === "in_progress");
   const current =
     currentIdx >= 0
