@@ -224,8 +224,9 @@ const ConnectedDashboard: React.FC<ConnectedDashboardProps> = ({ data, milestone
       </div>
 
       {/* ── Row 3: Activity Feed + Appointments — side by side ────────────── */}
-      {/* Fixed height on desktop to keep above-the-fold; auto on mobile */}
-      <div className="hidden lg:grid lg:grid-cols-2 gap-3" style={{ height: 188 }}>
+      {/* Altura automática (igualada por stretch) para que el contenido no se
+          desborde ni se solapen las cards. */}
+      <div className="hidden lg:grid lg:grid-cols-2 gap-3 items-stretch">
         <ActivityFeed activity={metrics.activity} />
         <AppointmentsCard appointments={metrics.appointments} />
       </div>
