@@ -588,7 +588,13 @@ export const ClientsManager = () => {
       const { data } = await supabase.from("consulting_onboardings")
         .select("id, legal_name, email, status, payment_claimed_at, payment_proof_path, total_amount_cents, currency, created_at, ghl_contact_id, consulting_projects(id), invoices(invoice_number, storage_path, status, due_date, total_amount_cents)")
         .order("created_at", { ascending: false });
-      return (data ?? []).map((o: any) => ({ ...o, project_id: o.consulting_projects?.[0]?.id ?? null, invoice: (o.invoices ?? [])[0] ?? null }));
+      return (data ?? []).map((o: any) => {
+        // consulting_projects.onboarding_id es UNIQUE (1-a-1) → PostgREST devuelve
+        // el embed como objeto, no como array.
+        const cp = o.consulting_projects;
+        const project_id = (Array.isArray(cp) ? cp[0]?.id : cp?.id) ?? null;
+        return { ...o, project_id, invoice: (o.invoices ?? [])[0] ?? null };
+      });
     },
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
