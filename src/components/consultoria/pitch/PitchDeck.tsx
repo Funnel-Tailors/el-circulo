@@ -18,9 +18,19 @@ interface Ctx {
   goOnboarding: () => void;
 }
 
-const Eyebrow = ({ children }: { children: React.ReactNode }) => (
-  <p className="mb-6 text-[11px] uppercase tracking-[0.28em] text-foreground/40">{children}</p>
-);
+const Eyebrow = ({ children }: { children: React.ReactNode }) => {
+  const reduce = useReducedMotion();
+  return (
+    <motion.p
+      className="mb-6 text-[11px] uppercase tracking-[0.28em] text-foreground/40"
+      initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8, letterSpacing: "0.45em" }}
+      animate={{ opacity: 1, y: 0, letterSpacing: "0.28em" }}
+      transition={{ duration: 0.7, ease: EASE, delay: reduce ? 0 : 0.12 }}
+    >
+      {children}
+    </motion.p>
+  );
+};
 
 // Cada slide es una pantalla completa, centrada.
 const Shell = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
@@ -403,9 +413,28 @@ export const PitchDeck = () => {
   const variants = reduce
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
     : {
-        initial: (d: number) => ({ opacity: 0, x: d > 0 ? 48 : -48, filter: "blur(6px)" }),
-        animate: { opacity: 1, x: 0, filter: "blur(0px)" },
-        exit: (d: number) => ({ opacity: 0, x: d > 0 ? -48 : 48, filter: "blur(6px)" }),
+        // Entra con profundidad: empuja desde el fondo, ligero deslizamiento
+        // lateral y desenfoque que se resuelve — sensación de cámara enfocando.
+        initial: (d: number) => ({
+          opacity: 0,
+          x: d > 0 ? 64 : -64,
+          scale: 0.965,
+          filter: "blur(10px)",
+        }),
+        animate: {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          filter: "blur(0px)",
+          transition: { duration: 0.6, ease: EASE },
+        },
+        exit: (d: number) => ({
+          opacity: 0,
+          x: d > 0 ? -52 : 52,
+          scale: 1.02,
+          filter: "blur(10px)",
+          transition: { duration: 0.38, ease: EASE },
+        }),
       };
 
   return (
@@ -421,26 +450,84 @@ export const PitchDeck = () => {
         touchX.current = null;
       }}
     >
+      {/* Ambiente: vignette + glow a la deriva, muy sutil, no daña legibilidad */}
+      {!reduce && (
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(120% 100% at 50% -10%, rgba(255,255,255,0.05), rgba(255,255,255,0) 55%)",
+            }}
+          />
+          <motion.div
+            className="absolute -inset-[20%]"
+            style={{
+              background:
+                "radial-gradient(40% 40% at 30% 35%, rgba(255,255,255,0.045), rgba(255,255,255,0) 70%)",
+            }}
+            animate={{ x: ["-6%", "8%", "-6%"], y: ["-4%", "6%", "-4%"] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              boxShadow: "inset 0 0 220px 60px rgba(0,0,0,0.7)",
+            }}
+          />
+        </div>
+      )}
+
       {/* Rail de progreso */}
       <div className="absolute left-0 right-0 top-0 z-30 flex items-center gap-1.5 px-4 py-3 sm:gap-2 sm:px-6">
-        {SLIDES.map((s, i) => (
-          <button
-            key={s.id}
-            onClick={() => go(i)}
-            className="group flex-1"
-            aria-label={s.label}
-            title={s.label}
-          >
-            <div
-              className={`h-1 rounded-full transition-all duration-300 ${
-                i === slide ? "bg-white" : i < slide ? "bg-white/40" : "bg-white/12"
-              }`}
-            />
-          </button>
-        ))}
+        {SLIDES.map((s, i) => {
+          const done = i < slide;
+          const active = i === slide;
+          return (
+            <button
+              key={s.id}
+              onClick={() => go(i)}
+              className="group flex-1"
+              aria-label={s.label}
+              title={s.label}
+            >
+              <div className="relative h-1 overflow-hidden rounded-full bg-white/12">
+                {/* Tramos ya vistos: lleno tenue */}
+                <div
+                  className={`absolute inset-0 rounded-full bg-white/40 transition-opacity duration-300 ${
+                    done ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+                {/* Tramo activo: relleno animado izquierda→derecha + glow */}
+                <motion.div
+                  className="absolute inset-0 origin-left rounded-full bg-white"
+                  style={{ boxShadow: active ? "0 0 10px rgba(255,255,255,0.55)" : "none" }}
+                  initial={false}
+                  animate={{ scaleX: active ? 1 : done ? 1 : 0, opacity: active ? 1 : 0 }}
+                  transition={
+                    active
+                      ? { duration: reduce ? 0 : 0.55, ease: EASE }
+                      : { duration: 0.2 }
+                  }
+                />
+              </div>
+            </button>
+          );
+        })}
       </div>
       <div className="absolute left-1/2 top-6 z-30 -translate-x-1/2 text-[10px] uppercase tracking-[0.25em] text-foreground/35">
-        {SLIDES[slide].label} · {slide + 1}/{SLIDES.length}
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={slide}
+            className="inline-block"
+            initial={reduce ? { opacity: 0 } : { opacity: 0, y: -4, filter: "blur(3px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, y: 4, filter: "blur(3px)" }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            {SLIDES[slide].label} · {slide + 1}/{SLIDES.length}
+          </motion.span>
+        </AnimatePresence>
       </div>
 
       {/* Zonas de click (bordes) */}
@@ -458,7 +545,7 @@ export const PitchDeck = () => {
       />
 
       {/* Slide actual */}
-      <div className="h-full overflow-y-auto">
+      <div className="relative z-10 h-full overflow-y-auto">
         <AnimatePresence mode="wait" custom={dir} initial={false}>
           <motion.div
             key={SLIDES[slide].id}
@@ -468,7 +555,8 @@ export const PitchDeck = () => {
             animate="animate"
             exit="exit"
             transition={{ duration: 0.45, ease: EASE }}
-            className="min-h-full"
+            className="min-h-full will-change-transform"
+            style={{ transformStyle: "preserve-3d" }}
           >
             {SLIDES[slide].render(ctx)}
           </motion.div>
