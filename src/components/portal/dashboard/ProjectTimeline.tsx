@@ -4,7 +4,7 @@
 // 14 hitos con phase grouping · carbon/white/glow · framer-motion
 // ============================================================================
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import type { Milestone } from "@/components/portal/ProjectRoadmap";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
@@ -169,7 +169,6 @@ interface ProjectTimelineProps {
 
 export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pctOverride }) => {
   const prefersReduced = useReducedMotion();
-  const beamRef = useRef<HTMLDivElement>(null);
 
   const total = milestones.length;
   const done = milestones.filter((m) => m.status === "done").length;
@@ -228,26 +227,6 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
           </div>
         </div>
 
-        {/* Phase labels row — hidden on mobile where space is too tight */}
-        <div className="relative mb-1.5 hidden sm:block">
-          <div className="flex w-full">
-            {phaseGroups.map((g) => {
-              const widthPct = ((g.end - g.start + 1) / total) * 100;
-              return (
-                <div
-                  key={g.label}
-                  style={{ width: `${widthPct}%` }}
-                  className="flex items-center overflow-hidden"
-                >
-                  <span className="text-[9px] uppercase tracking-[0.12em] text-white/20 font-medium truncate pr-1">
-                    {g.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
         {/* Timeline track */}
         <div className="relative" style={{ height: 28 }}>
           {/* Background track */}
@@ -261,33 +240,7 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
             }}
           />
 
-          {/* Glowing beam fill — animates left→right */}
-          <div
-            ref={beamRef}
-            className="absolute left-0 rounded-full overflow-hidden"
-            style={{
-              top: "50%",
-              transform: "translateY(-50%)",
-              height: 2,
-              width: prefersReduced ? `${pct}%` : "0%",
-              transition: prefersReduced
-                ? "none"
-                : `width 1.4s cubic-bezier(${EASE_OUT_EXPO.join(",")})`,
-            }}
-          >
-            {/* We animate via state-driven width */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(to right, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.85) 100%)",
-                boxShadow: "0 0 8px 1px rgba(255,255,255,0.3)",
-              }}
-            />
-          </div>
-
-          {/* Animated beam via motion */}
+          {/* Beam animado (relleno hasta el progreso) */}
           <motion.div
             className="absolute left-0 rounded-full"
             style={{
