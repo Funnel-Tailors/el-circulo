@@ -55,18 +55,16 @@ serve(async (req) => {
       onboardings = data
     }
     const ids = (onboardings ?? []).map((o: any) => o.id)
-    if (!ids.length) return json({ invoice: null })
+    if (!ids.length) return json({ invoices: [], invoicesFull: [] })
 
-    // Última factura emitida (campos completos para la factura on-brand)
-    const { data: invoices } = await supabase
+    // Todas las facturas emitidas/pagadas del cliente (1 o 2 plazos), ordenadas
+    const { data: invRows } = await supabase
       .from('invoices')
-      .select('onboarding_id, invoice_number, storage_path, invoice_date, due_date, issuer, legal_name, tax_id, base_amount_cents, tax_rate, tax_amount_cents, total_amount_cents, currency, status')
+      .select('id, onboarding_id, invoice_number, storage_path, invoice_date, due_date, issuer, legal_name, tax_id, base_amount_cents, tax_rate, tax_amount_cents, total_amount_cents, currency, status, installment_index, installment_count')
       .in('onboarding_id', ids)
       .in('status', ['issued', 'paid'])
-      .order('issued_at', { ascending: false })
-      .limit(1)
-
-    const inv = (invoices ?? [])[0]
+      .order('installment_index', { ascending: true, nullsFirst: true })
+      .order('invoice_date', { ascending: true })
 
     // Acuerdo firmado del cliente
     const { data: agreements } = await supabase
@@ -77,47 +75,28 @@ serve(async (req) => {
       .limit(1)
     const agreement = (agreements ?? [])[0] ?? null
 
-    if (!inv) return json({ invoice: null, invoiceFull: null, agreement, billTo: (onboardings ?? [])[0] ?? {} })
+    const claimedByOb: Record<string, boolean> = {}
+    for (const o of onboardings ?? []) claimedByOb[o.id] = !!(o as any).payment_claimed_at
+    const billToBase = (onboardings ?? [])[0] ?? {}
 
-    let url: string | null = null
-    if (inv.storage_path) {
-      const { data: signed } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(inv.storage_path, 300)
-      url = signed?.signedUrl ?? null
+    if (!invRows?.length) {
+      return json({ invoices: [], invoicesFull: [], invoice: null, invoiceFull: null, agreement, billTo: billToBase })
     }
 
-    const billTo = (onboardings ?? []).find((o: any) => o.id === inv.onboarding_id) ?? (onboardings ?? [])[0] ?? {}
-
-    // Nota de plan de pago (plazos), calculada desde la fecha de la factura
-    const { data: planRow } = await supabase
-      .from('app_settings').select('value').eq('key', 'consulting_payment_plan').maybeSingle()
-    const plan: any = planRow?.value
-    const installmentNote = (() => {
-      if (!plan?.enabled || !inv.invoice_date) return null
-      const n = Number(plan.installments) || 2
-      const eachCents = Number(plan.installment_amount_cents) || Math.round((inv.total_amount_cents || 0) / n)
-      const daysBetween = Number(plan.days_between) || 30
-      const fmt = (c: number) => {
-        const sym = inv.currency === 'EUR' ? '€' : inv.currency === 'USD' ? '$' : ''
-        const [int, dec] = (Math.round(c) / 100).toFixed(2).split('.')
-        const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-        return sym ? `${sym}${grouped}.${dec}` : `${grouped}.${dec} ${inv.currency}`
+    const invoicesOut: any[] = []
+    const invoicesFull: any[] = []
+    for (const inv of invRows) {
+      let url: string | null = null
+      if (inv.storage_path) {
+        const { data: signed } = await supabase.storage.from('invoices').createSignedUrl(inv.storage_path, 300)
+        url = signed?.signedUrl ?? null
       }
-      const addDaysIso = (iso: string, days: number) => {
-        const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10)
-      }
-      const lines = [`Disponible en ${n} plazos de ${fmt(eachCents)}.`]
-      for (let i = 0; i < n; i++) lines.push(`Plazo ${i + 1} (${fmt(eachCents)}): ${addDaysIso(inv.invoice_date, i * daysBetween)}`)
-      return lines.join('\n')
-    })()
-
-    const paymentStatus = inv.status === 'paid'
-      ? 'paid'
-      : (billTo as any)?.payment_claimed_at ? 'review' : 'pending'
-
-    return json({
-      invoice: {
+      const idx = inv.installment_index
+      const paymentStatus = inv.status === 'paid'
+        ? 'paid'
+        : ((idx == null || idx === 1) && claimedByOb[inv.onboarding_id]) ? 'review' : 'pending'
+      invoicesOut.push({
+        id: inv.id,
         invoice_number: inv.invoice_number,
         invoice_date: inv.invoice_date,
         due_date: inv.due_date,
@@ -126,8 +105,10 @@ serve(async (req) => {
         url,
         status: inv.status,
         payment_status: paymentStatus,
-      },
-      invoiceFull: {
+        installment_index: inv.installment_index,
+        installment_count: inv.installment_count,
+      })
+      invoicesFull.push({
         invoice_number: inv.invoice_number,
         invoice_date: inv.invoice_date,
         due_date: inv.due_date,
@@ -139,8 +120,17 @@ serve(async (req) => {
         tax_amount_cents: inv.tax_amount_cents,
         total_amount_cents: inv.total_amount_cents,
         currency: inv.currency,
-        installment_note: installmentNote,
-      },
+        installment_index: inv.installment_index,
+        installment_count: inv.installment_count,
+      })
+    }
+    const billTo = (onboardings ?? []).find((o: any) => o.id === invRows[0].onboarding_id) ?? billToBase
+
+    return json({
+      invoices: invoicesOut,
+      invoicesFull,
+      invoice: invoicesOut[0] ?? null,        // compat
+      invoiceFull: invoicesFull[0] ?? null,    // compat
       agreement,
       billTo,
     })

@@ -32,6 +32,8 @@ interface OnboardingResult {
   invoice_number: string;
   invoice_one_time_url: string | null;
   invoice_failed: boolean;
+  installment_count?: number;
+  first_amount_cents?: number;
 }
 
 const ConsultoriaOnboarding = () => {
@@ -192,7 +194,11 @@ const ConsultoriaOnboarding = () => {
                   invoiceUrl={result?.invoice_one_time_url}
                   invoiceFailed={result?.invoice_failed}
                   paymentInstructions={paymentInstructions}
-                  totalLabel={cfg ? formatMoney(cfg.totalCents, cfg.currency) : undefined}
+                  totalLabel={
+                    (result?.installment_count ?? 1) > 1
+                      ? `Plazo 1 de ${result!.installment_count} · ${formatMoney(result!.first_amount_cents ?? 0, cfg?.currency || "EUR")}`
+                      : cfg ? formatMoney(cfg.totalCents, cfg.currency) : undefined
+                  }
                   paymentModality={methods.getValues("payment_modality")}
                   wiseUrl={cfg?.paymentLinks?.wise_url}
                   onPaid={handlePaid}

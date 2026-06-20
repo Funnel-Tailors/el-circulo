@@ -4,8 +4,8 @@
 // sync GHL fire-and-forget. Modelado en submit-lead-to-ghl.
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1'
-import { renderInvoicePdf } from './pdf.ts'
 import { MILESTONE_TEMPLATE } from './roadmap.ts'
+import { issueInstallments, defaultInstallments } from './invoices.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -113,25 +113,8 @@ serve(async (req) => {
     const dueDays = Number(series.due_days) || 7
     const dueDate = isoDate(addDays(now, dueDays))
 
-    // ── Plan de pago (nota informativa de plazos en la factura) ──
+    // ── Plan de pago por defecto (plazos reales = N facturas) ──
     const paymentPlan = cfg.consulting_payment_plan ?? null
-    const installmentNote = (() => {
-      if (!paymentPlan?.enabled) return null
-      const n = Number(paymentPlan.installments) || 2
-      const eachCents = Number(paymentPlan.installment_amount_cents) || Math.round(totalCents / n)
-      const daysBetween = Number(paymentPlan.days_between) || 30
-      const fmt = (c: number) => {
-        const sym = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : ''
-        const [int, dec] = (Math.round(c) / 100).toFixed(2).split('.')
-        const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-        return sym ? `${sym}${grouped}.${dec}` : `${grouped}.${dec} ${currency}`
-      }
-      const lines = [`Disponible en ${n} plazos de ${fmt(eachCents)}.`]
-      for (let i = 0; i < n; i++) {
-        lines.push(`Plazo ${i + 1} (${fmt(eachCents)}): ${isoDate(addDays(now, i * daysBetween))}`)
-      }
-      return lines.join('\n')
-    })()
 
     // ── Metadatos de firma (server-side) ──
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null
@@ -221,22 +204,7 @@ serve(async (req) => {
       console.error('project instantiation failed (non-blocking):', projErr)
     }
 
-    // ── 3. Nº de factura atómico + PDF + Storage ──
-    const prefix = series.prefix || 'INV_'
-    const padding = Number(series.padding) || 3
-    let invoiceNumber = ''
-    let invoiceOneTimeUrl: string | null = null
-    let storagePath: string | null = null
-    let invoiceFailed = false
-
-    const { data: seqData, error: seqErr } = await supabase.rpc('next_invoice_number', { _series: 'INV' })
-    if (seqErr || seqData == null) {
-      console.error('next_invoice_number error:', seqErr)
-      return json({ success: false, error: 'No se pudo asignar número de factura' }, 500)
-    }
-    const sequence = Number(seqData)
-    invoiceNumber = `${prefix}${pad(sequence, padding)}`
-
+    // ── 3. Facturas por plazo (plan por defecto: 2× €5k, o 1 si plan off) ──
     const paymentNote = (() => {
       if (payment_modality === 'wise') {
         return `Transferencia Wise:\n${issuer.wise_details || issuer.iban || 'Solicita los datos a tu contacto.'}`
@@ -250,67 +218,27 @@ serve(async (req) => {
       return 'Sigue las instrucciones de pago indicadas en el onboarding.'
     })()
 
+    const installmentInputs = defaultInstallments({ plan: paymentPlan, baseTotalCents: baseCents, invoiceDate, dueDays })
+    let issued
     try {
-      const pdfBytes = await renderInvoicePdf({
-        invoice_number: invoiceNumber,
-        invoice_date: invoiceDate,
-        due_date: dueDate,
-        issuer,
-        client_legal_name: legal_name,
-        client_tax_id: tax_id || null,
-        client_address: fiscal_address,
-        client_city: city || null,
-        client_postal_code: postal_code || null,
-        client_country: country_code,
-        client_email: email,
-        concept: 'Consultoría DFY — El Círculo (3 meses)',
-        base_amount_cents: baseCents,
-        tax_enabled: taxEnabled,
-        tax_rate: taxRate,
-        tax_amount_cents: taxCents,
-        total_amount_cents: totalCents,
-        currency,
-        payment_modality,
-        payment_note: paymentNote,
-        installment_note: installmentNote,
+      issued = await issueInstallments({
+        supabase, onboardingId,
+        billTo: { legal_name, tax_id: tax_id || null, fiscal_address, city: city || null, postal_code: postal_code || null, country_code, email },
+        issuer, series, taxEnabled, taxRate, currency, payment_modality, paymentNote, invoiceDate,
+        installments: installmentInputs,
       })
-
-      storagePath = `${onboardingId}/${invoiceNumber}.pdf`
-      const { error: upErr } = await supabase.storage
-        .from('invoices')
-        .upload(storagePath, pdfBytes, { contentType: 'application/pdf', upsert: true })
-      if (upErr) throw upErr
-
-      const { data: signed } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(storagePath, 300)
-      invoiceOneTimeUrl = signed?.signedUrl ?? null
-    } catch (pdfErr) {
-      console.error('PDF/upload failed (non-blocking):', pdfErr)
-      invoiceFailed = true
-      storagePath = null
+    } catch (invErr) {
+      console.error('issueInstallments failed:', invErr)
+      return json({ success: false, error: 'No se pudieron emitir las facturas' }, 500)
     }
-
-    // ── 4. Fila de factura (issued, o void si falló el PDF) ──
-    await supabase.from('invoices').insert({
-      onboarding_id: onboardingId,
-      invoice_number: invoiceNumber,
-      series: 'INV',
-      sequence,
-      year: now.getUTCFullYear(),
-      status: invoiceFailed ? 'void' : 'issued',
-      storage_path: storagePath,
-      invoice_date: invoiceDate,
-      due_date: dueDate,
-      issuer,
-      legal_name,
-      tax_id: tax_id || null,
-      base_amount_cents: baseCents,
-      tax_rate: taxRate,
-      tax_amount_cents: taxCents,
-      total_amount_cents: totalCents,
-      currency,
-    })
+    const invoiceFailed = issued.anyFailed
+    const firstInv = issued.invoices[0]
+    const invoiceNumber = firstInv?.invoice_number ?? ''
+    let invoiceOneTimeUrl: string | null = null
+    if (firstInv?.storage_path) {
+      const { data: signed } = await supabase.storage.from('invoices').createSignedUrl(firstInv.storage_path, 300)
+      invoiceOneTimeUrl = signed?.signedUrl ?? null
+    }
 
     await supabase
       .from('consulting_onboardings')
@@ -337,6 +265,8 @@ serve(async (req) => {
       invoice_number: invoiceNumber,
       invoice_one_time_url: invoiceOneTimeUrl,
       invoice_failed: invoiceFailed,
+      installment_count: firstInv?.installment_count ?? 1,
+      first_amount_cents: firstInv?.total_amount_cents ?? totalCents,
     })
   } catch (e) {
     console.error('create-onboarding error:', e)

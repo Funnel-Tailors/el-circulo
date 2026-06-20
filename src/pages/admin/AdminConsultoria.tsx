@@ -259,7 +259,7 @@ function ConfigTab() {
         <h3 className="font-semibold text-sm text-foreground">Plan de pago (plazos)</h3>
         <label className="flex items-center gap-3 cursor-pointer">
           <Checkbox checked={planEnabled} onCheckedChange={(c) => setPlanEnabled(c === true)} />
-          <span className="text-sm text-foreground/80">Mostrar opción de pago a plazos en la factura</span>
+          <span className="text-sm text-foreground/80">Facturar en 2 plazos por defecto (al crear clientes y en el onboarding)</span>
         </label>
         {planEnabled && (
           <div className="grid sm:grid-cols-2 gap-3">
@@ -267,7 +267,7 @@ function ConfigTab() {
             <div className="space-y-1.5"><Label className="text-foreground/80">Días entre plazos</Label><GlowInput type="number" value={planDays} onChange={(e) => setPlanDays(Number(e.target.value))} /></div>
           </div>
         )}
-        <p className="text-xs text-muted-foreground">2 plazos. La factura sigue siendo una sola, mostrando la nota de plazos con fechas.</p>
+        <p className="text-xs text-muted-foreground">Plan por defecto: <span className="text-foreground/70">2 facturas reales</span> (una por plazo). En el detalle de cada cliente puedes cambiarlo a pago único o editar importes/números.</p>
       </div>
 
       <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">

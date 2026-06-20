@@ -25,9 +25,10 @@ import { EnergyCard, EnergyCardHeader, EnergyCardContent, GlowInput, MagneticBut
 import "@/components/premium/premium-effects.css";
 
 interface MyInvoice {
-  invoice_number: string; invoice_date: string; due_date: string | null;
+  id?: string; invoice_number: string; invoice_date: string; due_date: string | null;
   total_amount_cents: number; currency: string; url: string | null;
   payment_status?: "pending" | "review" | "paid";
+  installment_index?: number | null; installment_count?: number | null;
 }
 
 const PaymentBadge = ({ status }: { status?: string }) => {
@@ -38,6 +39,21 @@ const PaymentBadge = ({ status }: { status?: string }) => {
   };
   const m = map[status ?? "pending"] ?? map.pending;
   return <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.c}`}>{m.l}</span>;
+};
+
+// Aviso sutil de plazo pendiente (solo si hay alguno sin pagar).
+const PendingPaymentNotice = ({ invoices }: { invoices: MyInvoice[] }) => {
+  const pending = (invoices ?? []).filter((i) => i.payment_status !== "paid");
+  if (!pending.length) return null;
+  const next = pending[0];
+  const label = (next.installment_count ?? 1) > 1 ? `Plazo ${next.installment_index} de ${next.installment_count}` : "Tu factura";
+  return (
+    <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-2.5 text-sm">
+      <span className="font-medium text-amber-300/90">{label} pendiente</span>
+      <span className="text-foreground/60">{formatMoney(next.total_amount_cents, next.currency)}{next.due_date ? ` · vence ${next.due_date}` : ""}</span>
+      {pending.length > 1 && <span className="text-xs text-foreground/40">(+{pending.length - 1} más)</span>}
+    </div>
+  );
 };
 
 type SectionId = "resumen" | "vsl" | "formacion" | "documentos" | "agenda" | "cuenta";
@@ -119,10 +135,11 @@ const DocRow = ({ title, subtitle, onOpen, badge }: { title: string; subtitle: s
   </div>
 );
 
-const DocumentsSection = ({ invoice, invoiceFull, agreement, billTo, loading }: {
-  invoice: MyInvoice | null; invoiceFull: InvoiceDoc | null; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean;
+const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading }: {
+  invoices: MyInvoice[]; invoicesFull: InvoiceDoc[]; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean;
 }) => {
-  const [view, setView] = useState<null | "acuerdo" | "factura">(null);
+  const [view, setView] = useState<null | "acuerdo" | number>(null);
+  const hasDocs = invoices.length > 0 || !!agreement;
   return (
     <>
       <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
@@ -131,15 +148,20 @@ const DocumentsSection = ({ invoice, invoiceFull, agreement, billTo, loading }: 
         </EnergyCardHeader>
         <EnergyCardContent>
           {loading ? <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-foreground/40" /></div>
-            : (invoice || agreement) ? (
+            : hasDocs ? (
               <div className="grid sm:grid-cols-2 gap-3 pb-1">
-                {invoiceFull && invoice && <DocRow title={`Factura ${invoice.invoice_number}`} badge={<PaymentBadge status={invoice.payment_status} />} subtitle={`${formatMoney(invoice.total_amount_cents, invoice.currency)}${invoice.due_date ? ` · vence ${invoice.due_date}` : ""}`} onOpen={() => setView("factura")} />}
+                {invoices.map((iv, i) => {
+                  const title = (iv.installment_count ?? 1) > 1
+                    ? `Factura ${iv.invoice_number} · Plazo ${iv.installment_index}/${iv.installment_count}`
+                    : `Factura ${iv.invoice_number}`;
+                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={`${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}`} onOpen={() => setView(i)} />;
+                })}
                 {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>
             ) : <p className="text-sm text-foreground/60 pb-2">No hay documentos todavía.</p>}
         </EnergyCardContent>
       </EnergyCard>
-      {view === "factura" && invoiceFull && <DocumentViewer onClose={() => setView(null)}><InvoiceDocument inv={invoiceFull} billTo={billTo} /></DocumentViewer>}
+      {typeof view === "number" && invoicesFull[view] && <DocumentViewer onClose={() => setView(null)}><InvoiceDocument inv={invoicesFull[view]} billTo={billTo} /></DocumentViewer>}
       {view === "acuerdo" && agreement && <DocumentViewer onClose={() => setView(null)}><AgreementDocument agreement={agreement} /></DocumentViewer>}
     </>
   );
@@ -151,8 +173,8 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const previewId = new URLSearchParams(window.location.search).get("preview") || undefined;
   const invokeBody = previewId ? { body: { onboarding_id: previewId } } : undefined;
   const [section, setSection] = useState<SectionId>("resumen");
-  const [invoice, setInvoice] = useState<MyInvoice | null>(null);
-  const [invoiceFull, setInvoiceFull] = useState<InvoiceDoc | null>(null);
+  const [invoices, setInvoices] = useState<MyInvoice[]>([]);
+  const [invoicesFull, setInvoicesFull] = useState<InvoiceDoc[]>([]);
   const [agreement, setAgreement] = useState<SignedAgreement | null>(null);
   const [billTo, setBillTo] = useState<BillTo>({});
   const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -177,8 +199,8 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
       ]);
       if (!inv.error) {
         const d = inv.data as any;
-        setInvoice(d?.invoice ?? null);
-        setInvoiceFull(d?.invoiceFull ?? null);
+        setInvoices(d?.invoices ?? []);
+        setInvoicesFull(d?.invoicesFull ?? []);
         setAgreement(d?.agreement ?? null);
         setBillTo(d?.billTo ?? {});
       }
@@ -245,6 +267,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl md:text-3xl">Portal de <span className="glow">cliente</span></h1>
                     <p className="text-sm text-foreground/60">{previewId ? (billTo.email || "Cliente") : session.user.email}</p>
                   </div>
+                  <PendingPaymentNotice invoices={invoices} />
                   <DeliveryDashboard
                     data={dashboard}
                     loading={dashLoading}
@@ -258,7 +281,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}
-              {section === "documentos" && <DocumentsSection invoice={invoice} invoiceFull={invoiceFull} agreement={agreement} billTo={billTo} loading={loading} />}
+              {section === "documentos" && <DocumentsSection invoices={invoices} invoicesFull={invoicesFull} agreement={agreement} billTo={billTo} loading={loading} />}
               {section === "agenda" && (
                 <>
                   <SupportCallCard email={session.user.email ?? undefined} name={name} />

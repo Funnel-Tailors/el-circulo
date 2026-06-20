@@ -403,12 +403,34 @@ const PayBadge = ({ inv, claimed }: { inv: any; claimed: boolean }) => {
   return <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", cls)}>{paid ? "Pagado" : claimed ? "En revisión" : "Pendiente"}</span>;
 };
 
+// Estado agregado de un cliente con varias facturas (plazos).
+const aggPay = (invoices: any[]): "all" | "partial" | "none" => {
+  const list = (invoices ?? []).filter((i) => i?.status !== "void");
+  if (!list.length) return "none";
+  if (list.every((i) => i.status === "paid")) return "all";
+  if (list.some((i) => i.status === "paid")) return "partial";
+  return "none";
+};
+const AggBadge = ({ invoices, claimed }: { invoices: any[]; claimed: boolean }) => {
+  const s = aggPay(invoices);
+  const [label, cls] = s === "all"
+    ? ["Pagado", "border-emerald-400/30 bg-emerald-400/10 text-emerald-400"]
+    : s === "partial"
+      ? ["Parcial", "border-sky-400/30 bg-sky-400/10 text-sky-400"]
+      : claimed
+        ? ["En revisión", "border-amber-400/30 bg-amber-400/10 text-amber-400"]
+        : ["Pendiente", "border-white/15 bg-white/5 text-foreground/50"];
+  return <span className={cn("shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", cls)}>{label}</span>;
+};
+
 // ── Crear cliente (dialog) ──
 const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) => {
   const [f, setF] = useState<any>({ legal_name: "", tax_id: "", fiscal_address: "", city: "", postal_code: "", country_code: "ES", location_id: "", api_key: "", calendar_id: "" });
   const [genInvoice, setGenInvoice] = useState(true);
-  const [amount, setAmount] = useState(10000);
-  const [invNumber, setInvNumber] = useState("");
+  const [plan2, setPlan2] = useState(true); // 2 plazos por defecto
+  const [total, setTotal] = useState(10000);
+  const [n1, setN1] = useState("");
+  const [n2, setN2] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<any>(null);
   const set = (k: string, v: string) => setF((p: any) => ({ ...p, [k]: v }));
@@ -417,7 +439,7 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
     if (!open) return;
     setResult(null);
     supabase.from("app_settings").select("value").eq("key", "consulting_price").maybeSingle()
-      .then(({ data }) => setAmount((Number((data?.value as any)?.base_amount_cents) || 1000000) / 100));
+      .then(({ data }) => setTotal((Number((data?.value as any)?.base_amount_cents) || 1000000) / 100));
   }, [open]);
 
   const submit = async () => {
@@ -428,8 +450,12 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
     const c = data as any;
     let invoice_number: string | null = null;
     if (genInvoice) {
-      const { data: inv } = await supabase.functions.invoke("admin-invoice", { body: { onboarding_id: c.onboarding_id, amount_cents: Math.round(Number(amount) * 100), invoice_number: invNumber.trim() || undefined } });
-      invoice_number = (inv as any)?.invoice_number ?? null;
+      const half = Math.round(Number(total) / 2);
+      const installments = plan2
+        ? [{ amount_cents: half * 100, invoice_number: n1.trim() || undefined }, { amount_cents: (Math.round(Number(total)) - half) * 100, invoice_number: n2.trim() || undefined }]
+        : [{ amount_cents: Math.round(Number(total) * 100), invoice_number: n1.trim() || undefined }];
+      const { data: inv } = await supabase.functions.invoke("admin-invoice", { body: { onboarding_id: c.onboarding_id, installments } });
+      invoice_number = ((inv as any)?.invoices ?? []).map((x: any) => x.invoice_number).join(" · ") || null;
     }
     setBusy(false);
     setResult({ username: c.username, password: c.password, invoice_number });
@@ -460,11 +486,24 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
               </div>
               <div className="space-y-1.5"><Label className="text-xs text-foreground/80">API Key (PIT)</Label><GlowInput type="password" value={f.api_key} onChange={(e) => set("api_key", e.target.value)} /></div>
               <div className="pt-1 rounded-xl border border-white/10 p-3 space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={genInvoice} onCheckedChange={(c) => setGenInvoice(c === true)} /><span className="text-sm text-foreground/80">Generar factura</span></label>
+                <label className="flex items-center gap-2 cursor-pointer"><Checkbox checked={genInvoice} onCheckedChange={(c) => setGenInvoice(c === true)} /><span className="text-sm text-foreground/80">Generar factura(s)</span></label>
                 {genInvoice && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Importe (€)</Label><GlowInput type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} /></div>
-                    <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Nº factura</Label><GlowInput value={invNumber} onChange={(e) => setInvNumber(e.target.value)} placeholder="vacío = correlativo" /></div>
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Total (€)</Label><GlowInput type="number" value={total} onChange={(e) => setTotal(Number(e.target.value))} /></div>
+                      <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Plan</Label>
+                        <div className="flex gap-1">
+                          {([[false, "1 pago"], [true, "2 plazos"]] as const).map(([v, lbl]) => (
+                            <button key={lbl} type="button" onClick={() => setPlan2(v)} className={cn("flex-1 rounded-lg border px-2 py-1.5 text-[11px] transition", plan2 === v ? "border-white/40 bg-white/10 text-foreground" : "border-white/10 text-foreground/55 hover:bg-white/5")}>{lbl}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Nº {plan2 ? "plazo 1" : "factura"}</Label><GlowInput value={n1} onChange={(e) => setN1(e.target.value)} placeholder="auto" /></div>
+                      {plan2 && <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Nº plazo 2</Label><GlowInput value={n2} onChange={(e) => setN2(e.target.value)} placeholder="auto" /></div>}
+                    </div>
+                    {plan2 && <p className="text-[11px] text-muted-foreground">2 facturas de {fmtMoney(Math.round(Number(total) / 2) * 100, "EUR")} cada una.</p>}
                   </div>
                 )}
               </div>
@@ -479,7 +518,7 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
               <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3 font-mono text-xs space-y-1">
                 <div>usuario: <span className="text-foreground">{result.username}</span></div>
                 <div>clave: <span className="text-foreground">{result.password}</span></div>
-                {result.invoice_number && <div>factura: <span className="text-foreground">{result.invoice_number}</span></div>}
+                {result.invoice_number && <div>factura(s): <span className="text-foreground">{result.invoice_number}</span></div>}
               </div>
             </div>
             <DialogFooter><Button variant="premium" onClick={onClose}>Hecho</Button></DialogFooter>
@@ -490,23 +529,57 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
   );
 };
 
-// ── Editar factura (importe + número) ──
-const InvoiceEdit = ({ client, onSaved, onClose }: { client: any; onSaved: () => void; onClose: () => void }) => {
-  const [amount, setAmount] = useState((client.total_amount_cents || 0) / 100);
-  const [num, setNum] = useState(client.invoice?.invoice_number ?? "");
+// ── Editar facturas / plan de pago (1 pago o 2 plazos) ──
+const PlanEditor = ({ client, onSaved, onClose }: { client: any; onSaved: () => void; onClose: () => void }) => {
+  const existing = (client.invoices ?? []).filter((i: any) => i.status !== "void");
+  const total = (client.total_amount_cents || 1000000) / 100;
+  const half = Math.round(total / 2);
+  const [mode, setMode] = useState<"1" | "2">(existing.length >= 2 ? "2" : "1");
+  const [a1, setA1] = useState(existing.length >= 2 ? (existing[0]?.total_amount_cents || 0) / 100 : total);
+  const [a2, setA2] = useState(existing.length >= 2 ? (existing[1]?.total_amount_cents || 0) / 100 : half);
+  const [n1, setN1] = useState(existing[0]?.invoice_number ?? "");
+  const [n2, setN2] = useState(existing[1]?.invoice_number ?? "");
   const [busy, setBusy] = useState(false);
+
+  const pick = (m: "1" | "2") => {
+    setMode(m);
+    if (m === "2") { setA1(half); setA2(total - half); } else { setA1(total); }
+  };
+
   const save = async () => {
+    const installments = mode === "2"
+      ? [{ amount_cents: Math.round(a1 * 100), invoice_number: n1.trim() || undefined }, { amount_cents: Math.round(a2 * 100), invoice_number: n2.trim() || undefined }]
+      : [{ amount_cents: Math.round(a1 * 100), invoice_number: n1.trim() || undefined }];
     setBusy(true);
-    const { data, error } = await supabase.functions.invoke("admin-invoice", { body: { onboarding_id: client.id, amount_cents: Math.round(Number(amount) * 100), invoice_number: num.trim() || undefined } });
+    const { data, error } = await supabase.functions.invoke("admin-invoice", { body: { onboarding_id: client.id, installments } });
     setBusy(false);
     if (error || !(data as any)?.ok) return toast.error((data as any)?.error || "No se pudo");
-    toast.success("Factura guardada"); onSaved(); onClose();
+    toast.success("Facturas guardadas"); onSaved(); onClose();
   };
+
   return (
-    <div className="mt-2 grid sm:grid-cols-3 gap-2 items-end rounded-xl border border-white/10 p-3">
-      <div className="space-y-1"><Label className="text-xs text-foreground/80">Importe (€)</Label><GlowInput type="number" value={amount} onChange={(e) => setAmount(Number(e.target.value))} /></div>
-      <div className="space-y-1"><Label className="text-xs text-foreground/80">Nº factura</Label><GlowInput value={num} onChange={(e) => setNum(e.target.value)} placeholder="vacío = correlativo" /></div>
-      <div className="flex gap-2"><Button size="sm" variant="premium" onClick={save} disabled={busy}>Guardar</Button><Button size="sm" variant="ghost" onClick={onClose}>Cancelar</Button></div>
+    <div className="mt-2 rounded-xl border border-white/10 p-3 space-y-3">
+      <div className="flex gap-2">
+        {([["1", "1 pago"], ["2", "2 plazos"]] as const).map(([m, lbl]) => (
+          <button key={m} onClick={() => pick(m)}
+            className={cn("flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition", mode === m ? "border-white/40 bg-white/10 text-foreground" : "border-white/10 text-foreground/55 hover:bg-white/5")}>
+            {lbl}
+          </button>
+        ))}
+      </div>
+      <div className="grid sm:grid-cols-2 gap-2 items-end">
+        <div className="space-y-1"><Label className="text-xs text-foreground/80">{mode === "2" ? "Plazo 1 (€)" : "Importe (€)"}</Label><GlowInput type="number" value={a1} onChange={(e) => setA1(Number(e.target.value))} /></div>
+        <div className="space-y-1"><Label className="text-xs text-foreground/80">Nº {mode === "2" ? "plazo 1" : "factura"}</Label><GlowInput value={n1} onChange={(e) => setN1(e.target.value)} placeholder="vacío = correlativo" /></div>
+        {mode === "2" && <>
+          <div className="space-y-1"><Label className="text-xs text-foreground/80">Plazo 2 (€)</Label><GlowInput type="number" value={a2} onChange={(e) => setA2(Number(e.target.value))} /></div>
+          <div className="space-y-1"><Label className="text-xs text-foreground/80">Nº plazo 2</Label><GlowInput value={n2} onChange={(e) => setN2(e.target.value)} placeholder="vacío = correlativo" /></div>
+        </>}
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="premium" onClick={save} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Guardar facturas</Button>
+        <Button size="sm" variant="ghost" onClick={onClose}>Cancelar</Button>
+      </div>
+      <p className="text-[11px] text-muted-foreground">Reemplaza las facturas no pagadas. Si ya hay un plazo pagado, no se puede re-planificar (marca el resto como pagado).</p>
     </div>
   );
 };
@@ -556,7 +629,6 @@ const KickoffView = ({ onboardingId }: { onboardingId: string }) => {
 
 // ── Detalle del cliente (todo en un sitio) ──
 const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => void }) => {
-  const inv = client.invoice;
   const [editInv, setEditInv] = useState(false);
 
   const { data: milestones, refetch: refetchMs } = useQuery({
@@ -575,8 +647,8 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
     const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
-  const confirmPay = async (paid: boolean) => {
-    const { data } = await supabase.functions.invoke("confirm-payment", { body: { onboarding_id: client.id, paid } });
+  const confirmPay = async (invoiceId: string, paid: boolean) => {
+    const { data } = await supabase.functions.invoke("confirm-payment", { body: { invoice_id: invoiceId, paid } });
     if ((data as any)?.ok) { toast.success(paid ? "Pago confirmado" : "Revertido"); onChanged(); }
     else toast.error("No se pudo");
   };
@@ -588,17 +660,29 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <div className="min-w-0"><h3 className="font-display font-black text-base text-foreground truncate">{client.legal_name}</h3><p className="text-xs text-muted-foreground truncate">{client.email}</p></div>
           <Button size="sm" variant="outline" onClick={() => window.open(`/portal?preview=${client.id}`, "_blank")} className="gap-1 shrink-0"><Eye className="h-4 w-4" /> Ver portal</Button>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="text-foreground/80">Factura <span className="font-mono">{inv?.invoice_number ?? "—"}</span> · {fmtMoney(client.total_amount_cents, client.currency)}</span>
-          <PayBadge inv={inv} claimed={!!client.payment_claimed_at} />
-          {inv?.status === "paid"
-            ? <button className="text-[11px] underline text-muted-foreground" onClick={() => confirmPay(false)}>revertir</button>
-            : <Button size="sm" variant="outline" className="h-6 text-[11px] px-2" onClick={() => confirmPay(true)}>Confirmar pago</Button>}
-          {inv?.storage_path && <Button size="sm" variant="ghost" className="h-7" title="PDF" onClick={() => downloadFrom("invoices", inv.storage_path)}><Download className="h-4 w-4" /></Button>}
-          {client.payment_proof_path && <Button size="sm" variant="ghost" className="h-7" title="Comprobante" onClick={() => downloadFrom("payment-proofs", client.payment_proof_path)}><Upload className="h-4 w-4" /></Button>}
-          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditInv((v) => !v)}>Editar factura</Button>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-foreground/80">{fmtMoney(client.total_amount_cents, client.currency)} total</span>
+            <AggBadge invoices={client.invoices} claimed={!!client.payment_claimed_at} />
+            <Button size="sm" variant="ghost" className="h-6 text-[11px] px-2 ml-auto" onClick={() => setEditInv((v) => !v)}>Editar facturas</Button>
+          </div>
+          {(client.invoices ?? []).map((iv: any) => (
+            <div key={iv.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] px-3 py-2 text-xs">
+              <span className="font-medium text-foreground/85">{iv.installment_count > 1 ? `Plazo ${iv.installment_index}/${iv.installment_count}` : "Factura"}</span>
+              <span className="font-mono text-foreground/65">{iv.invoice_number}</span>
+              <span className="text-foreground/60">{fmtMoney(iv.total_amount_cents, iv.currency)}</span>
+              {iv.due_date && <span className="text-foreground/35">vence {iv.due_date}</span>}
+              <PayBadge inv={iv} claimed={(iv.installment_index ?? 1) <= 1 && !!client.payment_claimed_at} />
+              {iv.status === "paid"
+                ? <button className="underline text-muted-foreground" onClick={() => confirmPay(iv.id, false)}>revertir</button>
+                : <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => confirmPay(iv.id, true)}>Confirmar</Button>}
+              {iv.storage_path && <Button size="sm" variant="ghost" className="h-6 w-6 p-0" title="PDF" onClick={() => downloadFrom("invoices", iv.storage_path)}><Download className="h-3.5 w-3.5" /></Button>}
+            </div>
+          ))}
+          {!(client.invoices ?? []).length && <p className="text-xs text-muted-foreground">Sin facturas. Usa "Editar facturas" para emitirlas.</p>}
+          {client.payment_proof_path && <Button size="sm" variant="ghost" className="h-7 text-xs gap-1" onClick={() => downloadFrom("payment-proofs", client.payment_proof_path)}><Upload className="h-3.5 w-3.5" /> Comprobante del cliente</Button>}
+          {editInv && <PlanEditor client={client} onSaved={onChanged} onClose={() => setEditInv(false)} />}
         </div>
-        {editInv && <InvoiceEdit client={client} onSaved={onChanged} onClose={() => setEditInv(false)} />}
       </div>
 
       {client.project_id ? (
@@ -630,14 +714,17 @@ export const ClientsManager = () => {
     queryKey: ["consulting-clients-full"],
     queryFn: async () => {
       const { data } = await supabase.from("consulting_onboardings")
-        .select("id, legal_name, email, status, payment_claimed_at, payment_proof_path, total_amount_cents, currency, created_at, ghl_contact_id, consulting_projects(id), invoices(invoice_number, storage_path, status, due_date, total_amount_cents)")
+        .select("id, legal_name, email, status, payment_claimed_at, payment_proof_path, total_amount_cents, currency, created_at, ghl_contact_id, consulting_projects(id), invoices(id, invoice_number, storage_path, status, due_date, total_amount_cents, currency, installment_index, installment_count)")
         .order("created_at", { ascending: false });
       return (data ?? []).map((o: any) => {
         // consulting_projects.onboarding_id es UNIQUE (1-a-1) → PostgREST devuelve
         // el embed como objeto, no como array.
         const cp = o.consulting_projects;
         const project_id = (Array.isArray(cp) ? cp[0]?.id : cp?.id) ?? null;
-        return { ...o, project_id, invoice: (o.invoices ?? [])[0] ?? null };
+        const invoices = (o.invoices ?? [])
+          .filter((i: any) => i.status !== "void")
+          .sort((a: any, b: any) => (a.installment_index ?? 1) - (b.installment_index ?? 1));
+        return { ...o, project_id, invoices };
       });
     },
   });
@@ -663,7 +750,7 @@ export const ClientsManager = () => {
             className={cn("text-left rounded-xl border p-3 transition-colors", c.id === selectedId ? "border-white/30 bg-white/10" : "border-white/10 hover:bg-white/5")}>
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0"><div className="text-sm font-medium text-foreground truncate">{c.legal_name}</div><div className="text-xs text-muted-foreground truncate">{c.email}</div></div>
-              <PayBadge inv={c.invoice} claimed={!!c.payment_claimed_at} />
+              <AggBadge invoices={c.invoices} claimed={!!c.payment_claimed_at} />
             </div>
           </button>
         ))}

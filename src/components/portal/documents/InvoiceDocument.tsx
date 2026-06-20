@@ -11,6 +11,8 @@ export interface InvoiceDoc {
   total_amount_cents: number;
   currency: string;
   installment_note?: string | null;
+  installment_index?: number | null;
+  installment_count?: number | null;
 }
 export interface BillTo {
   fiscal_address?: string | null;
@@ -46,6 +48,9 @@ export const InvoiceDocument = ({ inv, billTo }: { inv: InvoiceDoc; billTo: Bill
           <div className="text-right">
             <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 mb-1">Factura</div>
             <div className="font-display font-black text-2xl leading-none">{inv.invoice_number}</div>
+            {(inv.installment_count ?? 1) > 1 && (
+              <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-500">Plazo {inv.installment_index} de {inv.installment_count}</div>
+            )}
           </div>
         </div>
       </div>

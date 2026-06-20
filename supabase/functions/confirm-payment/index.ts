@@ -39,22 +39,34 @@ serve(async (req) => {
       .from('user_roles').select('role').eq('user_id', uid).eq('role', 'admin').limit(1)
     if (!roles?.length) return json({ ok: false, error: 'Solo admin' }, 403)
 
-    const { onboarding_id, paid } = await req.json()
-    if (!onboarding_id) return json({ ok: false, error: 'Falta onboarding_id' }, 400)
+    const { onboarding_id, invoice_id, paid } = await req.json()
     const setPaid = paid !== false // por defecto confirmar
 
+    // Marca UNA factura (por plazo) si llega invoice_id; si no, legacy: todas las del onboarding.
+    let obId = onboarding_id
+    if (invoice_id) {
+      const { data: inv } = await supabase.from('invoices').select('id, onboarding_id').eq('id', invoice_id).maybeSingle()
+      if (!inv) return json({ ok: false, error: 'Factura no encontrada' }, 404)
+      obId = inv.onboarding_id
+      await supabase.from('invoices').update({ status: setPaid ? 'paid' : 'issued' }).eq('id', invoice_id)
+    } else if (obId) {
+      await supabase.from('invoices').update({ status: setPaid ? 'paid' : 'issued' })
+        .eq('onboarding_id', obId).eq('status', setPaid ? 'issued' : 'paid')
+    } else {
+      return json({ ok: false, error: 'Falta invoice_id u onboarding_id' }, 400)
+    }
+
     const { data: ob } = await supabase
-      .from('consulting_onboardings')
-      .select('id, ghl_contact_id')
-      .eq('id', onboarding_id)
-      .maybeSingle()
+      .from('consulting_onboardings').select('id, ghl_contact_id').eq('id', obId).maybeSingle()
     if (!ob) return json({ ok: false, error: 'Onboarding no encontrado' }, 404)
 
-    if (setPaid) {
-      await supabase.from('invoices').update({ status: 'paid' }).eq('onboarding_id', onboarding_id).eq('status', 'issued')
-      await supabase.from('consulting_onboardings').update({ status: 'paid' }).eq('id', onboarding_id)
+    // El onboarding está 'paid' solo cuando TODAS sus facturas no anuladas están pagadas.
+    const { data: allInv } = await supabase.from('invoices').select('status').eq('onboarding_id', obId).neq('status', 'void')
+    const allPaid = (allInv ?? []).length > 0 && (allInv ?? []).every((r: any) => r.status === 'paid')
+    await supabase.from('consulting_onboardings').update({ status: allPaid ? 'paid' : 'invoiced' }).eq('id', obId)
 
-      // Tag GHL best-effort
+    // Tag GHL best-effort solo cuando está TODO pagado
+    if (allPaid) {
       try {
         const ghlToken = Deno.env.get('GHL_API_TOKEN')
         if (ghlToken && ob.ghl_contact_id) {
@@ -67,13 +79,9 @@ serve(async (req) => {
       } catch (e) {
         console.error('GHL tag failed (non-blocking):', e)
       }
-    } else {
-      // Revertir a pendiente
-      await supabase.from('invoices').update({ status: 'issued' }).eq('onboarding_id', onboarding_id).eq('status', 'paid')
-      await supabase.from('consulting_onboardings').update({ status: 'invoiced' }).eq('id', onboarding_id)
     }
 
-    return json({ ok: true })
+    return json({ ok: true, all_paid: allPaid })
   } catch (e) {
     console.error('confirm-payment error:', e)
     return json({ ok: false, error: 'Error inesperado' }, 500)
