@@ -393,6 +393,48 @@ const VslPanel = ({ projectId }: { projectId: string }) => {
   );
 };
 
+const FunnelPanel = ({ projectId }: { projectId: string }) => {
+  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    (async () => {
+      const { data } = await supabase
+        .from("consulting_projects")
+        .select("funnel_title, funnel_url")
+        .eq("id", projectId)
+        .maybeSingle();
+      setTitle((data as any)?.funnel_title ?? "");
+      setUrl((data as any)?.funnel_url ?? "");
+      setLoaded(true);
+    })();
+  }, [projectId]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("consulting_projects")
+      .update({ funnel_title: title || null, funnel_url: url.trim() || null })
+      .eq("id", projectId);
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
+    toast.success("Funnel guardado");
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">Funnel del cliente</h3>
+      <p className="text-xs text-muted-foreground">La URL del funnel/landing que le montas. El cliente lo ve embebido en su pestaña "Funnel" (con botón de abrir).</p>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Título (opcional)</Label><GlowInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="p.ej. Landing Memorable" /></div>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">URL del funnel</Label><GlowInput value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" /></div>
+      <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar funnel"}</Button>
+    </div>
+  );
+};
+
 const fmtMoney = (c: number, cur: string) => ((c || 0) / 100).toLocaleString("es-ES", { style: "currency", currency: cur || "EUR" });
 
 const PayBadge = ({ inv, claimed }: { inv: any; claimed: boolean }) => {
@@ -691,6 +733,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <KickoffView onboardingId={client.id} />
           <GhlConnectionPanel onboardingId={client.id} />
           <VslPanel projectId={client.project_id} />
+          <FunnelPanel projectId={client.project_id} />
           <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
             <div>
               <h3 className="font-semibold text-sm text-foreground">Ruta de ascensión · hitos del proyecto</h3>

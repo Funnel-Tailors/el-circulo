@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Loader2, Download, LogOut, FileText, LayoutDashboard,
-  GraduationCap, CalendarClock, KeyRound, ScrollText,
+  GraduationCap, CalendarClock, KeyRound, ScrollText, MonitorPlay,
 } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
 import { type Milestone } from "@/components/portal/ProjectRoadmap";
@@ -17,6 +17,7 @@ import { ChangePassword } from "@/components/portal/ChangePassword";
 import { SupportCallCard } from "@/components/portal/SupportCallCard";
 import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsLibrary";
 import { VslSection } from "@/components/portal/VslSection";
+import { FunnelSection } from "@/components/portal/FunnelSection";
 import { PortalReveal } from "@/components/portal/PortalReveal";
 import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
 import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/portal/documents/InvoiceDocument";
@@ -62,10 +63,11 @@ const PendingPaymentNotice = ({ invoices, paymentUrl }: { invoices: MyInvoice[];
   );
 };
 
-type SectionId = "resumen" | "vsl" | "formacion" | "documentos" | "agenda" | "cuenta";
+type SectionId = "resumen" | "vsl" | "funnel" | "formacion" | "documentos" | "agenda" | "cuenta";
 const NAV: { id: SectionId; label: string; icon: any }[] = [
   { id: "resumen", label: "Resumen", icon: LayoutDashboard },
   { id: "vsl", label: "VSL", icon: ScrollText },
+  { id: "funnel", label: "Funnel", icon: MonitorPlay },
   { id: "formacion", label: "Formación", icon: GraduationCap },
   { id: "documentos", label: "Documentos", icon: FileText },
   { id: "agenda", label: "Agenda", icon: CalendarClock },
@@ -290,6 +292,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               )}
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
+              {section === "funnel" && <FunnelSection url={project?.funnel_url} title={project?.funnel_title} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}
               {section === "documentos" && <DocumentsSection invoices={invoices} invoicesFull={invoicesFull} agreement={agreement} billTo={billTo} loading={loading} paymentUrl={paymentUrl} />}
