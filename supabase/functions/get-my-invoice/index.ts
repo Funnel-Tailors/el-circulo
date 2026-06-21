@@ -42,7 +42,7 @@ serve(async (req) => {
       if (roles?.length) {
         const { data } = await supabase
           .from('consulting_onboardings')
-          .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at')
+          .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at, payment_modality')
           .eq('id', body.onboarding_id)
         onboardings = data
       }
@@ -126,11 +126,23 @@ serve(async (req) => {
     }
     const billTo = (onboardings ?? []).find((o: any) => o.id === invRows[0].onboarding_id) ?? billToBase
 
+    // Enlace de pago (para el botón "Pagar ahora" del portal)
+    const { data: linksRow } = await supabase
+      .from('app_settings').select('value').eq('key', 'consulting_payment_links').maybeSingle()
+    const links: any = linksRow?.value ?? {}
+    const modality = (billTo as any)?.payment_modality
+    const payment_url =
+      (modality === 'wise' && links.wise_url) ||
+      (modality === 'link_stripe' && links.stripe_url) ||
+      (modality === 'link_fastpay' && links.fastpay_url) ||
+      links.wise_url || links.stripe_url || links.fastpay_url || null
+
     return json({
       invoices: invoicesOut,
       invoicesFull,
       invoice: invoicesOut[0] ?? null,        // compat
       invoiceFull: invoicesFull[0] ?? null,    // compat
+      payment_url,
       agreement,
       billTo,
     })

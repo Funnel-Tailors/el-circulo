@@ -41,17 +41,23 @@ const PaymentBadge = ({ status }: { status?: string }) => {
   return <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.c}`}>{m.l}</span>;
 };
 
-// Aviso sutil de plazo pendiente (solo si hay alguno sin pagar).
-const PendingPaymentNotice = ({ invoices }: { invoices: MyInvoice[] }) => {
+// Aviso sutil de plazo pendiente (solo si hay alguno sin pagar) + botón de pago.
+const PendingPaymentNotice = ({ invoices, paymentUrl }: { invoices: MyInvoice[]; paymentUrl?: string | null }) => {
   const pending = (invoices ?? []).filter((i) => i.payment_status !== "paid");
   if (!pending.length) return null;
   const next = pending[0];
   const label = (next.installment_count ?? 1) > 1 ? `Plazo ${next.installment_index} de ${next.installment_count}` : "Tu factura";
   return (
-    <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-2.5 text-sm">
+    <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-4 py-2.5 text-sm">
       <span className="font-medium text-amber-300/90">{label} pendiente</span>
       <span className="text-foreground/60">{formatMoney(next.total_amount_cents, next.currency)}{next.due_date ? ` · vence ${next.due_date}` : ""}</span>
       {pending.length > 1 && <span className="text-xs text-foreground/40">(+{pending.length - 1} más)</span>}
+      {paymentUrl && (
+        <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
+          className="ml-auto inline-flex items-center gap-1 rounded-lg border border-amber-400/40 bg-amber-400/15 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:bg-amber-400/25">
+          Pagar ahora →
+        </a>
+      )}
     </div>
   );
 };
@@ -125,18 +131,21 @@ const RoadmapSummary = ({ milestones, onSeeAll }: { milestones: Milestone[]; onS
 };
 
 // ───────────── Documentos ─────────────
-const DocRow = ({ title, subtitle, onOpen, badge }: { title: string; subtitle: string; onOpen: () => void; badge?: React.ReactNode }) => (
+const DocRow = ({ title, subtitle, onOpen, badge, payUrl }: { title: string; subtitle: string; onOpen: () => void; badge?: React.ReactNode; payUrl?: string | null }) => (
   <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
     <div className="min-w-0">
       <div className="flex items-center gap-2"><span className="text-sm font-medium text-foreground truncate">{title}</span>{badge}</div>
       <div className="text-xs text-foreground/55 truncate">{subtitle}</div>
     </div>
-    <button onClick={onOpen} className="inline-flex shrink-0 items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Ver / PDF</button>
+    <div className="flex shrink-0 items-center gap-3">
+      {payUrl && <a href={payUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-amber-300/90 transition-colors hover:text-amber-200">Pagar</a>}
+      <button onClick={onOpen} className="inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Ver / PDF</button>
+    </div>
   </div>
 );
 
-const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading }: {
-  invoices: MyInvoice[]; invoicesFull: InvoiceDoc[]; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean;
+const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, paymentUrl }: {
+  invoices: MyInvoice[]; invoicesFull: InvoiceDoc[]; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean; paymentUrl?: string | null;
 }) => {
   const [view, setView] = useState<null | "acuerdo" | number>(null);
   const hasDocs = invoices.length > 0 || !!agreement;
@@ -154,7 +163,7 @@ const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading }
                   const title = (iv.installment_count ?? 1) > 1
                     ? `Factura ${iv.invoice_number} · Plazo ${iv.installment_index}/${iv.installment_count}`
                     : `Factura ${iv.invoice_number}`;
-                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={`${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}`} onOpen={() => setView(i)} />;
+                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={`${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}`} onOpen={() => setView(i)} payUrl={iv.payment_status !== "paid" ? paymentUrl : undefined} />;
                 })}
                 {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>
@@ -175,6 +184,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const [section, setSection] = useState<SectionId>("resumen");
   const [invoices, setInvoices] = useState<MyInvoice[]>([]);
   const [invoicesFull, setInvoicesFull] = useState<InvoiceDoc[]>([]);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<SignedAgreement | null>(null);
   const [billTo, setBillTo] = useState<BillTo>({});
   const [milestones, setMilestones] = useState<Milestone[]>([]);
@@ -201,6 +211,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
         const d = inv.data as any;
         setInvoices(d?.invoices ?? []);
         setInvoicesFull(d?.invoicesFull ?? []);
+        setPaymentUrl(d?.payment_url ?? null);
         setAgreement(d?.agreement ?? null);
         setBillTo(d?.billTo ?? {});
       }
@@ -267,7 +278,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     <h1 className="font-display font-black uppercase tracking-[-0.025em] text-2xl md:text-3xl">Portal de <span className="glow">cliente</span></h1>
                     <p className="text-sm text-foreground/60">{previewId ? (billTo.email || "Cliente") : session.user.email}</p>
                   </div>
-                  <PendingPaymentNotice invoices={invoices} />
+                  <PendingPaymentNotice invoices={invoices} paymentUrl={paymentUrl} />
                   <DeliveryDashboard
                     data={dashboard}
                     loading={dashLoading}
@@ -281,7 +292,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}
-              {section === "documentos" && <DocumentsSection invoices={invoices} invoicesFull={invoicesFull} agreement={agreement} billTo={billTo} loading={loading} />}
+              {section === "documentos" && <DocumentsSection invoices={invoices} invoicesFull={invoicesFull} agreement={agreement} billTo={billTo} loading={loading} paymentUrl={paymentUrl} />}
               {section === "agenda" && (
                 <>
                   <SupportCallCard email={session.user.email ?? undefined} name={name} />
