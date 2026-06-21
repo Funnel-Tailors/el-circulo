@@ -393,32 +393,30 @@ const VslPanel = ({ projectId }: { projectId: string }) => {
   );
 };
 
+const FUNNEL_DEFAULTS = [{ label: "Landing", url: "" }, { label: "Thank you", url: "" }];
 const FunnelPanel = ({ projectId }: { projectId: string }) => {
-  const [url, setUrl] = useState("");
-  const [title, setTitle] = useState("");
+  const [pages, setPages] = useState<{ label: string; url: string }[]>(FUNNEL_DEFAULTS);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     setLoaded(false);
     (async () => {
-      const { data } = await supabase
-        .from("consulting_projects")
-        .select("funnel_title, funnel_url")
-        .eq("id", projectId)
-        .maybeSingle();
-      setTitle((data as any)?.funnel_title ?? "");
-      setUrl((data as any)?.funnel_url ?? "");
+      const { data } = await supabase.from("consulting_projects").select("funnel_pages").eq("id", projectId).maybeSingle();
+      const fp = (data as any)?.funnel_pages;
+      setPages(Array.isArray(fp) && fp.length ? fp.map((p: any) => ({ label: p.label || "", url: p.url || "" })) : FUNNEL_DEFAULTS);
       setLoaded(true);
     })();
   }, [projectId]);
 
+  const setRow = (i: number, k: "label" | "url", v: string) => setPages((ps) => ps.map((p, idx) => (idx === i ? { ...p, [k]: v } : p)));
+  const addRow = () => setPages((ps) => [...ps, { label: "", url: "" }]);
+  const delRow = (i: number) => setPages((ps) => ps.filter((_, idx) => idx !== i));
+
   const save = async () => {
+    const clean = pages.map((p) => ({ label: p.label.trim() || "Página", url: p.url.trim() })).filter((p) => p.url);
     setSaving(true);
-    const { error } = await supabase
-      .from("consulting_projects")
-      .update({ funnel_title: title || null, funnel_url: url.trim() || null })
-      .eq("id", projectId);
+    const { error } = await supabase.from("consulting_projects").update({ funnel_pages: clean }).eq("id", projectId);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
     toast.success("Funnel guardado");
@@ -427,10 +425,20 @@ const FunnelPanel = ({ projectId }: { projectId: string }) => {
   return (
     <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
       <h3 className="font-semibold text-sm text-foreground">Funnel del cliente</h3>
-      <p className="text-xs text-muted-foreground">La URL del funnel/landing que le montas. El cliente lo ve embebido en su pestaña "Funnel" (con botón de abrir).</p>
-      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Título (opcional)</Label><GlowInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="p.ej. Landing Memorable" /></div>
-      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">URL del funnel</Label><GlowInput value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://…" /></div>
-      <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar funnel"}</Button>
+      <p className="text-xs text-muted-foreground">Las páginas del funnel (landing, thank you…). El cliente las ve como previews en móvil en su pestaña "Funnel".</p>
+      <div className="space-y-2">
+        {pages.map((p, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <GlowInput value={p.label} onChange={(e) => setRow(i, "label", e.target.value)} placeholder="Etiqueta" className="w-32 shrink-0" />
+            <GlowInput value={p.url} onChange={(e) => setRow(i, "url", e.target.value)} placeholder="https://…" />
+            <Button size="sm" variant="ghost" className="h-8 w-8 shrink-0 p-0" onClick={() => delRow(i)}><Trash2 className="h-4 w-4" /></Button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={addRow}><Plus className="h-4 w-4" /> Añadir página</Button>
+        <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar funnel"}</Button>
+      </div>
     </div>
   );
 };

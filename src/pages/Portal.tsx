@@ -292,7 +292,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               )}
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
-              {section === "funnel" && <FunnelSection url={project?.funnel_url} title={project?.funnel_title} />}
+              {section === "funnel" && <FunnelSection pages={project?.funnel_pages} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}
               {section === "documentos" && <DocumentsSection invoices={invoices} invoicesFull={invoicesFull} agreement={agreement} billTo={billTo} loading={loading} paymentUrl={paymentUrl} />}
