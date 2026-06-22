@@ -4,6 +4,10 @@ import { MonitorPlay, ExternalLink, Loader2 } from "lucide-react";
 
 interface FunnelPage { label?: string; url?: string }
 
+// El portal va por HTTPS → una URL http:// se bloquea como "mixed content" al
+// incrustarla. Subimos a https (los funnels en Vercel/Astro sirven https igual).
+const httpsUp = (url: string) => url.replace(/^http:\/\//i, "https://");
+
 // Añade preview=1 a la URL (respeta el query existente) para que el funnel pueda
 // saltar el pixel en el preview. El botón "Abrir" usa la URL limpia.
 const withPreview = (url: string) => {
@@ -19,7 +23,7 @@ const withPreview = (url: string) => {
 /** Un preview en formato móvil (mockup de teléfono) de una página del funnel. */
 const PhonePreview = ({ page, fallbackLabel }: { page: FunnelPage; fallbackLabel: string }) => {
   const [loading, setLoading] = useState(true);
-  const url = (page.url || "").trim();
+  const url = httpsUp((page.url || "").trim());
   const label = page.label || fallbackLabel;
 
   // El onLoad de un iframe cross-origin no siempre dispara → timeout de seguridad
