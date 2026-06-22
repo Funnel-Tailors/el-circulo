@@ -1,14 +1,36 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent } from "@/components/premium";
 import { MonitorPlay, ExternalLink, Loader2 } from "lucide-react";
 
 interface FunnelPage { label?: string; url?: string }
 
+// Añade preview=1 a la URL (respeta el query existente) para que el funnel pueda
+// saltar el pixel en el preview. El botón "Abrir" usa la URL limpia.
+const withPreview = (url: string) => {
+  try {
+    const u = new URL(url);
+    u.searchParams.set("preview", "1");
+    return u.toString();
+  } catch {
+    return url + (url.includes("?") ? "&" : "?") + "preview=1";
+  }
+};
+
 /** Un preview en formato móvil (mockup de teléfono) de una página del funnel. */
 const PhonePreview = ({ page, fallbackLabel }: { page: FunnelPage; fallbackLabel: string }) => {
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
   const url = (page.url || "").trim();
   const label = page.label || fallbackLabel;
+
+  // El onLoad de un iframe cross-origin no siempre dispara → timeout de seguridad
+  // para que el spinner nunca se quede pegado.
+  const timer = useRef<number | null>(null);
+  useEffect(() => {
+    timer.current = window.setTimeout(() => setLoading(false), 6000);
+    return () => { if (timer.current) window.clearTimeout(timer.current); };
+  }, [url]);
+  const done = () => { setLoading(false); if (timer.current) window.clearTimeout(timer.current); };
+
   if (!url) return null;
   return (
     <div className="flex w-full max-w-[330px] flex-col items-center">
@@ -20,19 +42,22 @@ const PhonePreview = ({ page, fallbackLabel }: { page: FunnelPage; fallbackLabel
       </div>
       {/* Marco de teléfono */}
       <div
-        className="relative overflow-hidden border-[7px] border-neutral-800 bg-black shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]"
+        className="relative overflow-hidden border-[7px] border-neutral-800 bg-neutral-900 shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)]"
         style={{ width: 320, height: 600, borderRadius: 34 }}
       >
-        {!loaded && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <Loader2 className="h-5 w-5 animate-spin text-foreground/40" />
+        {/* Loader DETRÁS del iframe: el contenido lo tapa al cargar; nunca bloquea */}
+        {loading && (
+          <div className="absolute inset-0 z-0 flex flex-col items-center justify-center gap-2 text-foreground/40">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-[10px]">Cargando preview…</span>
           </div>
         )}
         <iframe
-          src={url}
+          src={withPreview(url)}
           title={label}
-          onLoad={() => setLoaded(true)}
-          className="h-full w-full bg-white"
+          onLoad={done}
+          onError={done}
+          className="relative z-10 h-full w-full"
           style={{ border: "none" }}
         />
       </div>
@@ -41,8 +66,7 @@ const PhonePreview = ({ page, fallbackLabel }: { page: FunnelPage; fallbackLabel
 };
 
 /** Sección "Funnel" del portal: muestra las páginas del funnel del cliente (landing,
- * thank you, …) como previews en formato móvil, con botón "Abrir" en cada una
- * (fallback para webs que bloquean el framing con X-Frame-Options/CSP). */
+ * thank you, …) como previews en formato móvil, con botón "Abrir" en cada una. */
 export const FunnelSection = ({ pages }: { pages?: FunnelPage[] | null }) => {
   const list = (pages ?? []).filter((p) => p && (p.url || "").trim());
   const defaults = ["Landing", "Thank you"];
@@ -71,7 +95,7 @@ export const FunnelSection = ({ pages }: { pages?: FunnelPage[] | null }) => {
               ))}
             </div>
             <p className="mt-3 text-center text-[11px] text-foreground/40">
-              ¿Alguna no carga aquí? Algunas webs no permiten incrustarse — usa el botón <span className="text-foreground/60">Abrir</span> de cada una.
+              ¿Alguna no se ve aquí? Usa el botón <span className="text-foreground/60">Abrir</span> de cada una.
             </p>
           </>
         ) : (
