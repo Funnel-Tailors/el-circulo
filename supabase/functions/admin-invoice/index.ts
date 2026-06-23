@@ -14,9 +14,6 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status })
 }
 function isoDate(d: Date): string { return d.toISOString().slice(0, 10) }
-function addDaysIso(iso: string, days: number): string {
-  const d = new Date(iso + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10)
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -44,7 +41,7 @@ serve(async (req) => {
     installments = installments
       .map((x: any) => ({ amount_cents: Math.round(Number(x.amount_cents)), invoice_number: (x.invoice_number || '').toString().trim() || undefined, due_date: x.due_date || undefined }))
       .filter((x) => Number.isFinite(x.amount_cents) && x.amount_cents > 0)
-    if (!installments.length || installments.length > 4) {
+    if (installments.length > 4) {
       return json({ ok: false, error: 'Plazos inválidos' }, 400)
     }
 
@@ -54,10 +51,12 @@ serve(async (req) => {
       .eq('id', onboardingId).maybeSingle()
     if (!ob) return json({ ok: false, error: 'Cliente no encontrado' }, 404)
 
-    const { data: existing } = await supabase.from('invoices').select('id, status').eq('onboarding_id', onboardingId)
-    if ((existing ?? []).some((r: any) => r.status === 'paid')) {
-      return json({ ok: false, error: 'Ya hay un plazo pagado; marca el resto como pagado en vez de re-planificar.' }, 409)
-    }
+    // Las facturas pagadas se conservan intactas; solo re-emitimos las NO pagadas.
+    const { data: existing } = await supabase.from('invoices')
+      .select('id, status, installment_index, base_amount_cents')
+      .eq('onboarding_id', onboardingId)
+      .order('installment_index', { ascending: true, nullsFirst: true })
+    const keptPaid = (existing ?? []).filter((r: any) => r.status === 'paid')
 
     // Config
     const { data: cfgRows } = await supabase.from('app_settings').select('key, value')
@@ -68,18 +67,21 @@ serve(async (req) => {
     const taxCfg = cfg.consulting_tax ?? { enabled: false, rate: 0 }
     const currency = b?.currency || cfg.consulting_price?.currency || 'EUR'
     const paymentLinks = cfg.consulting_payment_links ?? {}
-    const plan = cfg.consulting_payment_plan ?? null
     const taxEnabled = !!taxCfg.enabled
     const taxRate = taxEnabled ? Number(taxCfg.rate) || 0 : 0
 
     const invoiceDate = isoDate(new Date())
-    const dueDays = Number(series.due_days) || 7
-    const daysBetween = Number(plan?.days_between) || 30
-    // Vencimientos por defecto si no se especifican
-    installments = installments.map((inst, i) => ({
-      ...inst,
-      due_date: inst.due_date || addDaysIso(invoiceDate, i === 0 ? dueDays : i * daysBetween),
-    }))
+    // Sin vencimiento por defecto: solo se factura con vencimiento si el admin indica una fecha.
+    // Vacío ⇒ sin vencimiento (no presionamos al cliente).
+
+    // Índices de plazo coherentes: las pagadas conservadas van primero, las nuevas siguen.
+    const indexBase = keptPaid.length
+    const totalCount = keptPaid.length + installments.length
+
+    // Hay que emitir algo, o conservar al menos una factura pagada.
+    if (!installments.length && !keptPaid.length) {
+      return json({ ok: false, error: 'No hay plazos que emitir' }, 400)
+    }
 
     const paymentNote = ob.payment_modality === 'wise'
       ? `Transferencia Wise:\n${issuer.wise_details || issuer.iban || 'Solicita los datos a tu contacto.'}`
@@ -94,14 +96,16 @@ serve(async (req) => {
         supabase, onboardingId,
         billTo: { legal_name: ob.legal_name, tax_id: ob.tax_id, fiscal_address: ob.fiscal_address, city: ob.city, postal_code: ob.postal_code, country_code: ob.country_code, email: ob.email },
         issuer, series, taxEnabled, taxRate, currency, payment_modality: ob.payment_modality, paymentNote, invoiceDate, installments,
+        indexBase, totalCount,
       })
     } catch (e) {
       console.error('issueInstallments failed:', e)
       return json({ ok: false, error: 'No se pudieron emitir las facturas' }, 500)
     }
 
-    // Reflejar el total (suma de plazos) en el onboarding
-    const baseSum = installments.reduce((s, x) => s + x.amount_cents, 0)
+    // Reflejar el total (pagadas conservadas + plazos nuevos) en el onboarding
+    const keptBase = keptPaid.reduce((s: number, x: any) => s + (Number(x.base_amount_cents) || 0), 0)
+    const baseSum = installments.reduce((s, x) => s + x.amount_cents, 0) + keptBase
     const taxSum = taxEnabled ? Math.round((baseSum * taxRate) / 100) : 0
     await supabase.from('consulting_onboardings').update({
       base_amount_cents: baseSum, tax_amount_cents: taxSum, total_amount_cents: baseSum + taxSum, currency, status: 'invoiced',

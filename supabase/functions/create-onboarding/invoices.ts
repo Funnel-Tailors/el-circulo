@@ -10,7 +10,7 @@ function pad(n: number, p: number): string {
 export interface InstallmentInput {
   amount_cents: number
   invoice_number?: string // custom (no consume secuencia) o vacío = correlativo
-  due_date?: string // YYYY-MM-DD; por defecto = invoiceDate
+  due_date?: string | null // YYYY-MM-DD; vacío = sin vencimiento
 }
 
 export interface IssueArgs {
@@ -35,6 +35,8 @@ export interface IssueArgs {
   invoiceDate: string // YYYY-MM-DD
   installments: InstallmentInput[]
   concept?: string
+  indexBase?: number // nº de plazos previos ya emitidos (p.ej. pagados que se conservan)
+  totalCount?: number // total de plazos del plan (previos + estos); def. = installments.length
 }
 
 export interface IssuedInvoice {
@@ -46,7 +48,7 @@ export interface IssuedInvoice {
   installment_index: number | null
   installment_count: number
   status: string
-  due_date: string
+  due_date: string | null
 }
 
 export async function issueInstallments(
@@ -60,6 +62,8 @@ export async function issueInstallments(
   const prefix = series.prefix || 'INV_'
   const padding = Number(series.padding) || 3
   const year = Number(invoiceDate.slice(0, 4))
+  const indexBase = Number(args.indexBase) || 0
+  const effTotal = Number(args.totalCount) || count
   const out: IssuedInvoice[] = []
   let anyFailed = false
 
@@ -68,7 +72,7 @@ export async function issueInstallments(
     const baseCents = Math.round(inst.amount_cents)
     const taxCents = taxEnabled ? Math.round((baseCents * taxRate) / 100) : 0
     const totalCents = baseCents + taxCents
-    const dueDate = inst.due_date || invoiceDate
+    const dueDate = inst.due_date || null
 
     // Número: custom (sequence 0) o siguiente correlativo
     let invoiceNumber = (inst.invoice_number || '').trim()
@@ -80,7 +84,7 @@ export async function issueInstallments(
       invoiceNumber = `${prefix}${pad(sequence, padding)}`
     }
 
-    const label = count > 1 ? `Plazo ${i + 1} de ${count}` : null
+    const label = effTotal > 1 ? `Plazo ${indexBase + i + 1} de ${effTotal}` : null
     const concept = (args.concept || 'Consultoría DFY — El Círculo (3 meses)') + (label ? ` · ${label}` : '')
 
     let storagePath: string | null = null
@@ -141,8 +145,8 @@ export async function issueInstallments(
         tax_amount_cents: taxCents,
         total_amount_cents: totalCents,
         currency,
-        installment_index: count > 1 ? i + 1 : null,
-        installment_count: count,
+        installment_index: effTotal > 1 ? indexBase + i + 1 : null,
+        installment_count: effTotal,
       })
       .select('id, invoice_number, storage_path, total_amount_cents, currency, installment_index, installment_count, status, due_date')
       .single()

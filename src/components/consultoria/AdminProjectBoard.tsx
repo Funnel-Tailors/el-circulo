@@ -639,27 +639,64 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
   );
 };
 
-// ── Editar facturas / plan de pago (1 pago o 2 plazos) ──
+// Sugiere el siguiente número correlativo a partir de los ya emitidos (prefijo + nº + padding).
+// Es solo una ayuda: Mikel lo edita libremente porque su socio emite facturas por su lado.
+const suggestNextNumber = (numbers: string[]): string => {
+  let best: { prefix: string; num: number; pad: number } | null = null;
+  for (const s of numbers) {
+    const m = /^(.*?)(\d+)\s*$/.exec((s || "").trim());
+    if (!m) continue;
+    const num = parseInt(m[2], 10);
+    if (best === null || num > best.num) best = { prefix: m[1], num, pad: m[2].length };
+  }
+  if (!best) return "INV_001";
+  return best.prefix + String(best.num + 1).padStart(best.pad, "0");
+};
+
+type EditRow = { amount: number; number: string; due_date: string };
+
+// ── Editar facturas como lista por plazo (pagadas bloqueadas, no pagadas editables) ──
 const PlanEditor = ({ client, onSaved, onClose }: { client: any; onSaved: () => void; onClose: () => void }) => {
-  const existing = (client.invoices ?? []).filter((i: any) => i.status !== "void");
-  const total = (client.total_amount_cents || 1000000) / 100;
-  const half = Math.round(total / 2);
-  const [mode, setMode] = useState<"1" | "2">(existing.length >= 2 ? "2" : "1");
-  const [a1, setA1] = useState(existing.length >= 2 ? (existing[0]?.total_amount_cents || 0) / 100 : total);
-  const [a2, setA2] = useState(existing.length >= 2 ? (existing[1]?.total_amount_cents || 0) / 100 : half);
-  const [n1, setN1] = useState(existing[0]?.invoice_number ?? "");
-  const [n2, setN2] = useState(existing[1]?.invoice_number ?? "");
+  const all = (client.invoices ?? [])
+    .filter((i: any) => i.status !== "void")
+    .sort((a: any, b: any) => (a.installment_index ?? 0) - (b.installment_index ?? 0));
+  const paid = all.filter((i: any) => i.status === "paid");
+  const pending = all.filter((i: any) => i.status !== "paid");
+  const fallbackTotal = (client.total_amount_cents || 0) / 100;
+
+  const [sysNumbers, setSysNumbers] = useState<string[]>([]);
+  const [rows, setRows] = useState<EditRow[]>(
+    pending.length
+      ? pending.map((i: any) => ({ amount: (i.total_amount_cents || 0) / 100, number: i.invoice_number || "", due_date: i.due_date ?? "" }))
+      : paid.length
+        ? [] // solo hay pagadas: empezar sin plazos nuevos (se pueden añadir)
+        : [{ amount: fallbackTotal, number: "", due_date: "" }],
+  );
   const [busy, setBusy] = useState(false);
 
-  const pick = (m: "1" | "2") => {
-    setMode(m);
-    if (m === "2") { setA1(half); setA2(total - half); } else { setA1(total); }
-  };
+  // Cargar todos los números ya emitidos para sugerir el siguiente correlativo.
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from("invoices").select("invoice_number");
+      const nums = (data ?? []).map((r: any) => r.invoice_number).filter(Boolean);
+      setSysNumbers(nums);
+      // Si arrancamos con una fila vacía (cliente nuevo), pre-rellenar su Nº con la sugerencia.
+      setRows((rs) => (rs.length === 1 && !rs[0].number ? [{ ...rs[0], number: suggestNextNumber(nums) }] : rs));
+    })();
+  }, []);
+
+  const setRow = (i: number, k: keyof EditRow, v: string | number) => setRows((rs) => rs.map((r, idx) => (idx === i ? { ...r, [k]: v } : r)));
+  const addRow = () => setRows((rs) => {
+    const used = [...sysNumbers, ...rs.map((r) => r.number)].filter(Boolean);
+    return [...rs, { amount: 0, number: suggestNextNumber(used), due_date: "" }];
+  });
+  const delRow = (i: number) => setRows((rs) => rs.filter((_, idx) => idx !== i));
 
   const save = async () => {
-    const installments = mode === "2"
-      ? [{ amount_cents: Math.round(a1 * 100), invoice_number: n1.trim() || undefined }, { amount_cents: Math.round(a2 * 100), invoice_number: n2.trim() || undefined }]
-      : [{ amount_cents: Math.round(a1 * 100), invoice_number: n1.trim() || undefined }];
+    const installments = rows
+      .filter((r) => r.amount > 0)
+      .map((r) => ({ amount_cents: Math.round(r.amount * 100), invoice_number: r.number.trim() || undefined, due_date: r.due_date || undefined }));
+    if (!installments.length && !paid.length) return toast.error("Añade al menos un plazo con importe");
     setBusy(true);
     const { data, error } = await supabase.functions.invoke("admin-invoice", { body: { onboarding_id: client.id, installments } });
     setBusy(false);
@@ -669,27 +706,36 @@ const PlanEditor = ({ client, onSaved, onClose }: { client: any; onSaved: () => 
 
   return (
     <div className="mt-2 rounded-xl border border-white/10 p-3 space-y-3">
-      <div className="flex gap-2">
-        {([["1", "1 pago"], ["2", "2 plazos"]] as const).map(([m, lbl]) => (
-          <button key={m} onClick={() => pick(m)}
-            className={cn("flex-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition", mode === m ? "border-white/40 bg-white/10 text-foreground" : "border-white/10 text-foreground/55 hover:bg-white/5")}>
-            {lbl}
-          </button>
+      {paid.length > 0 && (
+        <div className="space-y-1.5">
+          {paid.map((iv: any) => (
+            <div key={iv.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-400/20 bg-emerald-400/[0.05] px-3 py-2 text-xs">
+              <span className="font-medium text-foreground/85">{iv.installment_count > 1 ? `Plazo ${iv.installment_index}/${iv.installment_count}` : "Factura"}</span>
+              <span className="font-mono text-foreground/65">{iv.invoice_number}</span>
+              <span className="text-foreground/60">{fmtMoney(iv.total_amount_cents, iv.currency)}</span>
+              <span className="ml-auto rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] text-emerald-400">pagada · bloqueada</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {rows.map((r, i) => (
+          <div key={i} className="grid grid-cols-[1fr_1fr_auto] sm:grid-cols-[1fr_1.2fr_1fr_auto] gap-2 items-end">
+            <div className="space-y-1"><Label className="text-xs text-foreground/80">Importe (€)</Label><GlowInput type="number" value={r.amount} onChange={(e) => setRow(i, "amount", Number(e.target.value))} /></div>
+            <div className="space-y-1"><Label className="text-xs text-foreground/80">Nº factura</Label><GlowInput value={r.number} onChange={(e) => setRow(i, "number", e.target.value)} placeholder="sugerido — edítalo libremente" /></div>
+            <div className="space-y-1"><Label className="text-xs text-foreground/80">Vencimiento (opcional)</Label><GlowInput type="date" value={r.due_date} onChange={(e) => setRow(i, "due_date", e.target.value)} /></div>
+            <Button size="sm" variant="ghost" className="h-9 w-9 shrink-0 p-0" onClick={() => delRow(i)}><Trash2 className="h-4 w-4" /></Button>
+          </div>
         ))}
       </div>
-      <div className="grid sm:grid-cols-2 gap-2 items-end">
-        <div className="space-y-1"><Label className="text-xs text-foreground/80">{mode === "2" ? "Plazo 1 (€)" : "Importe (€)"}</Label><GlowInput type="number" value={a1} onChange={(e) => setA1(Number(e.target.value))} /></div>
-        <div className="space-y-1"><Label className="text-xs text-foreground/80">Nº {mode === "2" ? "plazo 1" : "factura"}</Label><GlowInput value={n1} onChange={(e) => setN1(e.target.value)} placeholder="vacío = correlativo" /></div>
-        {mode === "2" && <>
-          <div className="space-y-1"><Label className="text-xs text-foreground/80">Plazo 2 (€)</Label><GlowInput type="number" value={a2} onChange={(e) => setA2(Number(e.target.value))} /></div>
-          <div className="space-y-1"><Label className="text-xs text-foreground/80">Nº plazo 2</Label><GlowInput value={n2} onChange={(e) => setN2(e.target.value)} placeholder="vacío = correlativo" /></div>
-        </>}
-      </div>
-      <div className="flex gap-2">
+
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={addRow}><Plus className="h-4 w-4" /> Añadir plazo</Button>
         <Button size="sm" variant="premium" onClick={save} disabled={busy}>{busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Guardar facturas</Button>
         <Button size="sm" variant="ghost" onClick={onClose}>Cancelar</Button>
       </div>
-      <p className="text-[11px] text-muted-foreground">Reemplaza las facturas no pagadas. Si ya hay un plazo pagado, no se puede re-planificar (marca el resto como pagado).</p>
+      <p className="text-[11px] text-muted-foreground">Las pagadas no se tocan. Solo se re-emiten los plazos editables. Vencimiento vacío = sin fecha (sin presión).</p>
     </div>
   );
 };
