@@ -443,6 +443,66 @@ const FunnelPanel = ({ projectId }: { projectId: string }) => {
   );
 };
 
+type AdRow = { hook: string; primary_text: string; headline: string; creative_url: string };
+const AD_EMPTY: AdRow = { hook: "", primary_text: "", headline: "", creative_url: "" };
+const AdsPanel = ({ projectId }: { projectId: string }) => {
+  const [ads, setAds] = useState<AdRow[]>([{ ...AD_EMPTY }]);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    (async () => {
+      const { data } = await supabase.from("consulting_projects").select("ads").eq("id", projectId).maybeSingle();
+      const a = (data as any)?.ads;
+      setAds(Array.isArray(a) && a.length
+        ? a.map((x: any) => ({ hook: x.hook || "", primary_text: x.primary_text || "", headline: x.headline || "", creative_url: x.creative_url || "" }))
+        : [{ ...AD_EMPTY }]);
+      setLoaded(true);
+    })();
+  }, [projectId]);
+
+  const setRow = (i: number, k: keyof AdRow, v: string) => setAds((as) => as.map((a, idx) => (idx === i ? { ...a, [k]: v } : a)));
+  const addRow = () => setAds((as) => [...as, { ...AD_EMPTY }]);
+  const delRow = (i: number) => setAds((as) => as.filter((_, idx) => idx !== i));
+
+  const save = async () => {
+    const clean = ads
+      .map((a) => ({ hook: a.hook.trim(), primary_text: a.primary_text.trim(), headline: a.headline.trim(), creative_url: a.creative_url.trim() }))
+      .filter((a) => a.hook || a.primary_text || a.headline || a.creative_url);
+    setSaving(true);
+    const { error } = await supabase.from("consulting_projects").update({ ads: clean }).eq("id", projectId);
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
+    toast.success("Anuncios guardados");
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">Anuncios del cliente</h3>
+      <p className="text-xs text-muted-foreground">El gancho, el texto, el titular y el creativo de cada anuncio. El cliente los ve como tarjetas en su pestaña "Anuncios". El creativo acepta imagen (.jpg/.png/.webp), vídeo (.mp4/.webm) o un link.</p>
+      <div className="space-y-3">
+        {ads.map((a, i) => (
+          <div key={i} className="rounded-lg border border-white/10 p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-foreground/40">Anuncio {i + 1}</span>
+              <Button size="sm" variant="ghost" className="h-7 w-7 shrink-0 p-0" onClick={() => delRow(i)}><Trash2 className="h-4 w-4" /></Button>
+            </div>
+            <GlowInput value={a.hook} onChange={(e) => setRow(i, "hook", e.target.value)} placeholder="Gancho" />
+            <GlowTextarea value={a.primary_text} onChange={(e) => setRow(i, "primary_text", e.target.value)} className="min-h-[90px] text-sm" placeholder="Texto principal (primary text)" />
+            <GlowInput value={a.headline} onChange={(e) => setRow(i, "headline", e.target.value)} placeholder="Titular (headline)" />
+            <GlowInput value={a.creative_url} onChange={(e) => setRow(i, "creative_url", e.target.value)} placeholder="URL del creativo (https://…)" />
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Button size="sm" variant="outline" onClick={addRow}><Plus className="h-4 w-4" /> Añadir anuncio</Button>
+        <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar anuncios"}</Button>
+      </div>
+    </div>
+  );
+};
+
 const fmtMoney = (c: number, cur: string) => ((c || 0) / 100).toLocaleString("es-ES", { style: "currency", currency: cur || "EUR" });
 
 const PayBadge = ({ inv, claimed }: { inv: any; claimed: boolean }) => {
@@ -741,6 +801,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <KickoffView onboardingId={client.id} />
           <GhlConnectionPanel onboardingId={client.id} />
           <VslPanel projectId={client.project_id} />
+          <AdsPanel projectId={client.project_id} />
           <FunnelPanel projectId={client.project_id} />
           <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
             <div>

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Loader2, Download, LogOut, FileText, LayoutDashboard,
-  GraduationCap, CalendarClock, KeyRound, ScrollText, MonitorPlay,
+  GraduationCap, CalendarClock, KeyRound, ScrollText, MonitorPlay, Megaphone,
 } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
 import { type Milestone } from "@/components/portal/ProjectRoadmap";
@@ -17,6 +17,7 @@ import { ChangePassword } from "@/components/portal/ChangePassword";
 import { SupportCallCard } from "@/components/portal/SupportCallCard";
 import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsLibrary";
 import { VslSection } from "@/components/portal/VslSection";
+import { AdsSection } from "@/components/portal/AdsSection";
 import { FunnelSection } from "@/components/portal/FunnelSection";
 import { PortalReveal } from "@/components/portal/PortalReveal";
 import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
@@ -63,10 +64,11 @@ const PendingPaymentNotice = ({ invoices, paymentUrl }: { invoices: MyInvoice[];
   );
 };
 
-type SectionId = "resumen" | "vsl" | "funnel" | "formacion" | "documentos" | "agenda" | "cuenta";
+type SectionId = "resumen" | "vsl" | "anuncios" | "funnel" | "formacion" | "documentos" | "agenda" | "cuenta";
 const NAV: { id: SectionId; label: string; icon: any }[] = [
   { id: "resumen", label: "Resumen", icon: LayoutDashboard },
   { id: "vsl", label: "VSL", icon: ScrollText },
+  { id: "anuncios", label: "Anuncios", icon: Megaphone },
   { id: "funnel", label: "Funnel", icon: MonitorPlay },
   { id: "formacion", label: "Formación", icon: GraduationCap },
   { id: "documentos", label: "Documentos", icon: FileText },
@@ -292,6 +294,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               )}
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
+              {section === "anuncios" && <AdsSection ads={project?.ads} />}
               {section === "funnel" && <FunnelSection pages={project?.funnel_pages} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}
