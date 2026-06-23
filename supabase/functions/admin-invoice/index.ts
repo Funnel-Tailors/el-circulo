@@ -103,6 +103,21 @@ serve(async (req) => {
       return json({ ok: false, error: 'No se pudieron emitir las facturas' }, 500)
     }
 
+    // Normalizar índice/cuenta de plazo en TODO el set (coherencia 1/2, 2/2…), por si se
+    // añadieron o borraron plazos. Solo toca esas dos columnas (no número, importe ni PDF).
+    const { data: allInv } = await supabase.from('invoices')
+      .select('id')
+      .eq('onboarding_id', onboardingId)
+      .neq('status', 'void')
+      .order('created_at', { ascending: true })
+    const totalReal = (allInv ?? []).length
+    for (let i = 0; i < totalReal; i++) {
+      await supabase.from('invoices').update({
+        installment_index: totalReal > 1 ? i + 1 : null,
+        installment_count: totalReal > 1 ? totalReal : 1,
+      }).eq('id', (allInv as any[])[i].id)
+    }
+
     // Reflejar el total (pagadas conservadas + plazos nuevos) en el onboarding
     const keptBase = keptPaid.reduce((s: number, x: any) => s + (Number(x.base_amount_cents) || 0), 0)
     const baseSum = installments.reduce((s, x) => s + x.amount_cents, 0) + keptBase
