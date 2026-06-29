@@ -44,6 +44,33 @@ export function relativeTime(isoString: string): string {
 }
 
 /**
+ * Day label for an UPCOMING date (opposite of relativeTime, which is for the past).
+ * Returns "HOY", "MAÑANA", or an abbreviated weekday + day, e.g. "JUE 12".
+ */
+export function upcomingDayLabel(isoString: string): string {
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return "";
+
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(d) - startOfDay(new Date())) / 86400000);
+
+  if (diffDays <= 0) return "HOY";
+  if (diffDays === 1) return "MAÑANA";
+
+  const weekday = d.toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "");
+  return `${weekday} ${d.getDate()}`.toUpperCase();
+}
+
+/**
+ * 24h time label for a date, e.g. "16:00".
+ */
+export function timeLabel(isoString: string): string {
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+/**
  * Calculates percentage delta between two numbers.
  * Returns null if prev is 0 (avoid division by zero).
  */

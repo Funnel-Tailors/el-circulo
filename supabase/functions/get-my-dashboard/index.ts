@@ -104,6 +104,10 @@ serve(async (req) => {
       activity: [] as { name: string; when: string }[],
     }
 
+    // Mapa contactId → nombre, poblado en el bloque de leads y reusado en citas
+    // (sin lookups extra a GHL).
+    const contactNameById = new Map<string, string>()
+
     // ── Leads / contactos ── (paginamos para cubrir los 30 días reales de la tendencia)
     try {
       let contacts: any[] = []
@@ -129,6 +133,11 @@ serve(async (req) => {
       contacts.sort((a, b) =>
         new Date(b.dateAdded || b.createdAt || 0).getTime() - new Date(a.dateAdded || a.createdAt || 0).getTime())
       metrics.leads.total = total
+      // Nombre por contactId (reusado por el bloque de citas)
+      for (const c of contacts) {
+        const name = c.contactName || [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email
+        if (c.id && name) contactNameById.set(c.id, name)
+      }
       // Bucket por día (últimos 30) + last7/prev7 + actividad
       const buckets: Record<string, number> = {}
       const start = new Date(now.getTime() - 29 * 86400000)
@@ -198,8 +207,16 @@ serve(async (req) => {
         const endT = now.getTime() + 90 * 86400000
         const ev = await ghl(`/calendars/events?locationId=${loc}&calendarId=${calendarId}&startTime=${startT}&endTime=${endT}`, key)
         const events: any[] = ev.events || []
-        const upcoming = events.filter((e) => e.startTime && new Date(e.startTime).getTime() >= now.getTime()).length
-        metrics.appointments = { total: events.length, upcoming }
+        const upcomingEvents = events
+          .filter((e) => e.startTime && new Date(e.startTime).getTime() >= now.getTime())
+          .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+        const next = upcomingEvents.slice(0, 4).map((e) => ({
+          id: e.id || '',
+          name: contactNameById.get(e.contactId) || e.title || 'Cita',
+          start: e.startTime,
+          status: e.appointmentStatus || '',
+        }))
+        metrics.appointments = { total: events.length, upcoming: upcomingEvents.length, next }
       } catch (e) {
         console.error('appointments fetch (non-blocking):', e)
         metrics.appointments = null

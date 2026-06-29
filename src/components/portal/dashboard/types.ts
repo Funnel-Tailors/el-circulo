@@ -22,7 +22,11 @@ export interface DashboardData {
       won_value: number;
       by_stage: { stage: string; count: number; value: number }[];
     };
-    appointments: { total: number; upcoming: number } | null;
+    appointments: {
+      total: number;
+      upcoming: number;
+      next?: { id: string; name: string; start: string; status?: string }[];
+    } | null;
     activity: { name: string; when: string }[];
   } | null;
 }
