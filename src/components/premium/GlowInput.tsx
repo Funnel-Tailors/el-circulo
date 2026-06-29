@@ -89,6 +89,7 @@ const GlowInput = React.forwardRef<HTMLInputElement, GlowInputProps>(
             type={type}
             className={cn(
               "w-full rounded-xl border backdrop-blur-sm",
+              "text-white caret-white",
               "ring-offset-background placeholder:text-white/30",
               "focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
               "transition-colors duration-200",
@@ -179,6 +180,7 @@ const GlowTextarea = React.forwardRef<HTMLTextAreaElement, GlowTextareaProps>(
           ref={ref}
           className={cn(
             "w-full min-h-[120px] rounded-xl border backdrop-blur-sm p-3",
+            "text-white caret-white",
             "ring-offset-background resize-none placeholder:text-white/30",
             "focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
             "transition-colors duration-200",
