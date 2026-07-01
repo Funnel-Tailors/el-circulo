@@ -26,3 +26,17 @@ dist-ssr
 
 # Webinar source (privado — los slides se trabajan en freeformiro)
 webi/
+
+# Copys / guiones / auditorías internas (no públicas — se trabajan en local, NO commitear)
+guion-*.md
+scripts-*.md
+vsl-*.md
+webinar-*.md
+*-audit.md
+*-script.md
+
+# Scripts de QA sueltos
+qa-*.mjs
+
+# Temp del CLI de Supabase
+supabase/.temp/
