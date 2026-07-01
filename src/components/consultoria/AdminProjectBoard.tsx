@@ -393,6 +393,50 @@ const VslPanel = ({ projectId }: { projectId: string }) => {
   );
 };
 
+const GuionesPanel = ({ projectId }: { projectId: string }) => {
+  const [setting, setSetting] = useState("");
+  const [closing, setClosing] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    setLoaded(false);
+    (async () => {
+      const { data } = await supabase
+        .from("consulting_projects")
+        .select("setting_script, closing_script")
+        .eq("id", projectId)
+        .maybeSingle();
+      setSetting((data as any)?.setting_script ?? "");
+      setClosing((data as any)?.closing_script ?? "");
+      setLoaded(true);
+    })();
+  }, [projectId]);
+
+  const save = async () => {
+    setSaving(true);
+    const { error } = await supabase
+      .from("consulting_projects")
+      .update({ setting_script: setting || null, closing_script: closing || null })
+      .eq("id", projectId);
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
+    toast.success("Guiones guardados");
+  };
+
+  return (
+    <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
+      <h3 className="font-semibold text-sm text-foreground">Guiones del cliente (setting + closing)</h3>
+      <p className="text-xs text-muted-foreground">
+        Los manuales en <span className="text-foreground/80">markdown</span> (encabezados <code>#</code>, <code>**negritas**</code>, listas). El cliente los ve en su pestaña "Guiones".
+      </p>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Manual de setting (markdown)</Label><GlowTextarea value={setting} onChange={(e) => setSetting(e.target.value)} className="min-h-[200px] font-mono text-xs" placeholder={"# Manual de setting\n\nAgendar, cualificar, asegurar el show..."} /></div>
+      <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Manual de closing (markdown)</Label><GlowTextarea value={closing} onChange={(e) => setClosing(e.target.value)} className="min-h-[200px] font-mono text-xs" placeholder={"# Manual de closing\n\nLa llamada de venta, objeciones..."} /></div>
+      <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar guiones"}</Button>
+    </div>
+  );
+};
+
 const FUNNEL_DEFAULTS = [{ label: "Landing", url: "" }, { label: "Thank you", url: "" }];
 const FunnelPanel = ({ projectId }: { projectId: string }) => {
   const [pages, setPages] = useState<{ label: string; url: string }[]>(FUNNEL_DEFAULTS);
@@ -849,6 +893,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <VslPanel projectId={client.project_id} />
           <AdsPanel projectId={client.project_id} />
           <FunnelPanel projectId={client.project_id} />
+          <GuionesPanel projectId={client.project_id} />
           <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
             <div>
               <h3 className="font-semibold text-sm text-foreground">Ruta de ascensión · hitos del proyecto</h3>
