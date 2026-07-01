@@ -11,6 +11,7 @@ import LaBrecha from "./pages/LaBrecha";
 import WebinardoRegistro from "./pages/WebinardoRegistro";
 import WebinardoGracias from "./pages/WebinardoGracias";
 import WebinardoVer from "./pages/WebinardoVer";
+import Gracias from "./pages/Gracias";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const Showcase = lazy(() => import("./pages/admin/Showcase"));
 const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminConsultoria = lazy(() => import("./pages/admin/AdminConsultoria"));
+const AdminConfirmation = lazy(() => import("./pages/admin/AdminConfirmation"));
 
 const queryClient = new QueryClient();
 
@@ -52,6 +54,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/senda" element={<Senda />} />
           <Route path="/la-brecha" element={<LaBrecha />} />
+          <Route path="/gracias" element={<Gracias />} />
 
           {/* Consultoría DFY */}
           <Route path="/consultoria" element={<Suspense fallback={<AdminFallback />}><Consultoria /></Suspense>} />
@@ -80,6 +83,7 @@ const App = () => (
             <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
             <Route path="testimonials" element={<Suspense fallback={<AdminFallback />}><AdminTestimonials /></Suspense>} />
             <Route path="consultoria" element={<Suspense fallback={<AdminFallback />}><AdminConsultoria /></Suspense>} />
+            <Route path="gracias" element={<Suspense fallback={<AdminFallback />}><AdminConfirmation /></Suspense>} />
           </Route>
           
           {/* Redirects */}

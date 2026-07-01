@@ -12,6 +12,7 @@ import {
   Image,
   Video,
   Briefcase,
+  PartyPopper,
 } from "lucide-react";
 import {
   Sidebar,
@@ -67,6 +68,12 @@ const navItems = [
     url: "/admin/webinar",
     icon: Video,
     description: "Config, registros y tracking",
+  },
+  {
+    title: "Gracias VSL",
+    url: "/admin/gracias",
+    icon: PartyPopper,
+    description: "Página post-booking (show-rate)",
   },
   {
     title: "Consultoría",
