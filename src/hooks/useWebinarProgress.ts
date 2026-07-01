@@ -10,6 +10,7 @@ interface UseWebinarProgress {
   valid: boolean | null; // null = validando, false = token inválido
   firstName: string;
   firstVisitAt: string | null; // 1ª visita (para ventana de replay rolling)
+  watchedSeconds: number; // segundos vistos previos (para restaurar CTA tras el reveal)
   ghlContactId: string | null;
   reportProgress: (pct: number, seconds: number) => void;
   reportCtaClick: (ctaId: string) => void;
@@ -21,6 +22,7 @@ export const useWebinarProgress = (token: string): UseWebinarProgress => {
   const [valid, setValid] = useState<boolean | null>(null);
   const [firstName, setFirstName] = useState("");
   const [firstVisitAt, setFirstVisitAt] = useState<string | null>(null);
+  const [watchedSeconds, setWatchedSeconds] = useState(0);
   const ghlRef = useRef<string | null>(null);
   const ctaRef = useRef<CtaClick[]>([]);
   const lastPctRef = useRef(0);
@@ -55,13 +57,14 @@ export const useWebinarProgress = (token: string): UseWebinarProgress => {
       // Cargar cta_clicks/first_visit previos para no pisarlos.
       const { data: prog } = await supabase
         .from("webinar_progress")
-        .select("cta_clicks, watched_pct, first_visit_at")
+        .select("cta_clicks, watched_pct, watched_seconds, first_visit_at")
         .eq("token", token)
         .maybeSingle();
       if (prog) {
         ctaRef.current = Array.isArray(prog.cta_clicks) ? (prog.cta_clicks as unknown as CtaClick[]) : [];
         lastPctRef.current = prog.watched_pct ?? 0;
         setFirstVisitAt(prog.first_visit_at ?? null);
+        setWatchedSeconds(prog.watched_seconds ?? 0);
       }
     })();
     return () => {
@@ -100,5 +103,13 @@ export const useWebinarProgress = (token: string): UseWebinarProgress => {
     [token]
   );
 
-  return { valid, firstName, firstVisitAt, ghlContactId: ghlRef.current, reportProgress, reportCtaClick };
+  return {
+    valid,
+    firstName,
+    firstVisitAt,
+    watchedSeconds,
+    ghlContactId: ghlRef.current,
+    reportProgress,
+    reportCtaClick,
+  };
 };

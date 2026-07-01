@@ -11,6 +11,9 @@ interface CirculoPaymentCTAProps {
   paymentUrl?: string;
   ctaLabel?: string;
   ctaSubLabel?: string;
+  value?: number; // valor del pixel InitiateCheckout (default €149)
+  onClick?: () => void; // callback opcional antes de abrir el checkout
+  footnote?: string; // pie del variant compact ("" lo oculta; undefined = texto por defecto)
 }
 
 const generateParticles = (count: number) =>
@@ -29,23 +32,27 @@ export const CirculoPaymentCTA = ({
   paymentUrl = DEFAULT_PAYMENT_URL,
   ctaLabel = "ENTRAR AL CÍRCULO POR €149",
   ctaSubLabel = "Acceso inmediato tras el pago",
+  value = 149,
+  onClick,
+  footnote,
 }: CirculoPaymentCTAProps) => {
   const particles = useMemo(() => generateParticles(14), []);
 
   const handleClick = () => {
     try {
+      onClick?.();
       quizAnalytics.trackMetaPixelEvent("InitiateCheckout", {
-        content_name: "Círculo €149 Direct Purchase",
+        content_name: `Círculo €${value} Direct Purchase`,
         content_category: "lowticket_purchase",
-        value: 149,
+        value,
         currency: "EUR",
         custom_data: { cta_source: source },
       });
-      quizAnalytics.enrichLeadEvent(149, true, "lowticket", true);
+      quizAnalytics.enrichLeadEvent(value, true, "lowticket", true);
     } catch (e) {
       // non-blocking
     }
-    window.open(paymentUrl, "_blank", "noopener,noreferrer");
+    if (paymentUrl) window.open(paymentUrl, "_blank", "noopener,noreferrer");
   };
 
   const FancyButton = (
@@ -101,7 +108,11 @@ export const CirculoPaymentCTA = ({
         className="text-center"
       >
         {FancyButton}
-        <p className="text-xs text-muted-foreground mt-3">Pago único · Sin llamadas · Sin esperas</p>
+        {footnote !== "" && (
+          <p className="text-xs text-muted-foreground mt-3">
+            {footnote ?? "Pago único · Sin llamadas · Sin esperas"}
+          </p>
+        )}
       </motion.div>
     );
   }

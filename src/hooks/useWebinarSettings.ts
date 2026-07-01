@@ -12,6 +12,12 @@ export interface WebinarReplay {
   closesAt: Date | null;
 }
 
+export interface WebinarCheckout {
+  urlFull: string; // link €2.997 pago único
+  urlPlan: string; // link 7x €500
+  revealSeconds: number; // segundo del vídeo en que aparecen los botones de compra
+}
+
 export interface WebinarSettings {
   enabled: boolean;
   mode: WebinarMode;
@@ -19,6 +25,7 @@ export interface WebinarSettings {
   videoUrl: string;
   copy: WebinardoCopy;
   replay: WebinarReplay;
+  checkout: WebinarCheckout;
 }
 
 const WEBINAR_KEYS = [
@@ -31,6 +38,9 @@ const WEBINAR_KEYS = [
   "webinar_replay_mode",
   "webinar_replay_hours",
   "webinar_replay_closes_at",
+  "webinar_checkout_url_full",
+  "webinar_checkout_url_plan",
+  "webinar_cta_reveal_seconds",
 ];
 
 export const useWebinarSettings = () => {
@@ -41,6 +51,7 @@ export const useWebinarSettings = () => {
     videoUrl: "",
     copy: WEBINARDO_COPY,
     replay: { enabled: false, mode: "rolling", hours: 48, closesAt: null },
+    checkout: { urlFull: "", urlPlan: "", revealSeconds: 2400 },
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +88,12 @@ export const useWebinarSettings = () => {
           closesAt: m.webinar_replay_closes_at
             ? new Date(m.webinar_replay_closes_at as string)
             : null,
+        },
+        checkout: {
+          urlFull: typeof m.webinar_checkout_url_full === "string" ? m.webinar_checkout_url_full : "",
+          urlPlan: typeof m.webinar_checkout_url_plan === "string" ? m.webinar_checkout_url_plan : "",
+          revealSeconds:
+            typeof m.webinar_cta_reveal_seconds === "number" ? m.webinar_cta_reveal_seconds : 2400,
         },
       });
     } catch (err) {

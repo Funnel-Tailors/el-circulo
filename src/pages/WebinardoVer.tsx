@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { CirculoPaymentCTA } from "@/components/roadmap/CirculoPaymentCTA";
+import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import { useWebinarSettings } from "@/hooks/useWebinarSettings";
 import { useWebinarProgress } from "@/hooks/useWebinarProgress";
 import { quizAnalytics } from "@/lib/analytics";
@@ -16,15 +17,24 @@ function fmtRemaining(ms: number) {
 }
 
 const WebinardoVer = () => {
-  const navigate = useNavigate();
   const { settings } = useWebinarSettings();
   const token = useMemo(
     () => new URLSearchParams(window.location.search).get("token") || "",
     []
   );
-  const { valid, firstName, firstVisitAt, reportProgress, reportCtaClick } =
+  const { valid, firstName, firstVisitAt, watchedSeconds, reportProgress, reportCtaClick } =
     useWebinarProgress(token);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Revelado del precio: los botones de compra aparecen cuando el visionado
+  // llega al segundo configurado (o si ya lo superó en una visita anterior).
+  const revealSeconds = settings.checkout.revealSeconds;
+  const [priceRevealed, setPriceRevealed] = useState(false);
+  useEffect(() => {
+    if (!priceRevealed && watchedSeconds > 0 && watchedSeconds >= revealSeconds) {
+      setPriceRevealed(true);
+    }
+  }, [priceRevealed, watchedSeconds, revealSeconds]);
 
   // Deadline del replay (null = sin límite).
   const deadline = useMemo<Date | null>(() => {
@@ -60,15 +70,6 @@ const WebinardoVer = () => {
     return () => clearInterval(id);
   }, [valid, expired, reportProgress]);
 
-  const onApply = () => {
-    reportCtaClick("aplicar");
-    quizAnalytics.trackMetaPixelEvent("Lead", {
-      content_name: "Webinardo Creativos · Aplicar",
-      content_category: "webinar_cta",
-    });
-    navigate("/");
-  };
-
   if (valid === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -94,28 +95,14 @@ const WebinardoVer = () => {
     );
   }
 
-  // Gate: replay caducado (solo gate, sin CTA).
-  if (expired) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-5">
-        <div className="text-center space-y-4 max-w-md">
-          <h1 className="font-display font-black uppercase text-3xl md:text-4xl">
-            El replay ya no está disponible
-          </h1>
-          <p className="text-muted-foreground">Esta repetición ha caducado.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Countdown del replay (sticky arriba) */}
-      {deadline && (
+      {/* Countdown de la oferta (sticky arriba) — solo tras revelar el precio */}
+      {deadline && priceRevealed && !expired && (
         <div className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur">
           <div className="container max-w-4xl mx-auto px-5 py-2.5 flex items-center justify-center gap-3">
             <span className="font-mono text-[10px] md:text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              El replay se cierra en
+              La oferta se cierra en
             </span>
             <span className="font-display font-black text-base md:text-lg glow tabular-nums">
               {fmtRemaining(deadline.getTime() - now)}
@@ -142,6 +129,11 @@ const WebinardoVer = () => {
               controls
               playsInline
               className="w-full block"
+              onTimeUpdate={() => {
+                if (priceRevealed) return;
+                const v = videoRef.current;
+                if (v && v.currentTime >= revealSeconds) setPriceRevealed(true);
+              }}
             />
           </div>
         ) : (
@@ -150,11 +142,53 @@ const WebinardoVer = () => {
           </div>
         )}
 
-        <div className="mt-10 text-center space-y-3">
-          <Button size="lg" onClick={onApply} className="px-10 animate-glow-pulse-intense">
-            Aplicar al Círculo
-          </Button>
-          <p className="text-sm text-muted-foreground">5 min de diagnóstico · No es para todos.</p>
+        <div className="mt-10 text-center">
+          {expired ? (
+            <div className="space-y-2 max-w-md mx-auto">
+              <p className="font-display font-black uppercase text-2xl glow">La oferta ha cerrado</p>
+              <p className="text-sm text-muted-foreground">
+                Tu ventana para entrar al Círculo ha terminado.
+              </p>
+            </div>
+          ) : priceRevealed ? (
+            <div className="space-y-4">
+              <CirculoPaymentCTA
+                variant="compact"
+                source="webinardo"
+                paymentUrl={settings.checkout.urlFull}
+                ctaLabel="ENTRAR AL CÍRCULO — €2.997"
+                ctaSubLabel="Pago único · Acceso inmediato"
+                value={2997}
+                footnote=""
+                onClick={() => reportCtaClick("comprar_full")}
+              />
+              <CirculoPaymentCTA
+                variant="compact"
+                source="webinardo"
+                paymentUrl={settings.checkout.urlPlan}
+                ctaLabel="EN 7 PAGOS DE €500"
+                ctaSubLabel="Empieza hoy con el primer pago"
+                value={3500}
+                footnote=""
+                onClick={() => reportCtaClick("comprar_plan")}
+              />
+              <p className="text-xs text-muted-foreground/80">
+                Sin llamadas · acceso inmediato tras el pago.
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Dale al play y ve el vídeo entero — al final te cuento cómo entrar.
+            </p>
+          )}
+        </div>
+
+        {/* Prueba social — testimonios reales bajo el vídeo */}
+        <div className="mt-16">
+          <p className="text-center font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground mb-6">
+            Lo que dicen los que ya están dentro
+          </p>
+          <ScreenshotMarquee />
         </div>
 
         <p className="mt-12 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">

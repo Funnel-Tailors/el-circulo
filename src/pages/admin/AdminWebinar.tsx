@@ -26,6 +26,9 @@ export default function AdminWebinar() {
   const [replayMode, setReplayMode] = useState<"rolling" | "fixed">("rolling");
   const [replayHours, setReplayHours] = useState(48);
   const [replayClosesAt, setReplayClosesAt] = useState("");
+  const [checkoutFull, setCheckoutFull] = useState("");
+  const [checkoutPlan, setCheckoutPlan] = useState("");
+  const [revealSeconds, setRevealSeconds] = useState(2400);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,6 +43,9 @@ export default function AdminWebinar() {
     setReplayMode(settings.replay.mode);
     setReplayHours(settings.replay.hours);
     setReplayClosesAt(toLocalInput(settings.replay.closesAt));
+    setCheckoutFull(settings.checkout.urlFull);
+    setCheckoutPlan(settings.checkout.urlPlan);
+    setRevealSeconds(settings.checkout.revealSeconds);
   }, [isLoading, settings]);
 
   const save = async () => {
@@ -57,6 +63,9 @@ export default function AdminWebinar() {
         "webinar_replay_closes_at",
         replayMode === "fixed" && replayClosesAt ? new Date(replayClosesAt).toISOString() : null
       ),
+      setKey("webinar_checkout_url_full", checkoutFull.trim()),
+      setKey("webinar_checkout_url_plan", checkoutPlan.trim()),
+      setKey("webinar_cta_reveal_seconds", Number(revealSeconds) || 0),
     ]);
     setSaving(false);
     if (ok.every(Boolean)) toast.success("Configuración guardada");
@@ -158,6 +167,46 @@ export default function AdminWebinar() {
                   )}
                 </>
               )}
+            </div>
+
+            {/* ── Botones de compra (watch page) ── */}
+            <div className="space-y-3 rounded-md border border-border p-4">
+              <p className="text-sm font-medium">Botones de compra</p>
+              <p className="text-xs text-muted-foreground">
+                Aparecen en la página de visionado a partir del segundo indicado (cuando el vídeo
+                revela el precio). Se cierran al caducar la ventana del replay.
+              </p>
+
+              <div className="space-y-1.5">
+                <Label>Checkout €2.997 (pago único)</Label>
+                <Input
+                  placeholder="https://link.fastpaydirect.com/…"
+                  value={checkoutFull}
+                  onChange={(e) => setCheckoutFull(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Checkout 7x €500</Label>
+                <Input
+                  placeholder="https://link.fastpaydirect.com/…"
+                  value={checkoutPlan}
+                  onChange={(e) => setCheckoutPlan(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Segundo en que aparecen los botones (reveal)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={revealSeconds}
+                  onChange={(e) => setRevealSeconds(Number(e.target.value))}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Ej.: 2400 = minuto 40:00. Míralo en el vídeo y ajústalo al momento exacto del precio.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-1.5">
