@@ -1,7 +1,15 @@
 import { useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { PlayCircle, CalendarPlus, MessageCircle, ExternalLink, Clapperboard } from "lucide-react";
+import {
+  PlayCircle,
+  CalendarPlus,
+  MessageCircle,
+  ExternalLink,
+  Clapperboard,
+  AlertTriangle,
+  HelpCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EnergyCard, EnergyCardContent } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
@@ -65,9 +73,11 @@ const VideoSlot = ({ url, label }: { url: string; label: string }) => {
 };
 
 const SectionEyebrow = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex items-center justify-center gap-4 mb-4" aria-hidden={typeof children !== "string"}>
+  <div className="flex items-center justify-center gap-4 mb-4">
     <div className="h-px w-12 bg-gradient-to-r from-transparent to-border" />
-    <span className="text-[11px] font-mono uppercase tracking-[0.28em] text-muted-foreground">{children}</span>
+    <span className="text-[11px] font-mono uppercase tracking-[0.28em] text-muted-foreground text-center">
+      {children}
+    </span>
     <div className="h-px w-12 bg-gradient-to-l from-transparent to-border" />
   </div>
 );
@@ -102,8 +112,10 @@ const Gracias = () => {
     });
   }, []);
 
+  const steps = settings.steps ?? [];
   const breakouts: ConfirmBreakout[] = settings.breakouts ?? [];
   const authority = settings.authority ?? [];
+  const faq = settings.faq ?? [];
   const waHref = settings.contact.whatsapp
     ? settings.contact.whatsapp.startsWith("http")
       ? settings.contact.whatsapp
@@ -112,8 +124,18 @@ const Gracias = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto w-full max-w-3xl px-5 py-14 md:py-20 space-y-16">
-        {/* 1 · Cabecera + add-to-calendar */}
+      {/* Banda de aviso "no confirmada" (sticky, empuja a completar los pasos) */}
+      <div className="sticky top-0 z-40 border-b border-amber-500/25 bg-amber-500/10 backdrop-blur-md">
+        <div className="mx-auto max-w-3xl px-5 py-2.5 flex items-center justify-center gap-2 text-center">
+          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+          <p className="text-xs md:text-sm font-medium text-amber-100/90">
+            Tu cita está reservada pero <span className="font-bold">aún NO confirmada</span>. Completa los pasos de abajo.
+          </p>
+        </div>
+      </div>
+
+      <div className="mx-auto w-full max-w-3xl px-5 py-12 md:py-16 space-y-16">
+        {/* 1 · Cabecera + fecha reservada (pendiente) */}
         <motion.header
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -125,11 +147,9 @@ const Gracias = () => {
           </p>
           <h1 className="font-display font-black uppercase text-4xl md:text-5xl leading-[1.02em] tracking-tight">
             {name ? (
-              <>
-                <span className="text-foreground/70 text-2xl md:text-3xl block mb-2 normal-case tracking-normal font-bold">
-                  {name},
-                </span>
-              </>
+              <span className="text-foreground/70 text-2xl md:text-3xl block mb-2 normal-case tracking-normal font-bold">
+                {name},
+              </span>
             ) : null}
             {renderHeadline(settings.copy.headline)}
           </h1>
@@ -140,8 +160,8 @@ const Gracias = () => {
           {callDate && (
             <div className="pt-2 flex flex-col items-center gap-3">
               <div className="glass-card-dark rounded-2xl px-6 py-4 inline-block">
-                <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                  Tu llamada
+                <p className="font-mono text-[10px] uppercase tracking-widest text-amber-300/80 mb-1">
+                  Hueco reservado · pendiente de confirmar
                 </p>
                 <p className="font-display font-black text-xl md:text-2xl">
                   {callDate.toLocaleString("es-ES", {
@@ -153,25 +173,96 @@ const Gracias = () => {
                   })}
                 </p>
               </div>
-              <a href={googleCalendarUrl(callDate)} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" className="gap-2">
-                  <CalendarPlus className="h-4 w-4" /> Añadir al calendario
-                </Button>
-              </a>
             </div>
           )}
         </motion.header>
 
-        {/* 2 · Vídeo hero */}
+        {/* 2 · Vídeo hero (mira para confirmar) */}
         <section className="space-y-4">
           <SectionEyebrow>{settings.copy.heroLabel}</SectionEyebrow>
           <VideoSlot
             url={settings.heroVideoUrl}
-            label="El vídeo para llegar a la llamada con la cabeza lista aparecerá aquí muy pronto."
+            label="El vídeo con los pasos para confirmar tu plaza aparecerá aquí muy pronto."
           />
         </section>
 
-        {/* 3 · Breakout videos */}
+        {/* 3 · Pasos para confirmar (el core del frame) */}
+        {steps.length > 0 && (
+          <section className="space-y-6">
+            <SectionEyebrow>{settings.copy.stepsTitle}</SectionEyebrow>
+            <div className="space-y-3">
+              {steps.map((s, i) => (
+                <div
+                  key={i}
+                  className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:p-5"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] font-display font-black text-foreground">
+                    {i + 1}
+                  </div>
+                  <div className="space-y-1 pt-0.5">
+                    <h3 className="font-display font-bold uppercase tracking-tight text-[15px] text-foreground">
+                      {s.title}
+                    </h3>
+                    <p className="text-sm text-foreground/70 leading-relaxed">{s.detail}</p>
+                    {/* CTAs contextuales del paso 2 (WhatsApp) y 3 (calendario) */}
+                    {i === 1 && waHref && (
+                      <a href={waHref} target="_blank" rel="noopener noreferrer" className="inline-block pt-2">
+                        <Button size="sm" className="gap-2">
+                          <MessageCircle className="h-4 w-4" /> Guardar WhatsApp
+                        </Button>
+                      </a>
+                    )}
+                    {i === 2 && callDate && (
+                      <a
+                        href={googleCalendarUrl(callDate)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block pt-2"
+                      >
+                        <Button size="sm" variant="secondary" className="gap-2">
+                          <CalendarPlus className="h-4 w-4" /> Añadir al calendario
+                        </Button>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 4 · Qué pasa cuando confirmas / expectativas */}
+        <section className="space-y-6">
+          <SectionEyebrow>Qué pasa cuando confirmas</SectionEyebrow>
+          <EnergyCard variant="default" enableTilt={false} beamIntensity={0.35}>
+            <EnergyCardContent className="p-6 md:p-8">
+              <div
+                className="max-w-2xl text-[15px] leading-relaxed
+                  [&_h2]:font-display [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-tight [&_h2]:text-base [&_h2]:text-foreground [&_h2]:mt-6 [&_h2]:mb-2 [&_h2:first-child]:mt-0
+                  [&_p]:text-foreground/75 [&_p]:my-3
+                  [&_strong]:text-foreground [&_strong]:font-semibold
+                  [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ul]:text-foreground/75
+                  [&_li]:marker:text-foreground/30"
+              >
+                <ReactMarkdown>{settings.expectations}</ReactMarkdown>
+              </div>
+              {waHref && (
+                <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <a href={waHref} target="_blank" rel="noopener noreferrer">
+                    <Button className="gap-2 animate-glow-pulse-intense">
+                      <MessageCircle className="h-4 w-4" /> Guardar nuestro WhatsApp
+                    </Button>
+                  </a>
+                  {settings.contact.note && (
+                    <p className="text-xs text-muted-foreground max-w-xs">{settings.contact.note}</p>
+                  )}
+                </div>
+              )}
+            </EnergyCardContent>
+          </EnergyCard>
+        </section>
+
+        {/* 5 · Breakout videos */}
         {breakouts.length > 0 && (
           <section className="space-y-6">
             <SectionEyebrow>Dudas concretas, respondidas</SectionEyebrow>
@@ -191,7 +282,7 @@ const Gracias = () => {
           </section>
         )}
 
-        {/* 4 · Testimonios (volumen) */}
+        {/* 6 · Testimonios (volumen) */}
         {settings.showTestimonials && (
           <section className="space-y-6">
             <SectionEyebrow>Lo que dicen los que ya están dentro</SectionEyebrow>
@@ -199,7 +290,7 @@ const Gracias = () => {
           </section>
         )}
 
-        {/* 5 · Autoridad (opcional) */}
+        {/* 7 · Autoridad (opcional) */}
         {authority.length > 0 && (
           <section className="space-y-4">
             <SectionEyebrow>Para seguir investigando</SectionEyebrow>
@@ -220,36 +311,36 @@ const Gracias = () => {
           </section>
         )}
 
-        {/* 6 · Expectativas + contacto */}
-        <section className="space-y-6">
-          <SectionEyebrow>Qué pasa ahora</SectionEyebrow>
-          <EnergyCard variant="default" enableTilt={false} beamIntensity={0.35}>
-            <EnergyCardContent className="p-6 md:p-8">
-              <div
-                className="max-w-2xl text-[15px] leading-relaxed
-                  [&_h2]:font-display [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-tight [&_h2]:text-base [&_h2]:text-foreground [&_h2]:mt-6 [&_h2]:mb-2 [&_h2:first-child]:mt-0
-                  [&_p]:text-foreground/75 [&_p]:my-3
-                  [&_strong]:text-foreground [&_strong]:font-semibold
-                  [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ul]:text-foreground/75
-                  [&_li]:marker:text-foreground/30"
-              >
-                <ReactMarkdown>{settings.expectations}</ReactMarkdown>
-              </div>
-
-              {waHref && (
-                <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <a href={waHref} target="_blank" rel="noopener noreferrer">
-                    <Button className="gap-2 animate-glow-pulse-intense">
-                      <MessageCircle className="h-4 w-4" /> Guardar nuestro WhatsApp
-                    </Button>
-                  </a>
-                  {settings.contact.note && (
-                    <p className="text-xs text-muted-foreground max-w-xs">{settings.contact.note}</p>
-                  )}
+        {/* 8 · FAQ */}
+        {faq.length > 0 && (
+          <section className="space-y-4">
+            <SectionEyebrow>Preguntas frecuentes</SectionEyebrow>
+            <div className="space-y-3">
+              {faq.map((f, i) => (
+                <div key={i} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                  <div className="flex items-start gap-2">
+                    <HelpCircle className="h-4 w-4 text-foreground/40 mt-0.5 shrink-0" />
+                    <h3 className="font-semibold text-sm text-foreground">{f.q}</h3>
+                  </div>
+                  <p className="text-sm text-foreground/70 leading-relaxed mt-2 pl-6">{f.a}</p>
                 </div>
-              )}
-            </EnergyCardContent>
-          </EnergyCard>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 9 · Cierre / recordatorio final */}
+        <section className="text-center space-y-4">
+          <p className="text-foreground/60 text-sm max-w-md mx-auto">
+            Recuerda: tu cita no cuenta hasta que completas los pasos de arriba. Nos vemos en la llamada.
+          </p>
+          {waHref && (
+            <a href={waHref} target="_blank" rel="noopener noreferrer">
+              <Button size="lg" className="gap-2 animate-glow-pulse-intense">
+                <MessageCircle className="h-4 w-4" /> Confirmar por WhatsApp
+              </Button>
+            </a>
+          )}
         </section>
 
         <p className="text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">

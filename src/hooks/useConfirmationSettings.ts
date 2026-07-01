@@ -4,19 +4,25 @@ import {
   CONFIRM_DEFAULTS,
   CONFIRM_COPY,
   CONFIRM_EXPECTATIONS_DEFAULT,
+  CONFIRM_STEPS_DEFAULT,
+  CONFIRM_FAQ_DEFAULT,
   type ConfirmSettings,
   type ConfirmBreakout,
   type ConfirmAuthority,
   type ConfirmContact,
   type ConfirmCopy,
+  type ConfirmStep,
+  type ConfirmFaq,
 } from "@/config/confirmation";
 
 const CONFIRM_KEYS = [
   "confirm_enabled",
   "confirm_copy",
   "confirm_hero_video_url",
+  "confirm_steps",
   "confirm_breakouts",
   "confirm_authority",
+  "confirm_faq",
   "confirm_expectations",
   "confirm_contact",
   "confirm_show_testimonials",
@@ -45,12 +51,17 @@ export const useConfirmationSettings = () => {
         m[i.key] = i.value;
       });
 
+      const steps = asArray<ConfirmStep>(m.confirm_steps);
+      const faq = asArray<ConfirmFaq>(m.confirm_faq);
+
       setSettings({
         enabled: m.confirm_enabled !== false,
         copy: asObject<ConfirmCopy>(m.confirm_copy, CONFIRM_COPY),
         heroVideoUrl: typeof m.confirm_hero_video_url === "string" ? m.confirm_hero_video_url : "",
+        steps: steps.length ? steps : CONFIRM_STEPS_DEFAULT,
         breakouts: asArray<ConfirmBreakout>(m.confirm_breakouts),
         authority: asArray<ConfirmAuthority>(m.confirm_authority),
+        faq: faq.length ? faq : CONFIRM_FAQ_DEFAULT,
         expectations:
           typeof m.confirm_expectations === "string" && m.confirm_expectations.trim()
             ? m.confirm_expectations

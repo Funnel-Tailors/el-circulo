@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useConfirmationSettings } from "@/hooks/useConfirmationSettings";
-import type { ConfirmBreakout, ConfirmAuthority } from "@/config/confirmation";
+import type { ConfirmBreakout, ConfirmAuthority, ConfirmStep, ConfirmFaq } from "@/config/confirmation";
 
 export default function AdminConfirmation() {
   const { settings, isLoading, setKey } = useConfirmationSettings();
@@ -18,8 +18,11 @@ export default function AdminConfirmation() {
   const [subhead, setSubhead] = useState("");
   const [heroLabel, setHeroLabel] = useState("");
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
+  const [stepsTitle, setStepsTitle] = useState("");
+  const [steps, setSteps] = useState<ConfirmStep[]>([]);
   const [breakouts, setBreakouts] = useState<ConfirmBreakout[]>([]);
   const [authority, setAuthority] = useState<ConfirmAuthority[]>([]);
+  const [faq, setFaq] = useState<ConfirmFaq[]>([]);
   const [expectations, setExpectations] = useState("");
   const [waNumber, setWaNumber] = useState("");
   const [waNote, setWaNote] = useState("");
@@ -34,8 +37,11 @@ export default function AdminConfirmation() {
     setSubhead(settings.copy.subhead);
     setHeroLabel(settings.copy.heroLabel);
     setHeroVideoUrl(settings.heroVideoUrl);
+    setStepsTitle(settings.copy.stepsTitle);
+    setSteps(settings.steps);
     setBreakouts(settings.breakouts);
     setAuthority(settings.authority);
+    setFaq(settings.faq);
     setExpectations(settings.expectations);
     setWaNumber(settings.contact.whatsapp);
     setWaNote(settings.contact.note);
@@ -46,8 +52,12 @@ export default function AdminConfirmation() {
     setSaving(true);
     const ok = await Promise.all([
       setKey("confirm_enabled", enabled),
-      setKey("confirm_copy", { eyebrow, headline, subhead, heroLabel }),
+      setKey("confirm_copy", { eyebrow, headline, subhead, heroLabel, stepsTitle }),
       setKey("confirm_hero_video_url", heroVideoUrl.trim()),
+      setKey(
+        "confirm_steps",
+        steps.filter((s) => s.title.trim() || s.detail.trim())
+      ),
       setKey(
         "confirm_breakouts",
         breakouts.filter((b) => b.title.trim() || b.videoUrl.trim())
@@ -55,6 +65,10 @@ export default function AdminConfirmation() {
       setKey(
         "confirm_authority",
         authority.filter((a) => a.label.trim() || a.url.trim())
+      ),
+      setKey(
+        "confirm_faq",
+        faq.filter((f) => f.q.trim() || f.a.trim())
       ),
       setKey("confirm_expectations", expectations),
       setKey("confirm_contact", { whatsapp: waNumber.trim(), note: waNote }),
@@ -114,6 +128,42 @@ export default function AdminConfirmation() {
         </div>
       </div>
 
+      {/* Pasos para confirmar */}
+      <div className="rounded-xl border border-white/10 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-sm text-foreground">Pasos para confirmar la cita</h2>
+          <Button size="sm" variant="outline" onClick={() => setSteps([...steps, { title: "", detail: "" }])}>
+            <Plus className="h-4 w-4 mr-1" /> Añadir
+          </Button>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Titular de la sección</Label>
+          <Input value={stepsTitle} onChange={(e) => setStepsTitle(e.target.value)} />
+        </div>
+        <p className="text-xs text-muted-foreground">El paso 2 muestra el botón de WhatsApp y el 3 el de "añadir al calendario" automáticamente.</p>
+        {steps.map((s, i) => (
+          <div key={i} className="flex gap-2 items-start">
+            <div className="flex h-7 w-7 mt-0.5 shrink-0 items-center justify-center rounded-full border border-white/15 text-xs font-bold">{i + 1}</div>
+            <div className="flex-1 space-y-1.5">
+              <Input
+                value={s.title}
+                placeholder="Título del paso"
+                onChange={(e) => setSteps(steps.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))}
+              />
+              <Textarea
+                value={s.detail}
+                placeholder="Detalle del paso"
+                className="min-h-[54px]"
+                onChange={(e) => setSteps(steps.map((x, j) => (j === i ? { ...x, detail: e.target.value } : x)))}
+              />
+            </div>
+            <Button size="icon" variant="ghost" onClick={() => setSteps(steps.filter((_, j) => j !== i))}>
+              <Trash2 className="h-4 w-4 text-red-400" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
       {/* Breakouts */}
       <div className="rounded-xl border border-white/10 p-4 space-y-3">
         <div className="flex items-center justify-between">
@@ -165,6 +215,36 @@ export default function AdminConfirmation() {
               onChange={(e) => setAuthority(authority.map((x, j) => (j === i ? { ...x, url: e.target.value } : x)))}
             />
             <Button size="icon" variant="ghost" onClick={() => setAuthority(authority.filter((_, j) => j !== i))}>
+              <Trash2 className="h-4 w-4 text-red-400" />
+            </Button>
+          </div>
+        ))}
+      </div>
+
+      {/* FAQ */}
+      <div className="rounded-xl border border-white/10 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-sm text-foreground">Preguntas frecuentes</h2>
+          <Button size="sm" variant="outline" onClick={() => setFaq([...faq, { q: "", a: "" }])}>
+            <Plus className="h-4 w-4 mr-1" /> Añadir
+          </Button>
+        </div>
+        {faq.map((f, i) => (
+          <div key={i} className="flex gap-2 items-start">
+            <div className="flex-1 space-y-1.5">
+              <Input
+                value={f.q}
+                placeholder="Pregunta"
+                onChange={(e) => setFaq(faq.map((x, j) => (j === i ? { ...x, q: e.target.value } : x)))}
+              />
+              <Textarea
+                value={f.a}
+                placeholder="Respuesta"
+                className="min-h-[54px]"
+                onChange={(e) => setFaq(faq.map((x, j) => (j === i ? { ...x, a: e.target.value } : x)))}
+              />
+            </div>
+            <Button size="icon" variant="ghost" onClick={() => setFaq(faq.filter((_, j) => j !== i))}>
               <Trash2 className="h-4 w-4 text-red-400" />
             </Button>
           </div>
