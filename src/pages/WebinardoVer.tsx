@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CirculoPaymentCTA } from "@/components/roadmap/CirculoPaymentCTA";
 import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
+import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import { successCases } from "@/data/roadmap";
 import { useWebinarSettings } from "@/hooks/useWebinarSettings";
 import { useWebinarProgress } from "@/hooks/useWebinarProgress";
 import { quizAnalytics } from "@/lib/analytics";
@@ -188,7 +190,10 @@ const WebinardoVer = () => {
           <p className="text-center font-mono text-xs uppercase tracking-[0.22em] text-muted-foreground mb-6">
             Lo que dicen los que ya están dentro
           </p>
-          <ScreenshotMarquee />
+          <TestimonialsMarquee cases={successCases} />
+          <div className="mt-10">
+            <ScreenshotMarquee />
+          </div>
         </div>
 
         <p className="mt-12 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">
