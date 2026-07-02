@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -16,13 +15,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -31,11 +23,9 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { quizAnalytics } from "@/lib/analytics";
 import { useWebinarSettings } from "@/hooks/useWebinarSettings";
-import { OtpStep } from "@/components/quiz/result/OtpStep";
 import {
   webinarRegistrationSchema,
   type WebinarRegistrationData,
-  TOP_COUNTRY_CODES,
 } from "@/lib/validations/contact";
 
 const Divider = () => (
@@ -63,65 +53,31 @@ function useCountdown(target: Date | null) {
   };
 }
 
+// Registro por email directo (sin OTP): menos fricción, sobre todo orgánico.
+// El flujo anterior (WhatsApp + OTP vía send-circulo-otp/OtpStep) vive en git
+// (este mismo archivo, antes de 2026-07-03) por si se reactiva.
 const WebinardoRegistro = () => {
   const navigate = useNavigate();
   const { settings } = useWebinarSettings();
   const copy = settings.copy;
   const [submitting, setSubmitting] = useState(false);
-  const [step, setStep] = useState<"form" | "otp">("form");
-  const [otpContactId, setOtpContactId] = useState("");
-  const [otpPhone, setOtpPhone] = useState("");
-  const pendingRef = useRef<WebinarRegistrationData | null>(null);
   const countdown = useCountdown(settings.mode === "launch" ? settings.date : null);
 
   const form = useForm<WebinarRegistrationData>({
     resolver: zodResolver(webinarRegistrationSchema),
-    defaultValues: { name: "", countryCode: "+34", phone: "", website: "" },
+    defaultValues: { name: "", email: "", website: "" },
   });
 
-  const fullPhoneOf = (d: WebinarRegistrationData) =>
-    `${d.countryCode}${d.phone.replace(/[\s-]/g, "")}`;
-
-  // Paso 1: enviar el código OTP por WhatsApp (reusa send-circulo-otp).
-  const handleSendOtp = async (data: WebinarRegistrationData) => {
+  // Registro directo: crea el registro + token y lleva al lead directo al
+  // webinardo (evergreen). En modo launch aún no hay nada que ver → gracias.
+  const handleRegister = async (data: WebinarRegistrationData) => {
     if (data.website) return; // honeypot
     setSubmitting(true);
-    try {
-      const { data: res, error } = await supabase.functions.invoke("send-circulo-otp", {
-        body: { phone: fullPhoneOf(data), name: data.name },
-      });
-      if (error || !res?.success) throw error || new Error("otp");
-      pendingRef.current = data;
-      setOtpContactId(res.contactId);
-      setOtpPhone(fullPhoneOf(data));
-      setStep("otp");
-    } catch (err) {
-      console.error("send-otp error:", err);
-      toast.error("No pudimos enviarte el código. Revisa el número e inténtalo otra vez.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const resendOtp = async (): Promise<boolean> => {
-    const data = pendingRef.current;
-    if (!data) return false;
-    const { data: res, error } = await supabase.functions.invoke("send-circulo-otp", {
-      body: { phone: fullPhoneOf(data), name: data.name },
-    });
-    return !error && !!res?.success;
-  };
-
-  // Paso 2 (tras verificar el OTP): crea el registro + token y navega a gracias.
-  const handleRegister = async (): Promise<boolean> => {
-    const data = pendingRef.current;
-    if (!data) return false;
     try {
       const { data: res, error } = await supabase.functions.invoke("register-webinar", {
         body: {
           name: data.name,
-          whatsapp: fullPhoneOf(data),
-          countryCode: data.countryCode,
+          email: data.email.trim().toLowerCase(),
           source: "webinardo_registro",
         },
       });
@@ -131,12 +87,16 @@ const WebinardoRegistro = () => {
         content_category: "webinar_registration",
       });
       if (res.token) sessionStorage.setItem("webinardo_token", res.token);
-      navigate("/webinardo/gracias");
-      return true;
+      if (settings.mode === "launch") {
+        navigate("/webinardo/gracias");
+      } else {
+        navigate(res.token ? `/webinardo/ver?token=${res.token}` : "/webinardo/gracias");
+      }
     } catch (err) {
       console.error("register error:", err);
-      toast.error("No pudimos guardar tu plaza. Inténtalo otra vez.");
-      return false;
+      toast.error("No pudimos guardar tu plaza. Revisa el email e inténtalo otra vez.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -177,19 +137,8 @@ const WebinardoRegistro = () => {
 
         {/* ── Form directo (above-the-fold, sin paso intermedio) ── */}
         <div className="mt-10 max-w-md mx-auto glass-card-dark rounded-2xl p-6 md:p-8">
-          {step === "otp" ? (
-            <OtpStep
-              phone={otpPhone}
-              contactId={otpContactId}
-              onVerified={handleRegister}
-              onBack={() => setStep("form")}
-              onResend={resendOtp}
-              purposeText="para guardar tu plaza"
-              ctaLabel="Verificar y guardar mi plaza →"
-            />
-          ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSendOtp)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleRegister)} className="space-y-4">
               {/* Honeypot */}
               <FormField
                 control={form.control}
@@ -224,68 +173,34 @@ const WebinardoRegistro = () => {
                 )}
               />
 
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold">💬 Tu WhatsApp</Label>
-                <div className="grid gap-2 grid-cols-[140px_1fr]">
-                  <FormField
-                    control={form.control}
-                    name="countryCode"
-                    render={({ field }) => (
-                      <FormItem>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={submitting}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="dark-button text-base" disabled={submitting}>
-                              <SelectValue placeholder="País" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-popover max-h-[300px]">
-                            {TOP_COUNTRY_CODES.map((country) => (
-                              <SelectItem key={country.code} value={country.code} className="cursor-pointer">
-                                {country.flag} {country.code}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="tel"
-                            placeholder="600 00 00 00"
-                            autoComplete="tel-national"
-                            inputMode="numeric"
-                            pattern="[0-9\s\-]*"
-                            disabled={submitting}
-                            className="dark-button text-base"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm">Tu mejor email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        type="email"
+                        placeholder="tu@email.com"
+                        autoComplete="email"
+                        inputMode="email"
+                        disabled={submitting}
+                        className="dark-button text-base"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting ? "Enviando código…" : copy.ctaButton}
+                {submitting ? "Guardando tu plaza…" : copy.ctaButton}
               </Button>
               <p className="text-center text-[11px] text-muted-foreground">{copy.ctaSub}</p>
             </form>
           </Form>
-          )}
         </div>
 
         <Divider />

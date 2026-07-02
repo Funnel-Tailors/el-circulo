@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Row {
   token: string;
   first_name: string | null;
+  email: string | null;
   whatsapp: string | null;
   created_at: string;
   attended: boolean;
@@ -23,7 +24,7 @@ export default function WebinarRegistrationsTable() {
     const [{ data: regs }, { data: progs }] = await Promise.all([
       supabase
         .from("webinar_registrations")
-        .select("token, first_name, whatsapp, created_at")
+        .select("token, first_name, email, whatsapp, created_at")
         .order("created_at", { ascending: false }),
       supabase
         .from("webinar_progress")
@@ -40,6 +41,7 @@ export default function WebinarRegistrationsTable() {
       return {
         token: r.token,
         first_name: r.first_name,
+        email: r.email,
         whatsapp: r.whatsapp,
         created_at: r.created_at,
         attended: !!p?.first_visit_at,
@@ -63,11 +65,11 @@ export default function WebinarRegistrationsTable() {
   };
 
   const exportCsv = () => {
-    const header = ["Nombre", "WhatsApp", "Registrado", "Asistió", "% Visto", "CTAs", "Último acceso", "Enlace"];
+    const header = ["Nombre", "Contacto", "Registrado", "Asistió", "% Visto", "CTAs", "Último acceso", "Enlace"];
     const lines = rows.map((r) =>
       [
         r.first_name ?? "",
-        r.whatsapp ?? "",
+        r.email ?? r.whatsapp ?? "",
         new Date(r.created_at).toISOString(),
         r.attended ? "sí" : "no",
         `${r.watched_pct}%`,
@@ -110,7 +112,7 @@ export default function WebinarRegistrationsTable() {
           <thead className="bg-muted/50 text-left">
             <tr>
               <th className="p-3">Nombre</th>
-              <th className="p-3">WhatsApp</th>
+              <th className="p-3">Contacto</th>
               <th className="p-3">Registrado</th>
               <th className="p-3">Asistió</th>
               <th className="p-3">% Visto</th>
@@ -123,7 +125,7 @@ export default function WebinarRegistrationsTable() {
             {rows.map((r) => (
               <tr key={r.token} className="border-t">
                 <td className="p-3 font-medium">{r.first_name ?? "—"}</td>
-                <td className="p-3 text-muted-foreground">{r.whatsapp ?? "—"}</td>
+                <td className="p-3 text-muted-foreground">{r.email ?? r.whatsapp ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{fmt(r.created_at)}</td>
                 <td className="p-3">
                   <span className={r.attended ? "text-green-500" : "text-muted-foreground"}>

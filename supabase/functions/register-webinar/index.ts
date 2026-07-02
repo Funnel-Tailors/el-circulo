@@ -12,16 +12,17 @@ const WEBINAR_TAG = 'webinardo-creativos'
 // Anti-spam server-side (mismo set que submit-lead-to-ghl)
 const SPAM_PATTERNS = {
   name: /^(test|asdf|qwerty|fake|spam|aaa|zzz|xxx|admin|user)\d*$/i,
-  phone: /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/,
+  email: /^(test|admin|fake|spam|no|none)@(test|admin|fake|spam|example)\./i,
 }
 
-function isSpam(name: string, phone: string): boolean {
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+function isSpam(name: string, email: string): boolean {
   const n = name.trim()
   if (SPAM_PATTERNS.name.test(n)) return true
   const words = n.toLowerCase().split(/\s+/)
   if (words.length !== new Set(words).size) return true // palabras repetidas
-  const cleanPhone = phone.replace(/[^\d]/g, '')
-  if (SPAM_PATTERNS.phone.test(cleanPhone)) return true
+  if (SPAM_PATTERNS.email.test(email.toLowerCase())) return true
   return false
 }
 
@@ -36,21 +37,21 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { name, whatsapp, countryCode, source, website } = await req.json()
+    const { name, email, source, website } = await req.json()
 
     // Honeypot: si viene relleno, fingir éxito y no hacer nada
     if (website) return json({ success: true, token: null })
 
     const cleanName = (name ?? '').toString().trim()
-    const cleanPhone = (whatsapp ?? '').toString().trim()
+    const cleanEmail = (email ?? '').toString().trim().toLowerCase()
 
     if (!cleanName || cleanName.split(/\s+/).length < 2) {
       return json({ success: false, error: 'Nombre inválido' }, 400)
     }
-    if (!cleanPhone || cleanPhone.replace(/[^\d]/g, '').length < 8) {
-      return json({ success: false, error: 'WhatsApp inválido' }, 400)
+    if (!cleanEmail || !EMAIL_RE.test(cleanEmail)) {
+      return json({ success: false, error: 'Email inválido' }, 400)
     }
-    if (isSpam(cleanName, cleanPhone)) {
+    if (isSpam(cleanName, cleanEmail)) {
       return json({ success: false, error: 'Datos no válidos' }, 400)
     }
 
@@ -71,7 +72,7 @@ serve(async (req) => {
     const firstName = cleanName.split(/\s+/)[0] || 'Lead'
     const lastName = cleanName.split(/\s+/).slice(1).join(' ') || ''
 
-    // Find-or-create del contacto GHL por teléfono (mismo patrón que send-circulo-otp)
+    // Find-or-create del contacto GHL por email
     let contactId: string | null = null
     const createRes = await fetch(`${GHL_BASE}/contacts/`, {
       method: 'POST',
@@ -79,7 +80,7 @@ serve(async (req) => {
       body: JSON.stringify({
         firstName,
         lastName,
-        phone: cleanPhone,
+        email: cleanEmail,
         locationId: GHL_LOCATION_ID,
         tags: [WEBINAR_TAG],
         source: source || 'webinardo_registro',
@@ -98,7 +99,7 @@ serve(async (req) => {
         const upd = await fetch(`${GHL_BASE}/contacts/${dupId}`, {
           method: 'PUT',
           headers: ghlHeaders,
-          body: JSON.stringify({ firstName, phone: cleanPhone, tags: [WEBINAR_TAG] }),
+          body: JSON.stringify({ firstName, email: cleanEmail, tags: [WEBINAR_TAG] }),
         })
         if (!upd.ok) {
           const t = await upd.text()
@@ -118,8 +119,7 @@ serve(async (req) => {
       .insert({
         ghl_contact_id: contactId,
         first_name: firstName,
-        whatsapp: cleanPhone,
-        country_code: countryCode ?? null,
+        email: cleanEmail,
         source: source || 'webinardo_registro',
       })
       .select('token')

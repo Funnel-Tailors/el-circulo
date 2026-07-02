@@ -1274,6 +1274,7 @@ export type Database = {
         Row: {
           country_code: string | null
           created_at: string
+          email: string | null
           first_name: string | null
           ghl_contact_id: string | null
           id: string
@@ -1286,6 +1287,7 @@ export type Database = {
         Insert: {
           country_code?: string | null
           created_at?: string
+          email?: string | null
           first_name?: string | null
           ghl_contact_id?: string | null
           id?: string
@@ -1298,6 +1300,7 @@ export type Database = {
         Update: {
           country_code?: string | null
           created_at?: string
+          email?: string | null
           first_name?: string | null
           ghl_contact_id?: string | null
           id?: string

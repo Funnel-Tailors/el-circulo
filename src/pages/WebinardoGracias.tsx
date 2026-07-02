@@ -11,7 +11,7 @@ function googleCalendarUrl(date: Date): string {
     action: "TEMPLATE",
     text: "Webinardo Creativos · El Círculo",
     dates: `${fmt(start)}/${fmt(end)}`,
-    details: "Tu clase para conseguir clientes de cuatro cifras. Te enviamos el enlace por WhatsApp.",
+    details: "Tu clase para conseguir clientes de cuatro cifras. Te enviamos el enlace por email.",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
@@ -45,7 +45,7 @@ const WebinardoGracias = () => {
         {isLaunch ? (
           <>
             <p className="text-foreground/80 text-lg">
-              Te he guardado la plaza. Te aviso por WhatsApp antes de empezar.
+              Te he guardado la plaza. Te aviso por email antes de empezar.
             </p>
             <div className="glass-card-dark rounded-2xl p-6 inline-block">
               <p className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground mb-1">
@@ -82,7 +82,7 @@ const WebinardoGracias = () => {
               </a>
             </div>
             <p className="text-sm text-muted-foreground">
-              También te mando el enlace por WhatsApp por si lo quieres ver más tarde.
+              También te mando el enlace por email por si lo quieres ver más tarde.
             </p>
           </>
         )}
