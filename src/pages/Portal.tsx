@@ -58,7 +58,7 @@ const PendingPaymentNotice = ({ invoices, paymentUrl }: { invoices: MyInvoice[];
       {paymentUrl && (
         <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
           className="ml-auto inline-flex items-center gap-1 rounded-lg border border-amber-400/40 bg-amber-400/15 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:bg-amber-400/25">
-          Pagar ahora →
+          Pagar y solicitar factura →
         </a>
       )}
     </div>
@@ -137,21 +137,21 @@ const RoadmapSummary = ({ milestones, onSeeAll }: { milestones: Milestone[]; onS
 };
 
 // ───────────── Documentos ─────────────
-const DocRow = ({ title, subtitle, onOpen, badge, payUrl }: { title: string; subtitle: string; onOpen: () => void; badge?: React.ReactNode; payUrl?: string | null }) => (
+const DocRow = ({ title, subtitle, onOpen, badge, payUrl }: { title: string; subtitle: string; onOpen?: () => void; badge?: React.ReactNode; payUrl?: string | null }) => (
   <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
     <div className="min-w-0">
       <div className="flex items-center gap-2"><span className="text-sm font-medium text-foreground truncate">{title}</span>{badge}</div>
       <div className="text-xs text-foreground/55 truncate">{subtitle}</div>
     </div>
     <div className="flex shrink-0 items-center gap-3">
-      {payUrl && <a href={payUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-amber-300/90 transition-colors hover:text-amber-200">Pagar</a>}
-      <button onClick={onOpen} className="inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Ver / PDF</button>
+      {payUrl && <a href={payUrl} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-amber-300/90 transition-colors hover:text-amber-200">Pagar y solicitar factura</a>}
+      {onOpen && <button onClick={onOpen} className="inline-flex items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><Download className="h-4 w-4" /> Ver / PDF</button>}
     </div>
   </div>
 );
 
 const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, paymentUrl }: {
-  invoices: MyInvoice[]; invoicesFull: InvoiceDoc[]; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean; paymentUrl?: string | null;
+  invoices: MyInvoice[]; invoicesFull: (InvoiceDoc | null)[]; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean; paymentUrl?: string | null;
 }) => {
   const [view, setView] = useState<null | "acuerdo" | number>(null);
   const hasDocs = invoices.length > 0 || !!agreement;
@@ -166,10 +166,15 @@ const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, 
             : hasDocs ? (
               <div className="grid sm:grid-cols-2 gap-3 pb-1">
                 {invoices.map((iv, i) => {
-                  const title = (iv.installment_count ?? 1) > 1
-                    ? `Factura ${iv.invoice_number} · Plazo ${iv.installment_index}/${iv.installment_count}`
-                    : `Factura ${iv.invoice_number}`;
-                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={`${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}`} onOpen={() => setView(i)} payUrl={iv.payment_status !== "paid" ? paymentUrl : undefined} />;
+                  // La factura solo es visible una vez confirmado el pago por admin;
+                  // hasta entonces la fila es el plazo pendiente con el botón de pago.
+                  const paid = iv.payment_status === "paid";
+                  const multi = (iv.installment_count ?? 1) > 1;
+                  const title = paid
+                    ? (multi ? `Factura ${iv.invoice_number} · Plazo ${iv.installment_index}/${iv.installment_count}` : `Factura ${iv.invoice_number}`)
+                    : (multi ? `Plazo ${iv.installment_index} de ${iv.installment_count}` : "Pago del servicio");
+                  const subtitle = `${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}${paid ? "" : " · factura al confirmarse el pago"}`;
+                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={subtitle} onOpen={paid ? () => setView(i) : undefined} payUrl={!paid ? paymentUrl : undefined} />;
                 })}
                 {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>
@@ -189,7 +194,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const invokeBody = previewId ? { body: { onboarding_id: previewId } } : undefined;
   const [section, setSection] = useState<SectionId>("resumen");
   const [invoices, setInvoices] = useState<MyInvoice[]>([]);
-  const [invoicesFull, setInvoicesFull] = useState<InvoiceDoc[]>([]);
+  const [invoicesFull, setInvoicesFull] = useState<(InvoiceDoc | null)[]>([]);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [agreement, setAgreement] = useState<SignedAgreement | null>(null);
   const [billTo, setBillTo] = useState<BillTo>({});

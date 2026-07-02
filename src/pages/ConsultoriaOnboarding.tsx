@@ -24,7 +24,8 @@ import { AGREEMENT_VERSION, getAgreementHash } from "@/data/consultoriaAgreement
 // TODO: mover a app_settings cuando haya un calendario específico de onboarding.
 const ONBOARDING_CALENDAR_ID = "8C2kck4NCnEihznxvL29";
 
-const STEP_LABELS = ["Datos", "Pago", "Acuerdo", "Plan", "Revisar", "Factura", "Kickoff", "Agenda"];
+// "Pago" = elegir modalidad; "Pagar" = ejecutar el pago (la factura se entrega al confirmarse desde admin)
+const STEP_LABELS = ["Datos", "Pago", "Acuerdo", "Plan", "Revisar", "Pagar", "Kickoff", "Agenda"];
 
 interface OnboardingResult {
   onboarding_id: string;

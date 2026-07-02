@@ -326,7 +326,11 @@ export const StepInvoiceAndPay = ({
           >
             <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-2" />
           </motion.div>
-          <h3 className="font-display font-black uppercase tracking-[-0.025em]">Tu factura está lista</h3>
+          <h3 className="font-display font-black uppercase tracking-[-0.025em]">Todo listo para el pago</h3>
+          {totalLabel && <p className="text-sm text-muted-foreground">{totalLabel}</p>}
+          <p className="text-xs text-muted-foreground mt-2">Tu factura estará disponible en el portal en cuanto confirmemos el pago.</p>
+          {/* Descarga de factura pre-pago DESACTIVADA (la factura se entrega al confirmar el pago desde admin).
+              Reactivar restaurando este bloque:
           {invoiceNumber && <p className="text-sm text-muted-foreground">Número {invoiceNumber}{totalLabel ? ` · ${totalLabel}` : ""}</p>}
           {invoiceFailed ? (
             <p className="text-xs text-amber-400 mt-2">Hubo un problema generando el PDF; te lo enviaremos en breve. Puedes continuar.</p>
@@ -336,6 +340,7 @@ export const StepInvoiceAndPay = ({
               <Download className="h-4 w-4" /> Descargar factura (PDF)
             </a>
           ) : null}
+          */}
         </EnergyCardContent>
       </EnergyCard>
 
@@ -343,7 +348,7 @@ export const StepInvoiceAndPay = ({
       {isWise && wiseUrl && (
         <a href={wiseUrl} target="_blank" rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full rounded-xl border border-white/20 bg-black/40 px-4 py-3 text-sm font-medium hover:border-white/30 transition-colors">
-          <Building2 className="h-4 w-4" /> Pagar con Wise →
+          <Building2 className="h-4 w-4" /> Pagar y solicitar factura →
         </a>
       )}
 

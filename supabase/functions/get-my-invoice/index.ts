@@ -86,13 +86,16 @@ serve(async (req) => {
     const invoicesOut: any[] = []
     const invoicesFull: any[] = []
     for (const inv of invRows) {
+      // La factura (PDF + detalle completo) solo se entrega una vez CONFIRMADA por admin.
+      // Hasta entonces el cliente solo ve el plazo pendiente (importe/vencimiento) y paga.
+      const isPaid = inv.status === 'paid'
       let url: string | null = null
-      if (inv.storage_path) {
+      if (isPaid && inv.storage_path) {
         const { data: signed } = await supabase.storage.from('invoices').createSignedUrl(inv.storage_path, 300)
         url = signed?.signedUrl ?? null
       }
       const idx = inv.installment_index
-      const paymentStatus = inv.status === 'paid'
+      const paymentStatus = isPaid
         ? 'paid'
         : ((idx == null || idx === 1) && claimedByOb[inv.onboarding_id]) ? 'review' : 'pending'
       invoicesOut.push({
@@ -108,7 +111,8 @@ serve(async (req) => {
         installment_index: inv.installment_index,
         installment_count: inv.installment_count,
       })
-      invoicesFull.push({
+      // null mantiene el índice alineado con invoicesOut sin exponer la factura pendiente
+      invoicesFull.push(isPaid ? {
         invoice_number: inv.invoice_number,
         invoice_date: inv.invoice_date,
         due_date: inv.due_date,
@@ -122,7 +126,7 @@ serve(async (req) => {
         currency: inv.currency,
         installment_index: inv.installment_index,
         installment_count: inv.installment_count,
-      })
+      } : null)
     }
     const billTo = (onboardings ?? []).find((o: any) => o.id === invRows[0].onboarding_id) ?? billToBase
 
