@@ -27,12 +27,32 @@ function ClientsTab() {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("consulting_onboardings")
-        .select("id, legal_name, email, status, payment_claimed_at, payment_proof_path, total_amount_cents, currency, created_at, invoices(invoice_number, storage_path, status, due_date)")
+        .select("id, legal_name, email, status, payment_claimed_at, payment_proof_path, total_amount_cents, currency, created_at, tracking_slug, invoices(invoice_number, storage_path, status, due_date)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
     },
   });
+
+  // Proyectos de tracking (funnel-stats) para asignar al cliente
+  const { data: trackingProjects } = useQuery({
+    queryKey: ["tracking-projects"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tracking_projects").select("slug, name").order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const setTrackingSlug = async (onboardingId: string, slug: string) => {
+    const { error } = await (supabase as any)
+      .from("consulting_onboardings")
+      .update({ tracking_slug: slug || null })
+      .eq("id", onboardingId);
+    if (error) return toast.error("No se pudo asignar el tracking");
+    toast.success(slug ? `Tracking "${slug}" asignado` : "Tracking desvinculado");
+    refetch();
+  };
 
   const downloadFrom = async (bucket: string, path?: string | null) => {
     if (!path) return toast.error("Sin archivo disponible");
@@ -65,6 +85,7 @@ function ClientsTab() {
             <th className="py-2 pr-4">Estado</th>
             <th className="py-2 pr-4">PDF</th>
             <th className="py-2 pr-4">Comprob.</th>
+            <th className="py-2 pr-4">Tracking</th>
             <th className="py-2 pr-4">Portal</th>
           </tr>
         </thead>
@@ -102,6 +123,19 @@ function ClientsTab() {
                   {c.payment_proof_path
                     ? <Button size="sm" variant="ghost" onClick={() => downloadFrom("payment-proofs", c.payment_proof_path)}><Download className="h-4 w-4" /></Button>
                     : <span className="text-xs text-muted-foreground">—</span>}
+                </td>
+                <td className="py-2 pr-4">
+                  {/* Vincula el cliente con su project_slug de funnel-stats (portal → Funnel) */}
+                  <select
+                    value={c.tracking_slug ?? ""}
+                    onChange={(e) => setTrackingSlug(c.id, e.target.value)}
+                    className="h-7 rounded-md border border-white/15 bg-background px-2 text-xs text-foreground"
+                  >
+                    <option value="">—</option>
+                    {(trackingProjects ?? []).map((p: any) => (
+                      <option key={p.slug} value={p.slug}>{p.name}</option>
+                    ))}
+                  </select>
                 </td>
                 <td className="py-2 pr-4">
                   <Button size="sm" variant="ghost" title="Ver portal del cliente" onClick={() => window.open(`/portal?preview=${c.id}`, "_blank")}><Eye className="h-4 w-4" /></Button>

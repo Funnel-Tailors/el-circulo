@@ -799,6 +799,7 @@ export type Database = {
           tax_rate: number
           token: string
           total_amount_cents: number
+          tracking_slug: string | null
           updated_at: string
         }
         Insert: {
@@ -824,6 +825,7 @@ export type Database = {
           tax_rate?: number
           token?: string
           total_amount_cents?: number
+          tracking_slug?: string | null
           updated_at?: string
         }
         Update: {
@@ -849,9 +851,18 @@ export type Database = {
           tax_rate?: number
           token?: string
           total_amount_cents?: number
+          tracking_slug?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "consulting_onboardings_tracking_slug_fkey"
+            columns: ["tracking_slug"]
+            isOneToOne: false
+            referencedRelation: "tracking_projects"
+            referencedColumns: ["slug"]
+          },
+        ]
       }
       consulting_projects: {
         Row: {
@@ -2055,6 +2066,7 @@ export type Database = {
         Returns: boolean
       }
       next_invoice_number: { Args: { _series: string }; Returns: number }
+      user_tracking_slugs: { Args: { _user_id: string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "user"

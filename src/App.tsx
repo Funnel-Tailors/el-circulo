@@ -34,7 +34,8 @@ const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffect
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminConsultoria = lazy(() => import("./pages/admin/AdminConsultoria"));
 const AdminConfirmation = lazy(() => import("./pages/admin/AdminConfirmation"));
-const AdminClientes = lazy(() => import("./pages/admin/AdminClientes"));
+// Desactivado junto con su ruta (stats de clientes → portal)
+// const AdminClientes = lazy(() => import("./pages/admin/AdminClientes"));
 
 const queryClient = new QueryClient();
 
@@ -85,7 +86,9 @@ const App = () => (
             <Route path="testimonials" element={<Suspense fallback={<AdminFallback />}><AdminTestimonials /></Suspense>} />
             <Route path="consultoria" element={<Suspense fallback={<AdminFallback />}><AdminConsultoria /></Suspense>} />
             <Route path="gracias" element={<Suspense fallback={<AdminFallback />}><AdminConfirmation /></Suspense>} />
-            <Route path="clientes" element={<Suspense fallback={<AdminFallback />}><AdminClientes /></Suspense>} />
+            {/* Desactivado: stats de clientes ahora en el portal (/portal → Funnel).
+                Reactivar descomentando esta ruta y su entrada en AdminSidebar. */}
+            {/* <Route path="clientes" element={<Suspense fallback={<AdminFallback />}><AdminClientes /></Suspense>} /> */}
           </Route>
           
           {/* Redirects */}

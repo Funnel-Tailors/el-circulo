@@ -19,6 +19,7 @@ import { ConsultingLessonsLibrary } from "@/components/portal/ConsultingLessonsL
 import { VslSection } from "@/components/portal/VslSection";
 import { AdsSection } from "@/components/portal/AdsSection";
 import { FunnelSection } from "@/components/portal/FunnelSection";
+import { FunnelStatsSection, FunnelKpisRow } from "@/components/portal/FunnelStatsSection";
 import { GuionesSection } from "@/components/portal/GuionesSection";
 import { PortalReveal } from "@/components/portal/PortalReveal";
 import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
@@ -201,6 +202,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [project, setProject] = useState<any>(null);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [trackingSlug, setTrackingSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [dashLoading, setDashLoading] = useState(true);
   const [revealed, setRevealed] = useState(() => !!previewId || localStorage.getItem("circulo_portal_revealed") === "1");
@@ -214,10 +216,18 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
   useEffect(() => {
     (async () => {
-      const [inv, proj] = await Promise.all([
+      // El slug de tracking del funnel: RLS deja al cliente ver solo su onboarding;
+      // en modo preview el admin puede consultar cualquiera por id.
+      const slugQuery = previewId
+        ? supabase.from("consulting_onboardings").select("tracking_slug").eq("id", previewId).maybeSingle()
+        : supabase.from("consulting_onboardings").select("tracking_slug").eq("client_user_id", session.user.id).maybeSingle();
+
+      const [inv, proj, slugRes] = await Promise.all([
         supabase.functions.invoke("get-my-invoice", invokeBody),
         supabase.functions.invoke("get-my-project", invokeBody),
+        slugQuery,
       ]);
+      if (!slugRes.error) setTrackingSlug((slugRes.data as any)?.tracking_slug ?? null);
       if (!inv.error) {
         const d = inv.data as any;
         setInvoices(d?.invoices ?? []);
@@ -297,12 +307,18 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     milestones={milestones}
                     completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
                   />
+                  <FunnelKpisRow slug={trackingSlug} />
                 </>
               )}
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
               {section === "anuncios" && <AdsSection ads={project?.ads} />}
-              {section === "funnel" && <FunnelSection pages={project?.funnel_pages} />}
+              {section === "funnel" && (
+                <>
+                  <FunnelStatsSection slug={trackingSlug} />
+                  <FunnelSection pages={project?.funnel_pages} />
+                </>
+              )}
               {section === "guiones" && <GuionesSection settingCopy={project?.setting_script} closingCopy={project?.closing_script} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}

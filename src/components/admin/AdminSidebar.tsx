@@ -82,12 +82,15 @@ const navItems = [
     icon: Briefcase,
     description: "Clientes, facturas y config",
   },
-  {
-    title: "Clientes",
-    url: "/admin/clientes",
-    icon: BarChart3,
-    description: "Stats de funnels de clientes",
-  },
+  // Desactivado: las stats de funnels de clientes viven ahora en el portal de
+  // cada cliente (sección Funnel + KPIs en Resumen). Reactivar si hace falta
+  // una vista comparativa interna.
+  // {
+  //   title: "Clientes",
+  //   url: "/admin/clientes",
+  //   icon: BarChart3,
+  //   description: "Stats de funnels de clientes",
+  // },
   {
     title: "Dev Tools",
     url: "/admin/dev",
