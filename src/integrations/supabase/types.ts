@@ -10,7 +10,32 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -409,6 +434,68 @@ export type Database = {
         }
         Relationships: []
       }
+      client_funnel_events: {
+        Row: {
+          created_at: string
+          device_type: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          project_slug: string
+          referrer: string | null
+          session_id: string
+          step: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          created_at?: string
+          device_type?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          project_slug: string
+          referrer?: string | null
+          session_id: string
+          step?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          created_at?: string
+          device_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          project_slug?: string
+          referrer?: string | null
+          session_id?: string
+          step?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_funnel_events_project_slug_fkey"
+            columns: ["project_slug"]
+            isOneToOne: false
+            referencedRelation: "tracking_projects"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       consulting_agreements: {
         Row: {
           accepted: boolean
@@ -459,6 +546,235 @@ export type Database = {
           },
         ]
       }
+      consulting_dashboard_snapshots: {
+        Row: {
+          created_at: string
+          fetched_at: string
+          id: string
+          metrics: Json
+          onboarding_id: string
+        }
+        Insert: {
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          metrics?: Json
+          onboarding_id: string
+        }
+        Update: {
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          metrics?: Json
+          onboarding_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_dashboard_snapshots_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: true
+            referencedRelation: "consulting_onboardings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consulting_deliverables: {
+        Row: {
+          created_at: string
+          id: string
+          milestone_id: string
+          note: string | null
+          storage_path: string | null
+          title: string
+          type: string
+          url: string | null
+          visible_to_client: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          milestone_id: string
+          note?: string | null
+          storage_path?: string | null
+          title: string
+          type?: string
+          url?: string | null
+          visible_to_client?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          milestone_id?: string
+          note?: string | null
+          storage_path?: string | null
+          title?: string
+          type?: string
+          url?: string | null
+          visible_to_client?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_deliverables_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "consulting_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consulting_ghl_connections: {
+        Row: {
+          api_key: string | null
+          created_at: string
+          ghl_calendar_id: string | null
+          id: string
+          label: string | null
+          location_id: string | null
+          onboarding_id: string
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string | null
+          created_at?: string
+          ghl_calendar_id?: string | null
+          id?: string
+          label?: string | null
+          location_id?: string | null
+          onboarding_id: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string | null
+          created_at?: string
+          ghl_calendar_id?: string | null
+          id?: string
+          label?: string | null
+          location_id?: string | null
+          onboarding_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_ghl_connections_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: true
+            referencedRelation: "consulting_onboardings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consulting_kickoff_prep: {
+        Row: {
+          checklist: Json
+          created_at: string
+          goal_90d: string | null
+          id: string
+          links: string | null
+          monthly_revenue: string | null
+          offer_oneliner: string | null
+          onboarding_id: string
+          sells: string | null
+          submitted_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          checklist?: Json
+          created_at?: string
+          goal_90d?: string | null
+          id?: string
+          links?: string | null
+          monthly_revenue?: string | null
+          offer_oneliner?: string | null
+          onboarding_id: string
+          sells?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          checklist?: Json
+          created_at?: string
+          goal_90d?: string | null
+          id?: string
+          links?: string | null
+          monthly_revenue?: string | null
+          offer_oneliner?: string | null
+          onboarding_id?: string
+          sells?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_kickoff_prep_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: true
+            referencedRelation: "consulting_onboardings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consulting_milestones: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          key: string
+          last_tag_sync_at: string | null
+          note: string | null
+          optional: boolean
+          phase: string
+          phase_label: string | null
+          project_id: string
+          sort_order: number
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          key: string
+          last_tag_sync_at?: string | null
+          note?: string | null
+          optional?: boolean
+          phase: string
+          phase_label?: string | null
+          project_id: string
+          sort_order?: number
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          key?: string
+          last_tag_sync_at?: string | null
+          note?: string | null
+          optional?: boolean
+          phase?: string
+          phase_label?: string | null
+          project_id?: string
+          sort_order?: number
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_milestones_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "consulting_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consulting_onboardings: {
         Row: {
           base_amount_cents: number
@@ -474,6 +790,7 @@ export type Database = {
           legal_name: string
           payment_claimed_at: string | null
           payment_modality: string | null
+          payment_proof_path: string | null
           phone: string | null
           postal_code: string | null
           status: string
@@ -498,6 +815,7 @@ export type Database = {
           legal_name: string
           payment_claimed_at?: string | null
           payment_modality?: string | null
+          payment_proof_path?: string | null
           phone?: string | null
           postal_code?: string | null
           status?: string
@@ -522,6 +840,7 @@ export type Database = {
           legal_name?: string
           payment_claimed_at?: string | null
           payment_modality?: string | null
+          payment_proof_path?: string | null
           phone?: string | null
           postal_code?: string | null
           status?: string
@@ -533,6 +852,74 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      consulting_projects: {
+        Row: {
+          ads: Json
+          closing_script: string | null
+          completion_pct: number
+          created_at: string
+          current_phase: string | null
+          funnel_pages: Json
+          funnel_title: string | null
+          funnel_url: string | null
+          ghl_contact_id: string | null
+          id: string
+          onboarding_id: string
+          setting_script: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          vsl_copy: string | null
+          vsl_title: string | null
+        }
+        Insert: {
+          ads?: Json
+          closing_script?: string | null
+          completion_pct?: number
+          created_at?: string
+          current_phase?: string | null
+          funnel_pages?: Json
+          funnel_title?: string | null
+          funnel_url?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          onboarding_id: string
+          setting_script?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          vsl_copy?: string | null
+          vsl_title?: string | null
+        }
+        Update: {
+          ads?: Json
+          closing_script?: string | null
+          completion_pct?: number
+          created_at?: string
+          current_phase?: string | null
+          funnel_pages?: Json
+          funnel_title?: string | null
+          funnel_url?: string | null
+          ghl_contact_id?: string | null
+          id?: string
+          onboarding_id?: string
+          setting_script?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          vsl_copy?: string | null
+          vsl_title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consulting_projects_onboarding_id_fkey"
+            columns: ["onboarding_id"]
+            isOneToOne: true
+            referencedRelation: "consulting_onboardings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoice_sequences: {
         Row: {
@@ -557,8 +944,10 @@ export type Database = {
           base_amount_cents: number
           created_at: string
           currency: string
-          due_date: string
+          due_date: string | null
           id: string
+          installment_count: number | null
+          installment_index: number | null
           invoice_date: string
           invoice_number: string
           issued_at: string
@@ -580,8 +969,10 @@ export type Database = {
           base_amount_cents?: number
           created_at?: string
           currency?: string
-          due_date: string
+          due_date?: string | null
           id?: string
+          installment_count?: number | null
+          installment_index?: number | null
           invoice_date: string
           invoice_number: string
           issued_at?: string
@@ -603,8 +994,10 @@ export type Database = {
           base_amount_cents?: number
           created_at?: string
           currency?: string
-          due_date?: string
+          due_date?: string | null
           id?: string
+          installment_count?: number | null
+          installment_index?: number | null
           invoice_date?: string
           invoice_number?: string
           issued_at?: string
@@ -1142,6 +1535,27 @@ export type Database = {
           updated_at?: string | null
           vault_unlocked?: boolean | null
           vault_unlocked_at?: string | null
+        }
+        Relationships: []
+      }
+      tracking_projects: {
+        Row: {
+          active: boolean
+          created_at: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          name?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -1769,6 +2183,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["admin", "user"],

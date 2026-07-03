@@ -13,6 +13,7 @@ import {
   Video,
   Briefcase,
   PartyPopper,
+  BarChart3,
 } from "lucide-react";
 import {
   Sidebar,
@@ -80,6 +81,12 @@ const navItems = [
     url: "/admin/consultoria",
     icon: Briefcase,
     description: "Clientes, facturas y config",
+  },
+  {
+    title: "Clientes",
+    url: "/admin/clientes",
+    icon: BarChart3,
+    description: "Stats de funnels de clientes",
   },
   {
     title: "Dev Tools",
