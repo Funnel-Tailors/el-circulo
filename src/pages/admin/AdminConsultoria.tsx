@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Download, Loader2, Eye } from "lucide-react";
+import { Download, Loader2, Eye, KeyRound, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -43,6 +44,18 @@ function ClientsTab() {
       return data ?? [];
     },
   });
+
+  // Reset de la clave del portal: la nueva se muestra UNA vez (no se guarda).
+  const [credentials, setCredentials] = useState<{ legal_name: string; username: string; password: string } | null>(null);
+  const [resetting, setResetting] = useState<string | null>(null);
+  const resetPortalPassword = async (c: any) => {
+    if (!window.confirm(`Generar contraseña nueva para el portal de "${c.legal_name}"? La actual dejará de funcionar.`)) return;
+    setResetting(c.id);
+    const { data, error } = await supabase.functions.invoke("admin-reset-client-password", { body: { onboarding_id: c.id } });
+    setResetting(null);
+    if (error || !(data as any)?.ok) return toast.error((data as any)?.error || "No se pudo resetear");
+    setCredentials(data as any);
+  };
 
   const setTrackingSlug = async (onboardingId: string, slug: string) => {
     const { error } = await (supabase as any)
@@ -138,7 +151,12 @@ function ClientsTab() {
                   </select>
                 </td>
                 <td className="py-2 pr-4">
-                  <Button size="sm" variant="ghost" title="Ver portal del cliente" onClick={() => window.open(`/portal?preview=${c.id}`, "_blank")}><Eye className="h-4 w-4" /></Button>
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="ghost" title="Ver portal del cliente" onClick={() => window.open(`/portal?preview=${c.id}`, "_blank")}><Eye className="h-4 w-4" /></Button>
+                    <Button size="sm" variant="ghost" title="Reset clave del portal" disabled={resetting === c.id} onClick={() => resetPortalPassword(c)}>
+                      {resetting === c.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </td>
               </tr>
             );
@@ -146,6 +164,41 @@ function ClientsTab() {
         </tbody>
       </table>
       <Button variant="outline" size="sm" className="mt-4" onClick={() => refetch()}>Refrescar</Button>
+
+      {/* Credenciales tras el reset — se muestran UNA vez, cópialas antes de cerrar */}
+      <Dialog open={!!credentials} onOpenChange={(open) => !open && setCredentials(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Credenciales del portal · {credentials?.legal_name}</DialogTitle>
+            <DialogDescription>
+              Pásaselas al cliente ahora — la contraseña no se guarda y no volverá a mostrarse.
+            </DialogDescription>
+          </DialogHeader>
+          {credentials && (
+            <div className="space-y-2 font-mono text-sm">
+              <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 px-3 py-2">
+                <span>{credentials.username}</span>
+                <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(credentials.username); toast.success("Usuario copiado"); }}><Copy className="h-3.5 w-3.5" /></Button>
+              </div>
+              <div className="flex items-center justify-between rounded-md border border-white/10 bg-white/5 px-3 py-2">
+                <span>{credentials.password}</span>
+                <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(credentials.password); toast.success("Contraseña copiada"); }}><Copy className="h-3.5 w-3.5" /></Button>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  navigator.clipboard.writeText(`Portal de cliente — El Círculo\nhttps://www.vendenautomatico.com/portal\nUsuario: ${credentials.username}\nContraseña: ${credentials.password}`);
+                  toast.success("Mensaje completo copiado");
+                }}
+              >
+                Copiar mensaje para el cliente
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

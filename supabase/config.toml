@@ -75,6 +75,9 @@ verify_jwt = true
 [functions.admin-invoice]
 verify_jwt = true
 
+[functions.admin-reset-client-password]
+verify_jwt = true
+
 [functions.sync-consulting-tags]
 verify_jwt = false
 
