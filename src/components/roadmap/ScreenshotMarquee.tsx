@@ -79,7 +79,9 @@ const DesktopGrid = ({
   );
 };
 
-// ─── Mobile: 2-column masonry scroll ─────────────────────────────────────────
+// ─── Mobile: single full-width column ────────────────────────────────────────
+// A ancho (casi) completo para que los pantallazos se lean sin zoom; el scroll
+// largo hace el efecto "volumen" de testimonios. Lazy-load evita que pese.
 const MobileGrid = ({
   images,
   onImageClick,
@@ -87,48 +89,24 @@ const MobileGrid = ({
   images: string[];
   onImageClick: (src: string) => void;
 }) => {
-  // Split into 2 columns alternating
-  const col1 = images.filter((_, i) => i % 2 === 0);
-  const col2 = images.filter((_, i) => i % 2 === 1);
-
   return (
-    <div className="flex gap-3 px-4 overflow-x-hidden">
-      <div className="flex-1 flex flex-col gap-3">
-        {col1.map((src, i) => (
-          <div
-            key={`c1-${i}`}
-            className="rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-            style={glassStyleMobile}
-            onClick={() => onImageClick(src)}
-          >
-            <img
-              src={src}
-              alt="Testimonio de cliente"
-              className="w-full h-auto object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        ))}
-      </div>
-      <div className="flex-1 flex flex-col gap-3 mt-6">
-        {col2.map((src, i) => (
-          <div
-            key={`c2-${i}`}
-            className="rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
-            style={glassStyleMobile}
-            onClick={() => onImageClick(src)}
-          >
-            <img
-              src={src}
-              alt="Testimonio de cliente"
-              className="w-full h-auto object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        ))}
-      </div>
+    <div className="flex flex-col gap-3 px-3 overflow-x-hidden">
+      {images.map((src, i) => (
+        <div
+          key={`m-${i}`}
+          className="rounded-2xl overflow-hidden cursor-pointer active:scale-[0.98] transition-transform"
+          style={glassStyleMobile}
+          onClick={() => onImageClick(src)}
+        >
+          <img
+            src={src}
+            alt="Testimonio de cliente"
+            className="w-full h-auto object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ))}
     </div>
   );
 };
@@ -159,7 +137,7 @@ const ScreenshotMarquee = () => {
             <DesktopGrid images={images} onImageClick={handleImageClick} />
           </div>
 
-          {/* Mobile: 2-column masonry grid */}
+          {/* Mobile: single full-width column */}
           <div className="md:hidden">
             <MobileGrid images={images} onImageClick={handleImageClick} />
           </div>
