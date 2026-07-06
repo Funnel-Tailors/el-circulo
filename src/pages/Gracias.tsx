@@ -179,9 +179,8 @@ const Gracias = () => {
           )}
         </motion.header>
 
-        {/* 2 · Vídeo hero (mira para confirmar) */}
+        {/* 2 · Vídeo hero (sin titulillo, para subirlo above the fold) */}
         <section className="space-y-4">
-          <SectionEyebrow>{settings.copy.heroLabel}</SectionEyebrow>
           <VideoSlot
             url={settings.heroVideoUrl}
             label="El vídeo con los pasos para confirmar tu plaza aparecerá aquí muy pronto."
@@ -192,9 +191,9 @@ const Gracias = () => {
             Framing natural, sin titular artificial. */}
         {breakouts.length > 0 && (
           <section className="space-y-6">
-            <p className="text-foreground/70 text-base md:text-lg leading-relaxed">
-              Lo que seguramente te estás preguntando ahora mismo 👇
-            </p>
+            <h2 className="font-display font-black uppercase text-2xl md:text-3xl leading-tight tracking-tight text-center">
+              {renderHeadline("<glow>Todas tus dudas</glow> las respondo aquí")}
+            </h2>
             {/* 1 columna en móvil, 2 en desktop (9 breakouts) */}
             <div className="grid gap-8 md:grid-cols-2">
               {breakouts.map((b, i) => (
