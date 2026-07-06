@@ -3,8 +3,8 @@ export type QuizState = {
   q2?: string; // Profesión
   q3?: string; // Facturación mensual
   q4?: string[]; // LEGACY: Métodos de adquisición (ya no se pregunta)
-  q5?: string; // LEGACY: Presupuesto de inversión (ya no se pregunta)
-  q6?: string; // Urgencia/Compromiso (ahora paso 4 visual)
+  q5?: string; // Presupuesto/vía DIY-DFY (paso 4 visual) → custom field quiz_budget
+  q6?: string; // LEGACY: Urgencia/timeline (retirado, sustituido por q5 presupuesto)
   q7?: string; // Autoridad de decisión (ahora paso 5 visual)
   name?: string;
   email?: string;

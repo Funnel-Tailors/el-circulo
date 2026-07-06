@@ -107,7 +107,10 @@ function getHardstopReason(answers: QuizAnswers, score: number): string | null {
 
 // Helper: Determinar tier del lead
 function getLeadTier(answers: QuizAnswers): string {
-  // If q5 not answered (new 5-question quiz), default to CALL
+  // Nuevo quiz: q5 = vía/presupuesto DIY/DFY
+  if (answers.q5?.includes('DFY')) return 'DFY';
+  if (answers.q5?.includes('DIY')) return 'DIY';
+  // If q5 not answered, default to CALL
   if (!answers.q5) return 'CALL';
   if (answers.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") return 'TRIMESTRAL';
   if (answers.q5 === "€3.000/mes — acceso completo al sistema") return 'MENSUAL';
@@ -123,6 +126,8 @@ function getTicketLabel(answers: QuizAnswers): string {
   const tier = getLeadTier(answers);
   const labels: Record<string, string> = {
     'CALL': 'Llamada estratégica',
+    'DFY': 'DFY (€10K)',
+    'DIY': 'DIY (€3K/año)',
     'TRIMESTRAL': 'Trimestral (€8K)',
     'MENSUAL': 'Mensual (€3K/mes)',
     'NONE': 'Llamada estratégica'
@@ -237,24 +242,24 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Tier (Q5) — Updated pricing
-  const investmentMap: Record<string, string> = {
-    '€8.000 trimestral — acceso + 1 año de Artefacto incluido': '💎 CÍRCULO-TIER-TRIMESTRAL',
-    '€3.000/mes — acceso completo al sistema': '💰 CÍRCULO-TIER-MENSUAL',
-    // Legacy
-    'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-TRIMESTRAL',
-    'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-TRIMESTRAL',
-    'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-MENSUAL',
-    'Ahora mismo no puedo invertir en esto': '❌ CÍRCULO-TIER-NONE'
-  };
-  if (answers.q5) tags.push(investmentMap[answers.q5] || '💰 CÍRCULO-TIER-Unknown');
-  
-  // Urgency (Q6) — NEW
-  const urgencyMap: Record<string, string> = {
-    'Esta semana - estoy perdiendo dinero cada día que pasa': '🚀 CÍRCULO-URG-ThisWeek',
-    'Este mes - tengo margen pero quiero moverme': '📈 CÍRCULO-URG-ThisMonth'
-  };
-  if (answers.q6) tags.push(urgencyMap[answers.q6] || '⏸️ CÍRCULO-URG-Unknown');
+  // Vía/Presupuesto (Q5) — DIY/DFY (sustituye a la vieja pregunta de inversión y a la de urgencia Q6)
+  if (answers.q5?.includes('DFY')) {
+    tags.push('💎 CÍRCULO-TIER-DFY');
+  } else if (answers.q5?.includes('DIY')) {
+    tags.push('💰 CÍRCULO-TIER-DIY');
+  } else if (answers.q5) {
+    // Legacy: soporte para respuestas antiguas de inversión
+    const legacyTierMap: Record<string, string> = {
+      '€8.000 trimestral — acceso + 1 año de Artefacto incluido': '💎 CÍRCULO-TIER-TRIMESTRAL',
+      '€3.000/mes — acceso completo al sistema': '💰 CÍRCULO-TIER-MENSUAL',
+      'Quiero que lo hagáis todo por mí (desde €15K)': '💎 CÍRCULO-TIER-TRIMESTRAL',
+      'Quiero que me ayudéis a implementarlo (desde €8K)': '💰 CÍRCULO-TIER-TRIMESTRAL',
+      'Quiero hacerlo yo con guía paso a paso (desde €5K)': '💵 CÍRCULO-TIER-MENSUAL',
+      'Ahora mismo no puedo invertir en esto': '❌ CÍRCULO-TIER-NONE'
+    };
+    tags.push(legacyTierMap[answers.q5] || '💰 CÍRCULO-TIER-Unknown');
+  }
+  // (Urgencia/timeline Q6 retirada — la señal de prioridad ahora la da DFY vs DIY)
   
   // Authority (Q7) — NEW
   const authorityMap: Record<string, string> = {
@@ -301,7 +306,7 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q6?.includes('Esta semana');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
   const tier = getLeadTier(answers);
   
   if (score >= 85) {
@@ -319,7 +324,7 @@ function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   }
   
   if (fastTrack && hasInvestment) {
-    insights.push('🔥 Combinación ideal: Inversión + Urgencia esta semana');
+    insights.push('🔥 Combinación ideal: eligió DFY + capacidad de inversión');
   }
   
   if (lowRevenue && hasInvestment) {
@@ -417,7 +422,7 @@ function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number
   const levers: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q6?.includes('Esta semana');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
   const tier = getLeadTier(answers);
   
   switch(pain) {
@@ -514,7 +519,7 @@ function generateCloserNotification(contact: ContactData, answers: QuizAnswers, 
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q6?.includes('Esta semana');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
   const isIdealClient = lowRevenue && hasInvestment;
@@ -554,7 +559,7 @@ ${tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2}
 • Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
-• Urgencia: ${answers.q6}
+• Vía: ${answers.q5}
 • Decide: ${answers.q7}
 
 📞 CONTACTO:
@@ -575,7 +580,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q6?.includes('Esta semana');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
   const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
@@ -589,7 +594,7 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
     criticalOpportunities.push('• HOT Lead - Prioridad máxima');
   }
   if (fastTrack && !painLevers.some(l => l.includes('URGENCIA'))) {
-    criticalOpportunities.push('• Urgencia esta semana = Prioridad máxima');
+    criticalOpportunities.push('• Eligió DFY = Prioridad máxima');
   }
   if (authSolo) {
     criticalOpportunities.push('• Decisor único');
@@ -620,7 +625,7 @@ VEREDICTO: ${classification} ${icpTag} | ${score}/110 ${scoreBar}
 • Pain: ${answers.q1}
 • Profesión: ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
 • Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Urgencia: ${answers.q6}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4.join(', ')}` : ''}
+• Vía: ${answers.q5}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4.join(', ')}` : ''}
 ${criticalOpportunities.length > 0 ? `\n🎯 PALANCAS CRÍTICAS:\n${criticalOpportunities.join('\n')}` : ''}
 ${realObjections.length > 0 ? `\n⚠️ FRICCIONES:\n${realObjections.map(o => `• ${o.replace('⚠️ ', '')}`).join('\n')}` : ''}
 
@@ -635,8 +640,8 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
   const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q6?.includes('Esta semana');
-  const gradual = answers.q6?.includes('Este mes');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const gradual = answers.q5?.includes('DIY'); // eligió DIY (antes: timeline "este mes")
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
   const soloDecision = answers.q7?.includes('Solo yo');
   
@@ -652,7 +657,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   if (fastTrack && hasMoney) {
-    return 'Tienes urgencia y tienes claro que hay que invertir. Perfecto. Los que actúan rápido siempre comen antes.';
+    return 'Vas a por el done-for-you y tienes claro que hay que invertir. Perfecto. Los que delegan y ejecutan siempre comen antes.';
   }
   
   if (hasReferrals && midRevenue) {
@@ -668,7 +673,7 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   }
   
   if (gradual && score >= 60) {
-    return 'Tienes margen pero quieres moverte este mes. Inteligente. En la evaluación veremos si hay alineación real.';
+    return 'Prefieres montártelo tú con el método y la comunidad. Inteligente. En la evaluación veremos si hay alineación real.';
   }
   
   if (!hasMoney && score < 60) {
@@ -696,7 +701,7 @@ function generateContextualNote(
   score: number
 ): string {
   const pain = answers.q1 || '';
-  const fastTrack = answers.q6?.includes('Esta semana');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
   const socialMediaDependent = Array.isArray(answers.q4) && (answers.q4.includes('Contenido orgánico (redes/web)') || answers.q4.includes('Contenido orgánico'));
   const isAutomator = answers.q2 === 'Automatizador';
   const noSoloDecision = !answers.q7?.includes('Solo yo');
@@ -716,7 +721,7 @@ function generateContextualNote(
   }
   
   if (isHot && fastTrack) {
-    return '⚡ Nota: Tu urgencia es real. Reserva en las próximas 8 horas y tendrás análisis preliminar en 24h.';
+    return '⚡ Nota: Vas a por el done-for-you. Reserva en las próximas 8 horas y tendrás análisis preliminar en 24h.';
   }
   
   if (socialMediaDependent) {
@@ -1208,7 +1213,7 @@ function generateCloserPreCallNotification(contact: ContactData, answers: QuizAn
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
   const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q6?.includes('Esta semana');
+  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
   const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
@@ -1256,7 +1261,7 @@ ${lowRevenue ? '\n🚨 CANDIDATO CON DOLOR AGUDO: Revenue bajo + urgencia = MÁX
 • Pain: ${answers.q1}
 • ${answers.q2} | Factura: ${answers.q3}${lowRevenue ? ' (¡Dolor agudo!)' : ''}
 • Decide: ${authSolo ? '✅ Solo' : answers.q7}
-• Urgencia: ${answers.q6}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4[0]}` : ''}
+• Vía: ${answers.q5}${Array.isArray(answers.q4) && answers.q4.length > 0 ? `\n• Adquisición: ${answers.q4[0]}` : ''}
 
 🗝️ ÁNGULOS DE APERTURA:
 ${openingAngles.map((angle, i) => `${i + 1}. ${angle}`).join('\n')}
@@ -1382,6 +1387,7 @@ serve(async (req) => {
         { key: 'quiz_profession', field_value: answers.q2 || '' },
         { key: 'quiz_revenue', field_value: answers.q3 || '' },
         { key: 'quiz_acquisition', field_value: Array.isArray(answers.q4) ? answers.q4.join(', ') : '' },
+        { key: 'quiz_budget', field_value: answers.q5 || '' },
         { key: 'quiz_investment', field_value: answers.q5 || '' },
         { key: 'quiz_urgency', field_value: answers.q6 || '' },
         { key: 'quiz_authority', field_value: answers.q7 || '' },

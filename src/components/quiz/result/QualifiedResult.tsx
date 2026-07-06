@@ -59,8 +59,8 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
     else if (state.q3 === "Más de €20.000/mes") score += 38;
     else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
-    if (state.q6?.includes("Esta semana")) score += 15;
-    else if (state.q6?.includes("Este mes")) score += 12;
+    if (state.q5?.includes("DFY")) score += 15;
+    else if (state.q5?.includes("DIY")) score += 12;
     if (state.q7?.includes("Solo yo")) score += 10;
     else if (state.q7?.includes("Con mi socio")) score += 7;
     return Math.min(score, 100);

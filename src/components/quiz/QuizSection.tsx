@@ -70,18 +70,18 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q4",
-  stateKey: "q6", // Maps to q6 in state for edge function compatibility
-  question: "¿Cuándo necesitas tener esto funcionando?",
+  stateKey: "q5", // Presupuesto/vía DIY-DFY → state.q5 (custom field quiz_budget). Sustituye a la vieja pregunta de timeline.
+  question: "¿Por qué vía te ves entrando al Círculo?",
   type: "radio",
   options: [
-    "Esta semana - estoy perdiendo dinero cada día que pasa",
-    "Este mes - tengo margen pero quiero moverme"
+    "DIY · €3.000/año - Me lo monto yo con tu método y la comunidad",
+    "DFY · €10.000 - Tu equipo me monta todo el sistema y yo solo cierro"
   ],
-  badge: "⏱️ Paso 4/5 - Tu Urgencia",
-  subtext: "No hay respuesta correcta. Pero sí hay una honesta.",
+  badge: "💸 Paso 4/5 - Tu Vía",
+  subtext: "Las dos valen. En la llamada vemos cuál encaja contigo — no vengo a venderte la cara.",
   motivator: {
     icon: "🔥",
-    text: "Los que implementan en 7 días recuperan la inversión 3x más rápido"
+    text: "Es una inversión de entre 3 y 10 mil, no de 300 pavos. Si no encaja, te lo digo yo primero."
   }
 }, {
   id: "q5",
@@ -384,9 +384,9 @@ const QuizSection = ({
     else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
     else if (state.q3 === "Menos de €3.000/mes") score += 0;
 
-    // Q6 - Urgency (0-15 pts) — stored as q6
-    if (state.q6?.includes("Esta semana")) score += 15;
-    else if (state.q6?.includes("Este mes")) score += 12;
+    // Q5 - Vía/Presupuesto (0-15 pts) — stored as q5 (DIY/DFY). Mantiene la banda de la antigua urgencia para no descuadrar el umbral.
+    if (state.q5?.includes("DFY")) score += 15;
+    else if (state.q5?.includes("DIY")) score += 12;
 
     // Q7 - Authority (0-10 pts) — stored as q7
     if (state.q7?.includes("Solo yo")) score += 10;
