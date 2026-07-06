@@ -239,7 +239,9 @@ const Gracias = () => {
           </section>
         )}
 
-        {/* 6 · Qué pasa ahora / expectativas (al final, antes del cierre) */}
+        {/* 6 · "Qué pasa ahora / qué no esperar" — DESACTIVADO: no aporta con los breakouts.
+            Reactivar: quitar el `false &&`. */}
+        {false && (
         <section className="space-y-6">
           <EnergyCard variant="default" enableTilt={false} beamIntensity={0.35}>
             <EnergyCardContent className="p-6 md:p-8">
@@ -268,6 +270,7 @@ const Gracias = () => {
             </EnergyCardContent>
           </EnergyCard>
         </section>
+        )}
 
         {/* ── Secciones DESACTIVADAS (no borradas) ──────────────────────────────
             Pasos para confirmar: se mencionan ya en el hero video.
