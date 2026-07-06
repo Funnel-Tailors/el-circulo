@@ -131,7 +131,7 @@ const Gracias = () => {
         <div className="mx-auto max-w-3xl px-5 py-2.5 flex items-center justify-center gap-2 text-center">
           <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
           <p className="text-xs md:text-sm font-medium text-amber-100/90">
-            Tu cita está reservada pero <span className="font-bold">aún NO confirmada</span>. Completa los pasos de abajo.
+            Tu cita está reservada pero <span className="font-bold">aún NO confirmada</span>. Sigue los pasos del vídeo de aquí abajo.
           </p>
         </div>
       </div>
@@ -343,7 +343,7 @@ const Gracias = () => {
         {/* 9 · Cierre / recordatorio final */}
         <section className="text-center space-y-4">
           <p className="text-foreground/60 text-sm max-w-md mx-auto">
-            Recuerda: tu cita no cuenta hasta que completas los pasos de arriba. Nos vemos en la llamada.
+            Recuerda: tu cita no cuenta hasta que sigues los pasos del vídeo. Nos vemos en la llamada.
           </p>
           {waHref && (
             <a href={waHref} target="_blank" rel="noopener noreferrer">
