@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { EnergyCard, EnergyCardContent } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
 import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
+import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
+import { successCases } from "@/data/roadmap";
 import { useConfirmationSettings } from "@/hooks/useConfirmationSettings";
 import { quizAnalytics } from "@/lib/analytics";
 import type { ConfirmBreakout } from "@/config/confirmation";
@@ -186,8 +188,95 @@ const Gracias = () => {
           />
         </section>
 
-        {/* 3 · Pasos para confirmar (el core del frame) */}
-        {steps.length > 0 && (
+        {/* 3 · Breakout videos — cada uno con su título (contenido en Supabase).
+            Framing natural, sin titular artificial. */}
+        {breakouts.length > 0 && (
+          <section className="space-y-6">
+            <p className="text-foreground/70 text-base md:text-lg leading-relaxed">
+              Lo que seguramente te estás preguntando ahora mismo 👇
+            </p>
+            {/* 1 columna en móvil, 2 en desktop (9 breakouts) */}
+            <div className="grid gap-8 md:grid-cols-2">
+              {breakouts.map((b, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <PlayCircle className="h-4 w-4 text-foreground/50" />
+                    <h3 className="font-display font-bold uppercase tracking-tight text-base text-foreground/90">
+                      {b.title || `Vídeo ${i + 1}`}
+                    </h3>
+                  </div>
+                  <VideoSlot url={b.videoUrl} label="Vídeo próximamente." />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 4 · Testimonios (volumen) — vídeo (marquee) + screenshots */}
+        {settings.showTestimonials && (
+          <section className="space-y-8">
+            <TestimonialsMarquee cases={successCases} />
+            <ScreenshotMarquee />
+          </section>
+        )}
+
+        {/* 5 · Autoridad (opcional) */}
+        {authority.length > 0 && (
+          <section className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {authority.map((a, i) => (
+                <a
+                  key={i}
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground/85 hover:bg-white/[0.06] transition-colors"
+                >
+                  <span>{a.label}</span>
+                  <ExternalLink className="h-4 w-4 text-foreground/40 shrink-0" />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 6 · Qué pasa ahora / expectativas (al final, antes del cierre) */}
+        <section className="space-y-6">
+          <EnergyCard variant="default" enableTilt={false} beamIntensity={0.35}>
+            <EnergyCardContent className="p-6 md:p-8">
+              <div
+                className="max-w-2xl text-[15px] leading-relaxed
+                  [&_h2]:font-display [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-tight [&_h2]:text-base [&_h2]:text-foreground [&_h2]:mt-6 [&_h2]:mb-2 [&_h2:first-child]:mt-0
+                  [&_p]:text-foreground/75 [&_p]:my-3
+                  [&_strong]:text-foreground [&_strong]:font-semibold
+                  [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ul]:text-foreground/75
+                  [&_li]:marker:text-foreground/30"
+              >
+                <ReactMarkdown>{settings.expectations}</ReactMarkdown>
+              </div>
+              {waHref && (
+                <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <a href={waHref} target="_blank" rel="noopener noreferrer">
+                    <Button className="gap-2 animate-glow-pulse-intense">
+                      <MessageCircle className="h-4 w-4" /> Guardar nuestro WhatsApp
+                    </Button>
+                  </a>
+                  {settings.contact.note && (
+                    <p className="text-xs text-muted-foreground max-w-xs">{settings.contact.note}</p>
+                  )}
+                </div>
+              )}
+            </EnergyCardContent>
+          </EnergyCard>
+        </section>
+
+        {/* ── Secciones DESACTIVADAS (no borradas) ──────────────────────────────
+            Pasos para confirmar: se mencionan ya en el hero video.
+            FAQ: redundante con los breakouts.
+            Reactivar: quitar el `false &&` del guard correspondiente. */}
+
+        {/* Pasos para confirmar (el core del frame) — desactivado */}
+        {false && steps.length > 0 && (
           <section className="space-y-6">
             <SectionEyebrow>{settings.copy.stepsTitle}</SectionEyebrow>
             <div className="space-y-3">
@@ -231,88 +320,8 @@ const Gracias = () => {
           </section>
         )}
 
-        {/* 4 · Qué pasa cuando confirmas / expectativas */}
-        <section className="space-y-6">
-          <SectionEyebrow>Qué pasa cuando confirmas</SectionEyebrow>
-          <EnergyCard variant="default" enableTilt={false} beamIntensity={0.35}>
-            <EnergyCardContent className="p-6 md:p-8">
-              <div
-                className="max-w-2xl text-[15px] leading-relaxed
-                  [&_h2]:font-display [&_h2]:font-bold [&_h2]:uppercase [&_h2]:tracking-tight [&_h2]:text-base [&_h2]:text-foreground [&_h2]:mt-6 [&_h2]:mb-2 [&_h2:first-child]:mt-0
-                  [&_p]:text-foreground/75 [&_p]:my-3
-                  [&_strong]:text-foreground [&_strong]:font-semibold
-                  [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ul]:text-foreground/75
-                  [&_li]:marker:text-foreground/30"
-              >
-                <ReactMarkdown>{settings.expectations}</ReactMarkdown>
-              </div>
-              {waHref && (
-                <div className="mt-6 pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <a href={waHref} target="_blank" rel="noopener noreferrer">
-                    <Button className="gap-2 animate-glow-pulse-intense">
-                      <MessageCircle className="h-4 w-4" /> Guardar nuestro WhatsApp
-                    </Button>
-                  </a>
-                  {settings.contact.note && (
-                    <p className="text-xs text-muted-foreground max-w-xs">{settings.contact.note}</p>
-                  )}
-                </div>
-              )}
-            </EnergyCardContent>
-          </EnergyCard>
-        </section>
-
-        {/* 5 · Breakout videos */}
-        {breakouts.length > 0 && (
-          <section className="space-y-6">
-            <SectionEyebrow>Dudas concretas, respondidas</SectionEyebrow>
-            <div className="space-y-8">
-              {breakouts.map((b, i) => (
-                <div key={i} className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <PlayCircle className="h-4 w-4 text-foreground/50" />
-                    <h3 className="font-display font-bold uppercase tracking-tight text-base text-foreground/90">
-                      {b.title || `Vídeo ${i + 1}`}
-                    </h3>
-                  </div>
-                  <VideoSlot url={b.videoUrl} label="Vídeo próximamente." />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 6 · Testimonios (volumen) */}
-        {settings.showTestimonials && (
-          <section className="space-y-6">
-            <SectionEyebrow>Lo que dicen los que ya están dentro</SectionEyebrow>
-            <ScreenshotMarquee />
-          </section>
-        )}
-
-        {/* 7 · Autoridad (opcional) */}
-        {authority.length > 0 && (
-          <section className="space-y-4">
-            <SectionEyebrow>Para seguir investigando</SectionEyebrow>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {authority.map((a, i) => (
-                <a
-                  key={i}
-                  href={a.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-foreground/85 hover:bg-white/[0.06] transition-colors"
-                >
-                  <span>{a.label}</span>
-                  <ExternalLink className="h-4 w-4 text-foreground/40 shrink-0" />
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 8 · FAQ */}
-        {faq.length > 0 && (
+        {/* FAQ — desactivado */}
+        {false && faq.length > 0 && (
           <section className="space-y-4">
             <SectionEyebrow>Preguntas frecuentes</SectionEyebrow>
             <div className="space-y-3">
