@@ -916,17 +916,13 @@ Un miembro del equipo evaluará tu candidatura. No es una llamada de ventas.
 
 El enlace llegará 1h antes.
 
-🎓 ACCEDE A TU MATERIAL:
+🎓 ANTES DE LA LLAMADA:
 
-Antes de la llamada, completa la clase de preparación (40 mins):
+Mírate el vídeo de confirmación y las respuestas a las dudas más comunes (en la misma página donde reservaste):
 
-🔗 https://vendenautomatico.com/senda?token={{contact.id}}
+🔗 https://vendenautomatico.com/gracias
 
-Contiene:
-• La clase completa "Crea Tu Oferta Premium"
-• Asistente IA exclusivo para diseñar tu oferta
-
-⚠️ Completa ANTES de la llamada o no podremos avanzar.
+⚠️ Míralo ANTES de la llamada o no podremos avanzar.
     `.trim();
   } else {
     return `
@@ -960,17 +956,13 @@ Cuanto mejor preparado vengas, más claridad obtendrás.
 
 El enlace llegará 1h antes.
 
-🎓 ACCEDE A TU MATERIAL:
+🎓 ANTES DE LA LLAMADA:
 
-Antes de la llamada, completa la clase de preparación (40 mins):
+Mírate el vídeo de confirmación y las respuestas a las dudas más comunes (en la misma página donde reservaste):
 
-🔗 https://vendenautomatico.com/senda?token={{contact.id}}
+🔗 https://vendenautomatico.com/gracias
 
-Contiene:
-• La clase completa "Crea Tu Oferta Premium"
-• Asistente IA exclusivo para diseñar tu oferta
-
-⚠️ Completa ANTES de la llamada o no podremos avanzar.
+⚠️ Míralo ANTES de la llamada o no podremos avanzar.
     `.trim();
   }
 }
