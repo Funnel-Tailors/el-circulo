@@ -10,13 +10,13 @@ export const RESULT_MESSAGES = {
   qualified: {
     title: "Tu plaza está lista",
     subtitle: "Hablemos",
-    socialProof: "Solo para agencias facturando €5K-10K/mes. Dentro: proyectos de hasta €60K cerrados, FLOC facturó €80K en 4 días.",
+    socialProof: "Para estudios que quieren dejar de ser un eslabón sustituible y vender directo al cliente final. Dentro: proyectos de hasta €60K cerrados, FLOC facturó €80K en 4 días.",
     formCta: "APLICAR AL CÍRCULO →",
     postSubmit: "Elige tu hueco. Te mando el material previo por email para que vengas a la llamada con la cabeza lista.",
     trustSignal: "🔒 Usa un email real. Lo usamos para confirmarte la cita y mandarte el material previo a la llamada.",
   },
   notQualified: {
-    title: "La Senda no es para ti",
+    title: "El Círculo no es para ti",
     description: "Esto no es un curso. No es para curiosos. No es para quienes no pueden invertir, no tienen prisa o necesitan que otro les dé permiso para decidir.",
     footer: "Cuando dejes de explorar y estés listo para ejecutar, quizá nos crucemos. O quizá no."
   }

@@ -500,7 +500,7 @@ class QuizAnalytics {
   }
 
   async trackICPMatch(projectValue: string): Promise<void> {
-    const ICP_SWEET_SPOT = ["€3.000 - €5.000/mes", "€5.000 - €10.000/mes"];
+    const ICP_SWEET_SPOT = ["€10.000 - €20.000/mes", "Más de €20.000/mes"];
     if (ICP_SWEET_SPOT.includes(projectValue)) {
       await this.trackMetaPixelEvent('ViewContent', {
         content_type: 'quiz',

@@ -52,7 +52,7 @@ const steps: QuizStep[] = [{
   stateKey: "q2",
   question: "¿A qué te dedicas hoy?",
   type: "radio",
-  options: ["Agencia de diseño / branding", "Productora / Estudio audiovisual", "Estudio de desarrollo / automatización", "Otro tipo de agencia creativa"],
+  options: ["Estudio de visualización arquitectónica / arch-viz / render", "Agencia de diseño / branding", "Productora / Estudio audiovisual", "Estudio de desarrollo / automatización", "Otro tipo de agencia creativa"],
   badge: "🎯 Paso 2/5 - Tu Especialidad",
   subtext: "Tu especialidad dicta tu camino de ascenso",
   motivator: null
@@ -66,7 +66,7 @@ const steps: QuizStep[] = [{
   subtext: "Ya sabemos que es irregular, por eso preguntamos el techo, no la media",
   motivator: {
     icon: "🚀",
-    text: "Agencias que facturan €3K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
+    text: "Estudios que dejaron de ser un eslabón sustituible pasan a cerrar proyectos de 5 cifras con el cliente final en 90 días. Mismo equipo, el triple de ticket."
   }
 }, {
   id: "q4",
@@ -372,15 +372,16 @@ const QuizSection = ({
     else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 13;
 
     // Q2 - Profesión (0-15 pts)
-    if (state.q2 === "Agencia de diseño / branding") score += 15;
+    if (state.q2 === "Estudio de visualización arquitectónica / arch-viz / render") score += 15;
+    else if (state.q2 === "Agencia de diseño / branding") score += 15;
     else if (state.q2 === "Productora / Estudio audiovisual") score += 15;
     else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
     else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
 
-    // Q3 - Revenue (0-45 pts)
-    if (state.q3 === "€5.000 - €10.000/mes") score += 45;
-    else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
-    else if (state.q3 === "Más de €20.000/mes") score += 38;
+    // Q3 - Revenue (0-45 pts) — recompensa la solvencia; nunca castiga al que factura más.
+    if (state.q3 === "Más de €20.000/mes") score += 45;
+    else if (state.q3 === "€10.000 - €20.000/mes") score += 45;
+    else if (state.q3 === "€5.000 - €10.000/mes") score += 38;
     else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
     else if (state.q3 === "Menos de €3.000/mes") score += 0;
 

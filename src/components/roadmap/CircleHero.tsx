@@ -155,15 +155,15 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
 
       {/* Pre-qualificación ICP */}
       <p className="text-sm md:text-base text-muted-foreground leading-[1em] italic">
-        Solo para dueños de <span className="text-foreground font-bold glow">agencia, estudio o productora</span> facturando €5K-€10K/mes
+        Solo para dueños de <span className="text-foreground font-bold glow">estudio, agencia o productora creativa</span> que quieren vender directo al cliente final
       </p>
 
       {/* Hero Title + Subheadline */}
       <div className="space-y-4 max-w-3xl mx-auto px-4">
         <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          Si dependes del boca a boca y encima te regatean cada proyecto hasta los <span className="glow">400€</span>…
+          Si la única forma que tiene tu estudio de conseguir proyectos es el boca a boca y <span className="glow">agencias que te regatean</span> cada propuesta…
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">…te montamos un comercial 24/7 que te trae proyectos de <span className="glow">5.000€+</span> de forma predecible. Listo en 7 días.</p>
+        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">…te montamos el sistema de adquisición que te lleva directo al <span className="glow">cliente final</span>: el que valora tu criterio, tiene presupuesto de sobra y no te da la chapa por el último céntimo. Listo en 7 días.</p>
       </div>
 
       {/* VSL Container con glow pulsante */}

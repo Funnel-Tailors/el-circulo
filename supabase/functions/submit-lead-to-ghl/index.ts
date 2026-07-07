@@ -211,6 +211,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   
   // Profession (Q2)
   const professionMap: Record<string, string> = {
+    'Estudio de visualización arquitectónica / arch-viz / render': '🏛️ CÍRCULO-PRO-ArchViz',
     'Agencia de diseño / branding': '🎨 CÍRCULO-PRO-DesignAgency',
     'Productora / Estudio audiovisual': '🎬 CÍRCULO-PRO-Production',
     'Estudio de desarrollo / automatización': '🤖 CÍRCULO-PRO-DevStudio',
