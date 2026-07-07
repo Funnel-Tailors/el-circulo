@@ -63,7 +63,7 @@ const steps: QuizStep[] = [{
   type: "radio",
   options: ["Menos de €3.000/mes", "€3.000 - €5.000/mes", "€5.000 - €10.000/mes", "€10.000 - €20.000/mes", "Más de €20.000/mes"],
   badge: "💰 Paso 3/5 - Tu Punto de Partida",
-  subtext: "Ya sabemos que es irregular, por eso preguntamos el techo — no la media",
+  subtext: "Ya sabemos que es irregular, por eso preguntamos el techo, no la media",
   motivator: {
     icon: "🚀",
     text: "Agencias que facturan €3K-10K/mes pasan a €20K+ en 90 días aplicando el sistema. Mismo equipo, triple de ticket."
@@ -71,14 +71,14 @@ const steps: QuizStep[] = [{
 }, {
   id: "q4",
   stateKey: "q5", // Presupuesto/vía DIY-DFY → state.q5 (custom field quiz_budget). Sustituye a la vieja pregunta de timeline.
-  question: "¿Por qué vía te ves entrando al Círculo?",
+  question: "¿Prefieres aprender la habilidad o dedicarte a cerrar proyectos?",
   type: "radio",
   options: [
-    "DIY · €3.000/año - Me lo monto yo con tu método y la comunidad",
-    "DFY · €10.000 - Tu equipo me monta todo el sistema y yo solo cierro"
+    "DIY · €3.000/año - Aprendo la habilidad yo con tu método y la comunidad",
+    "DFY · €10.000 - Me dedico a cerrar proyectos y tu equipo me monta el sistema"
   ],
   badge: "💸 Paso 4/5 - Tu Vía",
-  subtext: "Las dos valen. En la llamada vemos cuál encaja contigo — no vengo a venderte la cara.",
+  subtext: "Las dos valen. En la llamada vemos cuál encaja contigo.",
   motivator: {
     icon: "🔥",
     text: "Es una inversión de entre 3 y 10 mil, no de 300 pavos. Si no encaja, te lo digo yo primero."
