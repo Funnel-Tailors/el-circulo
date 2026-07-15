@@ -93,25 +93,63 @@ const FunnelBars = ({ stats }: { stats: ProjectStats }) => {
   );
 };
 
+/** Curva de retención del VSL: qué porcentaje de los que le dan al play sigue ahí en cada tramo. */
 const VslBlock = ({ stats }: { stats: ProjectStats }) => {
   if (!stats.vsl) return null;
+
   const base = Math.max(stats.vsl.plays, ...stats.vsl.milestones.map((m) => m.sessions), 1);
+  const curve = [
+    { pct: 0, sessions: stats.vsl.plays },
+    ...stats.vsl.milestones.map((m) => ({ pct: Number(m.pct), sessions: m.sessions })),
+  ].map((p) => ({ ...p, retention: Math.round((p.sessions / base) * 100) }));
+
+  // Tramo donde más gente se cae, para no obligar a leer la pendiente a ojo.
+  const drop = curve.slice(1).reduce(
+    (worst, p, i) => {
+      const lost = curve[i].retention - p.retention;
+      return lost > worst.lost ? { from: curve[i].pct, to: p.pct, lost } : worst;
+    },
+    { from: 0, to: 0, lost: -1 },
+  );
+
   return (
     <div>
-      <div className="mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-foreground/40">
-        <MonitorPlay className="h-3 w-3" /> VSL · visionado
+      <div className="mb-3 flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+        <MonitorPlay className="h-3 w-3" /> VSL · retención
       </div>
-      <div className="grid grid-cols-5 gap-2">
-        {[{ pct: "Play", sessions: stats.vsl.plays }, ...stats.vsl.milestones].map((m) => (
-          <div key={m.pct} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-2.5 text-center">
-            <div className="font-display font-black text-lg text-foreground/90">{m.sessions}</div>
-            <div className="mt-1 h-1 overflow-hidden rounded-full bg-white/[0.06]">
-              <div className="h-full bg-white/50" style={{ width: `${(m.sessions / base) * 100}%` }} />
-            </div>
-            <div className="mt-1 text-[10px] text-foreground/45">{m.pct === "Play" ? "Play" : `${m.pct}%`}</div>
-          </div>
-        ))}
-      </div>
+      <ResponsiveContainer width="100%" height={200}>
+        <AreaChart data={curve} margin={{ top: 4, right: 8, left: -22, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+          <XAxis
+            dataKey="pct" type="number" domain={[0, 100]} ticks={[0, 25, 50, 75, 100]}
+            tickFormatter={(p: number) => (p === 0 ? "Play" : `${p}%`)}
+            tick={{ fontSize: 10, fill: "rgba(255,255,255,0.35)" }} axisLine={false} tickLine={false}
+          />
+          <YAxis
+            domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={(v: number) => `${v}%`}
+            tick={{ fontSize: 10, fill: "rgba(255,255,255,0.35)" }} axisLine={false} tickLine={false}
+          />
+          <Tooltip
+            contentStyle={chartTooltipStyle} labelStyle={{ color: "rgba(255,255,255,0.6)" }}
+            labelFormatter={(p: number) => (p === 0 ? "Le dan al play" : `Llegan al ${p}% del vídeo`)}
+            formatter={(v: number, _n, item) => [`${v}% · ${item.payload.sessions} sesiones`, "Siguen viendo"]}
+          />
+          <Area
+            type="monotone" dataKey="retention" name="Siguen viendo"
+            stroke="rgba(255,255,255,0.75)" fill="rgba(255,255,255,0.10)" strokeWidth={1.5}
+            dot={{ r: 3, fill: "hsl(0 0% 8%)", stroke: "rgba(255,255,255,0.75)", strokeWidth: 1.5 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+      {drop.lost > 0 && (
+        <p className="mt-2 text-[11px] text-foreground/40">
+          Mayor caída:{" "}
+          <span className="text-foreground/70">
+            {drop.from === 0 ? "del play" : `del ${drop.from}%`} al {drop.to}%
+          </span>{" "}
+          · se va el {drop.lost}%
+        </p>
+      )}
     </div>
   );
 };
