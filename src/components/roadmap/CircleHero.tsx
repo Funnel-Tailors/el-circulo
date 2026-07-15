@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { quizAnalytics } from "@/lib/analytics";
-import { X } from "lucide-react";
+import { X, VolumeX } from "lucide-react";
 interface CircleHeroProps {
   disableSticky?: boolean;
 }
@@ -9,6 +9,20 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [isVideoSticky, setIsVideoSticky] = useState(false);
   const [showSticky, setShowSticky] = useState(true);
+  const [isUnmuted, setIsUnmuted] = useState(false);
+
+  // El VSL arranca muted (requisito de autoplay de los navegadores). Este handler
+  // es el play de verdad: activa sonido, rebobina a 0 para que no se pierdan el
+  // hook, y registra el evento del que sale el play ratio.
+  const handleUnmute = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = false;
+    video.currentTime = 0;
+    video.play().catch(() => {});
+    setIsUnmuted(true);
+    quizAnalytics.trackVSLUnmute('roadmap_hero').catch(() => {});
+  };
 
   // Track VSL view on component mount
   useEffect(() => {
@@ -145,29 +159,30 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
     observer.observe(container);
     return () => observer.disconnect();
   }, []);
-  return <div className="text-center space-y-8 mb-8 animate-fade-in -mt-8">
+  return <div className="text-center space-y-5 md:space-y-6 mb-8 animate-fade-in mt-2 md:-mt-6">
       {/* 5 Estrellas decorativas superiores */}
-      <div className="flex justify-center gap-1.5 mb-3" aria-hidden="true">
-        {[...Array(5)].map((_, i) => <svg key={i} className="w-3 h-3 text-foreground/60" viewBox="0 0 24 24" fill="currentColor">
+      <div className="flex justify-center gap-1 md:gap-1.5 mb-1 md:mb-3" aria-hidden="true">
+        {[...Array(5)].map((_, i) => <svg key={i} className="w-2.5 h-2.5 md:w-3 md:h-3 text-foreground/60" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
           </svg>)}
       </div>
 
       {/* Pre-qualificación ICP */}
-      <p className="text-sm md:text-base text-muted-foreground leading-[1em] italic">
+      <p className="text-[11px] md:text-base text-muted-foreground leading-tight md:leading-[1em] italic">
         Solo para dueños de <span className="text-foreground font-bold glow">estudio, agencia o productora creativa</span> que quieren vender directo al cliente final
       </p>
 
       {/* Hero Title + Subheadline */}
-      <div className="space-y-4 max-w-3xl mx-auto px-4">
-        <h1 className="text-3xl md:text-5xl font-display font-black leading-[1em] text-foreground">
-          Si la única forma que tiene tu estudio de conseguir proyectos es el boca a boca y <span className="glow">agencias que te regatean</span> cada propuesta…
+      <div className="space-y-3 md:space-y-4 max-w-3xl mx-auto px-0 md:px-4 pt-2 md:pt-3">
+        <h1 className="text-[19px] md:text-4xl font-display font-black leading-[1.15] md:leading-[1.05] text-foreground text-balance">
+          Si tu estudio solo consigue proyectos por boca a boca y <span className="glow">agencias que te regatean</span> cada propuesta…
         </h1>
-        <p className="text-lg md:text-xl text-foreground/80 leading-[1em]">…te montamos el sistema de adquisición que te lleva directo al <span className="glow">cliente final</span>: el que valora tu criterio, tiene presupuesto de sobra y no te da la chapa por el último céntimo. Listo en 7 días.</p>
+        <p className="text-[13px] md:text-lg text-foreground/80 leading-snug md:leading-snug">…te montamos el sistema que te lleva directo al <span className="glow">cliente final</span>: el que valora tu criterio y no te da la chapa por el último céntimo. En 7 días.</p>
       </div>
 
-      {/* VSL Container con glow pulsante */}
-      <div ref={videoContainerRef} className="relative mx-auto my-12">
+      {/* VSL Container con glow pulsante — en móvil se come el padding del contenedor
+          (-mx-3) para ganar ancho: el vídeo es el elemento central de la composición. */}
+      <div ref={videoContainerRef} className="relative -mx-3 md:mx-auto md:max-w-3xl my-6 md:my-8">
         <div className={`
             w-full transition-[transform,opacity] duration-300
             ${isVideoSticky && showSticky ? 'fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4' : 'relative'}
@@ -178,8 +193,8 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
             </button>}
           
           {/* Glow wrapper aísla repaint del video */}
-          <div className={`video-glow-wrapper ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}`}>
-            <video ref={videoRef} autoPlay muted playsInline controls controlsList="nodownload" disablePictureInPicture preload="metadata" className={`
+          <div className={`video-glow-wrapper relative ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}`}>
+            <video ref={videoRef} autoPlay muted playsInline controls={isUnmuted} controlsList="nodownload" disablePictureInPicture preload="metadata" className={`
                 w-full
                 ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
               `} style={{
@@ -188,6 +203,30 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
               <source src="https://assets.cdn.filesafe.space/83pruKn109rLBViefs9A/media/6a25a673da24932f124baf8a.mp4" type="video/mp4" />
               Tu navegador no soporta video HTML5.
             </video>
+
+            {/* Capa de unmute: el vídeo corre en mudo por debajo. Tocar aquí = play real. */}
+            {!isUnmuted && <button
+              type="button"
+              onClick={handleUnmute}
+              aria-label="Activar el sonido y ver el vídeo desde el principio"
+              className={`
+                absolute inset-0 z-10 w-full h-full cursor-pointer
+                flex flex-col items-center justify-center gap-3
+                bg-background/45 backdrop-blur-[1px]
+                transition-colors hover:bg-background/30
+                ${isVideoSticky && showSticky ? 'rounded-2xl' : 'rounded-3xl'}
+              `}
+            >
+              <span className="flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-full bg-foreground text-background animate-glow-pulse-intense">
+                <VolumeX className="w-6 h-6 md:w-7 md:h-7" />
+              </span>
+              <span className="font-display font-black text-base md:text-xl text-foreground glow leading-none">
+                TOCA PARA ACTIVAR EL SONIDO
+              </span>
+              <span className="text-[11px] md:text-xs text-foreground/70 leading-none">
+                El vídeo empieza desde el principio
+              </span>
+            </button>}
           </div>
         </div>
         
@@ -198,11 +237,11 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       </div>
 
       {/* CTA Button - justo debajo del VSL */}
-      <div className="pt-4 text-center">
+      <div className="pt-2 md:pt-4 text-center">
         <a
           href="#taller"
           data-cta-source="hero"
-          className="inline-block px-8 py-4 rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense transition-colors"
+          className="block w-full md:inline-block md:w-auto px-8 py-4 rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense transition-colors"
         >
           <span className="block text-lg">APLICAR AL CÍRCULO</span>
           <span className="block text-xs opacity-70 mt-0.5">5 min de diagnóstico · No es para todos</span>

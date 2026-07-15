@@ -639,6 +639,38 @@ class QuizAnalytics {
     }
   }
 
+  // El VSL arranca en autoplay muted, así que trackVSLView cuenta visitas, no plays.
+  // Esto marca el play REAL: el visitante tocó para activar el sonido.
+  // play ratio = vsl_unmuted / vsl_views.
+  async trackVSLUnmute(vslType: 'roadmap_hero' | 'booking_iframe'): Promise<void> {
+    try {
+      const { data: latestView } = await supabase
+        .from('vsl_views')
+        .select('id')
+        .eq('session_id', this.sessionId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (latestView) {
+        await supabase
+          .from('vsl_views')
+          .update({ user_interacted: true })
+          .eq('id', latestView.id);
+      }
+
+      await this.trackEvent({
+        event_type: 'vsl_unmuted' as any,
+        metadata: {
+          vsl_type: vslType,
+          vsl_view_id: latestView?.id ?? null,
+        }
+      });
+    } catch (err) {
+      console.error('VSL unmute tracking exception:', err);
+    }
+  }
+
   async linkVSLtoContact(ghlContactId: string): Promise<void> {
     try {
       const { error } = await supabase
