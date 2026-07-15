@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, getEmailTier, type ContactFormData } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
 import { RESULT_MESSAGES, PAIN_HEADLINES } from "@/constants/resultMessages";
+import { calculateQuizScore } from "@/lib/quizScoring";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
 
 interface QualifiedResultProps {
@@ -52,20 +53,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
 
   const personalizedTitle = PAIN_HEADLINES[quizState.q1 || ''] || RESULT_MESSAGES.qualified.title;
 
-  // Score calculation (mismo cálculo que el quiz)
-  const calculateScore = useCallback((state: QuizState) => {
-    let score = 0;
-    if (state.q3 === "€5.000 - €10.000/mes") score += 45;
-    else if (state.q3 === "€10.000 - €20.000/mes") score += 42;
-    else if (state.q3 === "Más de €20.000/mes") score += 38;
-    else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
-    if (state.q5?.includes("DFY")) score += 15;
-    else if (state.q5?.includes("DIY")) score += 12;
-    if (state.q7?.includes("Solo yo")) score += 10;
-    else if (state.q7?.includes("Con mi socio")) score += 7;
-    return Math.min(score, 100);
-  }, []);
-
   const handleContactSubmit = useCallback(async (data: ContactFormData) => {
     if (data.website && data.website.length > 0) {
       toast({ title: "Error", description: "Hubo un problema.", variant: "destructive" });
@@ -73,7 +60,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
 
     setIsSubmitting(true);
-    const score = calculateScore(quizState);
+    const score = calculateQuizScore(quizState);
     const emailTier = getEmailTier(data.email);
 
     try {
@@ -147,7 +134,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     } finally {
       setIsSubmitting(false);
     }
-  }, [quizState, calculateScore]);
+  }, [quizState]);
 
   // After successful submit — show calendar in-place
   if (bookingData) {

@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
+import { calculateQuizScore as calculateScore, isQualified, CAPACITY_YES, CAPACITY_NO } from "@/lib/quizScoring";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -70,18 +71,15 @@ const steps: QuizStep[] = [{
   }
 }, {
   id: "q4",
-  stateKey: "q5", // Presupuesto/vía DIY-DFY → state.q5 (custom field quiz_budget). Sustituye a la vieja pregunta de timeline.
-  question: "¿Prefieres aprender la habilidad o dedicarte a cerrar proyectos?",
+  stateKey: "q5", // Capacidad de inversión → state.q5 (custom fields quiz_budget / quiz_investment).
+  question: "Esto es una inversión de entre 3 y 10 mil. ¿Estás preparado a asumirla si la llamada tiene sentido?",
   type: "radio",
-  options: [
-    "DIY · €3.000/año - Aprendo la habilidad yo con tu método y la comunidad",
-    "DFY · €10.000 - Me dedico a cerrar proyectos y tu equipo me monta el sistema"
-  ],
+  options: [CAPACITY_YES, CAPACITY_NO],
   badge: "💸 Paso 4/5 - Tu Vía",
-  subtext: "Las dos valen. En la llamada vemos cuál encaja contigo.",
+  subtext: "Qué camino te encaja lo vemos en la llamada. Aquí solo quiero saber si el número te asusta.",
   motivator: {
     icon: "🔥",
-    text: "Es una inversión de entre 3 y 10 mil, no de 300 pavos. Si no encaja, te lo digo yo primero."
+    text: "No es de 300 pavos. Si no encaja, te lo digo yo primero."
   }
 }, {
   id: "q5",
@@ -347,9 +345,7 @@ const QuizSection = ({
     if (isLastStep) {
       const finalAnswers = { ...answers, [currentQuestion.stateKey]: currentAnswer };
       const score = calculateScore(finalAnswers);
-      const qualified = score >= 70 && !hasAutoDisqualify(finalAnswers, score);
-      
-      onComplete(finalAnswers, qualified);
+      onComplete(finalAnswers, isQualified(finalAnswers, score));
     } else {
       setCurrentStep(prev => prev + 1);
     }
@@ -359,53 +355,6 @@ const QuizSection = ({
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
-  };
-
-  const calculateScore = (state: QuizState): number => {
-    let score = 0;
-
-    // Q1 - Pain Point (0-15 pts)
-    if (state.q1 === "No sé cómo vender proyectos de 5 cifras sin que nos regateen") score += 15;
-    else if (state.q1 === "Trabajamos muchas horas y el margen no justifica el esfuerzo del equipo") score += 15;
-    else if (state.q1 === "Todo lo anterior (¿Pero de verdad se puede escalar esto?)") score += 15;
-    else if (state.q1 === "Tenemos meses buenos pero luego nos estampamos (dependemos de la suerte)") score += 15;
-    else if (state.q1 === "Mis clientes vienen por recomendación de otros que pagaron poco (y son iguales o peores)") score += 13;
-
-    // Q2 - Profesión (0-15 pts)
-    if (state.q2 === "Estudio de visualización arquitectónica / arch-viz / render") score += 15;
-    else if (state.q2 === "Agencia de diseño / branding") score += 15;
-    else if (state.q2 === "Productora / Estudio audiovisual") score += 13;
-    else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
-    else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
-
-    // Q3 - Revenue (0-45 pts) — recompensa la solvencia; nunca castiga al que factura más.
-    if (state.q3 === "Más de €20.000/mes") score += 45;
-    else if (state.q3 === "€10.000 - €20.000/mes") score += 45;
-    else if (state.q3 === "€5.000 - €10.000/mes") score += 38;
-    else if (state.q3 === "€3.000 - €5.000/mes") score += 0;
-    else if (state.q3 === "Menos de €3.000/mes") score += 0;
-
-    // Q5 - Vía/Presupuesto (0-15 pts) — stored as q5 (DIY/DFY). Mantiene la banda de la antigua urgencia para no descuadrar el umbral.
-    if (state.q5?.includes("DFY")) score += 15;
-    else if (state.q5?.includes("DIY")) score += 12;
-
-    // Q7 - Authority (0-10 pts) — stored as q7
-    if (state.q7?.includes("Solo yo")) score += 10;
-    else if (state.q7?.includes("Con mi socio")) score += 7;
-    
-    return Math.min(score, 100);
-  };
-
-  const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
-    // HARDSTOP: Revenue demasiado bajo — el suelo es €5.000/mes, igual que el eyebrow del hero.
-    // Por debajo no pagan ni el DIY de 3k.
-    if (state.q3 === "Menos de €3.000/mes") return true;
-    if (state.q3 === "€3.000 - €5.000/mes") return true;
-    
-    // HARDSTOP: Decisión compartida + score bajo
-    if (state.q7?.includes("Con mi socio") && score < 80) return true;
-    
-    return false;
   };
 
   const renderInput = () => {
