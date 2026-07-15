@@ -374,7 +374,7 @@ const QuizSection = ({
     // Q2 - Profesión (0-15 pts)
     if (state.q2 === "Estudio de visualización arquitectónica / arch-viz / render") score += 15;
     else if (state.q2 === "Agencia de diseño / branding") score += 15;
-    else if (state.q2 === "Productora / Estudio audiovisual") score += 15;
+    else if (state.q2 === "Productora / Estudio audiovisual") score += 13;
     else if (state.q2 === "Estudio de desarrollo / automatización") score += 15;
     else if (state.q2 === "Otro tipo de agencia creativa") score += 13;
 
@@ -382,7 +382,7 @@ const QuizSection = ({
     if (state.q3 === "Más de €20.000/mes") score += 45;
     else if (state.q3 === "€10.000 - €20.000/mes") score += 45;
     else if (state.q3 === "€5.000 - €10.000/mes") score += 38;
-    else if (state.q3 === "€3.000 - €5.000/mes") score += 20;
+    else if (state.q3 === "€3.000 - €5.000/mes") score += 0;
     else if (state.q3 === "Menos de €3.000/mes") score += 0;
 
     // Q5 - Vía/Presupuesto (0-15 pts) — stored as q5 (DIY/DFY). Mantiene la banda de la antigua urgencia para no descuadrar el umbral.
@@ -397,8 +397,10 @@ const QuizSection = ({
   };
 
   const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
-    // HARDSTOP: Revenue demasiado bajo
+    // HARDSTOP: Revenue demasiado bajo — el suelo es €5.000/mes, igual que el eyebrow del hero.
+    // Por debajo no pagan ni el DIY de 3k.
     if (state.q3 === "Menos de €3.000/mes") return true;
+    if (state.q3 === "€3.000 - €5.000/mes") return true;
     
     // HARDSTOP: Decisión compartida + score bajo
     if (state.q7?.includes("Con mi socio") && score < 80) return true;

@@ -169,7 +169,7 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
 
       {/* Pre-qualificación ICP */}
       <p className="text-[11px] md:text-base text-muted-foreground leading-tight md:leading-[1em] italic">
-        Solo para dueños de <span className="text-foreground font-bold glow">estudio, agencia o productora creativa</span> que quieren vender directo al cliente final
+        Solo para dueños de <span className="text-foreground font-bold glow">estudio o agencia creativa</span> que en un mes bueno pasan de <span className="text-foreground font-bold glow">€5.000</span> y quieren vender directo al cliente final
       </p>
 
       {/* Hero Title + Subheadline */}
