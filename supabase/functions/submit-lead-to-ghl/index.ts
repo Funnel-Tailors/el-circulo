@@ -265,7 +265,9 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
   
   // Capacidad de inversión (Q5). El camino (DIY/DFY) ya no se pregunta: lo fija el
   // closer en la llamada, así que todo el que pasa el filtro entra como TIER-CALL.
-  if (answers.q5 === CAPACITY_YES) {
+  // Sin q5 = no se le preguntó (factura €10K+, se le presupone). Entra igual como TIER-CALL:
+  // sin esta rama se quedaba sin ningún tag de tier.
+  if (answers.q5 === CAPACITY_YES || !answers.q5) {
     tags.push('📞 CÍRCULO-TIER-CALL');
   } else if (answers.q5 === CAPACITY_NO) {
     tags.push('❌ CÍRCULO-TIER-NONE');

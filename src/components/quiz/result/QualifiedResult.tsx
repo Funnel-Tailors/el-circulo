@@ -162,21 +162,21 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
+      <div className="text-center space-y-2 md:space-y-4">
+        <h2 className="text-2xl md:text-4xl font-display font-black text-foreground leading-tight">
           {personalizedTitle}. <span className="glow">{RESULT_MESSAGES.qualified.subtitle}</span>
         </h2>
 
-        <p className="text-sm text-muted-foreground max-w-md mx-auto">
+        <p className="text-xs md:text-sm text-muted-foreground max-w-md mx-auto leading-snug">
           {RESULT_MESSAGES.qualified.socialProof}
         </p>
       </div>
 
       {/* Contact Form */}
-      <div className="space-y-4">
-        <p className="text-sm text-foreground/70 text-center">
+      <div className="space-y-3 md:space-y-4">
+        <p className="text-xs md:text-sm text-foreground/70 text-center">
           Déjame tu email y te abro el calendario. La cita la confirmamos por email.
         </p>
 
@@ -189,7 +189,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                   form.handleSubmit(handleContactSubmit)();
                 }
               }}
-              className="space-y-4"
+              className="space-y-3 md:space-y-4"
             >
               <FormField control={form.control} name="website" render={({ field }) => 
                 <FormItem className="absolute -left-[9999px]" aria-hidden="true" tabIndex={-1}>
@@ -240,7 +240,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense text-lg py-6 font-bold transition-colors"
+                className="w-full bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense text-base md:text-lg py-5 md:py-6 font-bold transition-colors"
                 size="lg"
               >
                 {isSubmitting ? (

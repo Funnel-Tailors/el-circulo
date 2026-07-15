@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
-import { calculateQuizScore as calculateScore, isQualified, CAPACITY_YES, CAPACITY_NO } from "@/lib/quizScoring";
+import { calculateQuizScore as calculateScore, isQualified, skipsCapacityQuestion, CAPACITY_YES, CAPACITY_NO } from "@/lib/quizScoring";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -120,15 +120,21 @@ const QuizSection = ({
   const [quizStartTime] = useState(Date.now());
   const [showSkepticChallenge, setShowSkepticChallenge] = useState(false);
 
-  const currentQuestion = steps[currentStep];
-  const isLastStep = currentStep === steps.length - 1;
-  
+  // Los pasos visibles dependen de las respuestas: al que factura €10K+/mes no se le
+  // pregunta por la capacidad de inversión. currentStep indexa AQUÍ, no sobre `steps`.
+  const activeSteps = steps.filter(
+    (s) => !(s.id === "q4" && skipsCapacityQuestion(answers))
+  );
+
+  const currentQuestion = activeSteps[currentStep];
+  const isLastStep = currentStep === activeSteps.length - 1;
+
   const quizRef = useRef<HTMLDivElement>(null);
   const hasTrackedFirstStep = useRef(false);
 
   // Track step views — for q1, only when quiz is visible in viewport
   useEffect(() => {
-    const step = steps[currentStep];
+    const step = activeSteps[currentStep];
     if (!step) return;
 
     if (currentStep === 0 && !hasTrackedFirstStep.current) {
@@ -377,10 +383,17 @@ const QuizSection = ({
           }
           
           const updatedAnswers = { ...answers, [currentQuestion.stateKey]: value };
+
+          // Si sube su facturación a una banda que no pregunta capacidad, su q5 anterior
+          // se queda huérfano y viajaría a GHL como quiz_budget de una pregunta que no vio.
+          if (currentQuestion.stateKey === "q3" && skipsCapacityQuestion(updatedAnswers)) {
+            delete updatedAnswers.q5;
+          }
+
           setAnswers(updatedAnswers);
           quizAnalytics.answerStep(currentQuestion.id, currentStep, value);
           setTimeout(() => { handleNext(); }, 300);
-        }} className="space-y-3">
+        }} className="space-y-2 md:space-y-3">
           {(isV2 && isQ1
             ? currentQuestion.options?.filter(opt => opt !== skepticOption)
             : currentQuestion.options
@@ -392,7 +405,7 @@ const QuizSection = ({
             return (
               <div 
                 key={option} 
-                className={`flex items-center space-x-3 dark-card p-3 rounded-lg transition-all cursor-pointer ${
+                className={`flex items-center space-x-3 dark-card p-2.5 md:p-3 rounded-lg transition-all cursor-pointer ${
                   isDisabledByChallenge 
                     ? 'opacity-40 line-through cursor-not-allowed' 
                     : isHighlightedByChallenge
@@ -401,7 +414,7 @@ const QuizSection = ({
                 }`}
               >
                 <RadioGroupItem value={option} id={option} className="border-2" disabled={isDisabledByChallenge} />
-                <Label htmlFor={option} className={`flex-1 text-base ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                <Label htmlFor={option} className={`flex-1 text-sm md:text-base leading-snug ${isDisabledByChallenge ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                   {option}
                 </Label>
               </div>
@@ -459,25 +472,25 @@ const QuizSection = ({
   };
 
   return <>
-    <div ref={quizRef} className="w-full space-y-4 animate-fade-in">
+    <div ref={quizRef} className="w-full space-y-3 md:space-y-4 animate-fade-in">
       {currentStep === 0 && <></>}
 
-      <ProgressBar current={currentStep + 1} total={steps.length} />
+      <ProgressBar current={currentStep + 1} total={activeSteps.length} />
 
-      <div className="space-y-4">
-          <div className="space-y-3">
+      <div className="space-y-3 md:space-y-4">
+          <div className="space-y-2 md:space-y-3">
             <div className={`inline-flex items-center gap-2 bg-accent/10 border border-accent/30 rounded-full px-3 py-1 ${isV2 ? '' : 'animate-pulse'}`}>
-              <span className="text-base">⏱️</span>
+              <span className="text-sm md:text-base">⏱️</span>
               <span className="text-xs font-semibold text-foreground">
-                {isV2 ? `Paso ${currentStep + 1}/${steps.length}` : `~${(steps.length - currentStep) * 2}s para completar`}
+                {isV2 ? `Paso ${currentStep + 1}/${activeSteps.length}` : `~${(activeSteps.length - currentStep) * 2}s para completar`}
               </span>
             </div>
 
-            <h2 className="text-2xl md:text-3xl font-display font-black">
+            <h2 className="text-xl md:text-3xl font-display font-black leading-tight">
               {currentQuestion.question}
             </h2>
-            
-            {currentQuestion.subtext && <p className="text-sm text-muted-foreground/90">{currentQuestion.subtext}</p>}
+
+            {currentQuestion.subtext && <p className="text-xs md:text-sm text-muted-foreground/90">{currentQuestion.subtext}</p>}
             {currentQuestion.description && <p className="text-xs text-muted-foreground/70 italic">{currentQuestion.description}</p>}
 
             {currentQuestion.valueStack && <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2 mt-3">
@@ -491,14 +504,14 @@ const QuizSection = ({
 
           {renderInput()}
 
-          {currentQuestion.motivator && <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground flex items-start gap-2">
-                <span className="text-base shrink-0">{currentQuestion.motivator.icon}</span>
+          {currentQuestion.motivator && <div className="bg-primary/5 border border-primary/20 rounded-lg p-2.5 md:p-3">
+              <p className="text-[11px] md:text-xs text-muted-foreground flex items-start gap-2 leading-snug">
+                <span className="text-sm md:text-base shrink-0">{currentQuestion.motivator.icon}</span>
                 <span className="flex-1">{currentQuestion.motivator.text}</span>
               </p>
             </div>}
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-2 md:pt-4">
             {!(isV2 && currentStep === 0) && (
               <Button onClick={handlePrevious} disabled={currentStep === 0} variant="outline" className="dark-button">
                 Anterior

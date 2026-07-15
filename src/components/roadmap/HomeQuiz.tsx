@@ -20,8 +20,8 @@ export const HomeQuiz = () => {
   };
 
   return (
-    <section id="taller" className="relative scroll-mt-12 py-16 md:py-24">
-      <div className="text-center mb-10 space-y-4">
+    <section id="taller" className="relative scroll-mt-12 py-10 md:py-24">
+      <div className="text-center mb-6 md:mb-10 space-y-3 md:space-y-4">
         <div className="flex items-center justify-center gap-4" aria-hidden="true">
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
           <div className="text-muted-foreground text-xs tracking-widest">⟡</div>
@@ -46,7 +46,10 @@ export const HomeQuiz = () => {
       </div>
 
       <div className="flex items-center justify-center px-4">
-        <div className="dark-card p-8 rounded-2xl w-full max-w-[640px] min-h-[720px] flex flex-col">
+        {/* Sin min-height en móvil: forzaba 720px + 64px de padding = 784px, más que el
+            viewport de un móvil, así que la tarjeta no cabía ni vacía. En desktop se
+            mantiene un suelo para que no bailen los pasos cortos. */}
+        <div className="dark-card p-5 md:p-8 rounded-2xl w-full max-w-[640px] md:min-h-[640px] flex flex-col">
           {currentScreen === "quiz" && (
             <QuizSection onComplete={completeQuiz} onExit={resetQuiz} />
           )}

@@ -16,6 +16,16 @@ export const CAPACITY_NO = "No. Ahora mismo no puedo.";
 /** Facturación por debajo de la cual no entra nadie. Espeja el eyebrow del hero. */
 const REVENUE_HARDSTOPS = ["Menos de €3.000/mes", "€3.000 - €5.000/mes"];
 
+/**
+ * Facturación a la que no se le pregunta por la capacidad de inversión: si factura
+ * €10K+/mes, preguntarle si puede asumir 10K le dice que le hemos confundido con otro.
+ * Se le presuponen los puntos de q5 y se le salta el paso.
+ */
+const CAPACITY_ASSUMED_REVENUE = ["€10.000 - €20.000/mes", "Más de €20.000/mes"];
+
+export const skipsCapacityQuestion = (state: QuizState): boolean =>
+  !!state.q3 && CAPACITY_ASSUMED_REVENUE.includes(state.q3);
+
 export const calculateQuizScore = (state: QuizState): number => {
   let score = 0;
 
@@ -39,7 +49,9 @@ export const calculateQuizScore = (state: QuizState): number => {
   else if (state.q3 === "€5.000 - €10.000/mes") score += 38;
 
   // Q5 — Capacidad de inversión (0-15). El "no" descalifica abajo, así que aquí solo suma el "sí".
-  if (state.q5 === CAPACITY_YES) score += 15;
+  // Al que factura €10K+ no se le pregunta: se le presuponen los puntos, o su techo caería
+  // a 85 y el umbral de 70 dejaría de significar lo mismo para él que para los demás.
+  if (skipsCapacityQuestion(state) || state.q5 === CAPACITY_YES) score += 15;
 
   // Q7 — Autoridad (0-10)
   if (state.q7?.includes("Solo yo")) score += 10;
@@ -53,7 +65,9 @@ export const hasAutoDisqualify = (state: QuizState, score: number): boolean => {
   if (state.q3 && REVENUE_HARDSTOPS.includes(state.q3)) return true;
 
   // Dice de frente que no puede asumir la inversión. Se le cree.
-  if (state.q5 === CAPACITY_NO) return true;
+  // El guard del skip protege del q5 rancio: si vuelve atrás y sube su facturación a una
+  // banda que no pregunta, su "no" de antes sigue en el state y le descalificaría sin motivo.
+  if (!skipsCapacityQuestion(state) && state.q5 === CAPACITY_NO) return true;
 
   // Decisión compartida sin un perfil lo bastante fuerte como para compensarlo.
   if (state.q7?.includes("Con mi socio") && score < 80) return true;
