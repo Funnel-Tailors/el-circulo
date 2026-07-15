@@ -85,36 +85,56 @@ interface LeadSubmission {
   quizVersion?: string;
 }
 
+// q5 dejó de ser la vía DIY/DFY y pasó a ser capacidad de inversión: el camino
+// lo decide el closer en la llamada, no el prospecto en un radio button.
+// Deben coincidir con src/lib/quizScoring.ts.
+const CAPACITY_YES = "Sí. Si me encaja, lo asumo.";
+const CAPACITY_NO = "No. Ahora mismo no puedo.";
+
+const REVENUE_HARDSTOPS = ["Menos de €3.000/mes", "€3.000 - €5.000/mes"];
+
+/** Sustituye al viejo `q5.includes('DFY')`: prioridad = el que puede pagar el DFY sin pestañear. */
+function isFastTrack(answers: QuizAnswers): boolean {
+  return answers.q3 === "€10.000 - €20.000/mes" || answers.q3 === "Más de €20.000/mes";
+}
+
+/** Sin responder cuenta como sí: el lead legacy no llegó a que le preguntáramos. */
+function hasInvestmentCapacity(answers: QuizAnswers): boolean {
+  if (!answers.q5) return true;
+  return answers.q5 !== CAPACITY_NO && answers.q5 !== 'Ahora mismo no puedo invertir en esto';
+}
+
 // Helper: Detectar razón específica de hardstop
 function getHardstopReason(answers: QuizAnswers, score: number): string | null {
-  // HARDSTOP (legacy only): No puede invertir — only if q5 was actually answered
-  if (answers.q5 === "Ahora mismo no puedo invertir en esto") {
+  // HARDSTOP: Dice de frente que no puede asumir la inversión
+  if (answers.q5 === CAPACITY_NO || answers.q5 === "Ahora mismo no puedo invertir en esto") {
     return "Sin capacidad de inversión";
   }
-  
-  // HARDSTOP: Revenue muy bajo
-  if (answers.q3 === "Menos de €3.000/mes") {
-    return "Revenue insuficiente (< €3K/mes)";
+
+  // HARDSTOP: Revenue por debajo del suelo (€5K/mes, espeja el eyebrow del hero)
+  if (answers.q3 && REVENUE_HARDSTOPS.includes(answers.q3)) {
+    return "Revenue insuficiente (< €5K/mes)";
   }
-  
+
   // HARDSTOP: Decisión compartida + score bajo
   if (answers.q7?.includes("Con mi socio") && score < 80) {
     return "Falta autoridad de decisión + score bajo";
   }
-  
+
   return null;
 }
 
 // Helper: Determinar tier del lead
 function getLeadTier(answers: QuizAnswers): string {
-  // Nuevo quiz: q5 = vía/presupuesto DIY/DFY
-  if (answers.q5?.includes('DFY')) return 'DFY';
-  if (answers.q5?.includes('DIY')) return 'DIY';
-  // If q5 not answered, default to CALL
+  // Quiz actual: q5 = capacidad de inversión → el tier real lo fija el closer.
+  if (answers.q5 === CAPACITY_YES) return 'CALL';
+  if (answers.q5 === CAPACITY_NO) return 'NONE';
   if (!answers.q5) return 'CALL';
+  // Legacy: quizzes viejos que sí preguntaban la vía.
+  if (answers.q5.includes('DFY')) return 'DFY';
+  if (answers.q5.includes('DIY')) return 'DIY';
   if (answers.q5 === "€8.000 trimestral — acceso + 1 año de Artefacto incluido") return 'TRIMESTRAL';
   if (answers.q5 === "€3.000/mes — acceso completo al sistema") return 'MENSUAL';
-  // Legacy support
   if (answers.q5 === "Quiero que lo hagáis todo por mí (desde €15K)") return 'TRIMESTRAL';
   if (answers.q5 === "Quiero que me ayudéis a implementarlo (desde €8K)") return 'TRIMESTRAL';
   if (answers.q5 === "Quiero hacerlo yo con guía paso a paso (desde €5K)") return 'MENSUAL';
@@ -243,8 +263,13 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     });
   }
   
-  // Vía/Presupuesto (Q5) — DIY/DFY (sustituye a la vieja pregunta de inversión y a la de urgencia Q6)
-  if (answers.q5?.includes('DFY')) {
+  // Capacidad de inversión (Q5). El camino (DIY/DFY) ya no se pregunta: lo fija el
+  // closer en la llamada, así que todo el que pasa el filtro entra como TIER-CALL.
+  if (answers.q5 === CAPACITY_YES) {
+    tags.push('📞 CÍRCULO-TIER-CALL');
+  } else if (answers.q5 === CAPACITY_NO) {
+    tags.push('❌ CÍRCULO-TIER-NONE');
+  } else if (answers.q5?.includes('DFY')) {
     tags.push('💎 CÍRCULO-TIER-DFY');
   } else if (answers.q5?.includes('DIY')) {
     tags.push('💰 CÍRCULO-TIER-DIY');
@@ -260,7 +285,7 @@ function generateTags(answers: QuizAnswers, score: number, qualified: boolean, i
     };
     tags.push(legacyTierMap[answers.q5] || '💰 CÍRCULO-TIER-Unknown');
   }
-  // (Urgencia/timeline Q6 retirada — la señal de prioridad ahora la da DFY vs DIY)
+  // (Urgencia/timeline Q6 retirada — la señal de prioridad ahora la da la facturación, ver isFastTrack)
   
   // Authority (Q7) — NEW
   const authorityMap: Record<string, string> = {
@@ -306,8 +331,8 @@ ${grouped.qualification.join('\n')}
 function generateAutoAnalysis(answers: QuizAnswers, score: number): string {
   const insights: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
-  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const hasInvestment = hasInvestmentCapacity(answers);
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
   const tier = getLeadTier(answers);
   
   if (score >= 85) {
@@ -422,8 +447,8 @@ const painOpeningAngles: Record<string, string[]> = {
 function getPainCriticalLevers(pain: string, answers: QuizAnswers, score: number): string[] {
   const levers: string[] = [];
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
-  const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const hasMoney = hasInvestmentCapacity(answers);
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
   const tier = getLeadTier(answers);
   
   switch(pain) {
@@ -519,8 +544,8 @@ const painPrepQuestions: Record<string, string[]> = {
 function generateCloserNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const hasInvestment = hasInvestmentCapacity(answers);
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
   const isIdealClient = lowRevenue && hasInvestment;
@@ -580,8 +605,8 @@ function generateInternalNotification(contact: ContactData, answers: QuizAnswers
   const classification = tags.find(t => t.includes('CÍRCULO-HOT') || t.includes('CÍRCULO-WARM') || t.includes('CÍRCULO-COLD')) || '?';
   const icpTag = tags.find(t => t.includes('CÍRCULO-ICP-')) || '';
   
-  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const hasInvestment = hasInvestmentCapacity(answers);
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
   const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
@@ -640,9 +665,9 @@ function generatePersonalizedInsight(answers: QuizAnswers, score: number): strin
   const pain = answers.q1 || '';
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   const midRevenue = answers.q3 === '€10.000 - €20.000/mes' || answers.q3 === 'Más de €20.000/mes';
-  const hasMoney = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
-  const gradual = answers.q5?.includes('DIY'); // eligió DIY (antes: timeline "este mes")
+  const hasMoney = hasInvestmentCapacity(answers);
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
+  const gradual = !isFastTrack(answers); // el resto de cualificados (antes: eligió DIY)
   const hasReferrals = Array.isArray(answers.q4) && answers.q4.includes('Recomendaciones');
   const soloDecision = answers.q7?.includes('Solo yo');
   
@@ -702,7 +727,7 @@ function generateContextualNote(
   score: number
 ): string {
   const pain = answers.q1 || '';
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
   const socialMediaDependent = Array.isArray(answers.q4) && (answers.q4.includes('Contenido orgánico (redes/web)') || answers.q4.includes('Contenido orgánico'));
   const isAutomator = answers.q2 === 'Automatizador';
   const noSoloDecision = !answers.q7?.includes('Solo yo');
@@ -762,67 +787,62 @@ function generateClientNotification(name: string, answers: QuizAnswers, tags: st
   
   if (isHot) {
     return `
-${firstName}.
+${firstName},
 
-Tu evaluación revela algo que la mayoría nunca verá.
+He leído tus respuestas.
 
-⚔️ ${personalizedInsight}
+${personalizedInsight}
 
 ${identity}
 
-La pregunta no es si puedes. Es cuándo decides dar el paso.
+Si quieres, lo vemos en una llamada. Una hora, y sales con las dos o tres
+palancas que más te van a mover la aguja. Si veo que no encajas, te lo digo
+en la propia llamada y no te hago perder más tiempo.
 
-📞 RESERVA TU LLAMADA ESTRATÉGICA
+Reserva el hueco que mejor te venga:
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
-
-⏳ Solo 3 espacios semanales para candidatos prioritarios
-👤 Un miembro del equipo evaluará tu caso específico (60 min)
-🗝️ Tienes 48h de acceso preferente antes de liberar tu plaza
 
 ${contextualNote}
 
-Tu acceso preferente cierra en 48h.
+Mikel
     `.trim();
   } else if (isWarm) {
     return `
-${firstName}.
+${firstName},
 
-Tu perfil muestra potencial. Pero potencial sin ejecución es teoría.
+He leído tus respuestas.
 
-⚔️ ${personalizedInsight}
+${personalizedInsight}
 
 ${identity}
 
-¿Listo/a para el salto o seguimos dándole vueltas?
+Si te encaja, lo hablamos en una llamada de 45-60 minutos: miramos tu
+situación concreta y vemos si tiene sentido trabajar juntos. Si no lo tiene,
+también te lo digo.
 
-📞 RESERVA TU LLAMADA ESTRATÉGICA
+Reserva el hueco que mejor te venga:
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
-
-⏳ 3 espacios semanales para evaluaciones profundas
-👤 Un miembro del equipo evaluará si hay alineación real (45-60 min)
 
 ${contextualNote}
 
-Si hay fit, recibirás el siguiente paso. Si no, al menos sabrás por qué.
+Mikel
     `.trim();
   } else {
     return `
-${firstName}.
+${firstName},
 
-Tu evaluación revela fricciones importantes.
+He leído tus respuestas.
 
-⚔️ ${personalizedInsight}
+${personalizedInsight}
 
-No todos están listos. Y eso está bien.
+No todo el mundo encaja, y tampoco pasa nada. Si quieres que lo miremos,
+coge media hora y te digo con franqueza si tiene sentido o no.
 
-📅 AGENDA TU LLAMADA ESTRATÉGICA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
-
-👤 Un miembro del equipo explorará si tiene sentido para ambos (30-45 min)
 
 ${contextualNote}
 
-Si hay potencial, lo veremos. Si no, te ahorras meses de frustraciones.
+Mikel
     `.trim();
   }
 }
@@ -879,91 +899,53 @@ function generateClientPostBookingNotification(name: string, answers: QuizAnswer
     const painQuestions = painPrepQuestions[pain] || [];
     
     return `
-${firstName}.
+${firstName},
 
-Tu espacio está asegurado.
+Ya tienes hueco. Antes de que nos veamos, hazme un favor: mírate el vídeo de
+confirmación y las respuestas a las dudas más comunes. Son diez minutos y
+evitan que nos comamos media llamada poniéndonos al día.
 
-⚔️ Como candidato prioritario, recibirás un análisis preliminar 24h antes de la llamada.
+https://vendenautomatico.com/gracias
 
-📜 PREPARA ESTO:
+Ven con esto medio pensado. No hace falta que lo traigas escrito, solo que le
+hayas dado una vuelta:
 
-Sobre tu situación específica:
 ${painQuestions.map(q => `• ${q}`).join('\n')}
-
-Información específica:
 ${professionData.prep.map(item => `• ${item}`).join('\n')}
-
-Tu situación actual:
-• Tu calendario próximos 90 días
-• 2-3 desafíos que necesitas resolver
+• Tu calendario de los próximos 90 días
+• Los 2-3 problemas que necesitas resolver
 • Dónde quieres estar en 3 meses
 
-📅 Logística:
-• Lugar sin interrupciones
-• Cámara encendida
-• Libreta
-• Agua o café. 45-60 min
+Reserva 45-60 minutos en un sitio donde no te interrumpan, con cámara. El
+enlace te llega una hora antes.
 
-👤 QUÉ SUCEDERÁ:
+Nos vemos. Y si no puedes venir, avísame con 24h y le doy el hueco a otro.
 
-Un miembro del equipo evaluará tu candidatura. No es una llamada de ventas.
-
-• Análisis sin filtros de tu situación
-• Identificación de las 2-3 palancas con mayor impacto
-• Diseño de tu Sprint de Ascensión (si hay alineación)
-• Decisión sobre tu entrada
-
-⏳ Si no puedes asistir, avisa con 24h. Hay lista de espera.
-
-El enlace llegará 1h antes.
-
-🎓 ANTES DE LA LLAMADA:
-
-Mírate el vídeo de confirmación y las respuestas a las dudas más comunes (en la misma página donde reservaste):
-
-🔗 https://vendenautomatico.com/gracias
-
-⚠️ Míralo ANTES de la llamada o no podremos avanzar.
+Mikel
     `.trim();
   } else {
     return `
-${firstName}.
+${firstName},
 
-Tu sesión está confirmada.
+Ya tienes hueco. Antes de que nos veamos, mírate el vídeo de confirmación y
+las respuestas a las dudas más comunes. Son diez minutos y evitan que nos
+comamos media llamada poniéndonos al día.
 
-📜 PREPARA ESTO:
+https://vendenautomatico.com/gracias
 
-Información específica:
+Ven con esto medio pensado:
+
 ${professionData.prep.map(item => `• ${item}`).join('\n')}
-
-Tu situación actual:
-• Tu calendario próximos 90 días
-• 2-3 desafíos principales
+• Tu calendario de los próximos 90 días
+• Los 2-3 problemas que necesitas resolver
 • Dónde quieres estar en 3 meses
 
-📅 Logística:
-• Lugar sin interrupciones
-• Cámara encendida
-• Libreta
-• 45-60 min
+Cuanto más claro vengas, más sacas de la llamada. Reserva 45-60 minutos en un
+sitio donde no te interrumpan, con cámara. El enlace te llega una hora antes.
 
-👤 QUÉ SUCEDERÁ:
+Nos vemos. Y si no puedes venir, avísame con 24h.
 
-Un miembro del equipo explorará si hay alineación.
-
-Cuanto mejor preparado vengas, más claridad obtendrás.
-
-⏳ Si no puedes asistir, avisa con 24h.
-
-El enlace llegará 1h antes.
-
-🎓 ANTES DE LA LLAMADA:
-
-Mírate el vídeo de confirmación y las respuestas a las dudas más comunes (en la misma página donde reservaste):
-
-🔗 https://vendenautomatico.com/gracias
-
-⚠️ Míralo ANTES de la llamada o no podremos avanzar.
+Mikel
     `.trim();
   }
 }
@@ -1083,16 +1065,16 @@ function generateFollowUp1(name: string, answers: QuizAnswers, score: number): s
   const painInsight = painInsights[pain]?.[level === 'hot' ? 'hot' : 'warm'] || painInsights[pain]?.warm || '';
   
   return `
-${firstName}.
+${firstName},
 
 ${randomReality}
 
 ${painInsight}
 
-📞 RESERVA TU LLAMADA ESTRATÉGICA
+Si quieres que lo miremos juntos, aquí tienes el calendario:
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Tu acceso preferente caduca en menos de 24h. Después, tu plaza se libera.
+Mikel
   `.trim();
 }
 
@@ -1106,16 +1088,16 @@ function generateFollowUp2(name: string, answers: QuizAnswers, score: number): s
   const randomReality = realities[Math.floor(Math.random() * realities.length)];
   
   return `
-${firstName}.
+${firstName},
 
 ${randomFear}
 
 ${randomReality}
 
-📞 AGENDA TU LLAMADA
+El calendario sigue abierto:
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Quedan horas. No días. Después, tu evaluación se archiva.
+Mikel
   `.trim();
 }
 
@@ -1127,7 +1109,7 @@ function generateFollowUp3(name: string, answers: QuizAnswers, score: number, ta
   const successStory = successStoriesMap[profession] || successStoriesMap['Otro tipo de agencia creativa'];
   
   return `
-${firstName}.
+${firstName},
 
 ${contrast}
 
@@ -1138,10 +1120,10 @@ Distinta conversación.
 Los datos:
 ${successStory}
 
-📞 RESERVA TU LLAMADA
+Si quieres ver cómo se aplica a vuestro caso, coge un hueco:
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Vosotros decidís. Pero decidid hoy.
+Mikel
   `.trim();
 }
 
@@ -1152,22 +1134,21 @@ function generateFollowUp4(name: string, answers: QuizAnswers, score: number): s
   const firstQuestion = prepQuestions[0] || '¿Cuánto tiempo más vais a seguir así?';
   
   return `
-${firstName}.
+${firstName},
 
-Pregunta simple:
+Una pregunta:
 ${firstQuestion}
 
-Si la respuesta os incomoda, ya sabéis lo que hay que hacer.
+Si la respuesta os incomoda, ya sabéis por dónde va la cosa.
 
 Podéis seguir dándole vueltas.
 O podéis dar el paso.
 
 Pero no podéis hacer las dos cosas.
 
-📞 AGENDA TU LLAMADA
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Tu evaluación se archiva en horas. No hay segunda vuelta.
+Mikel
   `.trim();
 }
 
@@ -1175,28 +1156,22 @@ function generateFollowUp5(name: string, answers: QuizAnswers): string {
   const firstName = name.split(' ')[0];
   
   return `
-${firstName}.
+${firstName},
 
-Tu acceso preferente ha expirado.
+No os escribo más, que no quiero ser pesado.
 
-No vamos a insistir más.
+Si no es el momento, no pasa nada.
 
-Si no era el momento, no pasa nada.
-
-Pero si lo era y no disteis el paso, dentro de 6 meses seguiréis exactamente igual.
-
-La única diferencia es que habréis perdido 6 meses más.
+Pero si lo era y lo dejáis pasar, dentro de 6 meses seguiréis exactamente igual.
 
 Cobrando lo mismo.
 Trabajando igual de duro.
 Con los mismos clientes de siempre.
 
-O peores.
-
-📞 ÚLTIMA OPORTUNIDAD
+Si cambiáis de idea, el calendario está aquí:
 https://api.leadconnectorhq.com/widget/booking/8C2kck4NCnEihznxvL29
 
-Vosotros decidís.
+Mikel
   `.trim();
 }
 
@@ -1205,8 +1180,8 @@ Vosotros decidís.
 function generateCloserPreCallNotification(contact: ContactData, answers: QuizAnswers, score: number, tags: string[]): string {
   const firstName = contact.name.split(' ')[0];
   const isHot = tags.some(t => t.includes('CÍRCULO-HOT'));
-  const hasInvestment = answers.q5 ? answers.q5 !== 'Ahora mismo no puedo invertir en esto' : true;
-  const fastTrack = answers.q5?.includes('DFY'); // prioridad = eligió DFY (antes: timeline "esta semana")
+  const hasInvestment = hasInvestmentCapacity(answers);
+  const fastTrack = isFastTrack(answers); // prioridad = factura €10K+/mes (antes: eligió DFY)
   const authSolo = answers.q7?.includes('Solo yo');
   const lowRevenue = answers.q3 === 'Menos de €3.000/mes';
   
