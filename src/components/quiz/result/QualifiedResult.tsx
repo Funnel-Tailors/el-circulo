@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { contactFormSchema, getEmailTier, type ContactFormData } from "@/lib/validations/contact";
 import type { QuizState } from "@/types/quiz";
 import { RESULT_MESSAGES, PAIN_HEADLINES } from "@/constants/resultMessages";
-import { calculateQuizScore } from "@/lib/quizScoring";
+import { isSharedDecision } from "@/lib/quizScoring";
 import { GHLCalendarIframe } from "@/components/quiz/result/GHLCalendarIframe";
 
 interface QualifiedResultProps {
@@ -25,8 +25,8 @@ interface BookingData {
   firstName: string;
   lastName: string;
   email: string;
-  quizScore: number;
-  qualificationLevel: "premium_qualified" | "qualified" | "marginal";
+  /** Banda de facturación (q3). Sustituye al viejo quizScore/qualificationLevel. */
+  revenueBand: string;
 }
 
 export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) => {
@@ -52,6 +52,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
   }, []);
 
   const personalizedTitle = PAIN_HEADLINES[quizState.q1 || ''] || RESULT_MESSAGES.qualified.title;
+  const sharedDecision = isSharedDecision(quizState);
 
   const handleContactSubmit = useCallback(async (data: ContactFormData) => {
     if (data.website && data.website.length > 0) {
@@ -60,7 +61,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
     }
 
     setIsSubmitting(true);
-    const score = calculateQuizScore(quizState);
     const emailTier = getEmailTier(data.email);
 
     try {
@@ -70,7 +70,6 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
           email: data.email,
           emailTier,
           answers: quizState,
-          score,
           qualified: true,
           fbclid: quizAnalytics.getFbclid(),
           isPartialSubmission: false,
@@ -91,7 +90,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
         content_name: 'Círculo Membership',
         content_category: 'qualified_lead',
         content_ids: ['circulo_lead'],
-        quiz_score: score,
+        revenue_band: quizState.q3 || 'unknown',
         email_tier: emailTier,
       });
       console.log('🎯 [TRACKING] Lead fired (email-only, sin OTP)');
@@ -110,17 +109,13 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
 
-      const qualificationLevel: BookingData["qualificationLevel"] =
-        score >= 85 ? "premium_qualified" : score >= 70 ? "qualified" : "marginal";
-
       toast({ title: "✅ Plaza confirmada", description: "Elige tu hueco." });
 
       setBookingData({
         firstName,
         lastName,
         email: data.email,
-        quizScore: score,
-        qualificationLevel,
+        revenueBand: quizState.q3 || "unknown",
       });
       return true;
     } catch (error) {
@@ -139,23 +134,34 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
   // After successful submit — show calendar in-place
   if (bookingData) {
     return (
-      <div className="space-y-6">
-        <div className="text-center space-y-3">
-          <h2 className="text-3xl md:text-4xl font-display font-black text-foreground leading-tight">
+      <div className="space-y-4 md:space-y-6">
+        <div className="text-center space-y-2 md:space-y-3">
+          <h2 className="text-2xl md:text-4xl font-display font-black text-foreground leading-tight">
             {bookingData.firstName}, <span className="glow">aplicar al Círculo</span>
           </h2>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+          <p className="text-xs md:text-sm text-muted-foreground max-w-md mx-auto">
             Si crees que es para ti, lo hablamos en una llamada. Elige tu hueco abajo.
           </p>
         </div>
+
+        {/* Decide con su socio: la condición se pone aquí, justo antes de elegir hueco,
+            en vez de descalificarle. No perdemos el lead y el closer no se come una
+            llamada a medias. */}
+        {sharedDecision && (
+          <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+            <p className="text-xs text-amber-200/90 leading-snug">
+              Me has dicho que la decisión la tomáis entre dos. Invita a tu socio al
+              hueco que elijas: si vienes solo, cancelo la llamada y se la doy a otro.
+            </p>
+          </div>
+        )}
 
         <GHLCalendarIframe
           calendarId={STRATEGIC_CALL_CALENDAR_ID}
           firstName={bookingData.firstName}
           lastName={bookingData.lastName}
           email={bookingData.email}
-          quizScore={bookingData.quizScore}
-          qualificationLevel={bookingData.qualificationLevel}
+          revenueBand={bookingData.revenueBand}
         />
       </div>
     );

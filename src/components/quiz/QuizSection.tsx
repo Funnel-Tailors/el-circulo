@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import ProgressBar from "./ProgressBar";
 import { QuizState } from "@/types/quiz";
-import { calculateQuizScore as calculateScore, isQualified, skipsCapacityQuestion, CAPACITY_YES, CAPACITY_NO } from "@/lib/quizScoring";
+import { isQualified, skipsCapacityQuestion, CAPACITY_YES, CAPACITY_NO } from "@/lib/quizScoring";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -350,8 +350,7 @@ const QuizSection = ({
 
     if (isLastStep) {
       const finalAnswers = { ...answers, [currentQuestion.stateKey]: currentAnswer };
-      const score = calculateScore(finalAnswers);
-      onComplete(finalAnswers, isQualified(finalAnswers, score));
+      onComplete(finalAnswers, isQualified(finalAnswers));
     } else {
       setCurrentStep(prev => prev + 1);
     }

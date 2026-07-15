@@ -10,8 +10,8 @@ interface GHLCalendarIframeProps {
   lastName?: string;
   email?: string;
   phone?: string;
-  quizScore?: number;
-  qualificationLevel?: string;
+  /** Banda de facturación (q3). Solo para el tracking interno de Supabase. */
+  revenueBand?: string;
   /** Modo on-brand para el portal/consultoría (sin banner azul, contenedor oscuro). */
   embedded?: boolean;
 }
@@ -22,8 +22,7 @@ export const GHLCalendarIframe = ({
   lastName = '',
   email = '',
   phone = '',
-  quizScore,
-  qualificationLevel,
+  revenueBand,
   embedded = false,
 }: GHLCalendarIframeProps) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -60,7 +59,7 @@ export const GHLCalendarIframe = ({
     quizAnalytics.trackEvent({
       event_type: 'calendar_view' as any,
       step_id: 'calendar',
-      answer_value: qualificationLevel || 'unknown',
+      answer_value: revenueBand || 'unknown',
     });
   };
 
