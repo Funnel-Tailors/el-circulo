@@ -78,7 +78,20 @@ serve(async (req) => {
       .select('location_id, api_key, ghl_calendar_id')
       .eq('onboarding_id', onboardingId)
       .maybeSingle()
-    if (!conn?.location_id || !conn?.api_key) {
+
+    // El Círculo (embudo interno) usa las credenciales GHL del PROPIO proyecto
+    // (secretos GHL_LOCATION_ID / GHL_API_TOKEN), sin duplicar el secreto en DB.
+    // Si algún día se le crea una consulting_ghl_connections propia, esa manda.
+    const INTERNAL_ONBOARDING_ID = '00000000-0000-4000-8000-0000000c1c10'
+    let loc = conn?.location_id ?? ''
+    let key = conn?.api_key ?? ''
+    let calendarId = conn?.ghl_calendar_id || ''
+    if ((!loc || !key) && onboardingId === INTERNAL_ONBOARDING_ID) {
+      loc = Deno.env.get('GHL_LOCATION_ID') || ''
+      key = Deno.env.get('GHL_API_TOKEN') || ''
+      calendarId = calendarId || Deno.env.get('GHL_CALENDAR_ID') || '8C2kck4NCnEihznxvL29'
+    }
+    if (!loc || !key) {
       return json({ connected: false, metrics: null })
     }
 
@@ -92,9 +105,6 @@ serve(async (req) => {
       return json({ connected: true, cached: true, metrics: snap.metrics })
     }
 
-    const loc = conn.location_id
-    const key = conn.api_key
-    const calendarId = conn.ghl_calendar_id || ''
     const now = new Date()
     const metrics: any = {
       currency: 'EUR',
