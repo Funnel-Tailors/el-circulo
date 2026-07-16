@@ -19,6 +19,9 @@ const RANGES = [
 const STEP_LABELS: Record<string, string> = {
   rol: "Perfil", proyecto: "Promoción", ticket: "Ticket", urgencia: "Urgencia", presupuesto: "Presupuesto",
   need: "Necesidad", authority: "Decisión", budget: "Inversión", timing: "Timing",
+  // El Círculo · embudo interno (q1–q5 de QuizSection)
+  q1: "Frustración", q2: "Perfil", q3: "Facturación", q4: "Inversión", q5: "Decisión",
+  q4_budget_qualified: "Inversión OK", calendar: "Calendario",
 };
 const stepLabel = (id: string) => STEP_LABELS[id] ?? id;
 

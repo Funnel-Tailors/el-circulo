@@ -6,6 +6,7 @@ import {
   type ProjectStats,
   type TrackingProject,
 } from '@/lib/funnelStats';
+import { CIRCULO_INTERNAL_SLUG, fetchLegacyCirculoEvents } from '@/lib/funnelStatsLegacy';
 
 export type {
   TrackingProject,
@@ -22,11 +23,19 @@ export function useClientFunnelData(days: number) {
     queryKey: ['client-funnel-data', days],
     queryFn: async () => {
       const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-      const [{ data: projects, error: pErr }, events] = await Promise.all([
+      // El Círculo (slug 'circulo') no vive en client_funnel_events: su historial
+      // sale del adaptador sobre las tablas viejas. Se une al mismo pool de eventos
+      // (ya llevan project_slug='circulo') y el filtro por proyecto lo recoge solo.
+      const [{ data: projects, error: pErr }, baseEvents, legacyEvents] = await Promise.all([
         supabase.from('tracking_projects').select('slug, name, active').order('name'),
         fetchFunnelEvents(since),
+        fetchLegacyCirculoEvents(since).catch(() => []),
       ]);
       if (pErr) throw pErr;
+      const events = [
+        ...baseEvents.filter((e) => e.project_slug !== CIRCULO_INTERNAL_SLUG),
+        ...legacyEvents,
+      ];
 
       const byProject: Record<string, ProjectStats> = {};
       for (const p of (projects ?? []) as TrackingProject[]) {
