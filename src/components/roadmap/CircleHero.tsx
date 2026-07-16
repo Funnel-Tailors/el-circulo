@@ -175,9 +175,9 @@ const CircleHero = ({ disableSticky = false }: CircleHeroProps) => {
       {/* Hero Title + Subheadline */}
       <div className="space-y-3 md:space-y-4 max-w-3xl mx-auto px-0 md:px-4 pt-2 md:pt-3">
         <h1 className="text-[19px] md:text-4xl font-display font-black leading-[1.15] md:leading-[1.05] text-foreground text-balance">
-          Si tu estudio solo consigue proyectos por boca a boca y <span className="glow">agencias que te regatean</span> cada propuesta…
+          Cómo cerrar proyectos de <span className="glow">5 cifras</span> a <span className="glow">cliente final</span> todas las semanas
         </h1>
-        <p className="text-[13px] md:text-lg text-foreground/80 leading-snug md:leading-snug">…te montamos el sistema que te lleva directo al <span className="glow">cliente final</span>: el que valora tu criterio y no te da la chapa por el último céntimo. En 7 días.</p>
+        <p className="text-[13px] md:text-lg text-foreground/80 leading-snug md:leading-snug">Con un <span className="glow">comercial 24/7</span> que busca gente que las paga, valora tu criterio y no te da la chapa.</p>
       </div>
 
       {/* VSL Container con glow pulsante — en móvil se come el padding del contenedor

@@ -40,7 +40,7 @@ const Roadmap = () => {
       <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
         {/* Layout vertical único */}
         <div className="space-y-0">
-          <CircleHero />
+          <CircleHero disableSticky />
 
           {/* PAIN SECTION */}
           <PainSection />

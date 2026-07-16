@@ -40,7 +40,7 @@ const Index = () => {
 
       <div className="container max-w-4xl mx-auto px-6 pt-4 pb-12 relative z-10">
         <div>
-          <CircleHero />
+          <CircleHero disableSticky />
 
           {/* PAIN SECTION (carta de ventas) — DESACTIVADA DEL RENDER (no eliminar).
               El pitch completo ya vive en el VSL. Reactivar descomentando import + esto.
