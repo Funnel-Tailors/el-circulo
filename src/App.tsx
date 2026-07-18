@@ -11,6 +11,7 @@ import LaBrecha from "./pages/LaBrecha";
 import WebinardoRegistro from "./pages/WebinardoRegistro";
 import WebinardoGracias from "./pages/WebinardoGracias";
 import WebinardoVer from "./pages/WebinardoVer";
+import Newsletter from "./pages/Newsletter";
 import Gracias from "./pages/Gracias";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminConsultoria = lazy(() => import("./pages/admin/AdminConsultoria"));
 const AdminConfirmation = lazy(() => import("./pages/admin/AdminConfirmation"));
 const AdminClientes = lazy(() => import("./pages/admin/AdminClientes"));
+const AdminNewsletter = lazy(() => import("./pages/admin/AdminNewsletter"));
 
 const queryClient = new QueryClient();
 
@@ -67,6 +69,9 @@ const App = () => (
           <Route path="/webinardo/gracias" element={<WebinardoGracias />} />
           <Route path="/webinardo/ver" element={<WebinardoVer />} />
 
+          {/* La Letra (newsletter) */}
+          <Route path="/newsletter" element={<Newsletter />} />
+
           {/* Admin routes */}
           <Route path="/admin" element={
             <Suspense fallback={<AdminFallback />}>
@@ -86,6 +91,7 @@ const App = () => (
             <Route path="consultoria" element={<Suspense fallback={<AdminFallback />}><AdminConsultoria /></Suspense>} />
             <Route path="gracias" element={<Suspense fallback={<AdminFallback />}><AdminConfirmation /></Suspense>} />
             <Route path="clientes" element={<Suspense fallback={<AdminFallback />}><AdminClientes /></Suspense>} />
+            <Route path="newsletter" element={<Suspense fallback={<AdminFallback />}><AdminNewsletter /></Suspense>} />
           </Route>
           
           {/* Redirects */}

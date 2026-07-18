@@ -11,6 +11,7 @@ import {
   Sparkles,
   Image,
   Video,
+  Mail,
   Briefcase,
   PartyPopper,
   BarChart3,
@@ -69,6 +70,12 @@ const navItems = [
     url: "/admin/webinar",
     icon: Video,
     description: "Config, registros y tracking",
+  },
+  {
+    title: "La Letra",
+    url: "/admin/newsletter",
+    icon: Mail,
+    description: "Newsletter · leads → GHL nuevosletra",
   },
   {
     title: "Gracias VSL",

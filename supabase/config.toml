@@ -24,6 +24,9 @@ otp_length = 8
 [functions.submit-lead-to-ghl]
 verify_jwt = false
 
+[functions.submit-newsletter]
+verify_jwt = false
+
 [functions.send-circulo-otp]
 verify_jwt = false
 

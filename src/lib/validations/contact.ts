@@ -156,6 +156,17 @@ export const webinarRegistrationSchema = z.object({
 
 export type WebinarRegistrationData = z.infer<typeof webinarRegistrationSchema>;
 
+// ============================================================
+// NewsletterSchema — usado por la landing /newsletter (carta de ventas).
+// Solo email (máxima conversión, cero fricción) + honeypot.
+// ============================================================
+export const newsletterSchema = z.object({
+  email: emailValidator,
+  website: z.string().max(0, "Campo inválido").optional(),
+});
+
+export type NewsletterData = z.infer<typeof newsletterSchema>;
+
 /* ── DESACTIVADO: registro por WhatsApp + OTP ──
 const PHONE_SPAM_PATTERN = /^(1{6,}|2{6,}|3{6,}|4{6,}|5{6,}|6{6,}|7{6,}|8{6,}|9{6,}|0{6,}|123456|654321|111111|999999|000000)$/;
 

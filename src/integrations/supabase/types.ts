@@ -1695,6 +1695,36 @@ export type Database = {
           },
         ]
       }
+      newsletter_leads: {
+        Row: {
+          created_at: string
+          email: string
+          ghl_contact_id: string | null
+          id: string
+          is_active: boolean
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          ghl_contact_id?: string | null
+          id?: string
+          is_active?: boolean
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          ghl_contact_id?: string | null
+          id?: string
+          is_active?: boolean
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       webinar_registrations: {
         Row: {
           country_code: string | null
