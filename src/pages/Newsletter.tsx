@@ -13,12 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { quizAnalytics } from "@/lib/analytics";
 import { useNewsletterSettings } from "@/hooks/useNewsletterSettings";
@@ -217,29 +211,14 @@ const Newsletter = () => {
           />
         </div>
 
-        <Divider />
-
-        {/* ── FAQ ── */}
-        <Accordion type="single" collapsible className="space-y-4">
-          {copy.faq.map((f, i) => (
-            <AccordionItem
-              key={i}
-              value={`item-${i}`}
-              className="glass-card-dark rounded-xl px-6 py-2 border-border/50 transition-all duration-200 hover:shadow-lg hover:shadow-primary/10 data-[state=open]:scale-[1.01]"
-            >
-              <AccordionTrigger className="text-left hover:no-underline py-4">
-                <span className="font-semibold text-foreground">{f.q}</span>
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground pb-4 pt-0">{f.a}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-
         {/* ── P.D. ── */}
         {copy.ps && (
-          <p className="mt-10 text-foreground/80 leading-relaxed text-[17px] md:text-lg italic">
-            {copy.ps}
-          </p>
+          <>
+            <Divider />
+            <p className="text-foreground/80 leading-relaxed text-[17px] md:text-lg italic">
+              {copy.ps}
+            </p>
+          </>
         )}
 
         <p className="mt-12 text-center font-mono text-[11px] uppercase tracking-widest text-muted-foreground/60">
