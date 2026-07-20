@@ -167,15 +167,15 @@ const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, 
             : hasDocs ? (
               <div className="grid sm:grid-cols-2 gap-3 pb-1">
                 {invoices.map((iv, i) => {
-                  // La factura + instrucciones de pago son visibles desde que está emitida;
-                  // si sigue pendiente, la fila mantiene también el botón de pago.
+                  // La factura solo es visible una vez confirmado el pago por admin;
+                  // hasta entonces la fila es el plazo pendiente con el botón de pago.
                   const paid = iv.payment_status === "paid";
                   const multi = (iv.installment_count ?? 1) > 1;
-                  const title = multi
-                    ? `Factura ${iv.invoice_number} · Plazo ${iv.installment_index}/${iv.installment_count}`
-                    : `Factura ${iv.invoice_number}`;
-                  const subtitle = `${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}`;
-                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={subtitle} onOpen={invoicesFull[i] ? () => setView(i) : undefined} payUrl={!paid ? paymentUrl : undefined} />;
+                  const title = paid
+                    ? (multi ? `Factura ${iv.invoice_number} · Plazo ${iv.installment_index}/${iv.installment_count}` : `Factura ${iv.invoice_number}`)
+                    : (multi ? `Plazo ${iv.installment_index} de ${iv.installment_count}` : "Pago del servicio");
+                  const subtitle = `${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}${paid ? "" : " · factura al confirmarse el pago"}`;
+                  return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={subtitle} onOpen={paid ? () => setView(i) : undefined} payUrl={!paid ? paymentUrl : undefined} />;
                 })}
                 {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>

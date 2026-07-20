@@ -36,10 +36,12 @@ serve(async (req) => {
     // Admin puede ver la factura de un cliente concreto (onboarding_id en el body)
     const body = await req.json().catch(() => ({}))
     let onboardings: any[] | null = null
+    let isAdmin = false
     if (body?.onboarding_id) {
       const { data: roles } = await supabase
         .from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').limit(1)
       if (roles?.length) {
+        isAdmin = true
         const { data } = await supabase
           .from('consulting_onboardings')
           .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at, payment_modality')
@@ -86,11 +88,13 @@ serve(async (req) => {
     const invoicesOut: any[] = []
     const invoicesFull: any[] = []
     for (const inv of invRows) {
-      // El cliente ve la factura completa + instrucciones de pago desde que está emitida
-      // (para saber dónde/cómo pagar), no solo tras confirmarse el pago.
+      // La factura (PDF + detalle completo) solo se entrega una vez CONFIRMADA por admin.
+      // Hasta entonces el cliente solo ve el plazo pendiente (importe/vencimiento) y paga.
+      // El cliente solo ve el detalle/PDF una vez confirmado el pago; el admin siempre.
       const isPaid = inv.status === 'paid'
+      const canSeeFull = isAdmin || isPaid
       let url: string | null = null
-      if (inv.storage_path) {
+      if (canSeeFull && inv.storage_path) {
         const { data: signed } = await supabase.storage.from('invoices').createSignedUrl(inv.storage_path, 300)
         url = signed?.signedUrl ?? null
       }
@@ -111,7 +115,8 @@ serve(async (req) => {
         installment_index: inv.installment_index,
         installment_count: inv.installment_count,
       })
-      invoicesFull.push({
+      // null mantiene el índice alineado con invoicesOut sin exponer la factura pendiente
+      invoicesFull.push(canSeeFull ? {
         invoice_number: inv.invoice_number,
         invoice_date: inv.invoice_date,
         due_date: inv.due_date,
@@ -126,7 +131,7 @@ serve(async (req) => {
         installment_index: inv.installment_index,
         installment_count: inv.installment_count,
         payment_note: inv.payment_note,
-      })
+      } : null)
     }
     const billTo = (onboardings ?? []).find((o: any) => o.id === invRows[0].onboarding_id) ?? billToBase
 
