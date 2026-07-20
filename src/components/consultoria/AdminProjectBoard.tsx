@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
-import { downloadBrandedInvoice } from "@/lib/invoicePdf";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -848,18 +847,6 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
     const { data } = await supabase.storage.from(bucket).createSignedUrl(path, 300);
     if (data?.signedUrl) window.open(data.signedUrl, "_blank");
   };
-  const [dlInv, setDlInv] = useState<string | null>(null);
-  const downloadInvoice = async (invoiceNumber: string) => {
-    setDlInv(invoiceNumber);
-    try {
-      await downloadBrandedInvoice(client.id, invoiceNumber);
-    } catch (e) {
-      console.error("branded invoice download failed:", e);
-      toast.error("No se pudo generar el PDF");
-    } finally {
-      setDlInv(null);
-    }
-  };
   const confirmPay = async (invoiceId: string, paid: boolean) => {
     const { data } = await supabase.functions.invoke("confirm-payment", { body: { invoice_id: invoiceId, paid } });
     if ((data as any)?.ok) { toast.success(paid ? "Pago confirmado" : "Revertido"); onChanged(); }
@@ -889,9 +876,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
               {iv.status === "paid"
                 ? <button className="underline text-muted-foreground" onClick={() => confirmPay(iv.id, false)}>revertir</button>
                 : <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => confirmPay(iv.id, true)}>Confirmar</Button>}
-              <Button size="sm" variant="ghost" className="h-6 w-6 p-0" title="Descargar PDF de marca" disabled={dlInv === iv.invoice_number} onClick={() => downloadInvoice(iv.invoice_number)}>
-                {dlInv === iv.invoice_number ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-              </Button>
+              {iv.storage_path && <Button size="sm" variant="ghost" className="h-6 w-6 p-0" title="PDF" onClick={() => downloadFrom("invoices", iv.storage_path)}><Download className="h-3.5 w-3.5" /></Button>}
             </div>
           ))}
           {!(client.invoices ?? []).length && <p className="text-xs text-muted-foreground">Sin facturas. Usa "Editar facturas" para emitirlas.</p>}

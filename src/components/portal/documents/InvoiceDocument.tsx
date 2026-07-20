@@ -13,7 +13,6 @@ export interface InvoiceDoc {
   installment_note?: string | null;
   installment_index?: number | null;
   installment_count?: number | null;
-  payment_note?: string | null;
 }
 export interface BillTo {
   fiscal_address?: string | null;
@@ -41,14 +40,14 @@ export const InvoiceDocument = ({ inv, billTo }: { inv: InvoiceDoc; billTo: Bill
       <div className="bg-neutral-950 text-white px-10 py-8">
         <div className="flex items-start justify-between">
           <div>
-            <div className="font-display font-extrabold text-2xl tracking-tight leading-none">EL CÍRCULO</div>
+            <div className="font-display font-black text-2xl tracking-tight leading-none">EL CÍRCULO</div>
             <div className="text-[11px] text-neutral-400 mt-2 uppercase tracking-[0.15em]">
               Sistema de adquisición — Consultoría DFY
             </div>
           </div>
           <div className="text-right">
             <div className="text-[10px] uppercase tracking-[0.2em] text-neutral-500 mb-1">Factura</div>
-            <div className="font-display font-extrabold text-2xl leading-none tracking-[-0.03em]">{inv.invoice_number}</div>
+            <div className="font-display font-black text-2xl leading-none">{inv.invoice_number}</div>
             {(inv.installment_count ?? 1) > 1 && (
               <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-neutral-500">Plazo {inv.installment_index} de {inv.installment_count}</div>
             )}
@@ -105,6 +104,7 @@ export const InvoiceDocument = ({ inv, billTo }: { inv: InvoiceDoc; billTo: Bill
               <span className="block">{[billTo.postal_code, billTo.city].filter(Boolean).join(", ")}</span>
             )}
             {billTo.country_code && <span className="block">{billTo.country_code}</span>}
+            {billTo.email && <span className="block">{billTo.email}</span>}
           </div>
         </div>
 
@@ -151,18 +151,6 @@ export const InvoiceDocument = ({ inv, billTo }: { inv: InvoiceDoc; billTo: Bill
             <div className="space-y-0.5">
               {inv.installment_note.split("\n").map((line, i) => (
                 <div key={i} className={i === 0 ? "text-[12px] font-medium text-neutral-700" : "text-[12px] text-neutral-500"}>{line}</div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Instrucciones de pago */}
-        {inv.payment_note && (
-          <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 p-4">
-            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-neutral-400 mb-2">Instrucciones de pago</div>
-            <div className="space-y-0.5">
-              {inv.payment_note.split("\n").map((line, i) => (
-                <div key={i} className={i === 0 ? "text-[12px] font-medium text-neutral-700" : "text-[12px] text-neutral-500 break-all"}>{line}</div>
               ))}
             </div>
           </div>
