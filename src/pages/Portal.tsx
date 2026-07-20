@@ -182,8 +182,8 @@ const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, 
             ) : <p className="text-sm text-foreground/60 pb-2">No hay documentos todavía.</p>}
         </EnergyCardContent>
       </EnergyCard>
-      {typeof view === "number" && invoicesFull[view] && <DocumentViewer onClose={() => setView(null)}><InvoiceDocument inv={invoicesFull[view]} billTo={billTo} /></DocumentViewer>}
-      {view === "acuerdo" && agreement && <DocumentViewer onClose={() => setView(null)}><AgreementDocument agreement={agreement} /></DocumentViewer>}
+      {typeof view === "number" && invoicesFull[view] && <DocumentViewer onClose={() => setView(null)} fileName={`Factura ${invoicesFull[view].invoice_number}`}><InvoiceDocument inv={invoicesFull[view]} billTo={billTo} /></DocumentViewer>}
+      {view === "acuerdo" && agreement && <DocumentViewer onClose={() => setView(null)} fileName={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`.trim()}><AgreementDocument agreement={agreement} /></DocumentViewer>}
     </>
   );
 };

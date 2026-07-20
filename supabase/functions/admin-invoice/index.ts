@@ -84,7 +84,7 @@ serve(async (req) => {
     }
 
     const paymentNote = ob.payment_modality === 'wise'
-      ? `Transferencia Wise:\n${issuer.wise_details || issuer.iban || 'Solicita los datos a tu contacto.'}`
+      ? `Transferencia Wise:\nEncontrarás el enlace de pago en tu portal de cliente.`
       : (paymentLinks.stripe_url || paymentLinks.fastpay_url || 'Sigue las instrucciones de pago indicadas.')
 
     // Borrar las facturas NO pagadas previas (libera números y storage) y emitir el set nuevo

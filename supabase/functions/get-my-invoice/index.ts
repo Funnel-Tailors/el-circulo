@@ -36,10 +36,12 @@ serve(async (req) => {
     // Admin puede ver la factura de un cliente concreto (onboarding_id en el body)
     const body = await req.json().catch(() => ({}))
     let onboardings: any[] | null = null
+    let isAdmin = false
     if (body?.onboarding_id) {
       const { data: roles } = await supabase
         .from('user_roles').select('role').eq('user_id', userId).eq('role', 'admin').limit(1)
       if (roles?.length) {
+        isAdmin = true
         const { data } = await supabase
           .from('consulting_onboardings')
           .select('id, fiscal_address, city, postal_code, country_code, email, payment_claimed_at, payment_modality')
@@ -60,7 +62,7 @@ serve(async (req) => {
     // Todas las facturas emitidas/pagadas del cliente (1 o 2 plazos), ordenadas
     const { data: invRows } = await supabase
       .from('invoices')
-      .select('id, onboarding_id, invoice_number, storage_path, invoice_date, due_date, issuer, legal_name, tax_id, base_amount_cents, tax_rate, tax_amount_cents, total_amount_cents, currency, status, installment_index, installment_count')
+      .select('id, onboarding_id, invoice_number, storage_path, invoice_date, due_date, issuer, legal_name, tax_id, base_amount_cents, tax_rate, tax_amount_cents, total_amount_cents, currency, status, installment_index, installment_count, payment_note')
       .in('onboarding_id', ids)
       .in('status', ['issued', 'paid'])
       .order('installment_index', { ascending: true, nullsFirst: true })
@@ -88,9 +90,11 @@ serve(async (req) => {
     for (const inv of invRows) {
       // La factura (PDF + detalle completo) solo se entrega una vez CONFIRMADA por admin.
       // Hasta entonces el cliente solo ve el plazo pendiente (importe/vencimiento) y paga.
+      // El cliente solo ve el detalle/PDF una vez confirmado el pago; el admin siempre.
       const isPaid = inv.status === 'paid'
+      const canSeeFull = isAdmin || isPaid
       let url: string | null = null
-      if (isPaid && inv.storage_path) {
+      if (canSeeFull && inv.storage_path) {
         const { data: signed } = await supabase.storage.from('invoices').createSignedUrl(inv.storage_path, 300)
         url = signed?.signedUrl ?? null
       }
@@ -112,7 +116,7 @@ serve(async (req) => {
         installment_count: inv.installment_count,
       })
       // null mantiene el índice alineado con invoicesOut sin exponer la factura pendiente
-      invoicesFull.push(isPaid ? {
+      invoicesFull.push(canSeeFull ? {
         invoice_number: inv.invoice_number,
         invoice_date: inv.invoice_date,
         due_date: inv.due_date,
@@ -126,6 +130,7 @@ serve(async (req) => {
         currency: inv.currency,
         installment_index: inv.installment_index,
         installment_count: inv.installment_count,
+        payment_note: inv.payment_note,
       } : null)
     }
     const billTo = (onboardings ?? []).find((o: any) => o.id === invRows[0].onboarding_id) ?? billToBase

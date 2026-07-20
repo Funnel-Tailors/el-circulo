@@ -207,7 +207,7 @@ serve(async (req) => {
     // ── 3. Facturas por plazo (plan por defecto: 2× €5k, o 1 si plan off) ──
     const paymentNote = (() => {
       if (payment_modality === 'wise') {
-        return `Transferencia Wise:\n${issuer.wise_details || issuer.iban || 'Solicita los datos a tu contacto.'}`
+        return `Transferencia Wise:\nEncontrarás el enlace de pago en tu portal de cliente.`
       }
       if (payment_modality === 'link_stripe' && paymentLinks.stripe_url) {
         return `Pago con tarjeta:\n${paymentLinks.stripe_url}`
