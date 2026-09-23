@@ -6,8 +6,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Senda from "./pages/Senda";
-import LaBrecha from "./pages/LaBrecha";
 import Gracias from "./pages/Gracias";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
@@ -22,8 +20,6 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const AdminQuizFunnel = lazy(() => import("./pages/admin/AdminQuizFunnel"));
 const AdminMetaPixel = lazy(() => import("./pages/admin/AdminMetaPixel"));
-const AdminSenda = lazy(() => import("./pages/admin/AdminSenda"));
-const AdminBrecha = lazy(() => import("./pages/admin/AdminBrecha"));
 const AdminWebinar = lazy(() => import("./pages/admin/AdminWebinar"));
 const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
 const Showcase = lazy(() => import("./pages/admin/Showcase"));
@@ -51,8 +47,6 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/senda" element={<Senda />} />
-          <Route path="/la-brecha" element={<LaBrecha />} />
           <Route path="/gracias" element={<Gracias />} />
 
           {/* Consultoría DFY */}
@@ -69,8 +63,6 @@ const App = () => (
             <Route index element={<Suspense fallback={<AdminFallback />}><AdminOverview /></Suspense>} />
             <Route path="quiz" element={<Suspense fallback={<AdminFallback />}><AdminQuizFunnel /></Suspense>} />
             <Route path="meta" element={<Suspense fallback={<AdminFallback />}><AdminMetaPixel /></Suspense>} />
-            <Route path="senda" element={<Suspense fallback={<AdminFallback />}><AdminSenda /></Suspense>} />
-            <Route path="brecha" element={<Suspense fallback={<AdminFallback />}><AdminBrecha /></Suspense>} />
             <Route path="webinar" element={<Suspense fallback={<AdminFallback />}><AdminWebinar /></Suspense>} />
             <Route path="dev" element={<Suspense fallback={<AdminFallback />}><AdminDevTools /></Suspense>} />
             <Route path="showcase" element={<Suspense fallback={<AdminFallback />}><Showcase /></Suspense>} />

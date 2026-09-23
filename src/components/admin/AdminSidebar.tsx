@@ -3,8 +3,6 @@ import {
   LayoutDashboard,
   Target,
   Smartphone,
-  Compass,
-  Zap,
   Wrench,
   LogOut,
   Palette,
@@ -52,18 +50,6 @@ const navItems = [
     url: "/admin/meta",
     icon: Smartphone,
     description: "Events, health, sessions",
-  },
-  {
-    title: "La Senda",
-    url: "/admin/senda",
-    icon: Compass,
-    description: "Journey + leads Senda",
-  },
-  {
-    title: "La Brecha",
-    url: "/admin/brecha",
-    icon: Zap,
-    description: "Journey + leads Brecha",
   },
   {
     title: "Webinardo",
