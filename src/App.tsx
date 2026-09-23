@@ -8,7 +8,6 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Senda from "./pages/Senda";
 import LaBrecha from "./pages/LaBrecha";
-import Carta from "./pages/Carta";
 import Gracias from "./pages/Gracias";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
@@ -60,9 +59,6 @@ const App = () => (
           <Route path="/consultoria" element={<Suspense fallback={<AdminFallback />}><Consultoria /></Suspense>} />
           <Route path="/consultoria/onboarding" element={<Suspense fallback={<AdminFallback />}><ConsultoriaOnboarding /></Suspense>} />
           <Route path="/portal" element={<Suspense fallback={<AdminFallback />}><Portal /></Suspense>} />
-
-          {/* Carta de ventas */}
-          <Route path="/carta" element={<Carta />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={
