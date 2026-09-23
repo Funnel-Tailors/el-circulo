@@ -8,10 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Senda from "./pages/Senda";
 import LaBrecha from "./pages/LaBrecha";
-import WebinardoRegistro from "./pages/WebinardoRegistro";
-import WebinardoGracias from "./pages/WebinardoGracias";
-import WebinardoVer from "./pages/WebinardoVer";
-import Newsletter from "./pages/Newsletter";
+import Carta from "./pages/Carta";
 import Gracias from "./pages/Gracias";
 import Artefacto from "./pages/Artefacto";
 import NotFound from "./pages/NotFound";
@@ -64,13 +61,8 @@ const App = () => (
           <Route path="/consultoria/onboarding" element={<Suspense fallback={<AdminFallback />}><ConsultoriaOnboarding /></Suspense>} />
           <Route path="/portal" element={<Suspense fallback={<AdminFallback />}><Portal /></Suspense>} />
 
-          {/* Webinardo Creativos */}
-          <Route path="/webinardo" element={<WebinardoRegistro />} />
-          <Route path="/webinardo/gracias" element={<WebinardoGracias />} />
-          <Route path="/webinardo/ver" element={<WebinardoVer />} />
-
-          {/* La Letra (newsletter) */}
-          <Route path="/newsletter" element={<Newsletter />} />
+          {/* Carta de ventas */}
+          <Route path="/carta" element={<Carta />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={
