@@ -97,11 +97,6 @@ const App = () => (
           {/* Redirects */}
           <Route path="/analytics" element={<Navigate to="/admin" replace />} />
           <Route path="/test-vault" element={<Navigate to="/admin/dev" replace />} />
-          <Route path="/roadmap" element={<Navigate to="/" replace />} />
-          {/* Legacy public landings — redirect to home */}
-          <Route path="/v2" element={<Navigate to="/" replace />} />
-          <Route path="/quiz" element={<Navigate to="/" replace />} />
-          <Route path="/carta" element={<Navigate to="/" replace />} />
           
           <Route path="/artefacto" element={<Artefacto />} />
           
