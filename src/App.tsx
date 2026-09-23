@@ -20,7 +20,6 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
 const AdminOverview = lazy(() => import("./pages/admin/AdminOverview"));
 const AdminQuizFunnel = lazy(() => import("./pages/admin/AdminQuizFunnel"));
 const AdminMetaPixel = lazy(() => import("./pages/admin/AdminMetaPixel"));
-const AdminWebinar = lazy(() => import("./pages/admin/AdminWebinar"));
 const AdminDevTools = lazy(() => import("./pages/admin/AdminDevTools"));
 const Showcase = lazy(() => import("./pages/admin/Showcase"));
 const PremiumEffectsDemo = lazy(() => import("./components/premium/PremiumEffectsDemo"));
@@ -28,7 +27,6 @@ const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminConsultoria = lazy(() => import("./pages/admin/AdminConsultoria"));
 const AdminConfirmation = lazy(() => import("./pages/admin/AdminConfirmation"));
 const AdminClientes = lazy(() => import("./pages/admin/AdminClientes"));
-const AdminNewsletter = lazy(() => import("./pages/admin/AdminNewsletter"));
 
 const queryClient = new QueryClient();
 
@@ -63,7 +61,6 @@ const App = () => (
             <Route index element={<Suspense fallback={<AdminFallback />}><AdminOverview /></Suspense>} />
             <Route path="quiz" element={<Suspense fallback={<AdminFallback />}><AdminQuizFunnel /></Suspense>} />
             <Route path="meta" element={<Suspense fallback={<AdminFallback />}><AdminMetaPixel /></Suspense>} />
-            <Route path="webinar" element={<Suspense fallback={<AdminFallback />}><AdminWebinar /></Suspense>} />
             <Route path="dev" element={<Suspense fallback={<AdminFallback />}><AdminDevTools /></Suspense>} />
             <Route path="showcase" element={<Suspense fallback={<AdminFallback />}><Showcase /></Suspense>} />
             <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
@@ -71,7 +68,6 @@ const App = () => (
             <Route path="consultoria" element={<Suspense fallback={<AdminFallback />}><AdminConsultoria /></Suspense>} />
             <Route path="gracias" element={<Suspense fallback={<AdminFallback />}><AdminConfirmation /></Suspense>} />
             <Route path="clientes" element={<Suspense fallback={<AdminFallback />}><AdminClientes /></Suspense>} />
-            <Route path="newsletter" element={<Suspense fallback={<AdminFallback />}><AdminNewsletter /></Suspense>} />
           </Route>
           
           {/* Redirects */}
