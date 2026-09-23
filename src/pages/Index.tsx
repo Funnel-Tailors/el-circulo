@@ -7,12 +7,6 @@ import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import FeaturedInterview from "@/components/roadmap/FeaturedInterview";
 import { HomeQuiz } from "@/components/roadmap/HomeQuiz";
 import { successCases, featuredInterview } from "@/data/roadmap";
-// DESACTIVADO DEL RENDER (no eliminar — carta de ventas, el pitch ya está en el VSL):
-// import { PainSection } from "@/components/roadmap/PainSection";
-// --- DESACTIVADOS DEL RENDER (no eliminar — listos para reactivar) ---
-// import RoadmapHero from "@/components/roadmap/RoadmapHero";
-// import StellarTimeline from "@/components/roadmap/StellarTimeline";
-// import { roadmapDays } from "@/data/roadmap";
 
 const SendaCTA = ({ source }: { source: "post_roadmap" | "final_cta" }) => (
   <motion.div
@@ -42,22 +36,9 @@ const Index = () => {
         <div>
           <CircleHero disableSticky />
 
-          {/* PAIN SECTION (carta de ventas) — DESACTIVADA DEL RENDER (no eliminar).
-              El pitch completo ya vive en el VSL. Reactivar descomentando import + esto.
-          <PainSection /> */}
-
-          {/* ROADMAP — DESACTIVADO DEL RENDER (recorte JH: el mecanismo ya está en el VSL).
-              No eliminar: reactivar descomentando imports + este bloque.
-          <RoadmapHero />
-          <div className="mb-16">
-            <StellarTimeline days={roadmapDays} />
-          </div>
-
-          {/* Mid CTA — entry to the Senda
-          <div className="my-12">
-            <SendaCTA source="post_roadmap" />
-          </div>
-          */}
+          {/* PainSection y RoadmapHero se retiraron del render (el pitch vive
+              en el VSL) y se borraron en la limpieza de código muerto.
+              Recuperables desde el historial de git si hicieran falta. */}
 
           {/* ASCENDIDOS */}
           <div id="testimonials-section" className="mt-16 mb-8">
