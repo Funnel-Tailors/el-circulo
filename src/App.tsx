@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Gracias from "./pages/Gracias";
 import Artefacto from "./pages/Artefacto";
+import Carta from "./pages/Carta";
 import NotFound from "./pages/NotFound";
 
 // Consultoría DFY (público, lazy para no engordar el bundle principal)
@@ -43,7 +44,8 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<Carta />} />
+          <Route path="/vsl" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/gracias" element={<Gracias />} />
 
