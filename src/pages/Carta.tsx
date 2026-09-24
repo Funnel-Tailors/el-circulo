@@ -46,6 +46,11 @@ const List = ({ items }: { items: ReactNode[] }) => (
   </ul>
 );
 
+// Caja del formulario: sin fondo, borde blanco fino y el beam de luz del design
+// system (energy-beam-border, premium-effects.css) recorriéndolo.
+const boxClass =
+  "relative rounded-2xl border border-white/25 p-6 md:p-8 energy-beam-border energy-beam-active";
+
 interface LeadFormProps {
   done: boolean;
   onSuccess: () => void;
@@ -80,7 +85,7 @@ const LeadForm = ({ done, onSuccess, source }: LeadFormProps) => {
 
   if (done) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-card/40 p-6 md:p-8 text-center space-y-2">
+      <div className={`${boxClass} text-center space-y-2`}>
         <p className="font-display font-black text-xl md:text-2xl">Hecho. Mira tu correo.</p>
         <p className="text-sm text-muted-foreground">
           El vídeo va de camino. Si no lo ves en unos minutos, mira en spam o promociones y
@@ -91,7 +96,7 @@ const LeadForm = ({ done, onSuccess, source }: LeadFormProps) => {
   }
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-6 md:p-8">
+    <div className={boxClass}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField
