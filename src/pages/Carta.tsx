@@ -9,7 +9,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import TestimonialsMarquee from "@/components/roadmap/TestimonialsMarquee";
 import ScreenshotMarquee from "@/components/roadmap/ScreenshotMarquee";
 import { supabase } from "@/integrations/supabase/client";
-import { quizAnalytics } from "@/lib/analytics";
 import { successCases } from "@/data/roadmap";
 
 // Carta de ventas del lead magnet (vídeo de 35 min por email). Capta solo email
@@ -60,10 +59,6 @@ const LeadForm = ({ done, onSuccess, source }: LeadFormProps) => {
         body: { email: data.email.trim().toLowerCase(), source },
       });
       if (error || !res?.success) throw error || new Error("lead_magnet");
-      quizAnalytics.trackMetaPixelEvent("Lead", {
-        content_name: "Carta lead magnet",
-        content_category: "lead_magnet",
-      });
       onSuccess();
     } catch (err) {
       console.error("lead magnet submit error:", err);
