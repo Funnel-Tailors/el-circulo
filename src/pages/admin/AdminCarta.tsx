@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, Eraser, Italic, Plus, Trash2, Underline } from "lucide-react";
+import { ArrowDown, ArrowUp, Eraser, Italic, Plus, SplitSquareVertical, Trash2, Underline } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,35 +12,70 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCartaBlocks } from "@/hooks/useCartaBlocks";
-import { renderInline } from "@/components/carta/CartaInline";
 import { CartaContent } from "@/pages/Carta";
 import {
   BLOCK_LABELS,
   CARTA_DEFAULT_BLOCKS,
+  blocksToText,
+  isTextBlock,
   newBlock,
+  textToBlocks,
   type CartaBlock,
-  type CartaBlockType,
 } from "@/config/carta";
 
-const MARKS = { u: "__", i: "*" } as const;
+// El editor trabaja con secciones: todo el texto entre dos CTAs/testimonios es
+// una sola caja de texto; los CTAs y testimonios quedan como separadores.
+type FixedBlock = Extract<CartaBlock, { type: "form" | "videos" | "screenshots" }>;
+type Section = { kind: "text"; id: string; text: string } | { kind: "fixed"; block: FixedBlock };
 
-// Quita el marcado de un trozo de texto.
+const toSections = (blocks: CartaBlock[]): Section[] => {
+  const out: Section[] = [];
+  let run: CartaBlock[] = [];
+  const flush = () => {
+    if (run.length) out.push({ kind: "text", id: run[0].id, text: blocksToText(run) });
+    run = [];
+  };
+  for (const b of blocks) {
+    if (isTextBlock(b)) run.push(b);
+    else {
+      flush();
+      out.push({ kind: "fixed", block: b as FixedBlock });
+    }
+  }
+  flush();
+  return out;
+};
+
+const toBlocks = (sections: Section[]): CartaBlock[] =>
+  sections.flatMap((s) => (s.kind === "text" ? textToBlocks(s.text) : [s.block]));
+
+// Junta cajas de texto que se quedan pegadas (p.ej. al quitar un CTA entre ellas).
+const mergeText = (sections: Section[]): Section[] =>
+  sections.reduce<Section[]>((acc, s) => {
+    const last = acc[acc.length - 1];
+    if (s.kind === "text" && last?.kind === "text") {
+      acc[acc.length - 1] = { ...last, text: `${last.text.trimEnd()}\n\n${s.text.trimStart()}` };
+    } else acc.push(s);
+    return acc;
+  }, []);
+
+// Huella sin ids para saber si hay cambios sin guardar.
+const fingerprint = (blocks: CartaBlock[]) =>
+  JSON.stringify(blocks.map(({ id: _id, ...rest }) => rest));
+
+const MARKS = { u: "__", i: "*" } as const;
 const stripMarks = (t: string) => t.replace(/__(.+?)__/g, "$1").replace(/\*(.+?)\*/g, "$1");
 
-// Textarea con toolbar: seleccionas texto y le das a Subrayar / Itálica (o ⌘U / ⌘I).
+// Caja de texto con toolbar: seleccionas y le das a Subrayar / Itálica (o ⌘U / ⌘I).
 // Si la selección ya está marcada, el mismo botón la desmarca.
-const MarkupField = ({
+const TextSection = ({
   value,
   onChange,
-  rows = 3,
-  preview = true,
-  previewClass = "font-text text-[17px] leading-[1.6] text-foreground/85",
+  onSplit,
 }: {
   value: string;
   onChange: (v: string) => void;
-  rows?: number;
-  preview?: boolean;
-  previewClass?: string;
+  onSplit: (pos: number) => void;
 }) => {
   const ref = useRef<HTMLTextAreaElement>(null);
   const pendingSel = useRef<[number, number] | null>(null);
@@ -63,27 +98,25 @@ const MarkupField = ({
       return;
     }
     // No arrastrar espacios dentro de la marca.
-    while (start < end && value[start] === " ") start++;
-    while (end > start && value[end - 1] === " ") end--;
+    while (start < end && /\s/.test(value[start])) start++;
+    while (end > start && /\s/.test(value[end - 1])) end--;
     const sel = value.slice(start, end);
+    const before = value.slice(0, start);
+    const after = value.slice(end);
 
     if (kind === "clear") {
       const clean = stripMarks(sel);
       pendingSel.current = [start, start + clean.length];
-      onChange(value.slice(0, start) + clean + value.slice(end));
+      onChange(before + clean + after);
       return;
     }
 
     const m = MARKS[kind];
-    const before = value.slice(0, start);
-    const after = value.slice(end);
-    // Ya marcado por fuera → desmarcar.
     if (before.endsWith(m) && after.startsWith(m)) {
       pendingSel.current = [start - m.length, end - m.length];
       onChange(before.slice(0, -m.length) + sel + after.slice(m.length));
       return;
     }
-    // Selección que incluye las marcas → desmarcar.
     if (sel.startsWith(m) && sel.endsWith(m) && sel.length > m.length * 2) {
       const inner = sel.slice(m.length, -m.length);
       pendingSel.current = [start, start + inner.length];
@@ -103,137 +136,109 @@ const MarkupField = ({
     }
   };
 
+  const keepFocus = (e: MouseEvent) => e.preventDefault();
+
   return (
     <div className="space-y-2">
-      <div className="flex gap-1">
-        <Button type="button" size="sm" variant="outline" className="h-7 px-2 gap-1" onMouseDown={(e) => e.preventDefault()} onClick={() => apply("u")}>
+      <div className="sticky top-[84px] z-[5] flex flex-wrap gap-1 bg-background/95 py-1">
+        <Button type="button" size="sm" variant="outline" className="h-7 px-2 gap-1" onMouseDown={keepFocus} onClick={() => apply("u")}>
           <Underline className="h-3.5 w-3.5" /> Subrayar
         </Button>
-        <Button type="button" size="sm" variant="outline" className="h-7 px-2 gap-1" onMouseDown={(e) => e.preventDefault()} onClick={() => apply("i")}>
+        <Button type="button" size="sm" variant="outline" className="h-7 px-2 gap-1" onMouseDown={keepFocus} onClick={() => apply("i")}>
           <Italic className="h-3.5 w-3.5" /> Itálica
         </Button>
-        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 gap-1 text-muted-foreground" onMouseDown={(e) => e.preventDefault()} onClick={() => apply("clear")}>
+        <Button type="button" size="sm" variant="ghost" className="h-7 px-2 gap-1 text-muted-foreground" onMouseDown={keepFocus} onClick={() => apply("clear")}>
           <Eraser className="h-3.5 w-3.5" /> Quitar
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="h-7 px-2 gap-1 text-muted-foreground ml-auto"
+          onMouseDown={keepFocus}
+          onClick={() => onSplit(ref.current?.selectionStart ?? value.length)}
+        >
+          <SplitSquareVertical className="h-3.5 w-3.5" /> CTA en el cursor
         </Button>
       </div>
       <textarea
         ref={ref}
         value={value}
-        rows={rows}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
+        spellCheck
         style={{ fieldSizing: "content" } as CSSProperties}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="w-full min-h-[160px] rounded-md border border-input bg-background px-4 py-3 font-text text-[15px] leading-relaxed focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       />
-      {preview && value.trim() && <div className={previewClass}>{renderInline(value)}</div>}
     </div>
   );
 };
 
-const ADDABLE: CartaBlockType[] = ["p", "strong", "list", "heading", "form", "videos", "screenshots"];
+const INSERTABLE = [
+  { label: "Formulario (CTA)", make: (): Section => ({ kind: "fixed", block: newBlock("form") as FixedBlock }) },
+  { label: "Testimonios en vídeo", make: (): Section => ({ kind: "fixed", block: newBlock("videos") as FixedBlock }) },
+  { label: "Testimonios en pantallazo", make: (): Section => ({ kind: "fixed", block: newBlock("screenshots") as FixedBlock }) },
+  { label: "Texto", make: (): Section => ({ kind: "text", id: crypto.randomUUID(), text: "" }) },
+];
 
-const AddBlock = ({ onAdd }: { onAdd: (t: CartaBlockType) => void }) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs text-muted-foreground">
-        <Plus className="h-3.5 w-3.5" /> Añadir bloque aquí
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent>
-      {ADDABLE.map((t) => (
-        <DropdownMenuItem key={t} onClick={() => onAdd(t)}>
-          {BLOCK_LABELS[t]}
-        </DropdownMenuItem>
-      ))}
-    </DropdownMenuContent>
-  </DropdownMenu>
+const Insert = ({ onAdd }: { onAdd: (s: Section) => void }) => (
+  <div className="flex justify-center">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-6 gap-1 text-xs text-muted-foreground/70">
+          <Plus className="h-3 w-3" /> Insertar
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {INSERTABLE.map((opt) => (
+          <DropdownMenuItem key={opt.label} onClick={() => onAdd(opt.make())}>
+            {opt.label}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
 );
-
-const BlockEditor = ({ block, onChange }: { block: CartaBlock; onChange: (b: CartaBlock) => void }) => {
-  switch (block.type) {
-    case "heading":
-      return (
-        <MarkupField
-          value={block.text}
-          rows={2}
-          onChange={(text) => onChange({ ...block, text })}
-          previewClass="font-display font-black text-3xl leading-[1em] tracking-[-0.03em]"
-        />
-      );
-    case "p":
-      return <MarkupField value={block.text} onChange={(text) => onChange({ ...block, text })} />;
-    case "strong":
-      return (
-        <MarkupField
-          value={block.text}
-          rows={2}
-          onChange={(text) => onChange({ ...block, text })}
-          previewClass="font-text text-[17px] leading-[1.6] font-medium text-foreground"
-        />
-      );
-    case "list":
-      return (
-        <div className="space-y-3">
-          {block.items.map((item, i) => (
-            <div key={i} className="flex gap-2 items-start">
-              <span className="mt-9 text-muted-foreground">•</span>
-              <div className="flex-1">
-                <MarkupField
-                  value={item}
-                  rows={2}
-                  onChange={(v) => onChange({ ...block, items: block.items.map((x, j) => (j === i ? v : x)) })}
-                />
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="mt-8 h-7 w-7"
-                onClick={() => onChange({ ...block, items: block.items.filter((_, j) => j !== i) })}
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          ))}
-          <Button variant="outline" size="sm" className="h-7 gap-1" onClick={() => onChange({ ...block, items: [...block.items, ""] })}>
-            <Plus className="h-3.5 w-3.5" /> Punto
-          </Button>
-        </div>
-      );
-    case "form":
-      return (
-        <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Source (para saber desde qué formulario entra el lead)</Label>
-          <Input value={block.source} onChange={(e) => onChange({ ...block, source: e.target.value })} className="h-8 font-mono text-xs" />
-        </div>
-      );
-    default:
-      return <p className="text-xs text-muted-foreground">Sección fija, solo se puede mover o quitar.</p>;
-  }
-};
 
 export default function AdminCarta() {
   const { blocks: saved, isLoading, save } = useCartaBlocks();
-  const [blocks, setBlocks] = useState<CartaBlock[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) setBlocks(saved);
+    if (!isLoading) setSections(toSections(saved));
   }, [isLoading, saved]);
 
-  const dirty = JSON.stringify(blocks) !== JSON.stringify(saved);
+  const blocks = useMemo(() => toBlocks(sections), [sections]);
+  const dirty = fingerprint(blocks) !== fingerprint(saved);
 
-  const update = (i: number, b: CartaBlock) => setBlocks((bs) => bs.map((x, j) => (j === i ? b : x)));
-  const remove = (i: number) => setBlocks((bs) => bs.filter((_, j) => j !== i));
+  const setText = (i: number, text: string) =>
+    setSections((ss) => ss.map((s, j) => (j === i && s.kind === "text" ? { ...s, text } : s)));
+  const setBlock = (i: number, block: FixedBlock) =>
+    setSections((ss) => ss.map((s, j) => (j === i ? { kind: "fixed", block } : s)));
+  const remove = (i: number) => setSections((ss) => mergeText(ss.filter((_, j) => j !== i)));
   const move = (i: number, d: -1 | 1) =>
-    setBlocks((bs) => {
+    setSections((ss) => {
       const j = i + d;
-      if (j < 0 || j >= bs.length) return bs;
-      const next = [...bs];
+      if (j < 0 || j >= ss.length) return ss;
+      const next = [...ss];
       [next[i], next[j]] = [next[j], next[i]];
-      return next;
+      return mergeText(next);
     });
-  const insertAt = (i: number, t: CartaBlockType) =>
-    setBlocks((bs) => [...bs.slice(0, i), newBlock(t), ...bs.slice(i)]);
+  const insertAt = (i: number, s: Section) =>
+    setSections((ss) => mergeText([...ss.slice(0, i), s, ...ss.slice(i)]));
+  const split = (i: number, pos: number) =>
+    setSections((ss) => {
+      const s = ss[i];
+      if (s.kind !== "text") return ss;
+      const before = s.text.slice(0, pos).trimEnd();
+      const after = s.text.slice(pos).trimStart();
+      const parts: Section[] = [];
+      if (before) parts.push({ ...s, text: before });
+      parts.push({ kind: "fixed", block: newBlock("form") as FixedBlock });
+      if (after) parts.push({ kind: "text", id: crypto.randomUUID(), text: after });
+      return [...ss.slice(0, i), ...parts, ...ss.slice(i + 1)];
+    });
 
   const onSave = async () => {
     setSaving(true);
@@ -254,8 +259,7 @@ export default function AdminCarta() {
             Lead magnet en{" "}
             <a href="/" target="_blank" rel="noreferrer" className="underline">
               /
-            </a>{" "}
-            · selecciona texto y dale a Subrayar / Itálica (⌘U / ⌘I)
+            </a>
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -263,12 +267,12 @@ export default function AdminCarta() {
             variant="ghost"
             size="sm"
             onClick={() => {
-              if (confirm("¿Volver a la carta original? Se pierde lo editado al guardar.")) setBlocks(CARTA_DEFAULT_BLOCKS);
+              if (confirm("¿Volver a la carta original? Lo editado se pierde al guardar.")) setSections(toSections(CARTA_DEFAULT_BLOCKS));
             }}
           >
             Original
           </Button>
-          <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setBlocks(saved)}>
+          <Button variant="outline" size="sm" disabled={!dirty} onClick={() => setSections(toSections(saved))}>
             Descartar
           </Button>
           <Button size="sm" disabled={!dirty || saving} onClick={onSave}>
@@ -283,20 +287,36 @@ export default function AdminCarta() {
           <TabsTrigger value="preview">Vista previa</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="edit" className="space-y-1 pt-4">
-          <AddBlock onAdd={(t) => insertAt(0, t)} />
-          {blocks.map((b, i) => (
-            <div key={b.id} className="space-y-1">
-              <div className="rounded-xl border border-white/10 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    {BLOCK_LABELS[b.type]}
+        <TabsContent value="edit" className="space-y-2 pt-4">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Línea en blanco = párrafo nuevo · <code># </code>titular · <code>&gt; </code>destacado ·{" "}
+            <code>- </code>punto de lista · selecciona texto y ⌘U subraya, ⌘I itálica
+          </p>
+          <Insert onAdd={(s) => insertAt(0, s)} />
+          {sections.map((s, i) => (
+            <div key={s.kind === "text" ? s.id : s.block.id} className="space-y-2">
+              {s.kind === "text" ? (
+                <TextSection value={s.text} onChange={(t) => setText(i, t)} onSplit={(pos) => split(i, pos)} />
+              ) : (
+                <div className="rounded-lg border border-dashed border-white/20 px-4 py-2.5 flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-foreground/80">
+                    {s.block.type === "form" ? "CTA · formulario" : BLOCK_LABELS[s.block.type]}
                   </span>
-                  <div className="flex gap-1">
+                  {s.block.type === "form" && (
+                    <div className="flex items-center gap-2">
+                      <Label className="text-[11px] text-muted-foreground">source</Label>
+                      <Input
+                        value={s.block.source}
+                        onChange={(e) => setBlock(i, { ...s.block, source: e.target.value } as FixedBlock)}
+                        className="h-7 w-48 font-mono text-xs"
+                      />
+                    </div>
+                  )}
+                  <div className="ml-auto flex gap-1">
                     <Button variant="ghost" size="icon" className="h-7 w-7" disabled={i === 0} onClick={() => move(i, -1)}>
                       <ArrowUp className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={i === blocks.length - 1} onClick={() => move(i, 1)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" disabled={i === sections.length - 1} onClick={() => move(i, 1)}>
                       <ArrowDown className="h-3.5 w-3.5" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => remove(i)}>
@@ -304,9 +324,8 @@ export default function AdminCarta() {
                     </Button>
                   </div>
                 </div>
-                <BlockEditor block={b} onChange={(nb) => update(i, nb)} />
-              </div>
-              <AddBlock onAdd={(t) => insertAt(i + 1, t)} />
+              )}
+              <Insert onAdd={(ns) => insertAt(i + 1, ns)} />
             </div>
           ))}
         </TabsContent>

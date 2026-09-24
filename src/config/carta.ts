@@ -117,3 +117,50 @@ export const parseCartaBlocks = (value: unknown): CartaBlock[] | null => {
   );
   return ok ? (value as CartaBlock[]) : null;
 };
+
+// ── Texto corrido ⇄ bloques (editor de /admin/carta) ─────────────────────────
+// El editor muestra todo el texto entre CTAs como una sola caja:
+//   línea en blanco → párrafo nuevo
+//   # texto         → titular
+//   > texto         → párrafo destacado
+//   - texto         → punto de lista (líneas seguidas = misma lista)
+
+const TEXT_BLOCK_TYPES: CartaBlockType[] = ["heading", "p", "strong", "list"];
+export const isTextBlock = (b: CartaBlock) => TEXT_BLOCK_TYPES.includes(b.type);
+
+export const blocksToText = (blocks: CartaBlock[]): string =>
+  blocks
+    .map((b) => {
+      switch (b.type) {
+        case "heading":
+          return `# ${b.text}`;
+        case "strong":
+          return `> ${b.text}`;
+        case "p":
+          return b.text;
+        case "list":
+          return b.items.map((t) => `- ${t}`).join("\n");
+        default:
+          return "";
+      }
+    })
+    .join("\n\n");
+
+export const textToBlocks = (text: string): CartaBlock[] => {
+  const out: CartaBlock[] = [];
+  for (const chunk of text.split(/\n\s*\n/)) {
+    const lines = chunk.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
+    const id = crypto.randomUUID();
+    if (lines.every((l) => l.startsWith("- "))) {
+      out.push({ id, type: "list", items: lines.map((l) => l.slice(2).trim()) });
+    } else if (lines[0].startsWith("# ")) {
+      out.push({ id, type: "heading", text: lines.join(" ").slice(2).trim() });
+    } else if (lines[0].startsWith("> ")) {
+      out.push({ id, type: "strong", text: lines.join(" ").slice(2).trim() });
+    } else {
+      out.push({ id, type: "p", text: lines.join(" ") });
+    }
+  }
+  return out;
+};
