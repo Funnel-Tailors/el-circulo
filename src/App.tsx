@@ -28,6 +28,7 @@ const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminConsultoria = lazy(() => import("./pages/admin/AdminConsultoria"));
 const AdminConfirmation = lazy(() => import("./pages/admin/AdminConfirmation"));
 const AdminClientes = lazy(() => import("./pages/admin/AdminClientes"));
+const AdminCarta = lazy(() => import("./pages/admin/AdminCarta"));
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
             <Route path="premium" element={<Suspense fallback={<AdminFallback />}><PremiumEffectsDemo /></Suspense>} />
             <Route path="testimonials" element={<Suspense fallback={<AdminFallback />}><AdminTestimonials /></Suspense>} />
             <Route path="consultoria" element={<Suspense fallback={<AdminFallback />}><AdminConsultoria /></Suspense>} />
+            <Route path="carta" element={<Suspense fallback={<AdminFallback />}><AdminCarta /></Suspense>} />
             <Route path="gracias" element={<Suspense fallback={<AdminFallback />}><AdminConfirmation /></Suspense>} />
             <Route path="clientes" element={<Suspense fallback={<AdminFallback />}><AdminClientes /></Suspense>} />
           </Route>

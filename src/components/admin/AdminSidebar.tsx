@@ -11,6 +11,7 @@ import {
   Briefcase,
   PartyPopper,
   BarChart3,
+  Mail,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,6 +49,12 @@ const navItems = [
     url: "/admin/meta",
     icon: Smartphone,
     description: "Events, health, sessions",
+  },
+  {
+    title: "Carta",
+    url: "/admin/carta",
+    icon: Mail,
+    description: "Carta de ventas del lead magnet (/)",
   },
   {
     title: "Gracias VSL",
