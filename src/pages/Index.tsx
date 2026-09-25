@@ -20,8 +20,7 @@ const SendaCTA = ({ source }: { source: "post_roadmap" | "final_cta" }) => (
       data-cta-source={source}
       className="inline-block px-8 py-4 rounded-lg font-bold bg-foreground text-background hover:bg-foreground/90 ring-1 ring-foreground/60 animate-glow-pulse-intense transition-colors"
     >
-      <span className="block text-lg">APLICAR AL CÍRCULO</span>
-      <span className="block text-xs opacity-70 mt-0.5">5 min de diagnóstico · No es para todos</span>
+      <span className="block text-lg">QUIERO ENTRAR</span>
     </a>
   </motion.div>
 );
