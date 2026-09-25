@@ -255,7 +255,7 @@ export const QualifiedResult = ({ quizState, onReset }: QualifiedResultProps) =>
                     Abriendo calendario...
                   </span>
                 ) : (
-                  "Ver mi hueco →"
+                  "Agendar llamada →"
                 )}
               </Button>
             </form>
