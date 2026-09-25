@@ -65,25 +65,24 @@ export const HomeQuiz = () => {
       className={
         isFullscreen
           ? "fixed inset-0 z-50 h-[100dvh] overflow-y-auto overscroll-contain bg-background pt-[env(safe-area-inset-top)] pb-[max(1rem,env(safe-area-inset-bottom))]"
-          : "relative scroll-mt-12 py-10 md:py-24"
+          : "relative scroll-mt-12 py-6 md:py-12"
       }
     >
       {isFullscreen && (
-        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-background/90 backdrop-blur border-b border-border/40">
-          <span className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            <span className="glow font-display font-black text-foreground">LA BRECHA</span> · 5 min
-          </span>
+        <div className="sticky top-0 z-10 flex justify-end px-3 pt-2">
           <button
             type="button"
             onClick={closeFullscreen}
             aria-label="Cerrar"
-            className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="p-2 rounded-full bg-background/80 backdrop-blur text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
       )}
 
+      {/* Cabecera de LA BRECHA DESACTIVADA: se simplificó para dejar solo el form.
+          No eliminar: reactivar descomentando.
       <div className={isFullscreen ? "hidden" : "text-center mb-6 md:mb-10 space-y-3 md:space-y-4"}>
         <div className="flex items-center justify-center gap-4" aria-hidden="true">
           <div className="h-px w-16 bg-gradient-to-r from-transparent to-border"></div>
@@ -107,8 +106,9 @@ export const HomeQuiz = () => {
           Antes de aplicar al Círculo necesito saber si es para ti. No es para cualquiera.
         </p>
       </div>
+      */}
 
-      <div className={`flex items-center justify-center ${isFullscreen ? "px-3 pt-3" : "px-4"}`}>
+      <div className={`flex items-center justify-center ${isFullscreen ? "px-3 pt-1" : "px-4"}`}>
         {/* Sin min-height en móvil: forzaba 720px + 64px de padding = 784px, más que el
             viewport de un móvil, así que la tarjeta no cabía ni vacía. En desktop se
             mantiene un suelo para que no bailen los pasos cortos. */}
