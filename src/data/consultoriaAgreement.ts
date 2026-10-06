@@ -219,11 +219,12 @@ permanecen bajo licencia revocable.
 
 Los sistemas de optimización de negocio (por ejemplo, Ad Studio o generador de propuestas)
 quedan excluidos de la cesión anterior: El Círculo conserva la titularidad de su código fuente,
-arquitectura y lógica interna, y concede al Cliente una licencia de uso perpetua, irrevocable y
-sin coste adicional para utilizarlos en su negocio. La licencia no incluye la entrega del código
-fuente ni el derecho a copiarlo, modificarlo, sublicenciarlo o revenderlo. Los datos que el
-Cliente introduzca en ellos y todo lo que genere con ellos (anuncios, propuestas, textos y
-demás resultados) son propiedad del Cliente.
+arquitectura y lógica interna, y concede al Cliente una licencia de uso sin coste adicional
+para utilizarlos en su negocio mientras mantenga activo el acceso al CRM proporcionado por El
+Círculo, al que van conectados. La licencia no incluye la entrega del código fuente ni el derecho
+a copiarlo, modificarlo, sublicenciarlo o revenderlo. Los datos que el Cliente introduzca en
+ellos y todo lo que genere con ellos (anuncios, propuestas, textos y demás resultados) son
+propiedad del Cliente y podrá exportarlos al finalizar la licencia.
 
 6. CONFIDENCIALIDAD
 Ambas partes tratarán como confidencial la información no pública a la que accedan con motivo
@@ -353,10 +354,11 @@ todo lo generado sin restricción.
 
 Los sistemas de optimización de negocio (por ejemplo, Ad Studio o generador de propuestas)
 quedan excluidos de la cesión anterior: El Círculo conserva la titularidad de su código fuente,
-arquitectura y lógica interna, y concede al Cliente una licencia de uso perpetua, irrevocable y
-sin coste adicional para utilizarlos en su negocio. La licencia no incluye la entrega del código
-fuente ni el derecho a copiarlo, modificarlo, sublicenciarlo o revenderlo. Los datos que el
-Cliente introduzca en ellos y todo lo que genere con ellos (anuncios, propuestas, textos y
+arquitectura y lógica interna, y concede al Cliente una licencia de uso sin coste adicional
+para utilizarlos en su negocio durante todo el periodo de acceso al CRM previsto en la cláusula 6,
+al que van conectados, incluidas sus posibles prórrogas. La licencia no incluye la entrega del
+código fuente ni el derecho a copiarlo, modificarlo, sublicenciarlo o revenderlo. Los datos que
+el Cliente introduzca en ellos y todo lo que genere con ellos (anuncios, propuestas, textos y
 demás resultados) son propiedad del Cliente.
 
 6. ACCESO AL CRM
@@ -371,7 +373,8 @@ lo previsto en la cláusula 7.
 7. PORTABILIDAD Y SALIDA SIN PENALIZACIÓN
 Al finalizar la colaboración o el periodo de acceso al CRM, por cualquier causa y en cualquier
 momento, el Cliente podrá llevarse absolutamente todo lo generado durante la colaboración, sin
-penalización, coste, permanencia ni consecuencia alguna. A petición del Cliente, en un plazo
+penalización, coste, permanencia ni consecuencia alguna (los sistemas de optimización de negocio
+se rigen por lo previsto en la cláusula 5). A petición del Cliente, en un plazo
 máximo de quince (15) días, El Círculo:
 
   • Entregará la exportación completa de los datos del CRM en formatos estándar.
@@ -379,8 +382,7 @@ máximo de quince (15) días, El Círculo:
     formularios, plantillas y configuraciones (por ejemplo, mediante snapshot o migración
     asistida).
   • Entregará la exportación de los datos y de todo lo generado con los sistemas de
-    optimización de negocio, cuyo uso conserva el Cliente conforme a la licencia de la
-    cláusula 5.
+    optimización de negocio.
   • Entregará los archivos fuente de creatividades, vídeos y documentos.
   • Traspasará la titularidad o administración de las cuentas, dominios y activos creados
     para el Cliente.
