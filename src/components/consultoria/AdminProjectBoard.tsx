@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
+import { AGREEMENT_VERSION, ASSIGNABLE_AGREEMENTS } from "@/data/consultoriaAgreement";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -579,7 +580,7 @@ const AggBadge = ({ invoices, claimed }: { invoices: any[]; claimed: boolean }) 
 
 // ── Crear cliente (dialog) ──
 const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) => {
-  const [f, setF] = useState<any>({ legal_name: "", tax_id: "", fiscal_address: "", city: "", postal_code: "", country_code: "ES", location_id: "", api_key: "", calendar_id: "" });
+  const [f, setF] = useState<any>({ legal_name: "", tax_id: "", fiscal_address: "", city: "", postal_code: "", country_code: "ES", location_id: "", api_key: "", calendar_id: "", agreement_version: AGREEMENT_VERSION });
   const [genInvoice, setGenInvoice] = useState(true);
   const [plan2, setPlan2] = useState(true); // 2 plazos por defecto
   const [total, setTotal] = useState(10000);
@@ -612,7 +613,7 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
       invoice_number = ((inv as any)?.invoices ?? []).map((x: any) => x.invoice_number).join(" · ") || null;
     }
     setBusy(false);
-    setResult({ username: c.username, password: c.password, invoice_number });
+    setResult({ username: c.username, password: c.password, invoice_number, agreement_version: f.agreement_version });
     onCreated();
   };
 
@@ -632,6 +633,14 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5"><Label className="text-xs text-foreground/80">Ciudad</Label><GlowInput value={f.city} onChange={(e) => set("city", e.target.value)} /></div>
                 <div className="space-y-1.5"><Label className="text-xs text-foreground/80">C.P.</Label><GlowInput value={f.postal_code} onChange={(e) => set("postal_code", e.target.value)} /></div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-foreground/80">Acuerdo a firmar en el portal</Label>
+                <Select value={f.agreement_version} onValueChange={(v) => set("agreement_version", v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{ASSIGNABLE_AGREEMENTS.map((a) => <SelectItem key={a.version} value={a.version}>{a.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">El cliente lo lee y lo firma al entrar por primera vez al portal.</p>
               </div>
               <div className="pt-1 text-[11px] uppercase tracking-wide text-foreground/40">GHL (opcional — para el dashboard)</div>
               <div className="grid grid-cols-2 gap-3">
@@ -674,6 +683,7 @@ const CreateClientDialog = ({ open, onClose, onCreated }: { open: boolean; onClo
                 <div>clave: <span className="text-foreground">{result.password}</span></div>
                 {result.invoice_number && <div>factura(s): <span className="text-foreground">{result.invoice_number}</span></div>}
               </div>
+              <p className="text-xs text-foreground/55">Al entrar firmará el acuerdo {result.agreement_version}.</p>
             </div>
             <DialogFooter><Button variant="premium" onClick={onClose}>Hecho</Button></DialogFooter>
           </>

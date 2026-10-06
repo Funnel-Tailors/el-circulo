@@ -1,6 +1,7 @@
 import { getAgreementText } from "@/data/consultoriaAgreement";
 
 export interface SignedAgreement {
+  accepted?: boolean;
   signer_name: string;
   signer_email: string;
   signed_at: string | null;
@@ -48,7 +49,7 @@ export const AgreementDocument = ({ agreement }: { agreement: SignedAgreement })
         <pre className="whitespace-pre-wrap font-text text-[12.5px] leading-[1.8] text-neutral-700">{text}</pre>
 
         {/* Signature block */}
-        <div className="mt-10 rounded-xl border border-neutral-200 bg-neutral-50 overflow-hidden">
+        <div className="print-avoid-break mt-10 rounded-xl border border-neutral-200 bg-neutral-50 overflow-hidden">
           <div className="px-6 py-3 bg-neutral-900 text-white">
             <span className="text-[10px] font-display font-black uppercase tracking-[0.2em]">Firma electrónica</span>
           </div>

@@ -1,5 +1,5 @@
 // admin-create-client — el ADMIN crea un cliente desde el panel.
-// Crea: usuario portal (auto user+clave) + onboarding + acuerdo + proyecto + hitos
+// Crea: usuario portal (auto user+clave) + onboarding + acuerdo pendiente de firma + proyecto + hitos
 // + conexión GHL opcional. NO genera factura (eso lo hace admin-invoice). verify_jwt=true.
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1'
@@ -42,7 +42,7 @@ serve(async (req) => {
 
     const b = await req.json()
     const { legal_name, tax_id, fiscal_address, city, postal_code, country_code, phone,
-            location_id, api_key, calendar_id } = b ?? {}
+            location_id, api_key, calendar_id, agreement_version } = b ?? {}
     if (!legal_name || !fiscal_address || !country_code) {
       return json({ ok: false, error: 'Faltan datos (razón social, dirección, país)' }, 400)
     }
@@ -78,10 +78,11 @@ serve(async (req) => {
     if (obErr || !ob) return json({ ok: false, error: 'No se pudo crear el onboarding' }, 500)
     const onboardingId = ob.id as string
 
-    // ── Acuerdo (admin) ──
+    // ── Acuerdo pendiente: el cliente lo firma al entrar al portal (sign-my-agreement) ──
+    const version = /^v\d+[a-z0-9-]*$/i.test(String(agreement_version || '')) ? String(agreement_version) : 'v3'
     await supabase.from('consulting_agreements').insert({
-      onboarding_id: onboardingId, signer_name: legal_name, signer_email: username,
-      accepted: true, agreement_hash: 'admin', agreement_version: 'v2', ip_address: null, user_agent: 'admin',
+      onboarding_id: onboardingId, signer_name: '', signer_email: username,
+      accepted: false, agreement_hash: null, agreement_version: version, ip_address: null, user_agent: null,
     })
 
     // ── Proyecto + hitos ──

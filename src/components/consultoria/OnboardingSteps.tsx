@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -168,6 +168,18 @@ export const StepAgreement = () => {
     if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 16) setReadToEnd(true);
   };
 
+  // Si la caja no llega a tener scroll (pantallas altas / zoom), no hay nada que leer "hasta el final".
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el && el.scrollHeight <= el.clientHeight + 16) setReadToEnd(true);
+  }, []);
+
+  // Clic en el check sin haber llegado al final: baja la caja hasta el final en vez de no hacer nada.
+  const scrollToEnd = () => {
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  };
+
   return (
     <div className="space-y-4">
       <div className="relative">
@@ -185,7 +197,7 @@ export const StepAgreement = () => {
           </>
         )}
       </div>
-      <Label className={`flex items-start gap-3 ${readToEnd ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}>
+      <Label onClick={readToEnd ? undefined : scrollToEnd} className={`flex items-start gap-3 ${readToEnd ? "cursor-pointer" : "opacity-50 cursor-pointer"}`}>
         <Checkbox
           checked={!!accepted}
           disabled={!readToEnd}

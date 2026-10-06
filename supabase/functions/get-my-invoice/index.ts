@@ -69,7 +69,7 @@ serve(async (req) => {
     // Acuerdo firmado del cliente
     const { data: agreements } = await supabase
       .from('consulting_agreements')
-      .select('signer_name, signer_email, signed_at, ip_address, agreement_hash, agreement_version')
+      .select('accepted, signer_name, signer_email, signed_at, ip_address, agreement_hash, agreement_version')
       .in('onboarding_id', ids)
       .order('created_at', { ascending: false })
       .limit(1)

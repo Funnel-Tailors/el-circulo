@@ -25,6 +25,7 @@ import { PortalReveal } from "@/components/portal/PortalReveal";
 import { AgreementDocument, type SignedAgreement } from "@/components/portal/documents/AgreementDocument";
 import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/portal/documents/InvoiceDocument";
 import { DocumentViewer } from "@/components/portal/documents/DocumentViewer";
+import { SignAgreementGate } from "@/components/portal/SignAgreementGate";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent, GlowInput, MagneticButton } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
 
@@ -155,7 +156,8 @@ const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, 
   invoices: MyInvoice[]; invoicesFull: (InvoiceDoc | null)[]; agreement: SignedAgreement | null; billTo: BillTo; loading: boolean; paymentUrl?: string | null;
 }) => {
   const [view, setView] = useState<null | "acuerdo" | number>(null);
-  const hasDocs = invoices.length > 0 || !!agreement;
+  const signed = agreement?.accepted !== false ? agreement : null;
+  const hasDocs = invoices.length > 0 || !!signed;
   return (
     <>
       <EnergyCard variant="default" enableTilt={false} beamIntensity={0.4}>
@@ -177,13 +179,13 @@ const DocumentsSection = ({ invoices, invoicesFull, agreement, billTo, loading, 
                   const subtitle = `${formatMoney(iv.total_amount_cents, iv.currency)}${iv.due_date ? ` · vence ${iv.due_date}` : ""}${paid ? "" : " · factura al confirmarse el pago"}`;
                   return <DocRow key={iv.id ?? i} title={title} badge={<PaymentBadge status={iv.payment_status} />} subtitle={subtitle} onOpen={paid ? () => setView(i) : undefined} payUrl={!paid ? paymentUrl : undefined} />;
                 })}
-                {agreement && <DocRow title={`Acuerdo de servicios ${agreement.agreement_version ?? ""}`} subtitle={`Firmado por ${agreement.signer_name}${agreement.signed_at ? ` · ${agreement.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
+                {signed && <DocRow title={`Acuerdo de servicios ${signed.agreement_version ?? ""}`} subtitle={`Firmado por ${signed.signer_name}${signed.signed_at ? ` · ${signed.signed_at.slice(0, 10)}` : ""}`} onOpen={() => setView("acuerdo")} />}
               </div>
             ) : <p className="text-sm text-foreground/60 pb-2">No hay documentos todavía.</p>}
         </EnergyCardContent>
       </EnergyCard>
       {typeof view === "number" && invoicesFull[view] && <DocumentViewer onClose={() => setView(null)}><InvoiceDocument inv={invoicesFull[view]} billTo={billTo} /></DocumentViewer>}
-      {view === "acuerdo" && agreement && <DocumentViewer onClose={() => setView(null)}><AgreementDocument agreement={agreement} /></DocumentViewer>}
+      {view === "acuerdo" && signed && <DocumentViewer onClose={() => setView(null)}><AgreementDocument agreement={signed} /></DocumentViewer>}
     </>
   );
 };
@@ -214,6 +216,20 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
     setDashLoading(false);
   };
 
+  const applyInvoiceData = (d: any) => {
+    setInvoices(d?.invoices ?? []);
+    setInvoicesFull(d?.invoicesFull ?? []);
+    setPaymentUrl(d?.payment_url ?? null);
+    setAgreement(d?.agreement ?? null);
+    setBillTo(d?.billTo ?? {});
+  };
+
+  // Tras firmar en el portal, recarga el acuerdo (ya con fecha, IP y hash) para Documentos.
+  const reloadAgreement = async () => {
+    const { data, error } = await supabase.functions.invoke("get-my-invoice", invokeBody);
+    if (!error) applyInvoiceData(data);
+  };
+
   useEffect(() => {
     (async () => {
       // El slug de tracking del funnel: RLS deja al cliente ver solo su onboarding;
@@ -228,14 +244,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
         slugQuery,
       ]);
       if (!slugRes.error) setTrackingSlug((slugRes.data as any)?.tracking_slug ?? null);
-      if (!inv.error) {
-        const d = inv.data as any;
-        setInvoices(d?.invoices ?? []);
-        setInvoicesFull(d?.invoicesFull ?? []);
-        setPaymentUrl(d?.payment_url ?? null);
-        setAgreement(d?.agreement ?? null);
-        setBillTo(d?.billTo ?? {});
-      }
+      if (!inv.error) applyInvoiceData(inv.data);
       if (!proj.error) {
         setMilestones((proj.data as any)?.milestones ?? []);
         setProject((proj.data as any)?.project ?? null);
@@ -247,6 +256,15 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
 
   const dismissReveal = () => { localStorage.setItem("circulo_portal_revealed", "1"); setRevealed(true); };
   const name = (session.user.user_metadata as any)?.legal_name || session.user.email || "";
+
+  // Alta hecha por admin: el cliente firma su acuerdo antes de entrar (el admin en preview no).
+  // Hasta saber si hay acuerdo pendiente no se enseña el portal.
+  if (!previewId && loading) {
+    return <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(0 0% 5%)" }}><Loader2 className="h-6 w-6 animate-spin text-foreground/40" /></div>;
+  }
+  if (!previewId && agreement?.accepted === false) {
+    return <SignAgreementGate version={agreement.agreement_version || "v3"} onSigned={reloadAgreement} onSignOut={onSignOut} />;
+  }
 
   return (
     <div className="min-h-screen text-foreground" style={{ background: "hsl(0 0% 5%)" }}>

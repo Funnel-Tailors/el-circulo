@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { X, Download } from "lucide-react";
 
-/** Overlay que muestra un documento on-brand + botón "Descargar PDF" (print). */
-export const DocumentViewer = ({ children, onClose }: { children: ReactNode; onClose: () => void }) => (
-  <div className="fixed inset-0 z-50 overflow-auto" style={{ background: "hsl(0 0% 4% / 0.94)" }}>
+/** Overlay que muestra un documento on-brand + botón "Descargar PDF" (print).
+ *  Se monta en <body> para que al imprimir solo exista el documento (ver @media print). */
+export const DocumentViewer = ({ children, onClose }: { children: ReactNode; onClose: () => void }) => createPortal(
+  <div className="print-root fixed inset-0 z-50 overflow-auto" style={{ background: "hsl(0 0% 4% / 0.94)" }}>
     {/* Chrome bar */}
     <div
       className="no-print sticky top-0 z-10 flex items-center justify-between px-5 py-3.5 border-b border-white/[0.06]"
@@ -33,6 +35,7 @@ export const DocumentViewer = ({ children, onClose }: { children: ReactNode; onC
     </div>
 
     {/* Document area */}
-    <div className="px-4 py-10 sm:py-14">{children}</div>
-  </div>
+    <div className="print-area px-4 py-10 sm:py-14">{children}</div>
+  </div>,
+  document.body,
 );
