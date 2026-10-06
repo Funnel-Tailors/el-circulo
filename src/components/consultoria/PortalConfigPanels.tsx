@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { GlowInput } from "@/components/premium/GlowInput";
+import { cn } from "@/lib/utils";
 import { invokePortalFn } from "@/components/portal/invokePortalFn";
 import { PORTAL_TEMPLATES, type PortalConfig, type PipelineConfig, type TemplateId } from "@/data/portalTemplates";
 
@@ -202,6 +203,7 @@ export const InstantlyConnectionPanel = ({ onboardingId }: { onboardingId: strin
   const [saving, setSaving] = useState(false);
   const [loadingCampaigns, setLoadingCampaigns] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
 
   const load = async () => {
     const { data } = await supabase.from("consulting_instantly_connections" as any)
@@ -212,34 +214,36 @@ export const InstantlyConnectionPanel = ({ onboardingId }: { onboardingId: strin
     setStatus({ at: d?.last_synced_at ?? null, text: d?.last_sync_status ?? null });
     setLoaded(true);
   };
-  useEffect(() => { setLoaded(false); setCampaigns([]); load(); }, [onboardingId]);
+  useEffect(() => { setLoaded(false); setCampaigns([]); setFeedback(null); load(); }, [onboardingId]);
+
+  const report = (ok: boolean, text: string) => { setFeedback({ ok, text }); ok ? toast.success(text) : toast.error(text); };
 
   const save = async () => {
     setSaving(true);
     const { error } = await supabase.from("consulting_instantly_connections" as any)
       .upsert({ onboarding_id: onboardingId, api_key: apiKey.trim() || null, campaign_ids: campaignIds } as any, { onConflict: "onboarding_id" });
     setSaving(false);
-    if (error) return toast.error("No se pudo guardar (¿permisos admin?)");
-    toast.success("Conexión Instantly guardada");
+    if (error) return report(false, "No se pudo guardar (¿permisos admin?)");
+    report(true, "Conexión Instantly guardada");
   };
 
   const loadCampaigns = async () => {
     setLoadingCampaigns(true);
     const { data, error } = await invokePortalFn("get-my-outbound", { op: "list_campaigns", onboarding_id: onboardingId });
     setLoadingCampaigns(false);
-    if (error) return toast.error(error);
-    if (!(data as any)?.connected) return toast.error("Guarda primero la API key");
+    if (error) return report(false, error);
+    if (!(data as any)?.connected) return report(false, "Guarda primero la API key");
     setCampaigns((data as any).campaigns ?? []);
-    toast.success(`Conexión OK · ${(data as any).campaigns?.length ?? 0} campañas`);
+    report(true, `Conexión OK · ${(data as any).campaigns?.length ?? 0} campañas`);
   };
 
   const syncNow = async () => {
     setSyncing(true);
     const { data, error } = await invokePortalFn("sync-instantly-to-ghl", { onboarding_id: onboardingId });
     setSyncing(false);
-    if (error) return toast.error(error);
+    if (error) return report(false, error);
     const r = (data as any)?.results?.[0];
-    toast.success(r ? `Sincronización: ${r.status}` : "Nada que sincronizar");
+    report(!String(r?.status ?? "").startsWith("Error"), r ? `Sincronización: ${r.status}` : "Guarda primero la API key");
     load();
   };
 
@@ -257,6 +261,12 @@ export const InstantlyConnectionPanel = ({ onboardingId }: { onboardingId: strin
         <Button size="sm" variant="outline" onClick={loadCampaigns} disabled={loadingCampaigns}>{loadingCampaigns ? "Probando…" : "Probar y cargar campañas"}</Button>
         <Button size="sm" variant="outline" onClick={syncNow} disabled={syncing}>{syncing ? "Sincronizando…" : "Sincronizar ahora"}</Button>
       </div>
+      {feedback && (
+        <p className={cn("rounded-lg border px-3 py-2 text-xs",
+          feedback.ok ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "border-red-400/30 bg-red-400/10 text-red-300")}>
+          {feedback.ok ? "✓ " : "✗ "}{feedback.text}
+        </p>
+      )}
       {campaigns.length > 0 && (
         <div className="space-y-1.5">
           <div className="text-[11px] text-muted-foreground">Campañas que ve el cliente (ninguna marcada = todas). Guarda después de elegir.</div>

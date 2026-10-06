@@ -209,9 +209,11 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [testResult, setTestResult] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     setLoaded(false);
+    setTestResult(null);
     (async () => {
       const { data } = await supabase
         .from("consulting_ghl_connections")
@@ -236,21 +238,34 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
   };
 
   const test = async () => {
-    if (!locationId || !apiKey) return toast.error("Pon Location ID y API Key");
+    if (!locationId || !apiKey) {
+      setTestResult({ ok: false, text: "Pon Location ID y API Key" });
+      return toast.error("Pon Location ID y API Key");
+    }
     setTesting(true);
-    const { data } = await supabase.functions.invoke("test-ghl-connection", {
+    setTestResult(null);
+    const { data, error } = await supabase.functions.invoke("test-ghl-connection", {
       body: { location_id: locationId.trim(), api_key: apiKey.trim() },
     });
     setTesting(false);
-    if (data?.ok) toast.success(`Conexión OK · ${data.total_contacts ?? 0} contactos`);
-    else toast.error(data?.error || "No conecta");
+    if (data?.ok) {
+      const text = `Conexión OK · ${data.total_contacts ?? 0} contactos en la sub-cuenta`;
+      setTestResult({ ok: true, text });
+      toast.success(text);
+    } else {
+      let detail = "";
+      try { detail = JSON.parse(data?.detail || "{}")?.message || ""; } catch { detail = data?.detail || ""; }
+      const text = [data?.error || (error ? "No se pudo llamar a la función de prueba" : "No conecta"), detail].filter(Boolean).join(" · ");
+      setTestResult({ ok: false, text });
+      toast.error(text);
+    }
   };
 
   return (
     <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
       <h3 className="font-semibold text-sm text-foreground">Conexión GHL del cliente (dashboard)</h3>
       <p className="text-xs text-muted-foreground">
-        Location ID + Private Integration Token (scopes contacts/opportunities/calendars readonly) de la sub-cuenta GHL del cliente. Se guarda server-side; el cliente nunca la ve.
+        Location ID + Private Integration Token de la sub-cuenta GHL del cliente (lectura y escritura de contactos, oportunidades, calendarios y custom fields; el portal mueve etapas y crea notas). Se guarda server-side; el cliente nunca la ve.
       </p>
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Location ID</Label><GlowInput value={locationId} onChange={(e) => setLocationId(e.target.value)} placeholder="abc123…" /></div>
@@ -261,6 +276,12 @@ const GhlConnectionPanel = ({ onboardingId }: { onboardingId: string }) => {
         <Button size="sm" variant="premium" onClick={save} disabled={saving || !loaded}>{saving ? "Guardando…" : "Guardar"}</Button>
         <Button size="sm" variant="outline" onClick={test} disabled={testing}>{testing ? "Probando…" : "Probar conexión"}</Button>
       </div>
+      {testResult && (
+        <p className={cn("rounded-lg border px-3 py-2 text-xs",
+          testResult.ok ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-300" : "border-red-400/30 bg-red-400/10 text-red-300")}>
+          {testResult.ok ? "✓ " : "✗ "}{testResult.text}
+        </p>
+      )}
     </div>
   );
 };
