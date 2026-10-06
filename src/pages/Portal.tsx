@@ -24,7 +24,8 @@ import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/port
 import { DocumentViewer } from "@/components/portal/documents/DocumentViewer";
 import { SignAgreementGate } from "@/components/portal/SignAgreementGate";
 import { PipelinesSection } from "@/components/portal/pipelines/PipelinesSection";
-import { OutboundSection, OutboundKpisRow } from "@/components/portal/outbound/OutboundSection";
+import { OutboundSection } from "@/components/portal/outbound/OutboundSection";
+import { OutboundOverview } from "@/components/portal/outbound/OutboundOverview";
 import { getTemplate, type SectionId } from "@/data/portalTemplates";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent, GlowInput, MagneticButton } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
@@ -310,14 +311,25 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     <p className="text-sm text-foreground/60">{previewId ? (billTo.email || "Cliente") : session.user.email}</p>
                   </div>
                   <PendingPaymentNotice invoices={invoices} paymentUrl={paymentUrl} />
-                  <DeliveryDashboard
-                    data={dashboard}
-                    loading={dashLoading}
-                    onRetry={loadDashboard}
-                    milestones={milestones}
-                    completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
-                  />
-                  {template.id === "outbound_recruiting" && <OutboundKpisRow previewId={previewId} />}
+                  {template.id === "outbound_recruiting" ? (
+                    <OutboundOverview
+                      data={dashboard}
+                      loading={dashLoading}
+                      onRetry={loadDashboard}
+                      milestones={milestones}
+                      completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
+                      previewId={previewId}
+                      onNavigate={setSection}
+                    />
+                  ) : (
+                    <DeliveryDashboard
+                      data={dashboard}
+                      loading={dashLoading}
+                      onRetry={loadDashboard}
+                      milestones={milestones}
+                      completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
+                    />
+                  )}
                   <FunnelKpisRow slug={trackingSlug} />
                 </>
               )}

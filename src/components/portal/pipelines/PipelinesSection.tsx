@@ -36,7 +36,7 @@ const EmptyBlock = ({ text }: { text: string }) => (
 );
 
 /** Leads por canal: barras horizontales con el mismo lenguaje que el embudo del funnel. */
-const ChannelsCard = ({ channels }: { channels: NonNullable<PipelinesData["by_channel"]> }) => {
+export const ChannelsCard = ({ channels }: { channels: NonNullable<PipelinesData["by_channel"]> }) => {
   const max = Math.max(...channels.map((c) => c.count), 1);
   const total = channels.reduce((a, c) => a + c.count, 0);
   return (

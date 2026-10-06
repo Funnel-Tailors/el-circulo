@@ -32,7 +32,7 @@ const SkeletonBlock: React.FC<{ className?: string }> = ({ className }) => (
 );
 
 // ─── Loading state ────────────────────────────────────────────────────────────
-const DashboardSkeleton: React.FC = () => (
+export const DashboardSkeleton: React.FC = () => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -62,7 +62,7 @@ const DashboardSkeleton: React.FC = () => (
 );
 
 // ─── Not connected / empty state ──────────────────────────────────────────────
-const NotConnected: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
+export const NotConnected: React.FC<{ onRetry?: () => void }> = ({ onRetry }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.98 }}
     animate={{ opacity: 1, scale: 1 }}

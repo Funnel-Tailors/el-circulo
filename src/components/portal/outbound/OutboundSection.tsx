@@ -20,7 +20,7 @@ interface Metrics {
 }
 interface Campaign { id: string; name: string; status: number; status_label: string; metrics: Metrics; meetings: number; steps: Step[]; daily: Daily[] }
 interface Daily { date: string; sent: number; replies: number; opportunities: number }
-interface OutboundData { connected: boolean; error?: string; totals?: Metrics; campaigns?: Campaign[]; daily?: Daily[]; updated_at?: string }
+export interface OutboundData { connected: boolean; error?: string; totals?: Metrics; campaigns?: Campaign[]; daily?: Daily[]; updated_at?: string }
 
 // Mínimo de envíos para declarar una variante "ganadora" (evita ruido estadístico).
 const MIN_SENT_FOR_WINNER = 50;
@@ -81,7 +81,7 @@ const HealthLine = ({ m }: { m: Metrics }) => {
 };
 
 // ─── Serie diaria ────────────────────────────────────────────────────────────
-const DailyChart = ({ daily }: { daily: Daily[] }) => (
+export const DailyChart = ({ daily }: { daily: Daily[] }) => (
   <ResponsiveContainer width="100%" height={220}>
     <AreaChart data={daily} margin={{ top: 4, right: 4, left: -22, bottom: 0 }}>
       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
@@ -196,7 +196,7 @@ const SequenceTable = ({ steps }: { steps: Step[] }) => {
 };
 
 // ─── Hook de datos ───────────────────────────────────────────────────────────
-function useOutbound(previewId?: string) {
+export function useOutbound(previewId?: string) {
   const extraBody = useMemo(() => (previewId ? { onboarding_id: previewId } : {}), [previewId]);
   const [data, setData] = useState<OutboundData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -211,18 +211,6 @@ function useOutbound(previewId?: string) {
   useEffect(() => { load(); }, [load]);
   return { data, loading, refreshing, load };
 }
-
-// ─── Fila para el Resumen ────────────────────────────────────────────────────
-export const OutboundKpisRow = ({ previewId }: { previewId?: string }) => {
-  const { data, loading } = useOutbound(previewId);
-  if (loading || !data?.connected || data.error || !data.totals || !data.totals.sent) return null;
-  return (
-    <div>
-      <div className="mb-2 text-[10px] uppercase tracking-[0.2em] text-foreground/40">Cold email · histórico</div>
-      <KpiGrid m={data.totals} />
-    </div>
-  );
-};
 
 // ─── Sección Outbound ────────────────────────────────────────────────────────
 export const OutboundSection = ({ previewId }: { previewId?: string }) => {
