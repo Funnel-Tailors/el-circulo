@@ -210,13 +210,20 @@ comercial los entregables finales creados específicamente para él, entre ellos
   • Los anuncios y creatividades (textos, imágenes y vídeos).
   • El embudo, sus páginas y formularios.
   • La VSL y sus grabaciones.
-  • Los sistemas de optimización de negocio desarrollados a medida para el Cliente.
   • Los demás materiales producidos para el proyecto.
 
 El Círculo conserva la titularidad de sus métodos, plantillas, frameworks, herramientas y
 know-how previos o de uso general, sobre los que concede al Cliente una licencia de uso no
 exclusiva para el funcionamiento de su sistema. Hasta el pago íntegro, los entregables
 permanecen bajo licencia revocable.
+
+Los sistemas de optimización de negocio (por ejemplo, Ad Studio o generador de propuestas)
+quedan excluidos de la cesión anterior: El Círculo conserva la titularidad de su código fuente,
+arquitectura y lógica interna, y concede al Cliente una licencia de uso perpetua, irrevocable y
+sin coste adicional para utilizarlos en su negocio. La licencia no incluye la entrega del código
+fuente ni el derecho a copiarlo, modificarlo, sublicenciarlo o revenderlo. Los datos que el
+Cliente introduzca en ellos y todo lo que genere con ellos (anuncios, propuestas, textos y
+demás resultados) son propiedad del Cliente.
 
 6. CONFIDENCIALIDAD
 Ambas partes tratarán como confidencial la información no pública a la que accedan con motivo
@@ -331,9 +338,6 @@ Cliente desde el momento de su creación. Esto incluye, sin carácter limitativo
   • Las páginas, embudos y formularios.
   • Las automatizaciones, flujos, pipelines, calendarios y configuraciones del CRM.
   • Las plantillas de email y mensajería.
-  • Los sistemas de optimización de negocio desarrollados para el Cliente (por ejemplo, Ad
-    Studio o generador de propuestas), incluidos su código fuente, prompts, configuraciones,
-    bases de datos y documentación.
   • Las audiencias, los contactos y leads captados, y los datos y métricas de campañas.
   • Los dominios y cuentas que se abran a nombre o para uso del Cliente.
   • Cualquier otro material, documento o archivo, terminado o en borrador, producido para el
@@ -346,6 +350,14 @@ medida en que algún entregable incorpore métodos, plantillas o herramientas pr
 Círculo, este concede al Cliente una licencia perpetua, irrevocable, gratuita y no exclusiva
 para seguir usándolos como parte de dichos entregables, de modo que el Cliente pueda utilizar
 todo lo generado sin restricción.
+
+Los sistemas de optimización de negocio (por ejemplo, Ad Studio o generador de propuestas)
+quedan excluidos de la cesión anterior: El Círculo conserva la titularidad de su código fuente,
+arquitectura y lógica interna, y concede al Cliente una licencia de uso perpetua, irrevocable y
+sin coste adicional para utilizarlos en su negocio. La licencia no incluye la entrega del código
+fuente ni el derecho a copiarlo, modificarlo, sublicenciarlo o revenderlo. Los datos que el
+Cliente introduzca en ellos y todo lo que genere con ellos (anuncios, propuestas, textos y
+demás resultados) son propiedad del Cliente.
 
 6. ACCESO AL CRM
 El Círculo proporciona al Cliente acceso a su plataforma CRM durante doce (12) meses desde la
@@ -366,8 +378,9 @@ máximo de quince (15) días, El Círculo:
   • Transferirá a la cuenta propia del Cliente las automatizaciones, embudos, páginas,
     formularios, plantillas y configuraciones (por ejemplo, mediante snapshot o migración
     asistida).
-  • Entregará el código fuente, la documentación y los datos de los sistemas de optimización
-    de negocio, y asistirá en su traslado a la infraestructura del Cliente.
+  • Entregará la exportación de los datos y de todo lo generado con los sistemas de
+    optimización de negocio, cuyo uso conserva el Cliente conforme a la licencia de la
+    cláusula 5.
   • Entregará los archivos fuente de creatividades, vídeos y documentos.
   • Traspasará la titularidad o administración de las cuentas, dominios y activos creados
     para el Cliente.
