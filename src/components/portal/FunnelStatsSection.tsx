@@ -27,7 +27,7 @@ const stepLabel = (id: string) => STEP_LABELS[id] ?? id;
 
 // ─── Piezas pequeñas ─────────────────────────────────────────────────────────
 
-const MiniKpi = ({ icon: Icon, label, value, hint }: {
+export const MiniKpi = ({ icon: Icon, label, value, hint }: {
   icon: typeof Users; label: string; value: string | number; hint?: string;
 }) => (
   <EnergyCard variant="default" enableTilt={false} beamSpeed={4} beamIntensity={0.35} style={{ background: "rgba(0,0,0,0.5)" }}>
@@ -157,7 +157,7 @@ const VslBlock = ({ stats }: { stats: ProjectStats }) => {
   );
 };
 
-const chartTooltipStyle = {
+export const chartTooltipStyle = {
   background: "hsl(0 0% 8%)",
   border: "1px solid rgba(255,255,255,0.12)",
   borderRadius: 12,

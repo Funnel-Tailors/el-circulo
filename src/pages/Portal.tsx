@@ -6,10 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import {
-  Loader2, Download, LogOut, FileText, LayoutDashboard,
-  GraduationCap, CalendarClock, KeyRound, ScrollText, MonitorPlay, Megaphone, Headset,
-} from "lucide-react";
+import { Loader2, Download, LogOut, FileText } from "lucide-react";
 import { formatMoney } from "@/components/consultoria/OnboardingSteps";
 import { type Milestone } from "@/components/portal/ProjectRoadmap";
 import { DeliveryDashboard, type DashboardData } from "@/components/portal/dashboard";
@@ -26,6 +23,9 @@ import { AgreementDocument, type SignedAgreement } from "@/components/portal/doc
 import { InvoiceDocument, type InvoiceDoc, type BillTo } from "@/components/portal/documents/InvoiceDocument";
 import { DocumentViewer } from "@/components/portal/documents/DocumentViewer";
 import { SignAgreementGate } from "@/components/portal/SignAgreementGate";
+import { PipelinesSection } from "@/components/portal/pipelines/PipelinesSection";
+import { OutboundSection, OutboundKpisRow } from "@/components/portal/outbound/OutboundSection";
+import { getTemplate, type SectionId } from "@/data/portalTemplates";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent, GlowInput, MagneticButton } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
 
@@ -67,18 +67,7 @@ const PendingPaymentNotice = ({ invoices, paymentUrl }: { invoices: MyInvoice[];
   );
 };
 
-type SectionId = "resumen" | "vsl" | "anuncios" | "funnel" | "guiones" | "formacion" | "documentos" | "agenda" | "cuenta";
-const NAV: { id: SectionId; label: string; icon: any }[] = [
-  { id: "resumen", label: "Resumen", icon: LayoutDashboard },
-  { id: "vsl", label: "VSL", icon: ScrollText },
-  { id: "anuncios", label: "Anuncios", icon: Megaphone },
-  { id: "funnel", label: "Funnel", icon: MonitorPlay },
-  { id: "guiones", label: "Guiones", icon: Headset },
-  { id: "formacion", label: "Formación", icon: GraduationCap },
-  { id: "documentos", label: "Documentos", icon: FileText },
-  { id: "agenda", label: "Agenda", icon: CalendarClock },
-  { id: "cuenta", label: "Cuenta", icon: KeyRound },
-];
+// Las secciones del menú las define la plantilla del proyecto (src/data/portalTemplates.ts).
 
 // ───────────── Login ─────────────
 const PortalLogin = () => {
@@ -254,6 +243,9 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
     loadDashboard();
   }, []);
 
+  const template = getTemplate(project?.portal_config?.template);
+  const nav = template.nav;
+
   const dismissReveal = () => { localStorage.setItem("circulo_portal_revealed", "1"); setRevealed(true); };
   const name = (session.user.user_metadata as any)?.legal_name || session.user.email || "";
 
@@ -289,7 +281,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
         {/* Nav (sidebar en md+, tabs horizontales en móvil) */}
         <nav className="md:w-52 md:shrink-0 mb-6 md:mb-0 relative">
           <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible md:sticky md:top-24 pb-1">
-            {NAV.map((n) => {
+            {nav.map((n) => {
               const active = section === n.id;
               return (
                 <button key={n.id} onClick={() => setSection(n.id)}
@@ -325,6 +317,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                     milestones={milestones}
                     completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
                   />
+                  {template.id === "outbound_recruiting" && <OutboundKpisRow previewId={previewId} />}
                   <FunnelKpisRow slug={trackingSlug} />
                 </>
               )}
@@ -337,6 +330,8 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                   <FunnelSection pages={project?.funnel_pages} />
                 </>
               )}
+              {section === "pipelines" && <PipelinesSection previewId={previewId} />}
+              {section === "outbound" && <OutboundSection previewId={previewId} />}
               {section === "guiones" && <GuionesSection settingCopy={project?.setting_script} closingCopy={project?.closing_script} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}

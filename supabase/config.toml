@@ -95,3 +95,12 @@ verify_jwt = false
 
 [functions.submit-kickoff-prep]
 verify_jwt = false
+
+[functions.ghl-gateway]
+verify_jwt = true
+
+[functions.get-my-outbound]
+verify_jwt = true
+
+[functions.sync-instantly-to-ghl]
+verify_jwt = false

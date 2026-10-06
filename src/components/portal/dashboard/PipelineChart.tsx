@@ -106,7 +106,7 @@ const SvgFunnel: React.FC<FunnelProps> = ({ stages, currency, height }) => {
 
   if (!stages.length) return <EmptyPipeline />;
 
-  const maxCount = stages[0]?.count || 1;
+  const maxCount = Math.max(...stages.map((s) => s.count), 1);
   const rowH = Math.floor(height / stages.length);
   const svgH = rowH * stages.length;
   // Minimum width for the narrowest bar so it's always visible/clickable
@@ -216,17 +216,21 @@ const SvgFunnel: React.FC<FunnelProps> = ({ stages, currency, height }) => {
 
 // ─── PipelineChart ────────────────────────────────────────────────────────────
 interface PipelineChartProps {
-  opportunities: DashboardMetrics["opportunities"];
+  opportunities: Pick<DashboardMetrics["opportunities"], "by_stage" | "pipeline_value">;
   currency: string;
+  /** true = respeta el orden de etapas recibido (el de GHL) en vez de ordenar por volumen. */
+  ordered?: boolean;
+  eyebrow?: string;
+  title?: string;
 }
 
-export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, currency }) => {
+export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, currency, ordered = false, eyebrow = "Pipeline", title = "Por Etapa" }) => {
   const { by_stage, pipeline_value } = opportunities;
   const hasData = by_stage && by_stage.length > 0;
 
   // Sort descending by count to make it a true funnel, cap at 9
   const sorted = hasData
-    ? [...by_stage].sort((a, b) => b.count - a.count).slice(0, 9)
+    ? (ordered ? by_stage : [...by_stage].sort((a, b) => b.count - a.count)).slice(0, 9)
     : [];
 
   // Funnel height: compact for above-the-fold
@@ -249,10 +253,10 @@ export const PipelineChart: React.FC<PipelineChartProps> = ({ opportunities, cur
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35 mb-0.5">
-              Pipeline
+              {eyebrow}
             </p>
             <h3 className="font-display font-black text-sm text-white tracking-tight uppercase leading-none">
-              Por Etapa
+              {title}
             </h3>
           </div>
           <div className="w-7 h-7 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">

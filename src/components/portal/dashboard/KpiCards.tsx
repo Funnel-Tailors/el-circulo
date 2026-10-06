@@ -115,7 +115,7 @@ interface KpiCardProps {
   accentColor?: string;
 }
 
-const KpiCard: React.FC<KpiCardProps> = ({
+export const KpiCard: React.FC<KpiCardProps> = ({
   icon: Icon,
   label,
   value,
