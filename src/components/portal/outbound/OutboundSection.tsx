@@ -9,11 +9,11 @@ import { relativeTime } from "../dashboard/utils";
 import { invokePortalFn } from "../invokePortalFn";
 
 // ─── Tipos (respuesta de get-my-outbound) ────────────────────────────────────
-interface Variant {
+export interface Variant {
   variant: number; label: string; subject: string; body: string; disabled: boolean;
   sent: number; opened: number; replies: number; replies_auto: number; clicks: number; opportunities: number; meetings: number;
 }
-interface Step { step: number; delay: number; variants: Variant[] }
+export interface Step { step: number; delay: number; variants: Variant[] }
 interface Metrics {
   leads: number; contacted: number; sent: number; opened: number; replies: number; replies_auto: number;
   clicks: number; bounced: number; unsubscribed: number; opportunities: number; opportunity_value: number; meetings?: number;
@@ -25,9 +25,9 @@ export interface OutboundData { connected: boolean; error?: string; totals?: Met
 // Mínimo de envíos para declarar una variante "ganadora" (evita ruido estadístico).
 const MIN_SENT_FOR_WINNER = 50;
 
-const pct = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 10 : 0);
-const fmt = (n: number) => n.toLocaleString("es-ES");
-const replyTone = (r: number) => (r >= 3 ? "text-emerald-400/80" : r >= 1 ? "text-amber-400/80" : "text-red-400/80");
+export const pct = (a: number, b: number) => (b ? Math.round((a / b) * 1000) / 10 : 0);
+export const fmt = (n: number) => n.toLocaleString("es-ES");
+export const replyTone = (r: number) => (r >= 3 ? "text-emerald-400/80" : r >= 1 ? "text-amber-400/80" : "text-red-400/80");
 
 const Pills = ({ value, options, onChange }: { value: string; options: { id: string; label: string }[]; onChange: (v: string) => void }) => (
   <div className="flex flex-wrap items-center gap-1">
@@ -43,7 +43,7 @@ const Pills = ({ value, options, onChange }: { value: string; options: { id: str
   </div>
 );
 
-const EmptyBlock = ({ text }: { text: string }) => (
+export const EmptyBlock = ({ text }: { text: string }) => (
   <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] py-12 text-center">
     <Send className="h-7 w-7 text-foreground/20" />
     <p className="max-w-xs text-sm text-foreground/55">{text}</p>
@@ -129,7 +129,7 @@ const CampaignsTable = ({ campaigns, onPick }: { campaigns: Campaign[]; onPick: 
 );
 
 // ─── Secuencia: pasos × variantes con su efectividad ─────────────────────────
-const SequenceTable = ({ steps }: { steps: Step[] }) => {
+export const SequenceTable = ({ steps }: { steps: Step[] }) => {
   const [open, setOpen] = useState<string | null>(null);
   const maxReply = Math.max(...steps.flatMap((s) => s.variants.map((v) => pct(v.replies, v.sent))), 0.1);
   if (!steps.length) return <p className="text-xs text-foreground/45">Esta campaña aún no tiene pasos.</p>;

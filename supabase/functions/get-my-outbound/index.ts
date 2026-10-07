@@ -3,23 +3,12 @@
 // Caché 15 min en consulting_portal_cache. La API key nunca sale al navegador.
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders, json, serviceClient, resolveCaller, readCache, writeCache } from '../_shared/auth.ts'
-import { instantly, InstantlyError, getInstantlyConnection, listCampaigns, CAMPAIGN_STATUS } from '../_shared/instantly.ts'
+import { instantly, InstantlyError, getInstantlyConnection, listCampaigns, CAMPAIGN_STATUS, htmlToText, stepRowFinder } from '../_shared/instantly.ts'
 
 const CACHE_TTL = 15 * 60 * 1000
 const MAX_CAMPAIGNS = 15
 const n = (v: unknown) => Number(v) || 0
 const dayKey = (d: Date) => d.toISOString().slice(0, 10)
-
-// El cuerpo de los emails llega en HTML: se entrega como texto plano (sin riesgo de XSS).
-function htmlToText(html: string): string {
-  return String(html || '')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/(p|div|li)>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
-}
 
 function campaignMetrics(a: any) {
   return {
@@ -65,15 +54,13 @@ async function buildOutbound(key: string, campaignIds: string[]) {
     ])
 
     // Secuencia (pasos/variantes con su copy) + analítica por paso/variante.
-    // `variant` es 0-based según la API; `step` se detecta: si alguna fila trae step 0, es 0-based.
-    const stepRows: any[] = Array.isArray(steps) ? steps : []
-    const zeroBased = stepRows.some((r) => r.step !== null && r.step !== undefined && Number(r.step) === 0)
+    const findRow = stepRowFinder(Array.isArray(steps) ? steps : [])
     const seqSteps: any[] = detail?.sequences?.[0]?.steps ?? []
     const stepsOut = seqSteps.map((s: any, si: number) => ({
       step: si + 1,
       delay: n(s.delay),
       variants: (s.variants || []).map((v: any, vi: number) => {
-        const row = stepRows.find((r) => Number(r.step) === (zeroBased ? si : si + 1) && Number(r.variant) === vi)
+        const row = findRow(si, vi)
         return {
           variant: vi,
           label: String.fromCharCode(65 + vi),

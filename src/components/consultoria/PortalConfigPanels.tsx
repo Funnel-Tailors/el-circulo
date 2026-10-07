@@ -1,14 +1,14 @@
 // Paneles admin de la ficha de cliente: plantilla del portal (+ pipelines, canales y mapeo
-// Instantly → CRM) y conexión Instantly. Mismo patrón visual que GhlConnectionPanel.
+// Instantly → CRM), conexión Instantly e historial de secuencias. Mismo patrón visual que GhlConnectionPanel.
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { GlowInput } from "@/components/premium/GlowInput";
+import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 import { cn } from "@/lib/utils";
 import { invokePortalFn } from "@/components/portal/invokePortalFn";
 import { PORTAL_TEMPLATES, type PortalConfig, type PipelineConfig, type TemplateId } from "@/data/portalTemplates";
@@ -283,6 +283,141 @@ export const InstantlyConnectionPanel = ({ onboardingId }: { onboardingId: strin
       <p className="text-[11px] text-muted-foreground">
         Sincronización con el CRM cada 10 min{status.at ? ` · última: ${new Date(status.at).toLocaleString("es-ES")}` : ""}{status.text ? ` · ${status.text}` : ""}
       </p>
+    </div>
+  );
+};
+
+// ───────────── Historial de secuencias ─────────────
+type SeqVersion = { id: string; source: string; campaign_name: string; version: number; started_at: string; ended_at: string | null; hidden: boolean };
+type ManualStep = { subject: string; body: string; delay: string };
+const EMPTY_MANUAL = { name: "", start: "", end: "", sent: "", replies: "", opportunities: "", meetings: "" };
+
+export const SequencesPanel = ({ onboardingId }: { onboardingId: string }) => {
+  const [versions, setVersions] = useState<SeqVersion[]>([]);
+  const [capturing, setCapturing] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [manual, setManual] = useState(EMPTY_MANUAL);
+  const [steps, setSteps] = useState<ManualStep[]>([{ subject: "", body: "", delay: "0" }]);
+
+  const load = async () => {
+    const { data } = await supabase.from("consulting_sequence_versions" as any)
+      .select("id, source, campaign_name, version, started_at, ended_at, hidden")
+      .eq("onboarding_id", onboardingId).order("campaign_name").order("version", { ascending: false });
+    setVersions((data as any) ?? []);
+  };
+  useEffect(() => { setAdding(false); load(); }, [onboardingId]);
+
+  const capture = async () => {
+    setCapturing(true);
+    const { data, error } = await invokePortalFn("snapshot-instantly-sequences", { onboarding_id: onboardingId });
+    setCapturing(false);
+    if (error) return toast.error(error);
+    const r = (data as any)?.results?.[0];
+    if (!r) return toast.error("Este cliente no tiene Instantly conectado");
+    String(r.status).startsWith("Error") ? toast.error(r.status) : toast.success(`Captura: ${r.status}`);
+    load();
+  };
+
+  const toggleHidden = async (v: SeqVersion) => {
+    const { error } = await supabase.from("consulting_sequence_versions" as any).update({ hidden: !v.hidden } as any).eq("id", v.id);
+    if (error) return toast.error("No se pudo actualizar");
+    setVersions((vs) => vs.map((x) => (x.id === v.id ? { ...x, hidden: !x.hidden } : x)));
+  };
+
+  const remove = async (v: SeqVersion) => {
+    if (!confirm(`¿Borrar "${v.campaign_name}" v${v.version}?`)) return;
+    const { error } = await supabase.from("consulting_sequence_versions" as any).delete().eq("id", v.id);
+    if (error) return toast.error("No se pudo borrar");
+    setVersions((vs) => vs.filter((x) => x.id !== v.id));
+  };
+
+  const saveManual = async () => {
+    const name = manual.name.trim();
+    if (!name || !manual.start) return toast.error("Pon nombre y fecha de inicio");
+    setSaving(true);
+    const prev = versions.filter((v) => v.source === "manual" && v.campaign_name === name).reduce((m, v) => Math.max(m, v.version), 0);
+    const num = (x: string) => Number(x) || 0;
+    const { error } = await supabase.from("consulting_sequence_versions" as any).insert({
+      onboarding_id: onboardingId, source: "manual", campaign_name: name, version: prev + 1,
+      steps: steps.filter((s) => s.subject.trim() || s.body.trim()).map((s, i) => ({
+        step: i + 1, delay: num(s.delay), variants: [{ label: "A", subject: s.subject.trim(), body: s.body.trim(), disabled: false }],
+      })),
+      manual_metrics: { sent: num(manual.sent), replies: num(manual.replies), opportunities: num(manual.opportunities), meetings: num(manual.meetings) },
+      started_at: new Date(manual.start).toISOString(),
+      ended_at: manual.end ? new Date(manual.end).toISOString() : null,
+    } as any);
+    setSaving(false);
+    if (error) return toast.error("No se pudo guardar la secuencia");
+    toast.success(`Secuencia guardada como v${prev + 1}`);
+    setManual(EMPTY_MANUAL); setSteps([{ subject: "", body: "", delay: "0" }]); setAdding(false);
+    load();
+  };
+
+  const setStep = (i: number, patch: Partial<ManualStep>) => setSteps((ss) => ss.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+  const field = (k: keyof typeof EMPTY_MANUAL, label: string, type = "text") => (
+    <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">{label}</Label>
+      <GlowInput type={type} value={manual[k]} onChange={(e) => setManual((m) => ({ ...m, [k]: e.target.value }))} /></div>
+  );
+
+  return (
+    <div className={PANEL}>
+      <h3 className="font-semibold text-sm text-foreground">Historial de secuencias</h3>
+      <p className="text-xs text-muted-foreground">
+        Se captura cada hora desde Instantly: cada cambio de copy crea una versión nueva. También puedes cargar secuencias antiguas a mano.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" onClick={capture} disabled={capturing}>{capturing ? "Capturando…" : "Capturar ahora"}</Button>
+        <Button size="sm" variant="outline" onClick={() => setAdding((a) => !a)}><Plus className="mr-1 h-3.5 w-3.5" />Añadir secuencia manual</Button>
+      </div>
+
+      {adding && (
+        <div className="space-y-3 rounded-lg border border-white/10 p-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {field("name", "Nombre de la campaña")}
+            {field("start", "Inicio", "date")}
+            {field("end", "Fin (vacío = en uso)", "date")}
+          </div>
+          {steps.map((s, i) => (
+            <div key={i} className="space-y-2 rounded-lg border border-white/[0.06] p-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-foreground/70">Paso {i + 1}</span>
+                {i > 0 && <GlowInput className="h-7 w-24 text-xs" type="number" value={s.delay} onChange={(e) => setStep(i, { delay: e.target.value })} placeholder="días" />}
+                {steps.length > 1 && <button onClick={() => setSteps((ss) => ss.filter((_, j) => j !== i))} className="ml-auto text-foreground/40 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>}
+              </div>
+              <GlowInput value={s.subject} onChange={(e) => setStep(i, { subject: e.target.value })} placeholder="Asunto" />
+              <GlowTextarea value={s.body} onChange={(e) => setStep(i, { body: e.target.value })} className="min-h-[100px] text-xs" placeholder="Cuerpo del email" />
+            </div>
+          ))}
+          <Button size="sm" variant="outline" onClick={() => setSteps((ss) => [...ss, { subject: "", body: "", delay: "3" }])}><Plus className="mr-1 h-3.5 w-3.5" />Paso</Button>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {field("sent", "Enviados", "number")}
+            {field("replies", "Respuestas", "number")}
+            {field("opportunities", "Interesados", "number")}
+            {field("meetings", "Reuniones", "number")}
+          </div>
+          <Button size="sm" variant="premium" onClick={saveManual} disabled={saving}>{saving ? "Guardando…" : "Guardar secuencia"}</Button>
+        </div>
+      )}
+
+      {versions.length > 0 ? (
+        <div className="divide-y divide-white/[0.05] text-sm">
+          {versions.map((v) => (
+            <div key={v.id} className={cn("flex items-center gap-2 py-1.5", v.hidden && "opacity-45")}>
+              <span className="min-w-0 flex-1 truncate text-foreground/85">{v.campaign_name} <span className="text-foreground/50">v{v.version}</span></span>
+              <span className="text-[11px] text-muted-foreground">
+                {v.source === "manual" ? "manual · " : ""}{new Date(v.started_at).toLocaleDateString("es-ES")} → {v.ended_at ? new Date(v.ended_at).toLocaleDateString("es-ES") : "hoy"}
+              </span>
+              <button onClick={() => toggleHidden(v)} title={v.hidden ? "Mostrar al cliente" : "Ocultar al cliente"} className="text-foreground/40 hover:text-foreground">
+                {v.hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              </button>
+              <button onClick={() => remove(v)} title="Borrar" className="text-foreground/40 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[11px] text-muted-foreground">Sin versiones todavía.</p>
+      )}
     </div>
   );
 };

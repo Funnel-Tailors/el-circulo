@@ -46,3 +46,21 @@ export async function listCampaigns(key: string): Promise<{ id: string; name: st
 export const CAMPAIGN_STATUS: Record<number, string> = {
   0: 'Borrador', 1: 'Activa', 2: 'Pausada', 3: 'Completada', 4: 'Subsecuencias', [-1]: 'Cuentas con problemas', [-2]: 'Protección de rebotes', [-99]: 'Suspendida',
 }
+
+// El cuerpo de los emails llega en HTML: se entrega como texto plano (sin riesgo de XSS).
+export function htmlToText(html: string): string {
+  return String(html || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|li)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+// Fila de /campaigns/analytics/steps para (paso, variante), ambos 0-based en nuestro índice.
+// `variant` es 0-based según la API; `step` se detecta: si alguna fila trae step 0, es 0-based.
+export function stepRowFinder(rows: any[]) {
+  const zeroBased = rows.some((r) => r.step !== null && r.step !== undefined && Number(r.step) === 0)
+  return (si: number, vi: number) => rows.find((r) => Number(r.step) === (zeroBased ? si : si + 1) && Number(r.variant) === vi)
+}

@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 import { AGREEMENT_VERSION, ASSIGNABLE_AGREEMENTS } from "@/data/consultoriaAgreement";
-import { PortalConfigPanel, InstantlyConnectionPanel } from "./PortalConfigPanels";
+import { PortalConfigPanel, InstantlyConnectionPanel, SequencesPanel } from "./PortalConfigPanels";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -924,6 +924,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <GhlConnectionPanel onboardingId={client.id} />
           <PortalConfigPanel projectId={client.project_id} onboardingId={client.id} />
           <InstantlyConnectionPanel onboardingId={client.id} />
+          <SequencesPanel onboardingId={client.id} />
           <VslPanel projectId={client.project_id} />
           <AdsPanel projectId={client.project_id} />
           <FunnelPanel projectId={client.project_id} />

@@ -104,3 +104,9 @@ verify_jwt = true
 
 [functions.sync-instantly-to-ghl]
 verify_jwt = false
+
+[functions.get-my-sequences]
+verify_jwt = true
+
+[functions.snapshot-instantly-sequences]
+verify_jwt = false
