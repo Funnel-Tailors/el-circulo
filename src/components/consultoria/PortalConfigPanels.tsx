@@ -2,7 +2,7 @@
 // Instantly → CRM), conexión Instantly e historial de secuencias. Mismo patrón visual que GhlConnectionPanel.
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Eye, EyeOff, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 import { cn } from "@/lib/utils";
 import { invokePortalFn } from "@/components/portal/invokePortalFn";
+import { parseSequenceDoc, type ParsedStep } from "@/lib/parseSequenceDoc";
 import { PORTAL_TEMPLATES, type PortalConfig, type PipelineConfig, type TemplateId } from "@/data/portalTemplates";
 
 const PANEL = "rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3";
@@ -296,6 +297,7 @@ export const SequencesPanel = ({ onboardingId }: { onboardingId: string }) => {
   const [versions, setVersions] = useState<SeqVersion[]>([]);
   const [capturing, setCapturing] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [pushing, setPushing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [manual, setManual] = useState(EMPTY_MANUAL);
   const [steps, setSteps] = useState<ManualStep[]>([{ subject: "", body: "", delay: "0" }]);
@@ -306,7 +308,7 @@ export const SequencesPanel = ({ onboardingId }: { onboardingId: string }) => {
       .eq("onboarding_id", onboardingId).order("campaign_name").order("version", { ascending: false });
     setVersions((data as any) ?? []);
   };
-  useEffect(() => { setAdding(false); load(); }, [onboardingId]);
+  useEffect(() => { setAdding(false); setPushing(false); load(); }, [onboardingId]);
 
   const capture = async () => {
     setCapturing(true);
@@ -369,7 +371,10 @@ export const SequencesPanel = ({ onboardingId }: { onboardingId: string }) => {
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant="outline" onClick={capture} disabled={capturing}>{capturing ? "Capturando…" : "Capturar ahora"}</Button>
         <Button size="sm" variant="outline" onClick={() => setAdding((a) => !a)}><Plus className="mr-1 h-3.5 w-3.5" />Añadir secuencia manual</Button>
+        <Button size="sm" variant="outline" onClick={() => setPushing((p) => !p)}><Send className="mr-1 h-3.5 w-3.5" />Subir a Instantly</Button>
       </div>
+
+      {pushing && <PushToInstantlyForm onboardingId={onboardingId} onDone={() => setPushing(false)} />}
 
       {adding && (
         <div className="space-y-3 rounded-lg border border-white/10 p-3">
@@ -417,6 +422,106 @@ export const SequencesPanel = ({ onboardingId }: { onboardingId: string }) => {
         </div>
       ) : (
         <p className="text-[11px] text-muted-foreground">Sin versiones todavía.</p>
+      )}
+    </div>
+  );
+};
+
+// ───────────── Subir secuencia a Instantly (borrador) ─────────────
+const WEEK = [{ d: 1, l: "L" }, { d: 2, l: "M" }, { d: 3, l: "X" }, { d: 4, l: "J" }, { d: 5, l: "V" }, { d: 6, l: "S" }, { d: 0, l: "D" }];
+
+const PushToInstantlyForm = ({ onboardingId, onDone }: { onboardingId: string; onDone: () => void }) => {
+  const [name, setName] = useState("");
+  const [ctaUrl, setCtaUrl] = useState("");
+  const [doc, setDoc] = useState("");
+  const [steps, setSteps] = useState<ParsedStep[]>([]);
+  const [tz, setTz] = useState("Asia/Dubai");
+  const [from, setFrom] = useState("09:00");
+  const [to, setTo] = useState("17:00");
+  const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [sending, setSending] = useState(false);
+
+  const read = () => {
+    const parsed = parseSequenceDoc(doc);
+    if (!parsed.length) return toast.error("No encuentro emails: cada uno necesita un 'Subject:' o una cabecera 'Email N: día D'");
+    setSteps(parsed);
+    toast.success(`${parsed.length} email${parsed.length === 1 ? "" : "s"} leído${parsed.length === 1 ? "" : "s"}`);
+  };
+
+  const setStep = (i: number, patch: Partial<ParsedStep>) => setSteps((ss) => ss.map((s, j) => (j === i ? { ...s, ...patch } : s)));
+
+  const push = async () => {
+    if (!name.trim()) return toast.error("Pon nombre a la campaña");
+    if (!steps.length) return toast.error("Lee el documento primero");
+    if (!steps[0].subject.trim()) return toast.error("El primer email necesita asunto");
+    if (!days.length) return toast.error("Elige al menos un día de envío");
+    setSending(true);
+    const { data, error } = await invokePortalFn("push-instantly-sequence", {
+      onboarding_id: onboardingId, name: name.trim(), cta_url: ctaUrl.trim(),
+      steps: steps.map((s) => ({ subject: s.threaded ? "" : s.subject, body: s.body, day: s.day })),
+      schedule: { timezone: tz.trim(), from, to, days },
+    });
+    setSending(false);
+    if (error) return toast.error(error);
+    toast.success(`"${(data as any)?.name}" creada en Instantly como borrador. Falta asignar cuentas y leads y lanzarla.`);
+    onDone();
+  };
+
+  return (
+    <div className="space-y-3 rounded-lg border border-white/10 p-3">
+      <p className="text-[11px] text-muted-foreground">
+        Crea la campaña en el Instantly del cliente en borrador (parar al responder, sin tracking). Aparece en el historial cuando se lanza.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Nombre de la campaña</Label>
+          <GlowInput value={name} onChange={(e) => setName(e.target.value)} /></div>
+        <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Link del CTA ([Book a call])</Label>
+          <GlowInput value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} placeholder="https://…" /></div>
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-foreground/80 text-xs">Pega el documento</Label>
+        <GlowTextarea value={doc} onChange={(e) => setDoc(e.target.value)} className="min-h-[120px] text-xs"
+          placeholder={"Subject: …\nHi {{first_name}}, …\n\nEmail 2: día 3 (en hilo)\n…"} />
+        <Button size="sm" variant="outline" onClick={read} disabled={!doc.trim()}>Leer</Button>
+      </div>
+
+      {steps.map((s, i) => (
+        <div key={i} className="space-y-2 rounded-lg border border-white/[0.06] p-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-foreground/70">Email {i + 1}</span>
+            <span className="text-[11px] text-muted-foreground">día</span>
+            <GlowInput className="h-7 w-16 text-xs" type="number" value={String(s.day)} disabled={i === 0}
+              onChange={(e) => setStep(i, { day: Number(e.target.value) || 0 })} />
+            {i > 0 && (
+              <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Checkbox checked={s.threaded} onCheckedChange={(v) => setStep(i, { threaded: !!v })} />en hilo
+              </label>
+            )}
+            <button onClick={() => setSteps((ss) => ss.filter((_, j) => j !== i))} className="ml-auto text-foreground/40 hover:text-red-400"><Trash2 className="h-3.5 w-3.5" /></button>
+          </div>
+          {!s.threaded && <GlowInput value={s.subject} onChange={(e) => setStep(i, { subject: e.target.value })} placeholder="Asunto" />}
+          <GlowTextarea value={s.body} onChange={(e) => setStep(i, { body: e.target.value })} className="min-h-[120px] text-xs" />
+        </div>
+      ))}
+
+      {steps.length > 0 && (
+        <>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Zona horaria</Label>
+              <GlowInput className="h-8 w-36 text-xs" value={tz} onChange={(e) => setTz(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Desde</Label>
+              <GlowInput className="h-8 w-24 text-xs" type="time" value={from} onChange={(e) => setFrom(e.target.value)} /></div>
+            <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Hasta</Label>
+              <GlowInput className="h-8 w-24 text-xs" type="time" value={to} onChange={(e) => setTo(e.target.value)} /></div>
+            <div className="flex gap-1">
+              {WEEK.map(({ d, l }) => (
+                <button key={d} onClick={() => setDays((ds) => (ds.includes(d) ? ds.filter((x) => x !== d) : [...ds, d]))}
+                  className={cn("h-8 w-8 rounded-md border text-xs", days.includes(d) ? "border-white/40 bg-white/10 text-foreground" : "border-white/10 text-foreground/40")}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <Button size="sm" variant="premium" onClick={push} disabled={sending}>{sending ? "Creando…" : "Crear borrador en Instantly"}</Button>
+        </>
       )}
     </div>
   );
