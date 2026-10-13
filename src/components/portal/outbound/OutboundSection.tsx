@@ -133,9 +133,17 @@ export const SequenceTable = ({ steps }: { steps: Step[] }) => {
   const [open, setOpen] = useState<string | null>(null);
   const maxReply = Math.max(...steps.flatMap((s) => s.variants.map((v) => pct(v.replies, v.sent))), 0.1);
   if (!steps.length) return <p className="text-xs text-foreground/45">Esta campaña aún no tiene pasos.</p>;
+  // Sin asunto = Instantly lo manda como respuesta al anterior: llega como "Re: <asunto anterior>".
+  const threadSubject = (si: number, vi: number) => {
+    for (let i = si - 1; i >= 0; i--) {
+      const prev = steps[i].variants[vi]?.subject || steps[i].variants[0]?.subject;
+      if (prev) return `Re: ${prev}`;
+    }
+    return "";
+  };
   return (
     <div className="space-y-4">
-      {steps.map((s) => {
+      {steps.map((s, si) => {
         const eligible = s.variants.filter((v) => !v.disabled && v.sent >= MIN_SENT_FOR_WINNER);
         const winner = eligible.length >= 2
           ? eligible.reduce((best, v) => (pct(v.replies, v.sent) > pct(best.replies, best.sent) ? v : best))
@@ -158,7 +166,8 @@ export const SequenceTable = ({ steps }: { steps: Step[] }) => {
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/[0.05] font-display text-[10px] font-black text-foreground/70">{v.label}</span>
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className="truncate text-sm text-foreground/85">{v.subject || (s.step > 1 ? "(mismo hilo)" : "(sin asunto)")}</span>
+                            <span className="truncate text-sm text-foreground/85">{v.subject || threadSubject(si, v.variant) || "(sin asunto)"}</span>
+                            {!v.subject && si > 0 && <span className="text-[10px] uppercase tracking-wide text-foreground/40">mismo hilo</span>}
                             {winner?.variant === v.variant && (
                               <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">Ganadora</span>
                             )}
