@@ -167,7 +167,6 @@ export const SequenceTable = ({ steps }: { steps: Step[] }) => {
                         <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="truncate text-sm text-foreground/85">{v.subject || threadSubject(si, v.variant) || "(sin asunto)"}</span>
-                            {!v.subject && si > 0 && <span className="text-[10px] uppercase tracking-wide text-foreground/40">mismo hilo</span>}
                             {winner?.variant === v.variant && (
                               <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">Ganadora</span>
                             )}
