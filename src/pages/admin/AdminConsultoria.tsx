@@ -366,7 +366,7 @@ function ConfigTab() {
 
       <div className="space-y-3 glass-card-dark glass-card-dark-static p-5 rounded-xl border border-white/10">
         <h3 className="font-semibold text-sm text-foreground">Calendario de soporte (portal)</h3>
-        <div className="space-y-1.5"><Label className="text-foreground/80">ID del calendario GHL para llamadas de soporte</Label><GlowInput value={supportCal} onChange={(e) => setSupportCal(e.target.value)} placeholder="Calendar ID de GHL" /></div>
+        <div className="space-y-1.5"><Label className="text-foreground/80">ID del calendario GHL para llamadas de soporte</Label><GlowInput value={supportCal} onChange={(e) => setSupportCal(e.target.value)} placeholder="Calendar ID de GHL o URL del widget" /></div>
         <p className="text-xs text-muted-foreground">Si lo dejas vacío, la sección "Agenda una llamada" del portal se oculta.</p>
       </div>
 

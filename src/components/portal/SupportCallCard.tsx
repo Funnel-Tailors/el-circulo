@@ -11,7 +11,9 @@ export const SupportCallCard = ({ email, name }: { email?: string; name?: string
   useEffect(() => {
     (async () => {
       const { data } = await supabase.from("app_settings").select("value").eq("key", "consulting_support_calendar_id").maybeSingle();
-      const id = typeof data?.value === "string" ? data.value : "";
+      // Admite el ID o la URL completa del widget (…/widget/booking/<id>).
+      const raw = typeof data?.value === "string" ? data.value.trim() : "";
+      const id = raw.replace(/[?#].*$/, "").replace(/\/+$/, "").split("/").pop() ?? "";
       setCalendarId(id || null);
       setReady(true);
     })();
