@@ -1,5 +1,5 @@
 // get-my-project — estado del proyecto del cliente autenticado (verify_jwt=true).
-// Devuelve hitos ordenados + entregables visibles (con signed URLs para ficheros).
+// Devuelve hitos ordenados + entregables visibles (con signed URLs para ficheros) + tareas.
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.75.1'
 
@@ -50,7 +50,7 @@ serve(async (req) => {
 
     const { data: project } = await supabase
       .from('consulting_projects')
-      .select('id, current_phase, status, start_date, completion_pct, vsl_title, vsl_copy, funnel_pages, ads, setting_script, closing_script, portal_config')
+      .select('id, current_phase, status, start_date, completion_pct, vsl_title, vsl_copy, funnel_pages, ads, setting_script, closing_script, portal_config, current_focus, focus_updated_at')
       .in('onboarding_id', obIds)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -59,7 +59,7 @@ serve(async (req) => {
 
     const { data: milestones } = await supabase
       .from('consulting_milestones')
-      .select('id, key, phase, phase_label, title, sort_order, status, optional, target_date, completed_at, note')
+      .select('id, key, phase, phase_label, title, sort_order, status, optional, target_date, completed_at, note, description')
       .eq('project_id', project.id)
       .order('sort_order', { ascending: true })
 
@@ -84,12 +84,25 @@ serve(async (req) => {
       delete d.storage_path
     }
 
+    let tasks: any[] = []
+    if (msIds.length) {
+      const { data: ts } = await supabase
+        .from('consulting_milestone_tasks')
+        .select('id, milestone_id, title, owner, status, done_at, due_date, sort_order')
+        .in('milestone_id', msIds)
+        .order('sort_order', { ascending: true })
+      tasks = ts ?? []
+    }
+
     const byMilestone: Record<string, any[]> = {}
     for (const d of deliverables) (byMilestone[d.milestone_id] ??= []).push(d)
+    const tasksByMilestone: Record<string, any[]> = {}
+    for (const t of tasks) (tasksByMilestone[t.milestone_id] ??= []).push(t)
 
     const enriched = (milestones ?? []).map((m: any) => ({
       ...m,
       deliverables: byMilestone[m.id] ?? [],
+      tasks: tasksByMilestone[m.id] ?? [],
     }))
 
     return json({ project, milestones: enriched })

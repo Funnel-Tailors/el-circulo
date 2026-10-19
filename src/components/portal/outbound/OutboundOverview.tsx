@@ -61,12 +61,14 @@ const ColdEmailCard = ({ daily, connected, onOpen }: { daily: any[]; connected: 
   </motion.div>
 );
 
-export const OutboundOverview = ({ data, loading, onRetry, milestones, completionPct, previewId, onNavigate }: {
+export const OutboundOverview = ({ data, loading, onRetry, milestones, completionPct, focus, focusUpdatedAt, previewId, onNavigate }: {
   data: DashboardData | null;
   loading: boolean;
   onRetry: () => void;
   milestones?: Milestone[];
   completionPct?: number;
+  focus?: string | null;
+  focusUpdatedAt?: string | null;
   previewId?: string;
   onNavigate: (section: "outbound" | "pipelines") => void;
 }) => {
@@ -74,7 +76,11 @@ export const OutboundOverview = ({ data, loading, onRetry, milestones, completio
   const pipelines = usePipelinesSummary(previewId);
 
   if (loading && !data) return <DashboardSkeleton />;
-  if (!data?.connected || !data.metrics) return <NotConnected onRetry={onRetry} />;
+  const timeline = milestones && milestones.length > 0 && (
+    <ProjectTimeline milestones={milestones} pctOverride={completionPct} expandable focus={focus} focusUpdatedAt={focusUpdatedAt} />
+  );
+  // El timeline no depende de GHL: se enseña aunque el CRM no esté conectado.
+  if (!data?.connected || !data.metrics) return <div className="space-y-3">{timeline}<NotConnected onRetry={onRetry} /></div>;
 
   const metrics = data.metrics;
   const ob = outbound.data;
@@ -100,7 +106,7 @@ export const OutboundOverview = ({ data, loading, onRetry, milestones, completio
         <p className="text-[10px] text-white/28">Cold email · LinkedIn · CRM conectado</p>
       </motion.div>
 
-      {milestones && milestones.length > 0 && <ProjectTimeline milestones={milestones} pctOverride={completionPct} />}
+      {timeline}
 
       {/* KPIs de captación */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">

@@ -5,10 +5,12 @@
 // ============================================================================
 
 import React, { useEffect, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
 import type { Milestone } from "@/components/portal/ProjectRoadmap";
 import { SpotlightCard } from "@/components/premium/SpotlightCard";
 import { BorderBeam } from "./BorderBeam";
+import { TimelineDetails, fmtDate } from "./TimelineDetails";
 
 const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
 
@@ -36,6 +38,7 @@ interface MilestoneNodeProps {
   isDone: boolean;
   isBlocked: boolean;
   totalCount: number;
+  showDate?: boolean;
 }
 
 const MilestoneNode: React.FC<MilestoneNodeProps> = ({
@@ -44,6 +47,7 @@ const MilestoneNode: React.FC<MilestoneNodeProps> = ({
   isPast,
   isDone,
   isBlocked,
+  showDate,
 }) => {
   const prefersReduced = useReducedMotion();
   const [tooltip, setTooltip] = useState(false);
@@ -73,6 +77,11 @@ const MilestoneNode: React.FC<MilestoneNodeProps> = ({
           <span className="text-[10px] text-white/85 font-medium tracking-wide">
             {milestone.title}
           </span>
+          {showDate && (milestone.completed_at ?? milestone.target_date) && (
+            <span className="ml-2 text-[10px] text-white/40">
+              {fmtDate((milestone.status === "done" && milestone.completed_at) || milestone.target_date || milestone.completed_at!)}
+            </span>
+          )}
         </motion.div>
       )}
 
@@ -167,14 +176,23 @@ interface ProjectTimelineProps {
   milestones: Milestone[];
   /** % de avance fijado desde admin; si viene, manda sobre el calculado por hitos. */
   pctOverride?: number;
+  /** Desplegable con lo hecho / ahora / próximos hitos (plantilla outbound). */
+  expandable?: boolean;
+  focus?: string | null;
+  focusUpdatedAt?: string | null;
 }
 
-export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pctOverride }) => {
+export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pctOverride, expandable, focus, focusUpdatedAt }) => {
   const prefersReduced = useReducedMotion();
+  const [open, setOpen] = useState(false);
 
   const total = milestones.length;
   const done = milestones.filter((m) => m.status === "done").length;
-  const computedPct = total ? Math.round((done / total) * 100) : 0;
+  // Con checklist cargado (desplegable), el avance se mide en tareas; si no, en hitos.
+  const tasks = expandable ? milestones.flatMap((m) => m.tasks ?? []) : [];
+  const computedPct = tasks.length
+    ? Math.round((tasks.filter((t) => t.status === "done").length / tasks.length) * 100)
+    : total ? Math.round((done / total) * 100) : 0;
   const pct = pctOverride ?? computedPct;
   // Nodo "actual" (pulsante): el hito en curso si lo hay; si no, el nodo que cae en
   // el % de progreso (así el pulso acompaña al beam aunque no se hayan marcado hitos).
@@ -227,6 +245,15 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
             >
               {pct}%
             </span>
+            {expandable && (
+              <button
+                onClick={() => setOpen((v) => !v)}
+                className="ml-2 inline-flex items-center gap-1 rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-white/55 hover:text-white/85 hover:border-white/20 transition-colors"
+              >
+                {open ? "Ocultar" : "Ver detalle"}
+                <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -290,6 +317,7 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
                     isDone={isDone}
                     isBlocked={isBlocked}
                     totalCount={total}
+                    showDate={expandable}
                   />
                 </div>
               );
@@ -355,6 +383,23 @@ export const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ milestones, pc
             );
           })}
         </div>
+
+        {expandable && (
+          <AnimatePresence initial={false}>
+            {open && (
+              <motion.div
+                key="details"
+                initial={prefersReduced ? false : { height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={prefersReduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                transition={{ duration: 0.35, ease: EASE_OUT_EXPO }}
+                className="overflow-hidden"
+              >
+                <TimelineDetails milestones={milestones} focus={focus} focusUpdatedAt={focusUpdatedAt} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        )}
       </SpotlightCard>
       <BorderBeam duration={4} />
     </motion.div>

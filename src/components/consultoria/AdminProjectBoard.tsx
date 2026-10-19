@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Upload, Eye, Download } from "lucide-react";
+import { Loader2, Plus, Trash2, Upload, Eye, Download, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@
 import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 import { AGREEMENT_VERSION, ASSIGNABLE_AGREEMENTS } from "@/data/consultoriaAgreement";
 import { PortalConfigPanel, InstantlyConnectionPanel, SequencesPanel } from "./PortalConfigPanels";
+import { FocusPanel, TaskManager, AddMilestone, LoadOutboundRoadmap } from "./ProjectMapAdmin";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -147,7 +148,7 @@ const DeliverableManager = ({ milestoneId, projectId }: { milestoneId: string; p
   );
 };
 
-const MilestoneRow = ({ m, client, onChanged }: { m: any; client: ClientRow; onChanged: () => void }) => {
+const MilestoneRow = ({ m, client, onChanged, onMove }: { m: any; client: ClientRow; onChanged: () => void; onMove?: (dir: -1 | 1) => void }) => {
   const [saving, setSaving] = useState(false);
 
   const update = async (patch: Record<string, any>, fireTag = false) => {
@@ -169,11 +170,23 @@ const MilestoneRow = ({ m, client, onChanged }: { m: any; client: ClientRow; onC
     update({ status, completed_at: status === "done" ? new Date().toISOString() : null }, true);
   };
 
+  const remove = async () => {
+    if (!window.confirm(`¿Borrar el hito "${m.title}" con sus tareas y entregables?`)) return;
+    const { error } = await supabase.from("consulting_milestones").delete().eq("id", m.id);
+    if (error) return toast.error("No se pudo borrar");
+    toast.success("Hito borrado");
+    onChanged();
+  };
+
   return (
     <div className="rounded-xl border border-white/10 p-3 glass-card-dark glass-card-dark-static">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground w-24 shrink-0">{m.phase_label}</span>
-        <span className="font-medium text-sm flex-1 min-w-[140px] text-foreground">{m.title}{m.optional ? " (opcional)" : ""}</span>
+        <Input
+          className="h-8 flex-1 min-w-[160px] text-sm font-medium" defaultValue={m.title}
+          onBlur={(e) => e.target.value.trim() && e.target.value !== m.title && update({ title: e.target.value.trim() })}
+        />
+        {m.optional && <span className="text-[10px] text-muted-foreground">(opcional)</span>}
         <Select value={m.status} onValueChange={(v) => onStatus(v)}>
           <SelectTrigger className="h-8 w-32 text-xs bg-black/40 border-white/20 rounded-xl">
             <SelectValue />
@@ -190,12 +203,24 @@ const MilestoneRow = ({ m, client, onChanged }: { m: any; client: ClientRow; onC
           defaultValue={m.target_date ?? ""}
           onBlur={(e) => e.target.value !== (m.target_date ?? "") && update({ target_date: e.target.value || null })}
         />
+        {onMove && (
+          <>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="Subir" onClick={() => onMove(-1)}><ArrowUp className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" title="Bajar" onClick={() => onMove(1)}><ArrowDown className="h-3.5 w-3.5" /></Button>
+          </>
+        )}
+        <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive hover:text-destructive" title="Borrar hito" onClick={remove}><Trash2 className="h-3.5 w-3.5" /></Button>
         {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
       </div>
+      <Input
+        className="h-8 text-xs mt-2" placeholder="Descripción para el cliente: qué es este hito y por qué importa (opcional)" defaultValue={m.description ?? ""}
+        onBlur={(e) => e.target.value !== (m.description ?? "") && update({ description: e.target.value || null })}
+      />
       <Input
         className="h-8 text-xs mt-2" placeholder="Nota para el cliente (opcional)" defaultValue={m.note ?? ""}
         onBlur={(e) => e.target.value !== (m.note ?? "") && update({ note: e.target.value || null })}
       />
+      <TaskManager milestoneId={m.id} />
       <DeliverableManager milestoneId={m.id} projectId={client.project_id} />
     </div>
   );
@@ -868,11 +893,31 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
     enabled: !!client.project_id,
     queryFn: async () => {
       const { data } = await supabase.from("consulting_milestones")
-        .select("id, key, phase, phase_label, title, sort_order, status, optional, target_date, completed_at, note")
+        .select("id, key, phase, phase_label, title, sort_order, status, optional, target_date, completed_at, note, description" as any)
         .eq("project_id", client.project_id).order("sort_order", { ascending: true });
-      return data ?? [];
+      return (data ?? []) as any[];
     },
   });
+
+  const { data: template } = useQuery({
+    queryKey: ["admin-project-template", client.project_id],
+    enabled: !!client.project_id,
+    queryFn: async () => {
+      const { data } = await supabase.from("consulting_projects").select("portal_config" as any).eq("id", client.project_id).maybeSingle();
+      return ((data as any)?.portal_config?.template as string | undefined) ?? "vsl_call_funnel";
+    },
+  });
+
+  // Intercambia un hito con su vecino; reindexa para tolerar sort_order repetidos.
+  const moveMilestone = async (i: number, dir: -1 | 1) => {
+    const list = milestones ?? [];
+    if (!list[i + dir]) return;
+    await Promise.all(list.map((m: any, k: number) => {
+      const order = k === i ? i + dir : k === i + dir ? i : k;
+      return m.sort_order === order ? null : supabase.from("consulting_milestones").update({ sort_order: order }).eq("id", m.id);
+    }));
+    refetchMs();
+  };
 
   const downloadFrom = async (bucket: string, path?: string | null) => {
     if (!path) return toast.error("Sin archivo");
@@ -930,15 +975,22 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <FunnelPanel projectId={client.project_id} />
           <GuionesPanel projectId={client.project_id} />
           <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
-            <div>
-              <h3 className="font-semibold text-sm text-foreground">Ruta de ascensión · hitos del proyecto</h3>
-              <p className="text-xs text-muted-foreground">Marca cada hito (Pendiente / En curso / Hecho). Mueve el timeline del cliente: el "En curso" pulsa y los "Hechos" rellenan la línea. Aquí añades entregables por hito.</p>
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h3 className="font-semibold text-sm text-foreground">Mapa del proyecto · hitos y tareas</h3>
+                <p className="text-xs text-muted-foreground">Foco actual, hitos con fecha y checklist de tareas. Mueven el timeline "El Ascenso" del Resumen; en la plantilla outbound además se despliega con lo hecho, el foco actual y los próximos hitos. Las tareas de responsable "Cliente" salen como "Por vuestra parte".</p>
+              </div>
+              {template === "outbound_recruiting" && (
+                <LoadOutboundRoadmap projectId={client.project_id} milestones={milestones ?? []} onLoaded={() => refetchMs()} />
+              )}
             </div>
+            <FocusPanel projectId={client.project_id} />
             <div className="space-y-2">
-              {(milestones ?? []).map((m: any) => (
-                <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetchMs()} />
+              {(milestones ?? []).map((m: any, i: number) => (
+                <MilestoneRow key={m.id} m={m} client={client} onChanged={() => refetchMs()} onMove={(dir) => moveMilestone(i, dir)} />
               ))}
             </div>
+            <AddMilestone projectId={client.project_id} milestones={milestones ?? []} onAdded={() => refetchMs()} />
           </div>
         </>
       ) : <p className="text-sm text-muted-foreground">Este cliente no tiene proyecto.</p>}

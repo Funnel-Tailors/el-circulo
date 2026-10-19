@@ -319,6 +319,8 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
                       onRetry={loadDashboard}
                       milestones={milestones}
                       completionPct={project?.completion_pct > 0 ? project.completion_pct : undefined}
+                      focus={project?.current_focus}
+                      focusUpdatedAt={project?.focus_updated_at}
                       previewId={previewId}
                       onNavigate={setSection}
                     />

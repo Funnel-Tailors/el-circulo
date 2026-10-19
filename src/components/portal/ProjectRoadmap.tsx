@@ -27,7 +27,19 @@ export interface Milestone {
   target_date: string | null;
   completed_at: string | null;
   note?: string | null;
+  description?: string | null;
   deliverables: Deliverable[];
+  tasks?: MilestoneTask[];
+}
+
+export interface MilestoneTask {
+  id: string;
+  title: string;
+  owner: "circulo" | "cliente";
+  status: "pending" | "in_progress" | "done";
+  done_at: string | null;
+  due_date: string | null;
+  sort_order: number;
 }
 
 // ---------------------------------------------------------------------------
