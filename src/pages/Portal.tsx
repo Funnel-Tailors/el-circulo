@@ -27,7 +27,8 @@ import { PipelinesSection } from "@/components/portal/pipelines/PipelinesSection
 import { OutboundSection } from "@/components/portal/outbound/OutboundSection";
 import { OutboundOverview } from "@/components/portal/outbound/OutboundOverview";
 import { SequencesSection } from "@/components/portal/outbound/SequencesSection";
-import { getTemplate, type SectionId } from "@/data/portalTemplates";
+import { MeetingsSection, type Meeting } from "@/components/portal/MeetingsSection";
+import { buildNav, getTemplate, type SectionId } from "@/data/portalTemplates";
 import { EnergyCard, EnergyCardHeader, EnergyCardContent, GlowInput, MagneticButton } from "@/components/premium";
 import "@/components/premium/premium-effects.css";
 
@@ -194,6 +195,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   const [billTo, setBillTo] = useState<BillTo>({});
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [project, setProject] = useState<any>(null);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [trackingSlug, setTrackingSlug] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -239,6 +241,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
       if (!proj.error) {
         setMilestones((proj.data as any)?.milestones ?? []);
         setProject((proj.data as any)?.project ?? null);
+        setMeetings((proj.data as any)?.meetings ?? []);
       }
       setLoading(false);
     })();
@@ -246,7 +249,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
   }, []);
 
   const template = getTemplate(project?.portal_config?.template);
-  const nav = template.nav;
+  const nav = buildNav(template, { hasMeetings: meetings.length > 0 });
 
   const dismissReveal = () => { localStorage.setItem("circulo_portal_revealed", "1"); setRevealed(true); };
   const name = (session.user.user_metadata as any)?.legal_name || session.user.email || "";
@@ -338,6 +341,10 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               )}
 
               {section === "vsl" && <VslSection copy={project?.vsl_copy} title={project?.vsl_title} />}
+              {section === "salesletter" && (
+                <VslSection copy={project?.vsl_copy} title={project?.vsl_title} heading="Sales Letter"
+                  subtitle="La carta de ventas de tu funnel" emptyText="Tu sales letter aparecerá aquí cuando esté lista." />
+              )}
               {section === "anuncios" && <AdsSection ads={project?.ads} />}
               {section === "funnel" && (
                 <>
@@ -348,6 +355,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               {section === "pipelines" && <PipelinesSection previewId={previewId} />}
               {section === "outbound" && <OutboundSection previewId={previewId} />}
               {section === "secuencias" && <SequencesSection previewId={previewId} />}
+              {section === "reuniones" && <MeetingsSection meetings={meetings} />}
               {section === "guiones" && <GuionesSection settingCopy={project?.setting_script} closingCopy={project?.closing_script} />}
 
               {section === "formacion" && <ConsultingLessonsLibrary />}

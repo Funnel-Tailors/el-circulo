@@ -2,12 +2,12 @@
 // Sin plantilla (portal_config vacío) = "vsl_call_funnel": el portal de siempre, sin cambios.
 import {
   LayoutDashboard, ScrollText, Megaphone, MonitorPlay, Headset, GraduationCap,
-  FileText, CalendarClock, KeyRound, Workflow, Send, History,
+  FileText, CalendarClock, KeyRound, Workflow, Send, History, Video, PenLine,
 } from "lucide-react";
 
 export type SectionId =
   | "resumen" | "vsl" | "anuncios" | "funnel" | "guiones" | "formacion"
-  | "documentos" | "agenda" | "cuenta" | "pipelines" | "outbound" | "secuencias";
+  | "documentos" | "agenda" | "cuenta" | "pipelines" | "outbound" | "secuencias" | "reuniones" | "salesletter";
 
 export type TemplateId = "vsl_call_funnel" | "outbound_recruiting";
 
@@ -26,6 +26,9 @@ const S: Record<SectionId, NavItem> = {
   pipelines: { id: "pipelines", label: "Pipelines", icon: Workflow },
   outbound: { id: "outbound", label: "Outbound", icon: Send },
   secuencias: { id: "secuencias", label: "Secuencias", icon: History },
+  salesletter: { id: "salesletter", label: "Sales Letter", icon: PenLine },
+  // No va en el nav fijo: el portal la añade solo si el proyecto tiene reuniones.
+  reuniones: { id: "reuniones", label: "Reuniones", icon: Video },
 };
 
 export interface PortalTemplate { id: TemplateId; label: string; description: string; nav: NavItem[] }
@@ -41,9 +44,18 @@ export const PORTAL_TEMPLATES: Record<TemplateId, PortalTemplate> = {
     id: "outbound_recruiting",
     label: "Outbound · pipelines",
     description: "Cold email (Instantly) + LinkedIn, varias pipelines en el CRM y gestión desde el portal.",
-    nav: [S.resumen, S.pipelines, S.outbound, S.secuencias, S.funnel, S.documentos, S.agenda, S.cuenta],
+    nav: [S.resumen, S.pipelines, S.outbound, S.secuencias, S.salesletter, S.funnel, S.documentos, S.agenda, S.cuenta],
   },
 };
+
+// Nav final del proyecto: la plantilla + "Reuniones" (antes de Documentos) si hay alguna.
+export function buildNav(template: PortalTemplate, opts: { hasMeetings: boolean }): NavItem[] {
+  if (!opts.hasMeetings) return template.nav;
+  const nav = [...template.nav];
+  const at = nav.findIndex((n) => n.id === "documentos");
+  nav.splice(at >= 0 ? at : nav.length, 0, S.reuniones);
+  return nav;
+}
 
 export function getTemplate(id?: string | null): PortalTemplate {
   return PORTAL_TEMPLATES[(id as TemplateId) ?? "vsl_call_funnel"] ?? PORTAL_TEMPLATES.vsl_call_funnel;

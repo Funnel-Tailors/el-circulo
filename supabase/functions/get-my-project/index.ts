@@ -105,7 +105,15 @@ serve(async (req) => {
       tasks: tasksByMilestone[m.id] ?? [],
     }))
 
-    return json({ project, milestones: enriched })
+    // Reuniones visibles (sin transcript: esa columna solo la ve admin)
+    const { data: meetings } = await supabase
+      .from('consulting_meetings')
+      .select('id, title, meeting_date, video_url, summary')
+      .eq('project_id', project.id)
+      .eq('visible_to_client', true)
+      .order('meeting_date', { ascending: false, nullsFirst: false })
+
+    return json({ project, milestones: enriched, meetings: meetings ?? [] })
   } catch (e) {
     console.error('get-my-project error:', e)
     return json({ error: 'Error inesperado' }, 500)

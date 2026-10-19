@@ -14,6 +14,7 @@ import { GlowInput, GlowTextarea } from "@/components/premium/GlowInput";
 import { AGREEMENT_VERSION, ASSIGNABLE_AGREEMENTS } from "@/data/consultoriaAgreement";
 import { PortalConfigPanel, InstantlyConnectionPanel, SequencesPanel } from "./PortalConfigPanels";
 import { FocusPanel, TaskManager, AddMilestone, LoadOutboundRoadmap } from "./ProjectMapAdmin";
+import { MeetingsPanel } from "./MeetingsAdmin";
 
 const STATUSES = ["pending", "in_progress", "done", "blocked"] as const;
 const STATUS_LABEL: Record<string, string> = {
@@ -430,9 +431,9 @@ const VslPanel = ({ projectId }: { projectId: string }) => {
 
   return (
     <div className="rounded-xl border border-white/10 p-4 glass-card-dark glass-card-dark-static space-y-3">
-      <h3 className="font-semibold text-sm text-foreground">VSL del cliente (copy)</h3>
+      <h3 className="font-semibold text-sm text-foreground">VSL / Sales letter del cliente (copy)</h3>
       <p className="text-xs text-muted-foreground">
-        El guión del VSL en <span className="text-foreground/80">markdown</span> (encabezados <code>#</code>, <code>**negritas**</code>, listas). El cliente lo ve en su pestaña "VSL".
+        El guión del VSL en <span className="text-foreground/80">markdown</span> (encabezados <code>#</code>, <code>**negritas**</code>, listas). El cliente lo ve en su pestaña "VSL" (o "Sales Letter" en la plantilla outbound).
       </p>
       <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Título (opcional)</Label><GlowInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="p.ej. VSL Memorable Studio" /></div>
       <div className="space-y-1.5"><Label className="text-foreground/80 text-xs">Copy (markdown)</Label><GlowTextarea value={copy} onChange={(e) => setCopy(e.target.value)} className="min-h-[220px] font-mono text-xs" placeholder={"# Titular del VSL\n\nTu guión..."} /></div>
@@ -970,6 +971,7 @@ const ClientDetail = ({ client, onChanged }: { client: any; onChanged: () => voi
           <PortalConfigPanel projectId={client.project_id} onboardingId={client.id} />
           <InstantlyConnectionPanel onboardingId={client.id} />
           <SequencesPanel onboardingId={client.id} />
+          <MeetingsPanel projectId={client.project_id} />
           <VslPanel projectId={client.project_id} />
           <AdsPanel projectId={client.project_id} />
           <FunnelPanel projectId={client.project_id} />

@@ -3,8 +3,11 @@ import { EnergyCard, EnergyCardHeader, EnergyCardContent } from "@/components/pr
 import { ScrollText } from "lucide-react";
 
 /** Sección "VSL" del portal: muestra el copy/guión del VSL del cliente en markdown,
- * estilado on-brand (carbón/glow) sin @tailwindcss/typography. */
-export const VslSection = ({ copy, title }: { copy?: string | null; title?: string | null }) => (
+ * estilado on-brand (carbón/glow) sin @tailwindcss/typography. La plantilla outbound la
+ * reutiliza como "Sales Letter" (mismo campo vsl_copy). */
+export const VslSection = ({ copy, title, heading = "VSL", subtitle = "El guión de tu carta de ventas", emptyText = "{emptyText}" }: {
+  copy?: string | null; title?: string | null; heading?: string; subtitle?: string; emptyText?: string;
+}) => (
   <EnergyCard variant="default" enableTilt={false} beamSpeed={5} beamIntensity={0.45}>
     <EnergyCardHeader>
       <div className="flex items-center gap-3">
@@ -13,9 +16,9 @@ export const VslSection = ({ copy, title }: { copy?: string | null; title?: stri
         </div>
         <div>
           <h2 className="font-display font-black uppercase tracking-[-0.025em] text-sm text-foreground/90">
-            Tu <span className="glow">VSL</span>
+            Tu <span className="glow">{heading}</span>
           </h2>
-          <p className="text-xs text-foreground/50 mt-0.5">{title || "El guión de tu carta de ventas"}</p>
+          <p className="text-xs text-foreground/50 mt-0.5">{title || subtitle}</p>
         </div>
       </div>
     </EnergyCardHeader>
