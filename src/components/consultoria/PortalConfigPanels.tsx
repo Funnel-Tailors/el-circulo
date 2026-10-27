@@ -170,6 +170,21 @@ export const PortalConfigPanel = ({ projectId, onboardingId }: { projectId: stri
             ) : <p className="text-[11px] text-muted-foreground">Asigna la pipeline de GHL arriba para elegir las etapas.</p>}
           </div>
 
+          {/* Segundo toque por LinkedIn */}
+          <div className="space-y-2 rounded-lg border border-white/10 p-3">
+            <div className="text-[11px] uppercase tracking-wide text-foreground/40">LinkedIn · segundo toque</div>
+            <div className="space-y-1.5">
+              <Label className="text-foreground/80 text-xs">Mensaje (se copia al abrir el perfil). Variables: {"{first_name}"}, {"{company}"}</Label>
+              <GlowTextarea rows={4} value={cfg.linkedin?.message ?? ""}
+                onChange={(e) => setCfg((c) => ({ ...c, linkedin: { ...c.linkedin, message: e.target.value } }))} />
+            </div>
+            <div className="grid grid-cols-[120px_1fr] items-center gap-2">
+              <Label className="text-foreground/80 text-xs">Ventana (días)</Label>
+              <GlowInput type="number" min={1} max={30} className="w-24" value={cfg.linkedin?.days ?? 7}
+                onChange={(e) => setCfg((c) => ({ ...c, linkedin: { ...c.linkedin, days: Number(e.target.value) || 7 } }))} />
+            </div>
+          </div>
+
           {/* Canales */}
           <details className="rounded-lg border border-white/10 p-3">
             <summary className="cursor-pointer text-[11px] uppercase tracking-wide text-foreground/40">Canales · cómo se reconoce el origen de cada lead</summary>

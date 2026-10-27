@@ -25,6 +25,7 @@ import { DocumentViewer } from "@/components/portal/documents/DocumentViewer";
 import { SignAgreementGate } from "@/components/portal/SignAgreementGate";
 import { PipelinesSection } from "@/components/portal/pipelines/PipelinesSection";
 import { OutboundSection } from "@/components/portal/outbound/OutboundSection";
+import { LinkedinSection } from "@/components/portal/outbound/LinkedinSection";
 import { OutboundOverview } from "@/components/portal/outbound/OutboundOverview";
 import { SequencesSection } from "@/components/portal/outbound/SequencesSection";
 import { MeetingsSection, type Meeting } from "@/components/portal/MeetingsSection";
@@ -354,6 +355,7 @@ const PortalHome = ({ session, onSignOut }: { session: Session; onSignOut: () =>
               )}
               {section === "pipelines" && <PipelinesSection previewId={previewId} />}
               {section === "outbound" && <OutboundSection previewId={previewId} />}
+              {section === "linkedin" && <LinkedinSection previewId={previewId} />}
               {section === "secuencias" && <SequencesSection previewId={previewId} />}
               {section === "reuniones" && <MeetingsSection meetings={meetings} />}
               {section === "guiones" && <GuionesSection settingCopy={project?.setting_script} closingCopy={project?.closing_script} />}

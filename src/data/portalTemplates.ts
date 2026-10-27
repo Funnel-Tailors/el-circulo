@@ -2,12 +2,12 @@
 // Sin plantilla (portal_config vacío) = "vsl_call_funnel": el portal de siempre, sin cambios.
 import {
   LayoutDashboard, ScrollText, Megaphone, MonitorPlay, Headset, GraduationCap,
-  FileText, CalendarClock, KeyRound, Workflow, Send, History, Video, PenLine,
+  FileText, CalendarClock, KeyRound, Workflow, Send, History, Video, PenLine, Linkedin,
 } from "lucide-react";
 
 export type SectionId =
   | "resumen" | "vsl" | "anuncios" | "funnel" | "guiones" | "formacion"
-  | "documentos" | "agenda" | "cuenta" | "pipelines" | "outbound" | "secuencias" | "reuniones" | "salesletter";
+  | "documentos" | "agenda" | "cuenta" | "pipelines" | "outbound" | "secuencias" | "reuniones" | "salesletter" | "linkedin";
 
 export type TemplateId = "vsl_call_funnel" | "outbound_recruiting";
 
@@ -25,6 +25,7 @@ const S: Record<SectionId, NavItem> = {
   cuenta: { id: "cuenta", label: "Cuenta", icon: KeyRound },
   pipelines: { id: "pipelines", label: "Pipelines", icon: Workflow },
   outbound: { id: "outbound", label: "Outbound", icon: Send },
+  linkedin: { id: "linkedin", label: "LinkedIn", icon: Linkedin },
   secuencias: { id: "secuencias", label: "Secuencias", icon: History },
   salesletter: { id: "salesletter", label: "Sales Letter", icon: PenLine },
   // No va en el nav fijo: el portal la añade solo si el proyecto tiene reuniones.
@@ -44,7 +45,7 @@ export const PORTAL_TEMPLATES: Record<TemplateId, PortalTemplate> = {
     id: "outbound_recruiting",
     label: "Outbound · pipelines",
     description: "Cold email (Instantly) + LinkedIn, varias pipelines en el CRM y gestión desde el portal.",
-    nav: [S.resumen, S.pipelines, S.outbound, S.secuencias, S.salesletter, S.funnel, S.documentos, S.agenda, S.cuenta],
+    nav: [S.resumen, S.pipelines, S.outbound, S.linkedin, S.secuencias, S.salesletter, S.funnel, S.documentos, S.agenda, S.cuenta],
   },
 };
 
@@ -68,4 +69,6 @@ export interface PortalConfig {
   pipelines?: PipelineConfig[];
   channels?: Record<string, { tags: string[]; sources: string[] }>;
   instantly?: { target_pipeline?: string; stage_map?: { replied?: string; interested?: string; meeting?: string } };
+  // Segundo toque por LinkedIn: mensaje con {first_name}/{company} y ventana en días (7 por defecto).
+  linkedin?: { message?: string; days?: number };
 }
